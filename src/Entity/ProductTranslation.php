@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
+#[ORM\UniqueConstraint(name: 'unique_product_locale', columns: ['product_id', 'locale'])]
 class ProductTranslation
 {
     #[ORM\Id]
@@ -28,11 +29,6 @@ class ProductTranslation
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function setId(?int $id): void
-    {
-        $this->id = $id;
     }
 
     public function getProduct(): Product
@@ -74,6 +70,4 @@ class ProductTranslation
     {
         $this->description = $description;
     }
-
-
 }

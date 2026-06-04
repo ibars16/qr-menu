@@ -2,13 +2,17 @@
 
 namespace App\Entity;
 
+use App\Entity\Trait\TimestampableTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
 class Product
 {
+    use TimestampableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -21,14 +25,21 @@ class Product
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
+    /**
+     * Price stored in cents to avoid floating point precision issues.
+     * Example: 1250 = 12.50 in the restaurant's base currency.
+     */
     #[ORM\Column]
     private int $basePrice;
 
     #[ORM\Column(nullable: true)]
     private ?int $calories = null;
 
+    /** Spicy level from 0 (not spicy) to 5 (extremely spicy) */
     #[ORM\Column(nullable: true)]
     private ?int $spicyLevel = null;
+
+    // --- Dietary labels ---
 
     #[ORM\Column]
     private bool $vegetarian = false;
@@ -40,12 +51,28 @@ class Product
     private bool $glutenFree = false;
 
     #[ORM\Column]
+    private bool $lactoseFree = false;
+
+    #[ORM\Column]
+    private bool $containsNuts = false;
+
+    #[ORM\Column]
+    private bool $halal = false;
+
+    #[ORM\Column]
+    private bool $kosher = false;
+
+    // --- Visibility & ordering ---
+
+    #[ORM\Column]
     private bool $active = true;
 
     #[ORM\Column]
     private int $position = 0;
 
-    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductTranslation::class, cascade: ['persist', 'remove'])]
+    // --- Relations ---
+
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductTranslation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $translations;
 
     #[ORM\ManyToMany(targetEntity: Ingredient::class, inversedBy: 'products')]
@@ -61,11 +88,6 @@ class Product
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function setId(?int $id): void
-    {
-        $this->id = $id;
     }
 
     public function getCategory(): Category
@@ -96,6 +118,12 @@ class Product
     public function setBasePrice(int $basePrice): void
     {
         $this->basePrice = $basePrice;
+    }
+
+    /** Returns the price as a decimal. Example: 1250 → 12.50 */
+    public function getBasePriceDecimal(): float
+    {
+        return $this->basePrice / 100;
     }
 
     public function getCalories(): ?int
@@ -148,6 +176,46 @@ class Product
         $this->glutenFree = $glutenFree;
     }
 
+    public function isLactoseFree(): bool
+    {
+        return $this->lactoseFree;
+    }
+
+    public function setLactoseFree(bool $lactoseFree): void
+    {
+        $this->lactoseFree = $lactoseFree;
+    }
+
+    public function isContainsNuts(): bool
+    {
+        return $this->containsNuts;
+    }
+
+    public function setContainsNuts(bool $containsNuts): void
+    {
+        $this->containsNuts = $containsNuts;
+    }
+
+    public function isHalal(): bool
+    {
+        return $this->halal;
+    }
+
+    public function setHalal(bool $halal): void
+    {
+        $this->halal = $halal;
+    }
+
+    public function isKosher(): bool
+    {
+        return $this->kosher;
+    }
+
+    public function setKosher(bool $kosher): void
+    {
+        $this->kosher = $kosher;
+    }
+
     public function isActive(): bool
     {
         return $this->active;
@@ -173,9 +241,28 @@ class Product
         return $this->translations;
     }
 
-    public function setTranslations(Collection $translations): void
+    public function addTranslation(ProductTranslation $translation): void
     {
-        $this->translations = $translations;
+        if (!$this->translations->contains($translation)) {
+            $this->translations->add($translation);
+            $translation->setProduct($this);
+        }
+    }
+
+    public function removeTranslation(ProductTranslation $translation): void
+    {
+        $this->translations->removeElement($translation);
+    }
+
+    public function getTranslation(string $locale): ?ProductTranslation
+    {
+        foreach ($this->translations as $translation) {
+            if ($translation->getLocale() === $locale) {
+                return $translation;
+            }
+        }
+
+        return null;
     }
 
     public function getIngredients(): Collection
@@ -183,10 +270,15 @@ class Product
         return $this->ingredients;
     }
 
-    public function setIngredients(Collection $ingredients): void
+    public function addIngredient(Ingredient $ingredient): void
     {
-        $this->ingredients = $ingredients;
+        if (!$this->ingredients->contains($ingredient)) {
+            $this->ingredients->add($ingredient);
+        }
     }
 
-
+    public function removeIngredient(Ingredient $ingredient): void
+    {
+        $this->ingredients->removeElement($ingredient);
+    }
 }

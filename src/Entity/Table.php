@@ -2,11 +2,16 @@
 
 namespace App\Entity;
 
+use App\Entity\Trait\TimestampableTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
+#[ORM\Table(name: 'restaurant_table')]
+#[ORM\HasLifecycleCallbacks]
 class Table
 {
+    use TimestampableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -22,14 +27,12 @@ class Table
     #[ORM\Column(length: 255, unique: true)]
     private string $qrToken;
 
+    #[ORM\Column]
+    private bool $active = true;
+
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function setId(?int $id): void
-    {
-        $this->id = $id;
     }
 
     public function getRestaurant(): Restaurant
@@ -62,6 +65,13 @@ class Table
         $this->qrToken = $qrToken;
     }
 
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
 
-
+    public function setActive(bool $active): void
+    {
+        $this->active = $active;
+    }
 }

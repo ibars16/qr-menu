@@ -2,13 +2,17 @@
 
 namespace App\Entity;
 
+use App\Entity\Trait\TimestampableTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
 class Restaurant
 {
+    use TimestampableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -26,36 +30,32 @@ class Restaurant
     #[ORM\Column(length: 20)]
     private string $primaryColor = '#000000';
 
+    /** Currency code (ISO 4217). Example: EUR, NZD, USD */
     #[ORM\Column(length: 3)]
     private string $currency = 'NZD';
 
     #[ORM\Column(length: 5)]
     private string $defaultLanguage = 'en';
 
-    #[ORM\Column]
-    private \DateTimeImmutable $createdAt;
-
-    #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Table::class)]
+    #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Table::class, cascade: ['persist', 'remove'])]
     private Collection $tables;
 
-    #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Category::class)]
+    #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Category::class, cascade: ['persist', 'remove'])]
     private Collection $categories;
+
+    #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: User::class)]
+    private Collection $users;
 
     public function __construct()
     {
         $this->tables = new ArrayCollection();
         $this->categories = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function setId(?int $id): void
-    {
-        $this->id = $id;
     }
 
     public function getName(): string
@@ -118,24 +118,22 @@ class Restaurant
         $this->defaultLanguage = $defaultLanguage;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): void
-    {
-        $this->createdAt = $createdAt;
-    }
-
     public function getTables(): Collection
     {
         return $this->tables;
     }
 
-    public function setTables(Collection $tables): void
+    public function addTable(Table $table): void
     {
-        $this->tables = $tables;
+        if (!$this->tables->contains($table)) {
+            $this->tables->add($table);
+            $table->setRestaurant($this);
+        }
+    }
+
+    public function removeTable(Table $table): void
+    {
+        $this->tables->removeElement($table);
     }
 
     public function getCategories(): Collection
@@ -143,10 +141,21 @@ class Restaurant
         return $this->categories;
     }
 
-    public function setCategories(Collection $categories): void
+    public function addCategory(Category $category): void
     {
-        $this->categories = $categories;
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+            $category->setRestaurant($this);
+        }
     }
 
+    public function removeCategory(Category $category): void
+    {
+        $this->categories->removeElement($category);
+    }
 
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
 }
