@@ -122,4 +122,15 @@ class Category
     {
         $this->products->removeElement($product);
     }
+
+    public function getActiveProductsSorted(): array
+    {
+        $products = $this->products
+            ->filter(fn($p) => $p->isActive())
+            ->toArray();
+
+        usort($products, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
+
+        return $products;
+    }
 }

@@ -1,0 +1,158 @@
+{# templates/menu/_card.html.twig #}
+{# Variables: product, locale, currency, restaurant #}
+
+{% set translation = product.getTranslation(locale) %}
+{% if not translation %}
+    {% set translation = product.getTranslation(restaurant.defaultLanguage) %}
+{% endif %}
+{% if not translation %}{% set translation = product.translations.first %}{% endif %}
+
+{% if translation %}
+    <div class="card-wrap" onclick="flipCard(this)">
+    <div class="card">
+
+    {# ── FRONT ── #}
+    <div class="card-front">
+
+        {# Image or placeholder #}
+        {% if product.image %}
+            <img class="front-img"
+                 src="{{ asset('uploads/products/' ~ product.image) }}"
+                 alt="{{ translation.name }}"
+                 loading="lazy">
+        {% else %}
+            <div class="front-img-placeholder">🍽️</div>
+        {% endif %}
+
+        {# Flip hint #}
+        <div class="flip-hint">ver más</div>
+
+        <div class="front-overlay">
+
+            {# Dietary badges #}
+            <div class="front-badges">
+                {% if product.isVegan %}
+                    <div class="fbadge" title="Vegano">🌿</div>
+                {% elseif product.isVegetarian %}
+                    <div class="fbadge" title="Vegetariano">🌱</div>
+                {% endif %}
+                {% if product.isGlutenFree %}
+                    <div class="fbadge" title="Sin gluten">🚫</div>
+                {% endif %}
+                {% if product.spicyLevel > 0 %}
+                    <div class="fbadge" title="Picante">🌶</div>
+                {% endif %}
+                {% if product.isHalal %}
+                    <div class="fbadge" title="Halal">☪️</div>
+                {% endif %}
+                {% if product.isKosher %}
+                    <div class="fbadge" title="Kosher">✡️</div>
+                {% endif %}
+            </div>
+
+            <div class="front-name">{{ translation.name }}</div>
+            <div class="front-price">
+                {{ (product.basePrice / 100)|number_format(2) }} {{ currency }}
+            </div>
+
+        </div>
+    </div>
+
+    {# ── BACK ── #}
+    <div class="card-back">
+
+    <button class="back-close" onclick="unflipCard(event, this)" aria-label="Volver">✕</button>
+
+    <div class="back-header">
+        <div class="back-name">{{ translation.name }}</div>
+        <div class="back-price">{{ (product.basePrice / 100)|number_format(2) }} {{ currency }}</div>
+    </div>
+
+    <div class="back-body">
+
+    {# Description #}
+    {% if translation.description %}
+        <div class="back-section">Descripción</div>
+        <div class="back-desc">{{ translation.description }}</div>
+    {% endif %}
+
+    {# Spicy level #}
+    {% if product.spicyLevel > 0 %}
+        <div class="back-section">Picante</div>
+        <div class="spicy-row">
+            {% for i in 1..5 %}
+                <div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>
+            {% endfor %}
+            <div class="spicy-lbl">
+                {% if product.spicyLevel == 1 %}Suave
+                {% elseif product.spicyLevel == 2 %}Medio
+                {% elseif product.spicyLevel == 3 %}Picante
+                {% elseif product.spicyLevel == 4 %}Muy picante
+                {% elseif product.spicyLevel == 5 %}Extremo
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    {# Dietary labels #}
+    {% set hasLabels = product.isVegetarian or product.isVegan or product.isGlutenFree or product.isLactoseFree or product.isContainsNuts or product.isHalal or product.isKosher %}
+    {% if hasLabels %}
+        <div class="back-section">Etiquetas</div>
+        <div class="label-list">
+            {% if product.isVegan %}
+                <div class="lbl lbl-green">🌿 Vegano</div>
+            {% elseif product.isVegetarian %}
+                <div class="lbl lbl-green">🌱 Vegetariano</div>
+            {% endif %}
+            {% if product.isGlutenFree %}
+                <div class="lbl lbl-orange">🚫 Sin gluten</div>
+            {% endif %}
+            {% if product.isLactoseFree %}
+                <div class="lbl lbl-orange">🥛 Sin lactosa</div>
+            {% endif %}
+            {% if product.isContainsNuts %}
+                <div class="lbl lbl-orange">🥜 Contiene frutos secos</div>
+            {% endif %}
+            {% if product.isHalal %}
+                <div class="lbl lbl-blue">☪️ Halal</div>
+            {% endif %}
+            {% if product.isKosher %}
+                <div class="lbl lbl-blue">✡️ Kosher</div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {# Ingredients #}
+    {% if product.ingredients|length > 0 %}
+        <div class="back-section">Ingredientes</div>
+        <div class="ing-list">
+            {% for ingredient in product.ingredients %}
+                {% set ingTranslation = ingredient.getTranslation(locale) %}
+                {% if not ingTranslation %}
+                    {% set ingTranslation = ingredient.getTranslation(restaurant.defaultLanguage) %}
+                {% endif %}
+                {% if ingTranslation %}
+                    <div class="ing">{{ ingTranslation.name }}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {# Nutrition #}
+    {% if product.calories %}
+        <div class="back-section">Información nutricional</div>
+        <div class="nut-grid">
+            <div class="nut">
+                <div class="nut-l">Calorías</div>
+                <div class="nut-v">{{ product.calories }} <span class="nut-u">kcal</span></div>
+            </div>
+            {# Proteínas, grasas, carbohidratos — listos cuando añadas los campos #}
+        </div>
+    {% endif %}
+
+    </div>{# end back-body #}
+    </div>{# end card-back #}
+
+    </div>{# end card #}
+    </div>{# end card-wrap #}
+{% endif %}

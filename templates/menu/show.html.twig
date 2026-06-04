@@ -1,0 +1,262 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ restaurant.name }} · Mesa {{ table.number }}{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        :root {
+            --brand: {{ restaurant.primaryColor }};
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #111;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        .header {
+            position: sticky; top: 0; z-index: 100;
+            background: #111;
+            padding: 14px 16px 0;
+            border-bottom: 0.5px solid #2a2a2a;
+        }
+        .header-top {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .logo {
+            width: 38px; height: 38px; border-radius: 8px;
+            background: var(--brand);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 16px; font-weight: 600;
+            flex-shrink: 0; overflow: hidden;
+        }
+        .logo img { width: 100%; height: 100%; object-fit: cover; }
+        .restaurant-name { font-size: 15px; font-weight: 600; color: #fff; }
+        .restaurant-sub { font-size: 11px; color: #666; margin-top: 1px; }
+        .header-controls { display: flex; gap: 6px; }
+        .pill {
+            font-size: 11px; padding: 5px 10px; border-radius: 20px;
+            border: 0.5px solid #333; color: #aaa;
+            display: flex; align-items: center; gap: 4px;
+            background: #1e1e1e; cursor: pointer; text-decoration: none;
+        }
+        .pill:hover { border-color: #555; color: #fff; }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex; overflow-x: auto; scrollbar-width: none;
+            padding: 0 16px;
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab {
+            font-size: 12px; padding: 9px 14px; color: #555;
+            white-space: nowrap; border-bottom: 2px solid transparent;
+            flex-shrink: 0; cursor: pointer; text-decoration: none;
+            transition: color 0.15s;
+        }
+        .tab:hover { color: #aaa; }
+        .tab.active { color: var(--brand); border-bottom-color: var(--brand); font-weight: 500; }
+
+        /* ── Content ── */
+        .content { padding: 0 14px 60px; max-width: 600px; margin: 0 auto; }
+        .category-section { padding-top: 24px; }
+        .category-title {
+            font-size: 13px; font-weight: 500; color: #555;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            margin-bottom: 14px; padding-bottom: 8px;
+            border-bottom: 0.5px solid #2a2a2a;
+        }
+
+        /* ── Grid ── */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        /* ── Flip card ── */
+        .card-wrap { perspective: 900px; cursor: pointer; }
+        .card {
+            width: 100%; aspect-ratio: 3/4;
+            position: relative; transform-style: preserve-3d;
+            transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+            border-radius: 14px;
+        }
+        .card.flipped { transform: rotateY(180deg); }
+        .card-front, .card-back {
+            position: absolute; inset: 0; border-radius: 14px;
+            backface-visibility: hidden; -webkit-backface-visibility: hidden;
+            overflow: hidden;
+        }
+
+        /* Front */
+        .card-front { background: #222; }
+        .front-img { width: 100%; height: 62%; object-fit: cover; display: block; }
+        .front-img-placeholder {
+            width: 100%; height: 62%; background: #2a2a2a;
+            display: flex; align-items: center; justify-content: center; font-size: 48px;
+        }
+        .front-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 28px 10px 12px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+        }
+        .front-badges { display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap; }
+        .fbadge {
+            width: 20px; height: 20px; border-radius: 50%; font-size: 10px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.5);
+        }
+        .flip-hint {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0,0,0,0.55); border-radius: 20px;
+            padding: 3px 7px; font-size: 9px; color: #aaa;
+        }
+        .front-name { font-size: 13px; font-weight: 500; color: #fff; margin-bottom: 3px; line-height: 1.2; }
+        .front-price { font-size: 14px; font-weight: 600; color: var(--brand); }
+
+        /* Back */
+        .card-back {
+            background: #1e1e1e; transform: rotateY(180deg);
+            display: flex; flex-direction: column;
+            border: 0.5px solid #2a2a2a;
+        }
+        .back-close {
+            position: absolute; top: 8px; right: 8px;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: #2a2a2a; border: none; cursor: pointer; color: #888;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; z-index: 2;
+        }
+        .back-close:hover { background: #333; color: #fff; }
+        .back-header {
+            padding: 10px 32px 8px 10px;
+            border-bottom: 0.5px solid #2a2a2a; flex-shrink: 0;
+        }
+        .back-name { font-size: 13px; font-weight: 500; color: #fff; margin-bottom: 2px; }
+        .back-price { font-size: 12px; color: var(--brand); }
+        .back-body {
+            flex: 1; overflow-y: auto; padding: 8px 10px 12px; scrollbar-width: none;
+        }
+        .back-body::-webkit-scrollbar { display: none; }
+        .back-section {
+            font-size: 9px; font-weight: 500; color: #444;
+            text-transform: uppercase; letter-spacing: 0.07em;
+            margin-bottom: 5px; margin-top: 10px;
+        }
+        .back-section:first-child { margin-top: 0; }
+        .back-desc { font-size: 10px; color: #888; line-height: 1.45; }
+
+        .label-list { display: flex; flex-wrap: wrap; gap: 3px; }
+        .lbl { font-size: 9px; padding: 2px 7px; border-radius: 20px; }
+        .lbl-green { background: rgba(59,109,17,0.25); color: #97C459; border: 0.5px solid rgba(99,153,34,0.3); }
+        .lbl-orange { background: rgba(193,68,14,0.2); color: #F0997B; border: 0.5px solid rgba(193,68,14,0.3); }
+        .lbl-blue { background: rgba(24,95,165,0.2); color: #85B7EB; border: 0.5px solid rgba(24,95,165,0.3); }
+
+        .ing-list { display: flex; flex-wrap: wrap; gap: 3px; }
+        .ing {
+            font-size: 9px; padding: 2px 7px; border-radius: 20px;
+            background: #252525; color: #777; border: 0.5px solid #2f2f2f;
+        }
+
+        .spicy-row { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: #333; }
+        .dot.on { background: #D85A30; }
+        .spicy-lbl { font-size: 9px; color: #555; }
+
+        .nut-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+        .nut { background: #252525; border-radius: 6px; padding: 6px 8px; }
+        .nut-l { font-size: 9px; color: #555; margin-bottom: 1px; }
+        .nut-v { font-size: 12px; font-weight: 500; color: #ccc; }
+        .nut-u { font-size: 9px; color: #555; font-weight: 400; }
+
+        .empty { text-align: center; padding: 60px 20px; color: #444; font-size: 13px; }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+    {# ── Header ── #}
+    <div class="header">
+        <div class="header-top">
+            <div class="header-left">
+                <div class="logo">
+                    {% if restaurant.logo %}
+                        <img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}" alt="{{ restaurant.name }}">
+                    {% else %}
+                        {{ restaurant.name|slice(0,1)|upper }}
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="restaurant-name">{{ restaurant.name }}</div>
+                    <div class="restaurant-sub">Mesa {{ table.number }}</div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <a href="?lang=es&currency={{ currency }}" class="pill" title="Español">🇪🇸 ES</a>
+                <a href="?lang=en&currency={{ currency }}" class="pill" title="English">🇬🇧 EN</a>
+            </div>
+        </div>
+
+        <div class="tabs">
+            {% for category in categories %}
+                {% set t = category.getTranslation(locale) %}
+                {% if t %}
+                    <a href="#cat-{{ category.id }}" class="tab">{{ t.name }}</a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {# ── Menu ── #}
+    <div class="content">
+        {% for category in categories %}
+            {% set catT = category.getTranslation(locale) %}
+            {% set products = category.activeProductsSorted %}
+            {% if catT and products|length > 0 %}
+                <section class="category-section" id="cat-{{ category.id }}">
+                    <div class="category-title">{{ catT.name }}</div>
+                    <div class="cards-grid">
+                        {% for product in products %}
+                            {% include 'menu/_card.html.twig' with { product, locale, currency, restaurant } %}
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+        {% else %}
+            <div class="empty">No hay productos disponibles.</div>
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        function flipCard(wrap) {
+            wrap.querySelector('.card').classList.toggle('flipped');
+        }
+        function unflipCard(event, btn) {
+            event.stopPropagation();
+            btn.closest('.card').classList.remove('flipped');
+        }
+
+        const sections = document.querySelectorAll('.category-section');
+        const tabs = document.querySelectorAll('.tab');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    tabs.forEach(tab => tab.classList.toggle('active', tab.getAttribute('href') === '#' + id));
+                }
+            });
+        }, { threshold: 0.3 });
+        sections.forEach(s => observer.observe(s));
+    </script>
+{% endblock %}
