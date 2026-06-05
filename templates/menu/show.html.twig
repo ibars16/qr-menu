@@ -244,8 +244,32 @@
                 </div>
             </div>
             <div class="header-controls">
-                <a href="?lang=es&currency={{ currency }}" class="pill" title="Español">🇪🇸 ES</a>
-                <a href="?lang=en&currency={{ currency }}" class="pill" title="English">🇬🇧 EN</a>
+
+                <select onchange="changeLanguage(this.value)">
+                    {% for code, language in languages %}
+                        <option
+                            value="{{ code }}"
+                            {{ locale == code ? 'selected' : '' }}
+                        >
+                            {{ language.flag }} {{ language.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <select onchange="changeCurrency(this.value)">
+                    {% for code, currencyData in currencies %}
+                        <option
+                            value="{{ code }}"
+                            {{ currency == code ? 'selected' : '' }}
+                        >
+                            {{ currencyData.symbol }}
+                            {{ code }}
+                            -
+                            {{ currencyData.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
             </div>
         </div>
 
@@ -282,6 +306,24 @@
 
 {% block javascripts %}
     <script>
+        function changeLanguage(lang)
+        {
+            const url = new URL(window.location);
+
+            url.searchParams.set('lang', lang);
+
+            window.location.href = url.toString();
+        }
+
+        function changeCurrency(currency)
+        {
+            const url = new URL(window.location);
+
+            url.searchParams.set('currency', currency);
+
+            window.location.href = url.toString();
+        }
+
         function flipCard(wrap) {
             wrap.querySelector('.card').classList.toggle('flipped');
         }
