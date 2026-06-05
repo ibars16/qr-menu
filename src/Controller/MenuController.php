@@ -19,6 +19,10 @@ class MenuController extends AbstractController
         TableRepository $tableRepo,
         Request $request
     ): Response {
+        $languages = require $this->getParameter('kernel.project_dir') . '/config/languages.php';
+
+        $currencies = require $this->getParameter('kernel.project_dir') . '/config/currencies.php';
+
         // 1. Buscar restaurante por slug
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
 
@@ -37,7 +41,25 @@ class MenuController extends AbstractController
         }
 
         // 3. Idioma: parámetro URL > idioma por defecto del restaurante
-        $locale = $request->query->get('lang', $restaurant->getDefaultLanguage());
+        $supportedLanguages = array_keys($languages);
+
+        $browserLanguage = substr(
+            $request->getPreferredLanguage(),
+            0,
+            2
+        );
+
+        $detectedLanguage = in_array(
+            $browserLanguage,
+            $supportedLanguages
+        )
+            ? $browserLanguage
+            : $restaurant->getDefaultLanguage();
+
+        $locale = $request->query->get(
+            'lang',
+            $detectedLanguage
+        );
 
         // 4. Divisa: parámetro URL > divisa base del restaurante
         $currency = $request->query->get('currency', $restaurant->getCurrency());
@@ -68,6 +90,8 @@ class MenuController extends AbstractController
             'categories' => $categories,
             'locale'     => $locale,
             'currency'   => $currency,
+            'languages'  => $languages,
+            'currencies' => $currencies,
         ]);
     }
 }
