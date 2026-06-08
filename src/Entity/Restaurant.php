@@ -46,11 +46,20 @@ class Restaurant
     #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: User::class)]
     private Collection $users;
 
+    #[ORM\OneToMany(
+        mappedBy: 'restaurant',
+        targetEntity: ProductTag::class,
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    private Collection $productTags;
+
     public function __construct()
     {
         $this->tables = new ArrayCollection();
         $this->categories = new ArrayCollection();
         $this->users = new ArrayCollection();
+        $this->productTags = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -157,5 +166,10 @@ class Restaurant
     public function getUsers(): Collection
     {
         return $this->users;
+    }
+
+    public function getProductTags(): Collection
+    {
+        return $this->productTags;
     }
 }

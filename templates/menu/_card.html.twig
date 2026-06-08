@@ -10,7 +10,11 @@
 {% endif %}
 
 {% if translation %}
-    <div class="card-wrap" onclick="flipCard(this)">
+    <div
+        class="card-wrap"
+        data-tags="{% for tag in product.tags %}{{ tag.id }}{% if not loop.last %} {% endif %}{% endfor %}"
+        onclick="flipCard(this)"
+    >
         <div class="card">
 
             {# ══ FRONT — imagen izquierda, info derecha ══ #}
@@ -30,11 +34,6 @@
                 <div class="front-info">
                     <div class="front-top">
                         <div class="front-badges">
-                            {% if product.isVegan %}
-                                <div class="fbadge fbadge-veg">🌿 Vegano</div>
-                            {% elseif product.isVegetarian %}
-                                <div class="fbadge fbadge-veg">🌱 Vegetariano</div>
-                            {% endif %}
                             {% if product.spicyLevel > 0 %}
                                 <div class="fbadge fbadge-hot">
                                     {% if product.spicyLevel <= 2 %}🌶
@@ -42,12 +41,22 @@
                                     {% else %}🌶🌶🌶{% endif %}
                                 </div>
                             {% endif %}
-                            {% if product.isGlutenFree %}
-                                <div class="fbadge">Sin gluten</div>
-                            {% endif %}
-                            {% if product.isHalal %}
-                                <div class="fbadge fbadge-hal">Halal</div>
-                            {% endif %}
+                            {% for tag in product.tags %}
+                                {% set tagT = null %}
+
+                                {% for tr in tag.translations %}
+                                    {% if tr.locale == locale %}
+                                        {% set tagT = tr %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if tagT %}
+                                    <div class="fbadge">
+                                        {{ tag.icon }}
+                                        {{ tagT.name }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         </div>
                         <div class="front-name">{{ translation.name }}</div>
                         {% if translation.description %}
@@ -112,21 +121,31 @@
                         </div>
                     {% endif %}
 
-                    {# Etiquetas — full width #}
-                    {% set hasLabels = product.isVegetarian or product.isVegan
-                        or product.isGlutenFree or product.isLactoseFree
-                        or product.isContainsNuts or product.isHalal or product.isKosher %}
-                    {% if hasLabels %}
+                    {% if product.tags|length > 0 %}
                         <div class="back-col-full">
                             <div class="bsec-title">Etiquetas</div>
+
                             <div class="lbl-list">
-                                {% if product.isVegan %}<div class="lbl lbl-g">🌿 Vegano</div>
-                                {% elseif product.isVegetarian %}<div class="lbl lbl-g">🌱 Vegetariano</div>{% endif %}
-                                {% if product.isGlutenFree %}<div class="lbl lbl-o">Sin gluten</div>{% endif %}
-                                {% if product.isLactoseFree %}<div class="lbl lbl-o">Sin lactosa</div>{% endif %}
-                                {% if product.isContainsNuts %}<div class="lbl lbl-o">🥜 Frutos secos</div>{% endif %}
-                                {% if product.isHalal %}<div class="lbl lbl-b">☪️ Halal</div>{% endif %}
-                                {% if product.isKosher %}<div class="lbl lbl-b">✡️ Kosher</div>{% endif %}
+
+                                {% for tag in product.tags %}
+
+                                    {% set tagT = null %}
+
+                                    {% for tr in tag.translations %}
+                                        {% if tr.locale == locale %}
+                                            {% set tagT = tr %}
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if tagT %}
+                                        <div class="lbl">
+                                            {{ tag.icon }}
+                                            {{ tagT.name }}
+                                        </div>
+                                    {% endif %}
+
+                                {% endfor %}
+
                             </div>
                         </div>
                     {% endif %}
