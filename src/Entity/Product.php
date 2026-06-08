@@ -79,10 +79,16 @@ class Product
     #[ORM\JoinTable(name: 'product_ingredient')]
     private Collection $ingredients;
 
+    /**
+     * Temporary price after currency conversion.
+     * NOT mapped to database — calculated at runtime in MenuController.
+     */
+    private int $convertedPrice = 0;
+
     public function __construct()
     {
         $this->translations = new ArrayCollection();
-        $this->ingredients = new ArrayCollection();
+        $this->ingredients  = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -120,10 +126,24 @@ class Product
         $this->basePrice = $basePrice;
     }
 
-    /** Returns the price as a decimal. Example: 1250 → 12.50 */
+    /** Returns the base price as a decimal. Example: 1250 → 12.50 */
     public function getBasePriceDecimal(): float
     {
         return $this->basePrice / 100;
+    }
+
+    /**
+     * Returns the converted price in cents.
+     * Falls back to basePrice if conversion has not been applied yet.
+     */
+    public function getConvertedPrice(): int
+    {
+        return $this->convertedPrice > 0 ? $this->convertedPrice : $this->basePrice;
+    }
+
+    public function setConvertedPrice(int $price): void
+    {
+        $this->convertedPrice = $price;
     }
 
     public function getCalories(): ?int
