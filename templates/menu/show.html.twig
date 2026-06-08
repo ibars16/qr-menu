@@ -88,6 +88,64 @@
         }
         .search-bar input::placeholder { color: #444; }
         .search-bar input:focus { border-color: #444; }
+
+        .diet-filters {
+            display: flex;
+            flex-wrap: wrap;   /* 👈 CLAVE */
+            gap: 8px;
+
+            padding: 12px 18px 0;
+
+            max-height: 92px;  /* evita que crezca infinito */
+            overflow-y: auto;  /* scroll si hay muchos */
+
+            scrollbar-width: none;
+        }
+
+        .diet-filters::-webkit-scrollbar {
+            display: none;
+        }
+
+        .menu-separator {
+            height: 1px;
+            margin: 12px 18px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                #2a2a2a,
+                transparent
+            );
+            opacity: 0.8;
+        }
+
+        @media (max-width: 600px) {
+            .diet-filters {
+                max-height: 120px;
+                gap: 6px;
+            }
+
+            .diet-filter {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+        }
+
+        .diet-filter{
+            background:#141414;
+            border:1px solid #252525;
+            color:#888;
+            border-radius:20px;
+            padding:8px 14px;
+            cursor:pointer;
+            white-space:nowrap;
+        }
+
+        .diet-filter.active{
+            background:var(--brand);
+            border-color:var(--brand);
+            color:#fff;
+        }
+
         .search-icon {
             position: absolute; left: 30px; top: 26px;
             font-size: 18px; color: #444; pointer-events: none;
@@ -338,6 +396,40 @@
                aria-label="Buscar platos">
     </div>
 
+    <div class="diet-filters">
+
+        <button
+            class="diet-filter active"
+            data-tag="all">
+            Todo
+        </button>
+
+        {% for tag in tags %}
+
+            {% set tagT = null %}
+
+            {% for tr in tag.translations %}
+                {% if tr.locale == locale %}
+                    {% set tagT = tr %}
+                {% endif %}
+            {% endfor %}
+
+            {% if tagT %}
+                <button
+                    class="diet-filter"
+                    data-tag="{{ tag.id }}">
+
+                    {{ tag.icon }}
+                    {{ tagT.name }}
+
+                </button>
+            {% endif %}
+
+        {% endfor %}
+    </div>
+
+    <div class="menu-separator"></div>
+
     {# ── Category tabs ── #}
     <div class="cat-tabs" id="cat-tabs">
         <span class="cat-tab active" data-cat="all">Todo</span>
@@ -401,20 +493,63 @@
         const noResults   = document.getElementById('no-results');
         const sections    = document.querySelectorAll('.cat-section');
         const catTabs     = document.querySelectorAll('.cat-tab');
+        const dietFilters = document.querySelectorAll('.diet-filter');
+
+        let activeTag = 'all';
 
         function applyFilters() {
-            const q   = searchInput.value.toLowerCase().trim();
-            const cat = document.querySelector('.cat-tab.active').dataset.cat;
+            const q = searchInput.value.toLowerCase().trim();
+
+            const activeCat =
+                document.querySelector('.cat-tab.active');
+
+            const cat =
+                activeCat
+                    ? activeCat.dataset.cat
+                    : 'all';
+
             let anyVisible = false;
+
             sections.forEach(sec => {
-                const catMatch = cat === 'all' || cat === sec.dataset.section;
-                if (!catMatch) { sec.style.display = 'none'; return; }
+                const catMatch =
+                    cat === 'all'
+                    || cat === sec.dataset.section;
+
+                if (!catMatch) {
+                    sec.style.display = 'none';
+                    return;
+                }
+
                 const cards = sec.querySelectorAll('.card-wrap');
                 let secVisible = false;
                 cards.forEach(card => {
-                    const name = card.querySelector('.front-name').textContent.toLowerCase();
-                    const show = !q || name.includes(q);
+                    const name =
+                        card.querySelector('.front-name')
+                            .textContent
+                            .toLowerCase();
+
+                    const tags =
+                        card.dataset.tags || '';
+
+                    const searchMatch =
+                        !q || name.includes(q);
+
+                    const tagList =
+                        tags
+                            .trim()
+                            .split(/\s+/)
+                            .filter(Boolean);
+
+                    const tagMatch =
+                        activeTag === 'all'
+                        || tagList.includes(activeTag);
+
+                    const show =
+                        searchMatch
+                        && tagMatch;
+
                     card.style.display = show ? '' : 'none';
+
                     if (show) secVisible = true;
                 });
                 sec.style.display = secVisible ? '' : 'none';
@@ -438,14 +573,42 @@
             });
         });
 
-        const scrollObs = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const id = entry.target.dataset.section;
-                    catTabs.forEach(t => t.classList.toggle('active', t.dataset.cat === id));
-                }
+        dietFilters.forEach(btn => {
+
+            btn.addEventListener('click', () => {
+
+                dietFilters.forEach(x =>
+                    x.classList.remove('active')
+                );
+
+                btn.classList.add('active');
+
+                activeTag = btn.dataset.tag;
+
+                applyFilters();
             });
+
+        });
+
+        const scrollObs = new IntersectionObserver(entries => {
+
+            const visible = entries.find(entry => entry.isIntersecting);
+
+            if (!visible) {
+                return;
+            }
+
+            const id = visible.target.dataset.section;
+
+            catTabs.forEach(t =>
+                t.classList.toggle(
+                    'active',
+                    t.dataset.cat === id
+                )
+            );
+
         }, { threshold: 0.35 });
+
         sections.forEach(s => scrollObs.observe(s));
     </script>
 {% endblock %}

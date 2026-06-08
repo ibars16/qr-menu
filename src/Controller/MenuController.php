@@ -82,6 +82,14 @@ class MenuController extends AbstractController
             $category->activeProductsSorted = $products;
         }
 
+        $tags = $restaurant->getProductTags()
+            ->toArray();
+
+        usort(
+            $tags,
+            fn($a, $b) => $a->getPosition() <=> $b->getPosition()
+        );
+
         return $this->render('menu/show.html.twig', [
             'restaurant' => $restaurant,
             'table'      => $table,
@@ -90,6 +98,7 @@ class MenuController extends AbstractController
             'currency'   => $currency,
             'languages'  => $languages,
             'currencies' => $currencies,
+            'tags' => $tags
         ]);
     }
 }

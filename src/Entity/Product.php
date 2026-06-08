@@ -41,26 +41,12 @@ class Product
 
     // --- Dietary labels ---
 
-    #[ORM\Column]
-    private bool $vegetarian = false;
-
-    #[ORM\Column]
-    private bool $vegan = false;
-
-    #[ORM\Column]
-    private bool $glutenFree = false;
-
-    #[ORM\Column]
-    private bool $lactoseFree = false;
-
-    #[ORM\Column]
-    private bool $containsNuts = false;
-
-    #[ORM\Column]
-    private bool $halal = false;
-
-    #[ORM\Column]
-    private bool $kosher = false;
+    #[ORM\ManyToMany(
+        targetEntity: ProductTag::class,
+        inversedBy: 'products'
+    )]
+    #[ORM\JoinTable(name: 'product_tag_assignment')]
+    private Collection $tags;
 
     // --- Visibility & ordering ---
 
@@ -89,6 +75,7 @@ class Product
     {
         $this->translations = new ArrayCollection();
         $this->ingredients  = new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -166,76 +153,6 @@ class Product
         $this->spicyLevel = $spicyLevel;
     }
 
-    public function isVegetarian(): bool
-    {
-        return $this->vegetarian;
-    }
-
-    public function setVegetarian(bool $vegetarian): void
-    {
-        $this->vegetarian = $vegetarian;
-    }
-
-    public function isVegan(): bool
-    {
-        return $this->vegan;
-    }
-
-    public function setVegan(bool $vegan): void
-    {
-        $this->vegan = $vegan;
-    }
-
-    public function isGlutenFree(): bool
-    {
-        return $this->glutenFree;
-    }
-
-    public function setGlutenFree(bool $glutenFree): void
-    {
-        $this->glutenFree = $glutenFree;
-    }
-
-    public function isLactoseFree(): bool
-    {
-        return $this->lactoseFree;
-    }
-
-    public function setLactoseFree(bool $lactoseFree): void
-    {
-        $this->lactoseFree = $lactoseFree;
-    }
-
-    public function isContainsNuts(): bool
-    {
-        return $this->containsNuts;
-    }
-
-    public function setContainsNuts(bool $containsNuts): void
-    {
-        $this->containsNuts = $containsNuts;
-    }
-
-    public function isHalal(): bool
-    {
-        return $this->halal;
-    }
-
-    public function setHalal(bool $halal): void
-    {
-        $this->halal = $halal;
-    }
-
-    public function isKosher(): bool
-    {
-        return $this->kosher;
-    }
-
-    public function setKosher(bool $kosher): void
-    {
-        $this->kosher = $kosher;
-    }
-
     public function isActive(): bool
     {
         return $this->active;
@@ -300,5 +217,22 @@ class Product
     public function removeIngredient(Ingredient $ingredient): void
     {
         $this->ingredients->removeElement($ingredient);
+    }
+
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(ProductTag $tag): void
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+        }
+    }
+
+    public function removeTag(ProductTag $tag): void
+    {
+        $this->tags->removeElement($tag);
     }
 }
