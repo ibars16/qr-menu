@@ -1,8 +1,6 @@
-{#/home/david/gitProjects/qr-menu/templates/menu/_card.html.twig#}
 {# templates/menu/_card.html.twig #}
 {# Variables: product, locale, currency, restaurant #}
 
-{# Resolve translation: locale > default language > first available #}
 {% set translation = product.getTranslation(locale) %}
 {% if not translation %}
     {% set translation = product.getTranslation(restaurant.defaultLanguage) %}
@@ -15,10 +13,9 @@
     <div class="card-wrap" onclick="flipCard(this)">
         <div class="card">
 
-            {# ══ FRONT ══════════════════════════════════════════════ #}
+            {# ══ FRONT — imagen izquierda, info derecha ══ #}
             <div class="card-front">
 
-                {# Image #}
                 <div class="front-img">
                     {% if product.image %}
                         <img src="{{ asset('uploads/products/' ~ product.image) }}"
@@ -27,72 +24,78 @@
                     {% else %}
                         🍽️
                     {% endif %}
+                    <div class="front-img-glow"></div>
                 </div>
 
-                <div class="flip-hint">↻ girar</div>
-
-                <div class="front-overlay">
-
-                    {# Dietary badges — only the most relevant ones on the front #}
-                    <div class="front-badges">
-                        {% if product.isVegan %}
-                            <div class="fbadge fbadge-veg">🌿 Vegano</div>
-                        {% elseif product.isVegetarian %}
-                            <div class="fbadge fbadge-veg">🌱 Vegetariano</div>
-                        {% endif %}
-                        {% if product.spicyLevel > 0 %}
-                            <div class="fbadge fbadge-spicy">
-                                {% if product.spicyLevel <= 2 %}🌶
-                                {% elseif product.spicyLevel <= 4 %}🌶🌶
-                                {% else %}🌶🌶🌶
-                                {% endif %}
-                            </div>
-                        {% endif %}
-                        {% if product.isGlutenFree %}
-                            <div class="fbadge">Sin gluten</div>
-                        {% endif %}
-                        {% if product.isHalal %}
-                            <div class="fbadge fbadge-halal">Halal</div>
+                <div class="front-info">
+                    <div class="front-top">
+                        <div class="front-badges">
+                            {% if product.isVegan %}
+                                <div class="fbadge fbadge-veg">🌿 Vegano</div>
+                            {% elseif product.isVegetarian %}
+                                <div class="fbadge fbadge-veg">🌱 Vegetariano</div>
+                            {% endif %}
+                            {% if product.spicyLevel > 0 %}
+                                <div class="fbadge fbadge-hot">
+                                    {% if product.spicyLevel <= 2 %}🌶
+                                    {% elseif product.spicyLevel <= 4 %}🌶🌶
+                                    {% else %}🌶🌶🌶{% endif %}
+                                </div>
+                            {% endif %}
+                            {% if product.isGlutenFree %}
+                                <div class="fbadge">Sin gluten</div>
+                            {% endif %}
+                            {% if product.isHalal %}
+                                <div class="fbadge fbadge-hal">Halal</div>
+                            {% endif %}
+                        </div>
+                        <div class="front-name">{{ translation.name }}</div>
+                        {% if translation.description %}
+                            <div class="front-desc">{{ translation.description }}</div>
                         {% endif %}
                     </div>
-
-                    <div class="front-name">{{ translation.name }}</div>
-                    <div class="front-price">
-                        {{ (product.basePrice / 100)|number_format(2) }} {{ currency }}
+                    <div class="front-bottom">
+                        <div class="front-price">
+                            {{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}
+                        </div>
+                        <div class="flip-hint">
+                            <i class="ti ti-rotate-clockwise" style="font-size:13px" aria-hidden="true"></i>
+                            girar
+                        </div>
                     </div>
-
                 </div>
+
             </div>
 
-            {# ══ BACK ═══════════════════════════════════════════════ #}
+            {# ══ BACK ══ #}
             <div class="card-back">
 
                 <button class="back-close"
                         onclick="unflipCard(event, this)"
-                        aria-label="Volver">✕</button>
+                        aria-label="Volver">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
 
                 <div class="back-header">
                     <div class="back-name">{{ translation.name }}</div>
                     <div class="back-price">
-                        {{ (product.basePrice / 100)|number_format(2) }} {{ currency }}
+                        {{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}
                     </div>
                 </div>
 
                 <div class="back-body">
 
-                    {# Description #}
+                    {# Descripción — full width #}
                     {% if translation.description %}
-                        <div>
+                        <div class="back-col-full">
                             <div class="bsec-title">Descripción</div>
-                            <div style="font-size:10px;color:#666;line-height:1.45;">
-                                {{ translation.description }}
-                            </div>
+                            <div class="back-desc">{{ translation.description }}</div>
                         </div>
                     {% endif %}
 
-                    {# Spicy level #}
+                    {# Picante — full width #}
                     {% if product.spicyLevel > 0 %}
-                        <div>
+                        <div class="back-col-full">
                             <div class="bsec-title">Picante</div>
                             <div class="spicy-row">
                                 {% for i in 1..5 %}
@@ -103,48 +106,34 @@
                                 {% elseif product.spicyLevel == 2 %}Medio
                                 {% elseif product.spicyLevel == 3 %}Picante
                                 {% elseif product.spicyLevel == 4 %}Muy picante
-                                {% else %}Extremo
-                                {% endif %}
+                                {% else %}Extremo{% endif %}
                             </span>
                             </div>
                         </div>
                     {% endif %}
 
-                    {# Dietary labels #}
+                    {# Etiquetas — full width #}
                     {% set hasLabels = product.isVegetarian or product.isVegan
                         or product.isGlutenFree or product.isLactoseFree
                         or product.isContainsNuts or product.isHalal or product.isKosher %}
                     {% if hasLabels %}
-                        <div>
+                        <div class="back-col-full">
                             <div class="bsec-title">Etiquetas</div>
                             <div class="lbl-list">
-                                {% if product.isVegan %}
-                                    <div class="lbl lbl-g">🌿 Vegano</div>
-                                {% elseif product.isVegetarian %}
-                                    <div class="lbl lbl-g">🌱 Vegetariano</div>
-                                {% endif %}
-                                {% if product.isGlutenFree %}
-                                    <div class="lbl lbl-o">Sin gluten</div>
-                                {% endif %}
-                                {% if product.isLactoseFree %}
-                                    <div class="lbl lbl-o">Sin lactosa</div>
-                                {% endif %}
-                                {% if product.isContainsNuts %}
-                                    <div class="lbl lbl-o">🥜 Frutos secos</div>
-                                {% endif %}
-                                {% if product.isHalal %}
-                                    <div class="lbl lbl-b">☪️ Halal</div>
-                                {% endif %}
-                                {% if product.isKosher %}
-                                    <div class="lbl lbl-b">✡️ Kosher</div>
-                                {% endif %}
+                                {% if product.isVegan %}<div class="lbl lbl-g">🌿 Vegano</div>
+                                {% elseif product.isVegetarian %}<div class="lbl lbl-g">🌱 Vegetariano</div>{% endif %}
+                                {% if product.isGlutenFree %}<div class="lbl lbl-o">Sin gluten</div>{% endif %}
+                                {% if product.isLactoseFree %}<div class="lbl lbl-o">Sin lactosa</div>{% endif %}
+                                {% if product.isContainsNuts %}<div class="lbl lbl-o">🥜 Frutos secos</div>{% endif %}
+                                {% if product.isHalal %}<div class="lbl lbl-b">☪️ Halal</div>{% endif %}
+                                {% if product.isKosher %}<div class="lbl lbl-b">✡️ Kosher</div>{% endif %}
                             </div>
                         </div>
                     {% endif %}
 
-                    {# Ingredients #}
+                    {# Ingredientes — full width #}
                     {% if product.ingredients|length > 0 %}
-                        <div>
+                        <div class="back-col-full">
                             <div class="bsec-title">Ingredientes</div>
                             <div class="ing-list">
                                 {% for ingredient in product.ingredients %}
@@ -160,21 +149,18 @@
                         </div>
                     {% endif %}
 
-                    {# Nutrition #}
+                    {# Nutrición — 2 columnas #}
                     {% if product.calories %}
                         <div>
-                            <div class="bsec-title">Nutrición</div>
-                            <div class="nut-grid">
-                                <div class="nut">
-                                    <div class="nut-l">Calorías</div>
-                                    <div class="nut-v">{{ product.calories }} <span class="nut-u">kcal</span></div>
-                                </div>
-                                {# Listos para cuando añadas proteínas, grasas, carbohidratos #}
-                                {# <div class="nut"><div class="nut-l">Proteínas</div><div class="nut-v">{{ product.proteins }} <span class="nut-u">g</span></div></div> #}
-                                {# <div class="nut"><div class="nut-l">Grasas</div><div class="nut-v">{{ product.fats }} <span class="nut-u">g</span></div></div> #}
-                                {# <div class="nut"><div class="nut-l">Carbohidratos</div><div class="nut-v">{{ product.carbs }} <span class="nut-u">g</span></div></div> #}
+                            <div class="bsec-title">Calorías</div>
+                            <div class="nut">
+                                <div class="nut-l">Energía</div>
+                                <div class="nut-v">{{ product.calories }} <span class="nut-u">kcal</span></div>
                             </div>
                         </div>
+                        {# Proteínas, grasas, carbohidratos — descomentar cuando añadas los campos #}
+                        {# <div><div class="bsec-title">Proteínas</div><div class="nut"><div class="nut-l">Proteínas</div><div class="nut-v">{{ product.proteins }} <span class="nut-u">g</span></div></div></div> #}
+                        {# <div><div class="bsec-title">Grasas</div><div class="nut"><div class="nut-l">Grasas</div><div class="nut-v">{{ product.fats }} <span class="nut-u">g</span></div></div></div> #}
                     {% endif %}
 
                 </div>

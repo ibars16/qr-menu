@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\RestaurantRepository;
 use App\Repository\TableRepository;
+use App\Service\CurrencyConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,10 +18,10 @@ class MenuController extends AbstractController
         string $qrToken,
         RestaurantRepository $restaurantRepo,
         TableRepository $tableRepo,
+        CurrencyConverter $currencyConverter,
         Request $request
     ): Response {
-        $languages = require $this->getParameter('kernel.project_dir') . '/config/languages.php';
-
+        $languages  = require $this->getParameter('kernel.project_dir') . '/config/languages.php';
         $currencies = require $this->getParameter('kernel.project_dir') . '/config/currencies.php';
 
         // 1. Buscar restaurante por slug
@@ -40,26 +41,16 @@ class MenuController extends AbstractController
             throw $this->createNotFoundException('Mesa no encontrada.');
         }
 
-        // 3. Idioma: parámetro URL > idioma por defecto del restaurante
+        // 3. Idioma: parámetro URL > idioma del navegador > idioma por defecto del restaurante
         $supportedLanguages = array_keys($languages);
 
-        $browserLanguage = substr(
-            $request->getPreferredLanguage(),
-            0,
-            2
-        );
+        $browserLanguage = substr($request->getPreferredLanguage(), 0, 2);
 
-        $detectedLanguage = in_array(
-            $browserLanguage,
-            $supportedLanguages
-        )
+        $detectedLanguage = in_array($browserLanguage, $supportedLanguages)
             ? $browserLanguage
             : $restaurant->getDefaultLanguage();
 
-        $locale = $request->query->get(
-            'lang',
-            $detectedLanguage
-        );
+        $locale = $request->query->get('lang', $detectedLanguage);
 
         // 4. Divisa: parámetro URL > divisa base del restaurante
         $currency = $request->query->get('currency', $restaurant->getCurrency());
@@ -71,7 +62,7 @@ class MenuController extends AbstractController
 
         usort($categories, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
 
-        // 6. Para cada categoría, filtrar y ordenar productos activos
+        // 6. Filtrar/ordenar productos y calcular precio convertido
         foreach ($categories as $category) {
             $products = $category->getProducts()
                 ->filter(fn($product) => $product->isActive())
@@ -79,8 +70,15 @@ class MenuController extends AbstractController
 
             usort($products, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
 
-            // Guardamos los productos ordenados en un array temporal
-            // accesible desde Twig como category.activeProducts
+            foreach ($products as $product) {
+                $converted = $currencyConverter->convert(
+                    $product->getBasePrice(),
+                    $restaurant->getCurrency(),
+                    $currency
+                );
+                $product->setConvertedPrice($converted);
+            }
+
             $category->activeProductsSorted = $products;
         }
 
