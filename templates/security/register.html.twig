@@ -1,0 +1,190 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Crear cuenta — QR Menu{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        :root { --brand: #C1440E; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 20px;
+        }
+
+        .wrap { width: 100%; max-width: 420px; }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .logo-mark {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            background: var(--brand);
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 700; color: #fff;
+            margin-bottom: 12px;
+        }
+        .logo-name { font-size: 20px; font-weight: 600; color: #fff; letter-spacing: -0.4px; }
+        .logo-sub  { font-size: 13px; color: #555; margin-top: 4px; }
+
+        .card {
+            background: #141414;
+            border: 1px solid #242424;
+            border-radius: 16px;
+            padding: 28px 24px;
+        }
+        .card-title { font-size: 17px; font-weight: 600; color: #fff; letter-spacing: -0.3px; margin-bottom: 4px; }
+        .card-sub   { font-size: 13px; color: #555; margin-bottom: 24px; }
+
+        .section-divider {
+            font-size: 10px; font-weight: 600; color: #333;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            margin: 20px 0 14px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .section-divider::before,
+        .section-divider::after {
+            content: ''; flex: 1;
+            height: 1px; background: #242424;
+        }
+
+        .field { margin-bottom: 14px; }
+        .field label {
+            display: block;
+            font-size: 12px; font-weight: 500; color: #666;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            margin-bottom: 6px;
+        }
+        .field input,
+        .field select {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #fff; font-size: 14px;
+            padding: 11px 14px;
+            border-radius: 10px; outline: none;
+            transition: border-color 0.15s;
+            appearance: none; -webkit-appearance: none;
+        }
+        .field input::placeholder { color: #444; }
+        .field input:focus,
+        .field select:focus { border-color: #555; }
+
+        .field-row { display: flex; gap: 10px; }
+        .field-row .field { flex: 1; }
+
+        .errors {
+            margin-top: 4px;
+        }
+        .errors li {
+            font-size: 12px; color: #F0997B;
+            list-style: none; margin-top: 3px;
+        }
+
+        .submit-btn {
+            width: 100%; padding: 13px;
+            background: var(--brand); color: #fff;
+            border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 600;
+            cursor: pointer; letter-spacing: -0.2px;
+            transition: opacity 0.15s;
+            margin-top: 8px;
+        }
+        .submit-btn:hover { opacity: 0.9; }
+
+        .login-link {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px; color: #555;
+        }
+        .login-link a { color: #888; text-decoration: none; }
+        .login-link a:hover { color: #fff; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="wrap">
+
+        <div class="logo">
+            <div class="logo-mark">Q</div>
+            <div class="logo-name">QR Menu</div>
+            <div class="logo-sub">Menús digitales inteligentes para restaurantes</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Crea tu cuenta</div>
+            <div class="card-sub">Empieza gratis. Sin tarjeta de crédito.</div>
+
+            {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+
+            {# ── Restaurante ── #}
+            <div class="section-divider">Tu restaurante</div>
+
+            <div class="field">
+                {{ form_label(form.restaurantName) }}
+                {{ form_widget(form.restaurantName, { attr: { placeholder: 'Ej: Trattoria Roma' } }) }}
+                <ul class="errors">
+                    {% for error in form.restaurantName.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="field-row">
+                <div class="field">
+                    {{ form_label(form.currency) }}
+                    {{ form_widget(form.currency) }}
+                </div>
+                <div class="field">
+                    {{ form_label(form.language) }}
+                    {{ form_widget(form.language) }}
+                </div>
+            </div>
+
+            {# ── Cuenta ── #}
+            <div class="section-divider">Tu cuenta</div>
+
+            <div class="field">
+                {{ form_label(form.email) }}
+                {{ form_widget(form.email, { attr: { placeholder: 'tu@restaurante.com' } }) }}
+                <ul class="errors">
+                    {% for error in form.email.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="field">
+                {{ form_label(form.password.first) }}
+                {{ form_widget(form.password.first, { attr: { placeholder: 'Mínimo 8 caracteres' } }) }}
+                <ul class="errors">
+                    {% for error in form.password.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="field">
+                {{ form_label(form.password.second) }}
+                {{ form_widget(form.password.second, { attr: { placeholder: 'Repite la contraseña' } }) }}
+            </div>
+
+            <button type="submit" class="submit-btn">Crear cuenta y entrar →</button>
+
+            {{ form_end(form) }}
+        </div>
+
+        <div class="login-link">
+            ¿Ya tienes cuenta? <a href="{{ path('admin_login') }}">Inicia sesión</a>
+        </div>
+
+    </div>
+{% endblock %}
