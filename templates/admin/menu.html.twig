@@ -4,17 +4,1044 @@
 {% block page_title %}Carta{% endblock %}
 
 {% block header_actions %}
-    <a href="#" class="btn btn-ai">
+    <button class="btn btn-ai" onclick="Modal.aiImport()">
         <i class="ti ti-sparkles" aria-hidden="true"></i> Importar con IA
-    </a>
-    <a href="#" class="btn">
-        <i class="ti ti-category-plus" aria-hidden="true"></i> Categoría
-    </a>
-    <a href="#" class="btn btn-primary">
+    </button>
+    <button class="btn" onclick="Modal.newCategory()">
+        <i class="ti ti-folder-plus" aria-hidden="true"></i> Nueva categoría
+    </button>
+    <button class="btn btn-primary" onclick="Modal.newProduct(null)">
         <i class="ti ti-plus" aria-hidden="true"></i> Nuevo plato
-    </a>
+    </button>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        /* ── Base ── */
+        .menu-body { max-width: 860px; }
+
+        /* ── Empty state ── */
+        .empty-state { text-align:center; padding:80px 40px; }
+        .empty-icon  { font-size:52px; display:block; margin-bottom:16px; opacity:0.25; }
+        .empty-title { font-size:20px; font-weight:600; color:#fff; margin-bottom:8px; letter-spacing:-0.3px; }
+        .empty-sub   { font-size:14px; color:#444; line-height:1.6; margin-bottom:28px; max-width:340px; margin-left:auto; margin-right:auto; }
+        .empty-btns  { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+        /* ── Category block ── */
+        .cat-block  { border:1px solid #1c1c1c; border-radius:12px; margin-bottom:12px; overflow:hidden; }
+        .cat-header { display:flex; align-items:center; gap:8px; padding:10px 14px; background:#141414; border-bottom:1px solid #1c1c1c; }
+        .cat-drag   { color:#2a2a2a; cursor:grab; font-size:16px; flex-shrink:0; }
+        .cat-drag:active { cursor:grabbing; }
+        .cat-name-text  { font-size:14px; font-weight:500; color:#ccc; flex:1; }
+        .cat-count  { font-size:11px; color:#3a3a3a; margin-right:4px; }
+
+        /* ── Toggle ── */
+        .toggle {
+            width:32px; height:18px; border-radius:9px;
+            background:#222; position:relative; cursor:pointer;
+            transition:background 0.15s; border:none; padding:0; flex-shrink:0;
+        }
+        .toggle::after {
+            content:''; position:absolute;
+            width:12px; height:12px; border-radius:50%;
+            background:#444; top:3px; left:3px;
+            transition:left 0.15s, background 0.15s;
+        }
+        .toggle.on { background:rgba(193,68,14,0.25); }
+        .toggle.on::after { left:17px; background:#C1440E; }
+
+        /* ── Icon buttons ── */
+        .icon-btn {
+            width:28px; height:28px; border-radius:6px;
+            border:1px solid #242424; background:#1a1a1a;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; color:#444; font-size:13px;
+            transition:color 0.1s, border-color 0.1s; flex-shrink:0;
+        }
+        .icon-btn:hover          { color:#ccc; border-color:#3a3a3a; }
+        .icon-btn.danger:hover   { color:#F0997B; border-color:rgba(240,153,123,0.3); }
+
+        /* ── Product rows ── */
+        .products-list  { padding:6px; }
+        .product-row    {
+            display:flex; align-items:center; gap:8px;
+            padding:8px; border-radius:8px;
+            border:1px solid transparent;
+            cursor:pointer; transition:background 0.1s, border-color 0.1s;
+        }
+        .product-row:hover   { background:#161616; border-color:#1c1c1c; }
+        .product-drag        { color:#222; cursor:grab; font-size:14px; flex-shrink:0; }
+        .product-drag:active { cursor:grabbing; }
+        .product-thumb {
+            width:40px; height:40px; border-radius:8px;
+            background:#1c1c1c; border:1px solid #242424;
+            display:flex; align-items:center; justify-content:center;
+            font-size:18px; flex-shrink:0; overflow:hidden;
+        }
+        .product-thumb img { width:100%; height:100%; object-fit:cover; }
+        .product-info    { flex:1; min-width:0; }
+        .product-name    { font-size:13px; font-weight:500; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .product-meta    { font-size:11px; color:#3a3a3a; margin-top:2px; }
+        .product-price   { font-size:13px; font-weight:500; color:#666; flex-shrink:0; min-width:60px; text-align:right; }
+        .product-row.inactive { opacity:0.45; }
+
+        /* ── Add product row ── */
+        .add-row { padding:4px 6px 8px; }
+        .add-product-btn {
+            width:100%; padding:7px;
+            border:1px dashed #1e1e1e; border-radius:8px;
+            background:none; color:#2e2e2e; font-size:12px;
+            cursor:pointer; display:flex; align-items:center;
+            justify-content:center; gap:5px;
+            transition:border-color 0.1s, color 0.1s;
+        }
+        .add-product-btn:hover { border-color:#3a3a3a; color:#666; }
+
+        /* ══════════════════════════════════
+           MODAL — shared base
+        ══════════════════════════════════ */
+        .modal-overlay {
+            position:fixed; inset:0;
+            background:rgba(0,0,0,0.75);
+            z-index:500;
+            display:flex; align-items:center; justify-content:center;
+            padding:20px;
+            opacity:0; pointer-events:none;
+            transition:opacity 0.2s;
+        }
+        .modal-overlay.open { opacity:1; pointer-events:all; }
+
+        .modal {
+            background:#141414; border:1px solid #242424;
+            border-radius:16px; width:100%;
+            transform:translateY(8px) scale(0.98);
+            transition:transform 0.2s;
+            display:flex; flex-direction:column;
+            max-height:90vh;
+        }
+        .modal-overlay.open .modal { transform:translateY(0) scale(1); }
+
+        .modal-sm  { max-width:380px; }
+        .modal-md  { max-width:560px; }
+
+        .modal-header {
+            padding:16px 20px 14px;
+            border-bottom:1px solid #1c1c1c;
+            display:flex; align-items:center; justify-content:space-between;
+            flex-shrink:0;
+        }
+        .modal-title { font-size:16px; font-weight:600; color:#fff; letter-spacing:-0.3px; }
+        .modal-close {
+            width:28px; height:28px; border-radius:7px;
+            border:1px solid #2a2a2a; background:#1a1a1a;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; color:#555; font-size:13px;
+        }
+        .modal-close:hover { color:#ccc; }
+
+        .modal-body   { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px; scrollbar-width:thin; scrollbar-color:#222 transparent; }
+        .modal-footer { padding:14px 20px; border-top:1px solid #1c1c1c; display:flex; gap:8px; justify-content:flex-end; flex-shrink:0; }
+
+        /* ── Form fields ── */
+        .field       { display:flex; flex-direction:column; gap:5px; }
+        .field-label {
+            font-size:11px; font-weight:600; color:#555;
+            text-transform:uppercase; letter-spacing:0.07em;
+            display:flex; align-items:center; gap:6px;
+        }
+        .field-label .required { color:#C1440E; }
+        .field-label .optional { color:#333; font-weight:400; text-transform:none; letter-spacing:0; font-size:10px; }
+
+        .field input, .field textarea, .field select {
+            background:#1a1a1a; border:1px solid #2a2a2a;
+            color:#ccc; font-size:14px; padding:10px 13px;
+            border-radius:9px; outline:none; width:100%;
+            transition:border-color 0.15s; font-family:inherit;
+        }
+        .field input::placeholder, .field textarea::placeholder { color:#333; }
+        .field input:focus, .field textarea:focus, .field select:focus { border-color:#444; }
+        .field input.error { border-color:rgba(240,100,80,0.6); }
+        .field-error { font-size:11px; color:#F0997B; margin-top:2px; display:none; }
+        .field-error.show { display:block; }
+
+        .field textarea { resize:none; height:80px; line-height:1.55; }
+        .field-row { display:flex; gap:12px; }
+        .field-row .field { flex:1; }
+
+        /* ── Image upload ── */
+        .img-upload-area {
+            width:100%; height:80px;
+            border:1px dashed #2a2a2a; border-radius:9px;
+            display:flex; align-items:center; justify-content:center;
+            gap:8px; font-size:13px; color:#444;
+            cursor:pointer; background:#141414;
+            transition:border-color 0.15s, color 0.15s;
+            position:relative; overflow:hidden;
+        }
+        .img-upload-area:hover  { border-color:#444; color:#888; }
+        .img-upload-area img    { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:8px; }
+        .img-upload-area .img-hint { position:relative; z-index:1; display:flex; align-items:center; gap:6px; }
+
+        /* ── Spicy selector ── */
+        .spicy-selector { display:flex; gap:6px; align-items:center; }
+        .spicy-pip {
+            width:28px; height:28px; border-radius:7px;
+            border:1px solid #2a2a2a; background:#1a1a1a;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; font-size:14px;
+            transition:background 0.1s, border-color 0.1s; user-select:none;
+        }
+        .spicy-pip.on   { background:rgba(216,90,48,0.2); border-color:#D85A30; }
+        .spicy-pip:hover { border-color:#555; }
+        .spicy-text { font-size:12px; color:#444; margin-left:6px; }
+
+        /* ── Tag pills ── */
+        .tag-pills { display:flex; flex-wrap:wrap; gap:6px; }
+        .tag-pill  {
+            font-size:12px; padding:5px 11px;
+            border-radius:20px; border:1px solid #2a2a2a;
+            background:#1a1a1a; color:#555;
+            cursor:pointer; transition:all 0.1s; user-select:none;
+        }
+        .tag-pill.on { background:rgba(99,153,34,0.15); color:#7aad40; border-color:rgba(99,153,34,0.35); }
+        .tag-pill:hover:not(.on) { border-color:#3a3a3a; color:#888; }
+
+        /* ── Ingredient input ── */
+        .ingredient-input-wrap { position:relative; }
+        .ingredient-suggestions {
+            position:absolute; top:100%; left:0; right:0;
+            background:#1e1e1e; border:1px solid #2a2a2a;
+            border-radius:9px; margin-top:4px;
+            z-index:10; overflow:hidden; display:none;
+        }
+        .ingredient-suggestions.open { display:block; }
+        .ing-suggestion {
+            padding:9px 13px; font-size:13px; color:#aaa;
+            cursor:pointer; transition:background 0.1s;
+        }
+        .ing-suggestion:hover { background:#252525; }
+        .ing-suggestion .new-label { font-size:11px; color:#555; margin-left:6px; }
+
+        .ing-tags  { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+        .ing-tag   {
+            display:flex; align-items:center; gap:5px;
+            font-size:12px; padding:4px 10px;
+            border-radius:20px; background:#1e1e1e;
+            border:1px solid #2a2a2a; color:#888;
+        }
+        .ing-tag button {
+            background:none; border:none; color:#444;
+            cursor:pointer; font-size:12px; padding:0; line-height:1;
+            display:flex; align-items:center;
+        }
+        .ing-tag button:hover { color:#F0997B; }
+
+        /* ── Step indicator (new product) ── */
+        .steps { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+        .step  {
+            display:flex; align-items:center; gap:6px;
+            font-size:12px; color:#333;
+        }
+        .step.active { color:#ccc; }
+        .step-num {
+            width:20px; height:20px; border-radius:50%;
+            border:1px solid #2a2a2a; background:#1a1a1a;
+            display:flex; align-items:center; justify-content:center;
+            font-size:10px; font-weight:600; color:#444;
+        }
+        .step.active .step-num { background:#C1440E; border-color:#C1440E; color:#fff; }
+        .step-sep { color:#2a2a2a; font-size:12px; }
+
+        /* ── Category select cards ── */
+        .cat-select-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px; }
+        .cat-select-card {
+            padding:12px 14px; border-radius:10px;
+            border:1px solid #2a2a2a; background:#1a1a1a;
+            cursor:pointer; transition:all 0.1s; text-align:left;
+        }
+        .cat-select-card:hover { border-color:#3a3a3a; background:#1e1e1e; }
+        .cat-select-card.selected { border-color:#C1440E; background:rgba(193,68,14,0.1); }
+        .cat-select-card-name { font-size:13px; font-weight:500; color:#ccc; }
+        .cat-select-card-count { font-size:11px; color:#444; margin-top:3px; }
+        .cat-select-new {
+            padding:12px 14px; border-radius:10px;
+            border:1px dashed #2a2a2a; background:none;
+            cursor:pointer; text-align:left;
+            transition:border-color 0.1s;
+            color:#444; font-size:13px;
+            display:flex; align-items:center; gap:6px;
+        }
+        .cat-select-new:hover { border-color:#444; color:#888; }
+
+        /* ── Btn variants ── */
+        .btn-danger { background:#1a1a1a; border-color:#2a2a2a; color:#666; }
+        .btn-danger:hover { color:#F0997B; border-color:rgba(240,153,123,0.3); }
+
+        /* ── Toast ── */
+        .toast {
+            position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+            background:#1e1e1e; border:1px solid #2a2a2a;
+            border-radius:10px; padding:10px 18px;
+            font-size:13px; color:#ccc;
+            z-index:9999; opacity:0;
+            transition:opacity 0.2s, transform 0.2s;
+            display:flex; align-items:center; gap:8px;
+            white-space:nowrap;
+        }
+        .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+        .toast.success { border-color:rgba(99,153,34,0.4); color:#7aad40; }
+        .toast.error   { border-color:rgba(240,100,80,0.4); color:#F0997B; }
+    </style>
 {% endblock %}
 
 {% block body %}
-    <p style="color:#555;font-size:14px">Vista de carta — próximo paso.</p>
+    <div class="menu-body">
+
+    {% if categories|length == 0 %}
+        {# ── Empty state ── #}
+        <div class="empty-state">
+            <span class="empty-icon">🍽️</span>
+            <div class="empty-title">Tu carta está vacía</div>
+            <div class="empty-sub">
+                Empieza creando una categoría (Entrantes, Pizzas, Postres…)
+                y después añade tus platos. O importa todo desde una foto con IA.
+            </div>
+            <div class="empty-btns">
+                <button class="btn btn-ai" onclick="Modal.aiImport()">
+                    <i class="ti ti-sparkles" aria-hidden="true"></i> Importar carta con IA
+                </button>
+                <button class="btn btn-primary" onclick="Modal.newCategory()">
+                    <i class="ti ti-folder-plus" aria-hidden="true"></i> Crear primera categoría
+                </button>
+            </div>
+        </div>
+
+    {% else %}
+        {# ── Categories list ── #}
+        <div id="cats-sortable">
+            {% for category in categories %}
+                {% set catT = category.getTranslation(locale) %}
+                {% set catName = catT ? catT.name : '(sin nombre)' %}
+                {% set productCount = category.products|length %}
+
+                <div class="cat-block" data-id="{{ category.id }}">
+                    <div class="cat-header">
+                        <i class="ti ti-grip-vertical cat-drag" aria-label="Arrastrar"></i>
+                        <span class="cat-name-text">{{ catName }}</span>
+                        <span class="cat-count">{{ productCount }} {{ productCount == 1 ? 'plato' : 'platos' }}</span>
+                        <button class="toggle {{ category.isActive ? 'on' : '' }}"
+                                onclick="toggleCategory({{ category.id }}, this)"
+                                title="{{ category.isActive ? 'Visible en la carta' : 'Oculta en la carta' }}"
+                                aria-label="Activar/desactivar categoría"></button>
+                        <button class="icon-btn" onclick="Modal.editCategory({{ category.id }}, '{{ catName|e('js') }}')" title="Editar nombre">
+                            <i class="ti ti-edit" aria-hidden="true"></i>
+                        </button>
+                        <button class="icon-btn danger" onclick="deleteCategory({{ category.id }}, this)" title="Eliminar categoría">
+                            <i class="ti ti-trash" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    <div class="products-list" id="prods-{{ category.id }}">
+                        {% for product in category.products %}
+                            {% set pT = product.getTranslation(locale) %}
+                            {% set pName = pT ? pT.name : '(sin nombre)' %}
+                            {% set pDesc = pT ? pT.description : '' %}
+                            <div class="product-row {{ not product.isActive ? 'inactive' : '' }}"
+                                 data-id="{{ product.id }}"
+                                 onclick="Modal.editProduct({{ product.id }})">
+                                <i class="ti ti-grip-vertical product-drag" aria-label="Arrastrar"></i>
+                                <div class="product-thumb">
+                                    {% if product.image %}
+                                        <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pName }}">
+                                    {% else %}🍽️{% endif %}
+                                </div>
+                                <div class="product-info">
+                                    <div class="product-name">{{ pName }}</div>
+                                    <div class="product-meta">
+                                        {% if product.spicyLevel > 0 %}🌶 · {% endif %}
+                                        {% if product.calories %}{{ product.calories }} kcal · {% endif %}
+                                        {{ product.isActive ? '<span style="color:#3a6a10">Visible</span>' : '<span style="color:#555">Oculto</span>' }}
+                                    </div>
+                                </div>
+                                <div class="product-price">
+                                    {{ (product.basePrice / 100)|number_format(2) }} {{ restaurant.currency }}
+                                </div>
+                                <button class="toggle {{ product.isActive ? 'on' : '' }}"
+                                        onclick="event.stopPropagation(); toggleProduct({{ product.id }}, this)"
+                                        title="{{ product.isActive ? 'Visible' : 'Oculto' }}"
+                                        aria-label="Activar/desactivar plato"></button>
+                                <button class="icon-btn" onclick="event.stopPropagation(); Modal.editProduct({{ product.id }})" title="Editar plato">
+                                    <i class="ti ti-edit" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="add-row">
+                        <button class="add-product-btn" onclick="Modal.newProduct({{ category.id }})">
+                            <i class="ti ti-plus" aria-hidden="true"></i>
+                            Añadir plato a {{ catName }}
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    </div>{# end menu-body #}
+
+    {# ════════════════════════════════════════
+   MODAL: Nueva / editar categoría
+════════════════════════════════════════ #}
+    <div class="modal-overlay" id="modal-cat" onclick="if(event.target===this)Modal.close('modal-cat')">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-cat-title">Nueva categoría</div>
+                <button class="modal-close" onclick="Modal.close('modal-cat')" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="field">
+                    <label class="field-label">
+                        Nombre de la categoría <span class="required">*</span>
+                    </label>
+                    <input type="text" id="cat-name-input"
+                           placeholder="Ej: Entrantes, Pizzas, Postres…"
+                           onkeydown="if(event.key==='Enter')saveCategory()">
+                    <div class="field-error" id="cat-name-error">El nombre es obligatorio</div>
+                </div>
+                <p style="font-size:12px;color:#444;line-height:1.5">
+                    💡 Las traducciones a otros idiomas se añadirán automáticamente más adelante.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="Modal.close('modal-cat')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveCategory()">
+                    <i class="ti ti-check" aria-hidden="true"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# ════════════════════════════════════════
+   MODAL: Nuevo / editar plato
+════════════════════════════════════════ #}
+    <div class="modal-overlay" id="modal-product" onclick="if(event.target===this)Modal.close('modal-product')">
+        <div class="modal modal-md">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="modal-product-title">Nuevo plato</div>
+                    <div class="steps" id="modal-steps" style="margin-top:4px">
+                        <div class="step active" id="step-1"><div class="step-num">1</div> Categoría</div>
+                        <div class="step-sep">›</div>
+                        <div class="step" id="step-2"><div class="step-num">2</div> Información</div>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="Modal.close('modal-product')" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+            </div>
+
+            {# STEP 1: pick category #}
+            <div id="product-step-1">
+                <div class="modal-body">
+                    <div class="field">
+                        <label class="field-label">¿A qué categoría pertenece este plato?</label>
+                    </div>
+                    <div class="cat-select-grid" id="cat-select-grid">
+                        {% for category in categories %}
+                            {% set catT = category.getTranslation(locale) %}
+                            <button class="cat-select-card"
+                                    data-cat-id="{{ category.id }}"
+                                    onclick="selectCategory({{ category.id }}, this)">
+                                <div class="cat-select-card-name">{{ catT ? catT.name : '(sin nombre)' }}</div>
+                                <div class="cat-select-card-count">{{ category.products|length }} platos</div>
+                            </button>
+                        {% endfor %}
+                        <button class="cat-select-new" onclick="Modal.close('modal-product'); Modal.newCategory()">
+                            <i class="ti ti-folder-plus" aria-hidden="true"></i> Nueva categoría
+                        </button>
+                    </div>
+                    <p id="cat-select-error" style="font-size:12px;color:#F0997B;display:none">
+                        Selecciona una categoría para continuar.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" onclick="Modal.close('modal-product')">Cancelar</button>
+                    <button class="btn btn-primary" onclick="goToStep2()">
+                        Siguiente <i class="ti ti-arrow-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            {# STEP 2: product info #}
+            <div id="product-step-2" style="display:none">
+                <div class="modal-body">
+
+                    {# Name — required #}
+                    <div class="field">
+                        <label class="field-label">
+                            Nombre del plato <span class="required">*</span>
+                        </label>
+                        <input type="text" id="p-name" placeholder="Ej: Pizza Margherita">
+                        <div class="field-error" id="p-name-error">El nombre es obligatorio</div>
+                    </div>
+
+                    {# Description — required #}
+                    <div class="field">
+                        <label class="field-label">
+                            Descripción <span class="required">*</span>
+                        </label>
+                        <textarea id="p-desc" placeholder="Describe brevemente el plato, ingredientes principales, forma de preparación…"></textarea>
+                        <div class="field-error" id="p-desc-error">La descripción es obligatoria</div>
+                    </div>
+
+                    {# Price & calories — price required #}
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="field-label">
+                                Precio ({{ restaurant.currency }}) <span class="required">*</span>
+                            </label>
+                            <input type="number" id="p-price" min="0" step="0.01" placeholder="0.00">
+                            <div class="field-error" id="p-price-error">El precio es obligatorio</div>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">
+                                Calorías <span class="optional">(opcional)</span>
+                            </label>
+                            <input type="number" id="p-calories" min="0" placeholder="kcal">
+                        </div>
+                    </div>
+
+                    {# Image — optional #}
+                    <div class="field">
+                        <label class="field-label">
+                            Foto del plato <span class="optional">(opcional)</span>
+                        </label>
+                        <div class="img-upload-area" onclick="document.getElementById('p-img-input').click()" id="img-upload-area">
+                            <div class="img-hint">
+                                <i class="ti ti-photo-up" style="font-size:18px" aria-hidden="true"></i>
+                                Haz clic o arrastra una imagen aquí
+                            </div>
+                        </div>
+                        <input type="file" id="p-img-input" accept="image/*" style="display:none" onchange="previewImage(this)">
+                    </div>
+
+                    {# Spicy — optional #}
+                    <div class="field">
+                        <label class="field-label">
+                            Nivel de picante <span class="optional">(opcional)</span>
+                        </label>
+                        <div class="spicy-selector">
+                            {% for i in 1..5 %}
+                                <div class="spicy-pip" data-level="{{ i }}" onclick="setSpicy({{ i }})" title="Nivel {{ i }}">🌶</div>
+                            {% endfor %}
+                            <span class="spicy-text" id="spicy-text">Sin picante — pulsa para indicar el nivel</span>
+                        </div>
+                    </div>
+
+                    {# Tags — optional #}
+                    {% if restaurant.productTags|length > 0 %}
+                        <div class="field">
+                            <label class="field-label">
+                                Etiquetas <span class="optional">(opcional)</span>
+                            </label>
+                            <div class="tag-pills">
+                                {% for tag in restaurant.productTags %}
+                                    {% set tagT = null %}
+                                    {% for tr in tag.translations %}
+                                        {% if tr.locale == locale %}{% set tagT = tr %}{% endif %}
+                                    {% endfor %}
+                                    {% if tagT %}
+                                        <div class="tag-pill" data-tag-id="{{ tag.id }}" onclick="this.classList.toggle('on')">
+                                            {{ tag.icon }} {{ tagT.name }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {# Ingredients — optional #}
+                    <div class="field">
+                        <label class="field-label">
+                            Ingredientes <span class="optional">(opcional)</span>
+                        </label>
+                        <div class="ingredient-input-wrap">
+                            <input type="text" id="ing-input"
+                                   placeholder="Escribe un ingrediente y pulsa Enter…"
+                                   autocomplete="off"
+                                   oninput="searchIngredients(this.value)"
+                                   onkeydown="ingKeydown(event)">
+                            <div class="ingredient-suggestions" id="ing-suggestions"></div>
+                        </div>
+                        <div class="ing-tags" id="ing-tags"></div>
+                        <p style="font-size:11px;color:#333;margin-top:4px">
+                            Los ingredientes nuevos se crean automáticamente en tu banco de ingredientes.
+                        </p>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" id="p-delete-btn" onclick="deleteProduct()" style="display:none">
+                        <i class="ti ti-trash" aria-hidden="true"></i> Eliminar
+                    </button>
+                    <button class="btn" id="p-back-btn" onclick="goToStep1()" style="margin-right:auto">
+                        <i class="ti ti-arrow-left" aria-hidden="true"></i> Atrás
+                    </button>
+                    <button class="btn" onclick="Modal.close('modal-product')">Cancelar</button>
+                    <button class="btn btn-primary" onclick="saveProduct()">
+                        <i class="ti ti-check" aria-hidden="true"></i> Guardar plato
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    {# Toast #}
+    <div class="toast" id="toast"></div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        // ══════════════════════════════════════════
+        // STATE
+        // ══════════════════════════════════════════
+        const state = {
+            currentProductId:  null,
+            currentCategoryId: null,
+            editingCategoryId: null,
+            spicyLevel:        0,
+            ingredients:       [],   // [{id, name}] — null id = new
+            allIngredients:    {{ restaurant.id ? '[]' : '[]' }}, // loaded on demand
+        };
+
+        const LOCALE   = '{{ locale }}';
+        const CURRENCY = '{{ restaurant.currency }}';
+        const SPICY_LABELS = ['Sin picante', 'Suave 🌶', 'Medio 🌶🌶', 'Picante 🌶🌶🌶', 'Muy picante 🌶🌶🌶🌶', 'Extremo 🌶🌶🌶🌶🌶'];
+
+        // ══════════════════════════════════════════
+        // MODAL CONTROLLER
+        // ══════════════════════════════════════════
+        const Modal = {
+            open(id)  { document.getElementById(id).classList.add('open'); },
+            close(id) {
+                document.getElementById(id).classList.remove('open');
+                if (id === 'modal-product') resetProductModal();
+                if (id === 'modal-cat')     resetCatModal();
+            },
+
+            newCategory() {
+                state.editingCategoryId = null;
+                document.getElementById('modal-cat-title').textContent = 'Nueva categoría';
+                document.getElementById('cat-name-input').value = '';
+                this.open('modal-cat');
+                setTimeout(() => document.getElementById('cat-name-input').focus(), 80);
+            },
+
+            editCategory(id, name) {
+                state.editingCategoryId = id;
+                document.getElementById('modal-cat-title').textContent = 'Editar categoría';
+                document.getElementById('cat-name-input').value = name;
+                this.open('modal-cat');
+                setTimeout(() => document.getElementById('cat-name-input').focus(), 80);
+            },
+
+            newProduct(categoryId) {
+                resetProductModal();
+                state.currentProductId  = null;
+                state.currentCategoryId = categoryId;
+
+                document.getElementById('modal-product-title').textContent = 'Nuevo plato';
+                document.getElementById('p-delete-btn').style.display = 'none';
+
+                // If category is pre-selected skip step 1
+                if (categoryId) {
+                    // Pre-select the card
+                    document.querySelectorAll('.cat-select-card').forEach(c => {
+                        c.classList.toggle('selected', parseInt(c.dataset.catId) === categoryId);
+                    });
+                    goToStep2();
+                } else {
+                    goToStep1();
+                }
+                this.open('modal-product');
+            },
+
+            async editProduct(productId) {
+                resetProductModal();
+                state.currentProductId = productId;
+                document.getElementById('modal-product-title').textContent = 'Editar plato';
+                document.getElementById('p-delete-btn').style.display = '';
+                document.getElementById('p-back-btn').style.display = 'none';
+                document.getElementById('modal-steps').style.display = 'none';
+
+                this.open('modal-product');
+                goToStep2();
+
+                try {
+                    const res  = await fetch(`/admin/products/${productId}`);
+                    const data = await res.json();
+
+                    state.currentCategoryId = data.categoryId;
+                    state.spicyLevel        = data.spicyLevel ?? 0;
+                    updateSpicyUI();
+
+                    const t = data.translations[LOCALE] ?? Object.values(data.translations)[0] ?? {};
+                    document.getElementById('p-name').value     = t.name        ?? '';
+                    document.getElementById('p-desc').value     = t.description ?? '';
+                    document.getElementById('p-price').value    = (data.basePrice / 100).toFixed(2);
+                    document.getElementById('p-calories').value = data.calories ?? '';
+
+                    // Tags
+                    document.querySelectorAll('.tag-pill').forEach(p => {
+                        p.classList.toggle('on', data.tags.includes(parseInt(p.dataset.tagId)));
+                    });
+
+                    // Ingredients
+                    state.ingredients = data.ingredientsList ?? [];
+                    renderIngTags();
+
+                } catch(e) {
+                    showToast('Error cargando el plato', 'error');
+                }
+            },
+
+            aiImport() {
+                showToast('Importación con IA — próximamente', 'info');
+            },
+        };
+
+        // ══════════════════════════════════════════
+        // STEP NAVIGATION
+        // ══════════════════════════════════════════
+        function goToStep1() {
+            document.getElementById('product-step-1').style.display = '';
+            document.getElementById('product-step-2').style.display = 'none';
+            document.getElementById('step-1').classList.add('active');
+            document.getElementById('step-2').classList.remove('active');
+        }
+
+        function goToStep2() {
+            if (!state.currentCategoryId) {
+                const sel = document.querySelector('.cat-select-card.selected');
+                if (!sel) {
+                    document.getElementById('cat-select-error').style.display = '';
+                    return;
+                }
+            }
+            document.getElementById('product-step-1').style.display = 'none';
+            document.getElementById('product-step-2').style.display = '';
+            document.getElementById('step-1').classList.remove('active');
+            document.getElementById('step-2').classList.add('active');
+            loadIngredients();
+            setTimeout(() => document.getElementById('p-name').focus(), 80);
+        }
+
+        function selectCategory(id, el) {
+            state.currentCategoryId = id;
+            document.querySelectorAll('.cat-select-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('cat-select-error').style.display = 'none';
+        }
+
+        // ══════════════════════════════════════════
+        // CATEGORY CRUD
+        // ══════════════════════════════════════════
+        async function saveCategory() {
+            const name = document.getElementById('cat-name-input').value.trim();
+            if (!name) {
+                document.getElementById('cat-name-error').classList.add('show');
+                return;
+            }
+            document.getElementById('cat-name-error').classList.remove('show');
+
+            const url  = state.editingCategoryId
+                ? `/admin/categories/${state.editingCategoryId}/edit`
+                : '/admin/categories/create';
+
+            const res  = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+            });
+            const data = await res.json();
+            if (data.error) { showToast(data.error, 'error'); return; }
+
+            showToast(state.editingCategoryId ? 'Categoría actualizada' : 'Categoría creada ✓', 'success');
+            Modal.close('modal-cat');
+            setTimeout(() => location.reload(), 600);
+        }
+
+        async function toggleCategory(id, btn) {
+            const res  = await fetch(`/admin/categories/${id}/toggle`, { method: 'POST' });
+            const data = await res.json();
+            btn.classList.toggle('on', data.active);
+            btn.title = data.active ? 'Visible en la carta' : 'Oculta en la carta';
+            showToast(data.active ? 'Categoría visible' : 'Categoría oculta');
+        }
+
+        async function deleteCategory(id, btn) {
+            const block = btn.closest('.cat-block');
+            const name  = block.querySelector('.cat-name-text').textContent;
+            const count = block.querySelectorAll('.product-row').length;
+
+            const msg = count > 0
+                ? `¿Eliminar "${name}" y sus ${count} platos? Esta acción no se puede deshacer.`
+                : `¿Eliminar la categoría "${name}"?`;
+
+            if (!confirm(msg)) return;
+
+            const res = await fetch(`/admin/categories/${id}/delete`, { method: 'POST' });
+            if ((await res.json()).ok) {
+                block.remove();
+                showToast('Categoría eliminada', 'success');
+                // Show empty state if no categories left
+                if (!document.querySelector('.cat-block')) location.reload();
+            }
+        }
+
+        // ══════════════════════════════════════════
+        // PRODUCT CRUD
+        // ══════════════════════════════════════════
+        function validateProduct() {
+            let ok = true;
+            const fields = [
+                ['p-name', 'p-name-error',   () => !document.getElementById('p-name').value.trim()],
+                ['p-desc', 'p-desc-error',   () => !document.getElementById('p-desc').value.trim()],
+                ['p-price','p-price-error',  () => !document.getElementById('p-price').value || parseFloat(document.getElementById('p-price').value) <= 0],
+            ];
+            fields.forEach(([inputId, errorId, invalid]) => {
+                const err = document.getElementById(errorId);
+                if (invalid()) { err.classList.add('show'); document.getElementById(inputId).classList.add('error'); ok = false; }
+                else           { err.classList.remove('show'); document.getElementById(inputId).classList.remove('error'); }
+            });
+            return ok;
+        }
+
+        async function saveProduct() {
+            if (!validateProduct()) {
+                showToast('Rellena los campos obligatorios', 'error');
+                return;
+            }
+
+            const translations = {};
+            const name = document.getElementById('p-name').value.trim();
+            const desc = document.getElementById('p-desc').value.trim();
+            if (name) translations[LOCALE] = { name, description: desc || null };
+
+            const tags = [...document.querySelectorAll('.tag-pill.on')].map(t => parseInt(t.dataset.tagId));
+
+            const payload = {
+                id:           state.currentProductId,
+                categoryId:   state.currentCategoryId,
+                basePrice:    parseFloat(document.getElementById('p-price').value) || 0,
+                calories:     parseInt(document.getElementById('p-calories').value) || null,
+                spicyLevel:   state.spicyLevel || null,
+                active:       true,
+                translations,
+                tags,
+                ingredients:  state.ingredients,
+            };
+
+            try {
+                const res  = await fetch('/admin/products/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+                if (data.error) { showToast(data.error, 'error'); return; }
+
+                showToast(state.currentProductId ? 'Plato guardado ✓' : 'Plato creado ✓', 'success');
+                Modal.close('modal-product');
+                setTimeout(() => location.reload(), 700);
+            } catch(e) {
+                showToast('Error al guardar el plato', 'error');
+            }
+        }
+
+        async function toggleProduct(id, btn) {
+            const res  = await fetch(`/admin/products/${id}/toggle`, { method: 'POST' });
+            const data = await res.json();
+            btn.classList.toggle('on', data.active);
+            const row = btn.closest('.product-row');
+            row.classList.toggle('inactive', !data.active);
+            row.querySelector('.product-meta').innerHTML = data.active
+                ? (row.querySelector('.product-meta').innerHTML.replace(/<span[^>]*>.*?<\/span>/, '<span style="color:#3a6a10">Visible</span>'))
+                : (row.querySelector('.product-meta').innerHTML.replace(/<span[^>]*>.*?<\/span>/, '<span style="color:#555">Oculto</span>'));
+            showToast(data.active ? 'Plato visible' : 'Plato oculto');
+        }
+
+        async function deleteProduct() {
+            if (!state.currentProductId) return;
+            const name = document.getElementById('p-name').value || 'este plato';
+            if (!confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
+
+            const res = await fetch(`/admin/products/${state.currentProductId}/delete`, { method: 'POST' });
+            if ((await res.json()).ok) {
+                showToast('Plato eliminado', 'success');
+                Modal.close('modal-product');
+                setTimeout(() => location.reload(), 700);
+            }
+        }
+
+        // ══════════════════════════════════════════
+        // SPICY
+        // ══════════════════════════════════════════
+        function setSpicy(level) {
+            state.spicyLevel = state.spicyLevel === level ? 0 : level;
+            updateSpicyUI();
+        }
+        function updateSpicyUI() {
+            document.querySelectorAll('.spicy-pip').forEach(p => {
+                p.classList.toggle('on', parseInt(p.dataset.level) <= state.spicyLevel);
+            });
+            document.getElementById('spicy-text').textContent = SPICY_LABELS[state.spicyLevel];
+        }
+
+        // ══════════════════════════════════════════
+        // INGREDIENTS
+        // ══════════════════════════════════════════
+        async function loadIngredients() {
+            if (state.allIngredients.length > 0) return;
+            try {
+                const res = await fetch('/admin/ingredients/list');
+                state.allIngredients = await res.json();
+            } catch(e) {}
+        }
+
+        function searchIngredients(query) {
+            const box = document.getElementById('ing-suggestions');
+            if (!query.trim()) { box.classList.remove('open'); return; }
+
+            const lower  = query.toLowerCase();
+            const existing = state.ingredients.map(i => i.name.toLowerCase());
+            const matches  = state.allIngredients.filter(i =>
+                i.name.toLowerCase().includes(lower) && !existing.includes(i.name.toLowerCase())
+            ).slice(0, 6);
+
+            const exactMatch = state.allIngredients.some(i => i.name.toLowerCase() === lower);
+            const alreadyAdded = existing.includes(lower);
+
+            let html = matches.map(i =>
+                `<div class="ing-suggestion" onclick="addIngredient(${i.id}, '${i.name.replace(/'/g,"\\'")}')">
+            ${i.name}
+        </div>`
+            ).join('');
+
+            if (!exactMatch && !alreadyAdded) {
+                html += `<div class="ing-suggestion" onclick="addIngredient(null, '${query.trim().replace(/'/g,"\\'")}')">
+            <strong>${query.trim()}</strong>
+            <span class="new-label">· Crear nuevo ingrediente</span>
+        </div>`;
+            }
+
+            box.innerHTML = html;
+            box.classList.toggle('open', html.length > 0);
+        }
+
+        function ingKeydown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = e.target.value.trim();
+                if (!query) return;
+                const exact = state.allIngredients.find(i => i.name.toLowerCase() === query.toLowerCase());
+                addIngredient(exact?.id ?? null, exact?.name ?? query);
+            }
+            if (e.key === 'Escape') {
+                document.getElementById('ing-suggestions').classList.remove('open');
+            }
+        }
+
+        function addIngredient(id, name) {
+            if (state.ingredients.some(i => i.name.toLowerCase() === name.toLowerCase())) return;
+            state.ingredients.push({ id, name });
+            renderIngTags();
+            document.getElementById('ing-input').value = '';
+            document.getElementById('ing-suggestions').classList.remove('open');
+        }
+
+        function removeIngredient(name) {
+            state.ingredients = state.ingredients.filter(i => i.name !== name);
+            renderIngTags();
+        }
+
+        function renderIngTags() {
+            document.getElementById('ing-tags').innerHTML = state.ingredients.map(i =>
+                `<div class="ing-tag">
+            ${i.name}
+            <button onclick="removeIngredient('${i.name.replace(/'/g,"\\'")}'')" aria-label="Quitar ${i.name}">✕</button>
+        </div>`
+            ).join('');
+        }
+
+        // ══════════════════════════════════════════
+        // IMAGE PREVIEW
+        // ══════════════════════════════════════════
+        function previewImage(input) {
+            if (!input.files?.length) return;
+            const url  = URL.createObjectURL(input.files[0]);
+            const area = document.getElementById('img-upload-area');
+            let img    = area.querySelector('img');
+            if (!img) { img = document.createElement('img'); area.appendChild(img); }
+            img.src = url;
+            area.querySelector('.img-hint').style.display = 'none';
+        }
+
+        // ══════════════════════════════════════════
+        // RESET
+        // ══════════════════════════════════════════
+        function resetProductModal() {
+            ['p-name','p-desc','p-price','p-calories','ing-input'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.value = ''; el.classList.remove('error'); }
+            });
+            ['p-name-error','p-desc-error','p-price-error'].forEach(id => {
+                document.getElementById(id)?.classList.remove('show');
+            });
+            document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('on'));
+            document.querySelectorAll('.cat-select-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('ing-tags').innerHTML = '';
+            document.getElementById('ing-suggestions').classList.remove('open');
+            document.getElementById('cat-select-error').style.display = 'none';
+            document.getElementById('p-back-btn').style.display = '';
+            document.getElementById('modal-steps').style.display = '';
+
+            const area = document.getElementById('img-upload-area');
+            const img  = area.querySelector('img');
+            if (img) img.remove();
+            area.querySelector('.img-hint').style.display = '';
+
+            state.currentProductId  = null;
+            state.currentCategoryId = null;
+            state.spicyLevel        = 0;
+            state.ingredients       = [];
+            updateSpicyUI();
+        }
+
+        function resetCatModal() {
+            document.getElementById('cat-name-input').value = '';
+            document.getElementById('cat-name-error').classList.remove('show');
+            state.editingCategoryId = null;
+        }
+
+        // ══════════════════════════════════════════
+        // TOAST
+        // ══════════════════════════════════════════
+        let toastTimer;
+        function showToast(msg, type = 'info') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className   = `toast show ${type}`;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+        }
+
+        // Close suggestions on outside click
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.ingredient-input-wrap')) {
+                document.getElementById('ing-suggestions')?.classList.remove('open');
+            }
+        });
+    </script>
 {% endblock %}
