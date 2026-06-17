@@ -1,4 +1,334 @@
+{#/home/david/gitProjects/qr-menu/templates/admin/settings.html.twig#}
 {% extends 'admin/base.html.twig' %}
+
 {% block title %}Configuración{% endblock %}
 {% block page_title %}Configuración{% endblock %}
-{% block body %}<p style="color:#555;font-size:14px">Próximamente.</p>{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .settings-wrap { max-width: 600px; }
+
+        .settings-section {
+            background: #141414;
+            border: 1px solid #1c1c1c;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .settings-section-title {
+            font-size: 12px; font-weight: 600; color: #444;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            padding: 14px 18px 12px;
+            border-bottom: 1px solid #1c1c1c;
+            background: #111;
+        }
+        .settings-body { padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label {
+            font-size: 13px; font-weight: 500; color: #888;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .req { color: #C1440E; }
+        .field input,
+        .field select {
+            background: #1a1a1a; border: 1px solid #2a2a2a;
+            color: #fff; font-size: 15px; padding: 11px 14px;
+            border-radius: 10px; outline: none; width: 100%;
+            transition: border-color 0.15s; -webkit-appearance: none;
+        }
+        .field input:focus, .field select:focus { border-color: #555; }
+        .field-hint { font-size: 12px; color: #444; line-height: 1.5; }
+
+        /* Color picker */
+        .color-wrap { display: flex; align-items: center; gap: 12px; }
+        .color-preview {
+            width: 44px; height: 44px; border-radius: 10px;
+            border: 1px solid #2a2a2a; flex-shrink: 0;
+            cursor: pointer; overflow: hidden;
+        }
+        .color-preview input[type="color"] {
+            width: 200%; height: 200%;
+            border: none; padding: 0; margin: -25%;
+            cursor: pointer; background: none;
+        }
+        .color-hex {
+            background: #1a1a1a; border: 1px solid #2a2a2a; color: #ccc;
+            font-size: 14px; padding: 10px 14px; border-radius: 10px;
+            outline: none; width: 120px; font-family: monospace;
+            transition: border-color 0.15s;
+        }
+        .color-hex:focus { border-color: #555; }
+
+        /* Logo upload */
+        .logo-area {
+            display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+        }
+        .logo-preview {
+            width: 72px; height: 72px; border-radius: 14px;
+            background: #1a1a1a; border: 1px solid #2a2a2a;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; font-weight: 700; color: #555;
+            overflow: hidden; flex-shrink: 0;
+            position: relative;
+        }
+        .logo-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .logo-actions { display: flex; flex-direction: column; gap: 8px; }
+        .upload-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 14px; border-radius: 8px; font-size: 13px;
+            font-weight: 500; cursor: pointer;
+            border: 1px solid #2a2a2a; background: #1a1a1a; color: #ccc;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .upload-btn:hover { border-color: #444; color: #fff; }
+        .remove-logo-btn {
+            font-size: 12px; color: #666; background: none;
+            border: none; cursor: pointer; padding: 0; text-align: left;
+            transition: color 0.15s;
+        }
+        .remove-logo-btn:hover { color: #F0997B; }
+
+        /* Save button */
+        .settings-footer {
+            display: flex; justify-content: flex-end; gap: 10px;
+            padding-top: 8px;
+        }
+        .save-btn {
+            padding: 11px 24px; background: #C1440E; color: #fff;
+            border: none; border-radius: 10px; font-size: 14px;
+            font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+        }
+        .save-btn:hover { opacity: 0.9; }
+
+        /* Danger zone */
+        .danger-zone { border-color: rgba(240,100,80,0.2) !important; }
+        .danger-zone .settings-section-title { color: #F0997B; background: rgba(240,100,80,0.06); }
+        .danger-text { font-size: 13px; color: #666; line-height: 1.5; }
+        .danger-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 8px; font-size: 13px;
+            font-weight: 500; cursor: pointer;
+            border: 1px solid rgba(240,100,80,0.3);
+            background: rgba(240,100,80,0.08); color: #F0997B;
+            transition: background 0.15s;
+        }
+        .danger-btn:hover { background: rgba(240,100,80,0.15); }
+
+        /* QR preview */
+        .qr-info {
+            background: #111; border: 1px solid #1c1c1c; border-radius: 10px;
+            padding: 14px 16px; display: flex; align-items: center;
+            gap: 12px;
+        }
+        .qr-url { font-size: 13px; color: #666; font-family: monospace; word-break: break-all; flex: 1; }
+        .copy-btn {
+            padding: 6px 12px; border-radius: 7px; font-size: 12px;
+            border: 1px solid #2a2a2a; background: #1a1a1a; color: #888;
+            cursor: pointer; flex-shrink: 0; transition: color 0.15s;
+        }
+        .copy-btn:hover { color: #fff; border-color: #444; }
+
+        @media (max-width: 767px) {
+            .settings-body { padding: 14px; gap: 14px; }
+            .settings-footer { justify-content: stretch; }
+            .save-btn { flex: 1; padding: 13px; font-size: 15px; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="settings-wrap">
+
+        <form method="post" enctype="multipart/form-data">
+
+            {# ── Información del restaurante ── #}
+            <div class="settings-section">
+                <div class="settings-section-title">Información del restaurante</div>
+                <div class="settings-body">
+
+                    <div class="field">
+                        <label for="name">Nombre <span class="req">*</span></label>
+                        <input type="text"
+                               id="name" name="name"
+                               value="{{ restaurant.name }}"
+                               placeholder="Nombre de tu restaurante"
+                               required>
+                    </div>
+
+                    {# URL pública de la carta #}
+                    {% if restaurant.tables.first %}
+                        <div class="field">
+                            <label>URL de tu carta digital</label>
+                            <div class="qr-info">
+                        <span class="qr-url" id="menu-url">
+                            {{ app.request.schemeAndHttpHost }}/r/{{ restaurant.slug }}/table/{{ restaurant.tables.first.qrToken }}
+                        </span>
+                                <button type="button" class="copy-btn" onclick="copyUrl()">
+                                    <i class="ti ti-copy" aria-hidden="true"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            {# ── Apariencia ── #}
+            <div class="settings-section">
+                <div class="settings-section-title">Apariencia</div>
+                <div class="settings-body">
+
+                    {# Logo #}
+                    <div class="field">
+                        <label>Logo del restaurante</label>
+                        <div class="logo-area">
+                            <div class="logo-preview" id="logo-preview">
+                                {% if restaurant.logo %}
+                                    <img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}"
+                                         alt="{{ restaurant.name }}" id="logo-img">
+                                {% else %}
+                                    <span id="logo-letter">{{ restaurant.name|slice(0,1)|upper }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="logo-actions">
+                                <label class="upload-btn" for="logo-input">
+                                    <i class="ti ti-upload" aria-hidden="true"></i>
+                                    {{ restaurant.logo ? 'Cambiar logo' : 'Subir logo' }}
+                                </label>
+                                <input type="file" id="logo-input" name="logo"
+                                       accept="image/*" style="display:none"
+                                       onchange="previewLogo(this)">
+                                {% if restaurant.logo %}
+                                    <button type="button" class="remove-logo-btn" onclick="removeLogo()">
+                                        <i class="ti ti-trash" aria-hidden="true"></i> Eliminar logo
+                                    </button>
+                                    <input type="hidden" name="removeLogo" id="remove-logo-input" value="0">
+                                {% endif %}
+                                <span class="field-hint">PNG o JPG, máx. 2 MB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Color principal #}
+                    <div class="field">
+                        <label>Color principal</label>
+                        <div class="color-wrap">
+                            <div class="color-preview" style="background:{{ restaurant.primaryColor }}">
+                                <input type="color"
+                                       id="color-picker"
+                                       value="{{ restaurant.primaryColor }}"
+                                       oninput="syncColor(this.value)">
+                            </div>
+                            <input type="text"
+                                   class="color-hex"
+                                   id="color-hex"
+                                   name="primaryColor"
+                                   value="{{ restaurant.primaryColor }}"
+                                   maxlength="7"
+                                   placeholder="#C1440E"
+                                   oninput="syncColorFromHex(this.value)">
+                            <span class="field-hint">Se usará en toda la carta digital</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {# ── Idioma y moneda ── #}
+            <div class="settings-section">
+                <div class="settings-section-title">Idioma y moneda</div>
+                <div class="settings-body">
+
+                    <div class="field">
+                        <label for="defaultLanguage">Idioma principal del menú</label>
+                        <select id="defaultLanguage" name="defaultLanguage">
+                            {% for code, lang in languages %}
+                                <option value="{{ code }}"
+                                    {{ restaurant.defaultLanguage == code ? 'selected' : '' }}>
+                                    {{ lang.flag }} {{ lang.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <span class="field-hint">
+                    El idioma en que introduces los nombres y descripciones de los platos.
+                </span>
+                    </div>
+
+                    <div class="field">
+                        <label for="currency">Moneda base</label>
+                        <select id="currency" name="currency">
+                            {% for code, curr in currencies %}
+                                <option value="{{ code }}"
+                                    {{ restaurant.currency == code ? 'selected' : '' }}>
+                                    {{ curr.symbol }} {{ code }} — {{ curr.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <span class="field-hint">
+                    Los precios se guardan en esta moneda. Los clientes pueden ver la conversión en tiempo real.
+                </span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="settings-footer">
+                <button type="submit" class="save-btn">
+                    <i class="ti ti-check" aria-hidden="true"></i> Guardar cambios
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        // ── Color sync ──
+        function syncColor(val) {
+            document.getElementById('color-hex').value = val;
+            document.querySelector('.color-preview').style.background = val;
+        }
+        function syncColorFromHex(val) {
+            if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                document.getElementById('color-picker').value = val;
+                document.querySelector('.color-preview').style.background = val;
+            }
+        }
+
+        // ── Logo preview ──
+        function previewLogo(input) {
+            if (!input.files?.length) return;
+            const url     = URL.createObjectURL(input.files[0]);
+            const preview = document.getElementById('logo-preview');
+            let img       = document.getElementById('logo-img');
+            const letter  = document.getElementById('logo-letter');
+            if (!img) {
+                img = document.createElement('img');
+                img.id = 'logo-img';
+                preview.appendChild(img);
+            }
+            img.src = url;
+            if (letter) letter.style.display = 'none';
+        }
+
+        function removeLogo() {
+            const input  = document.getElementById('remove-logo-input');
+            const img    = document.getElementById('logo-img');
+            const letter = document.getElementById('logo-letter');
+            if (input) input.value = '1';
+            if (img)   img.remove();
+            if (letter) letter.style.display = '';
+            showToast('Logo eliminado al guardar', 'info');
+        }
+
+        // ── Copy URL ──
+        function copyUrl() {
+            const url = document.getElementById('menu-url')?.textContent?.trim();
+            if (!url) return;
+            navigator.clipboard.writeText(url).then(() => showToast('URL copiada ✓', 'success'));
+        }
+    </script>
+{% endblock %}

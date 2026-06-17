@@ -1,4 +1,420 @@
+{#/home/david/gitProjects/qr-menu/templates/admin/categories.html.twig#}
 {% extends 'admin/base.html.twig' %}
+
 {% block title %}Categorías{% endblock %}
 {% block page_title %}Categorías{% endblock %}
-{% block body %}<p style="color:#555;font-size:14px">Próximamente.</p>{% endblock %}
+
+{% block header_actions %}
+    <button class="btn btn-primary" onclick="UI.openNew()">
+        <i class="ti ti-plus" aria-hidden="true"></i> Nueva categoría
+    </button>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .cats-wrap { max-width: 860px; }
+
+        .empty-state { text-align:center; padding:80px 24px; }
+        .empty-icon  { font-size:48px; display:block; margin-bottom:16px; opacity:0.2; }
+        .empty-title { font-size:20px; font-weight:600; color:#fff; margin-bottom:8px; }
+        .empty-sub   { font-size:14px; color:#444; line-height:1.6; margin-bottom:28px; max-width:340px; margin:0 auto 28px; }
+
+        /* Category card */
+        .cat-card {
+            background: #141414; border: 1px solid #1c1c1c;
+            border-radius: 12px; margin-bottom: 10px; overflow: hidden;
+        }
+        .cat-card-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 16px; cursor: pointer;
+        }
+        .cat-card-header:hover { background: #161616; }
+        .cat-drag { color: #2a2a2a; cursor: grab; font-size: 18px; flex-shrink: 0; }
+        .cat-drag:active { cursor: grabbing; }
+        .cat-info { flex: 1; min-width: 0; }
+        .cat-name { font-size: 15px; font-weight: 500; color: #ccc; }
+        .cat-meta { font-size: 12px; color: #3a3a3a; margin-top: 2px; }
+        .cat-badge {
+            font-size: 11px; padding: 3px 9px; border-radius: 20px;
+            background: #1a1a1a; border: 1px solid #2a2a2a; color: #555;
+        }
+
+        .toggle {
+            width: 36px; height: 20px; border-radius: 10px; background: #222;
+            position: relative; cursor: pointer; transition: background 0.15s;
+            border: none; padding: 0; flex-shrink: 0;
+        }
+        .toggle::after {
+            content: ''; position: absolute; width: 14px; height: 14px;
+            border-radius: 50%; background: #444; top: 3px; left: 3px;
+            transition: left 0.15s, background 0.15s;
+        }
+        .toggle.on { background: rgba(193,68,14,0.3); }
+        .toggle.on::after { left: 19px; background: #C1440E; }
+
+        .icon-btn {
+            width: 34px; height: 34px; border-radius: 8px;
+            border: 1px solid #242424; background: #1a1a1a;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: #555; font-size: 15px;
+            transition: color 0.1s, border-color 0.1s; flex-shrink: 0;
+        }
+        .icon-btn:hover        { color: #ccc; border-color: #3a3a3a; }
+        .icon-btn.danger:hover { color: #F0997B; border-color: rgba(240,153,123,0.3); }
+
+        /* Expanded translations panel */
+        .cat-translations {
+            border-top: 1px solid #1c1c1c;
+            padding: 16px;
+            display: none;
+            flex-direction: column; gap: 12px;
+            background: #111;
+        }
+        .cat-translations.open { display: flex; }
+        .trans-title {
+            font-size: 11px; font-weight: 600; color: #444;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            margin-bottom: 4px;
+        }
+        .trans-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+        .trans-field { display: flex; flex-direction: column; gap: 5px; }
+        .trans-label {
+            font-size: 12px; color: #555;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .trans-input {
+            background: #1a1a1a; border: 1px solid #2a2a2a; color: #ccc;
+            font-size: 14px; padding: 9px 12px; border-radius: 8px;
+            outline: none; width: 100%; transition: border-color 0.15s;
+        }
+        .trans-input:focus { border-color: #555; }
+        .trans-footer {
+            display: flex; justify-content: flex-end; gap: 8px;
+            padding-top: 4px; border-top: 1px solid #1c1c1c; margin-top: 4px;
+        }
+        .trans-save {
+            padding: 8px 16px; background: #C1440E; color: #fff;
+            border: none; border-radius: 8px; font-size: 13px;
+            font-weight: 500; cursor: pointer; transition: opacity 0.15s;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .trans-save:hover { opacity: 0.9; }
+
+        /* Modal shared */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            z-index: 500; display: flex; align-items: center; justify-content: center;
+            padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .modal {
+            background: #141414; border: 1px solid #242424; border-radius: 16px;
+            width: 100%; max-width: 420px; max-height: 90vh;
+            display: flex; flex-direction: column;
+            transform: translateY(8px); transition: transform 0.2s;
+        }
+        .modal-overlay.open .modal { transform: translateY(0); }
+
+        .sheet-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            z-index: 500; display: flex; align-items: flex-end;
+            opacity: 0; pointer-events: none; transition: opacity 0.25s;
+        }
+        .sheet-overlay.open { opacity: 1; pointer-events: all; }
+        .sheet {
+            width: 100%; background: #141414; border-radius: 20px 20px 0 0;
+            border-top: 1px solid #242424; max-height: 80vh;
+            display: flex; flex-direction: column;
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+        }
+        .sheet-overlay.open .sheet { transform: translateY(0); }
+        .sheet-handle { width: 40px; height: 4px; border-radius: 2px; background: #2a2a2a; margin: 12px auto 0; flex-shrink: 0; }
+
+        @media (max-width: 767px) { .modal-overlay { display: none !important; } }
+        @media (min-width: 768px) { .sheet-overlay { display: none !important; } }
+
+        .panel-header {
+            padding: 16px 18px 14px; border-bottom: 1px solid #1c1c1c;
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .panel-title { font-size: 17px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+        .panel-close {
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 1px solid #2a2a2a; background: #1a1a1a;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: #555; font-size: 13px;
+        }
+        .panel-close:hover { color: #ccc; }
+        .panel-body { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+        .panel-footer {
+            padding: 14px 18px; border-top: 1px solid #1c1c1c;
+            display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0;
+            padding-bottom: calc(14px + env(safe-area-inset-bottom));
+        }
+
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label { font-size: 13px; font-weight: 500; color: #777; }
+        .field input {
+            background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff;
+            font-size: 15px; padding: 12px 14px; border-radius: 10px;
+            outline: none; width: 100%; transition: border-color 0.15s;
+        }
+        .field input:focus { border-color: #555; }
+        .field-error { font-size: 12px; color: #F0997B; display: none; }
+        .field-error.show { display: block; }
+
+        @media (max-width: 767px) {
+            .panel-footer .btn { flex: 1; justify-content: center; min-height: 48px; font-size: 15px; }
+            .field input { font-size: 16px; min-height: 48px; }
+            .trans-grid { grid-template-columns: 1fr; }
+            .cat-card-header { padding: 16px; }
+            .cat-name { font-size: 16px; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="cats-wrap">
+
+        {% if categories|length == 0 %}
+            <div class="empty-state">
+                <span class="empty-icon">📂</span>
+                <div class="empty-title">Sin categorías</div>
+                <div class="empty-sub">
+                    Las categorías organizan tu carta (Entrantes, Pizzas, Postres…).
+                    Crea la primera para empezar.
+                </div>
+                <button class="btn btn-primary" onclick="UI.openNew()">
+                    <i class="ti ti-plus" aria-hidden="true"></i> Crear primera categoría
+                </button>
+            </div>
+
+        {% else %}
+            <div id="cats-sortable">
+                {% for category in categories %}
+                    {% set catT = category.getTranslation(locale) %}
+                    {% set catName = catT ? catT.name : '(sin nombre)' %}
+                    {% set productCount = category.products|length %}
+
+                    <div class="cat-card" data-id="{{ category.id }}">
+                        <div class="cat-card-header" onclick="togglePanel({{ category.id }})">
+                            <i class="ti ti-grip-vertical cat-drag" aria-hidden="true"></i>
+                            <div class="cat-info">
+                                <div class="cat-name">{{ catName }}</div>
+                                <div class="cat-meta">
+                                    {{ productCount }} {{ productCount == 1 ? 'plato' : 'platos' }}
+                                    · {{ category.isActive ? 'Visible' : 'Oculta' }}
+                                </div>
+                            </div>
+                            <span class="cat-badge">{{ loop.index }}ª</span>
+                            <button class="toggle {{ category.isActive ? 'on' : '' }}"
+                                    onclick="event.stopPropagation(); toggleCat({{ category.id }}, this)"
+                                    title="{{ category.isActive ? 'Visible' : 'Oculta' }}"
+                                    aria-label="Activar/desactivar"></button>
+                            <button class="icon-btn danger"
+                                    onclick="event.stopPropagation(); deleteCat({{ category.id }}, '{{ catName|e('js') }}', {{ productCount }}, this)"
+                                    title="Eliminar" aria-label="Eliminar categoría">
+                                <i class="ti ti-trash" aria-hidden="true"></i>
+                            </button>
+                            <i class="ti ti-chevron-down" id="chevron-{{ category.id }}"
+                               style="color:#2a2a2a;font-size:16px;transition:transform 0.2s;flex-shrink:0" aria-hidden="true"></i>
+                        </div>
+
+                        {# Translations panel #}
+                        <div class="cat-translations" id="panel-{{ category.id }}">
+                            <div class="trans-title">Traducciones</div>
+                            <div class="trans-grid">
+                                {% for code, lang in languages %}
+                                    {% set t = category.getTranslation(code) %}
+                                    <div class="trans-field">
+                                        <label class="trans-label">
+                                            {{ lang.flag }} {{ lang.name }}
+                                            {% if code == locale %}<span style="font-size:10px;color:#444">(principal)</span>{% endif %}
+                                        </label>
+                                        <input type="text"
+                                               class="trans-input"
+                                               data-locale="{{ code }}"
+                                               data-cat-id="{{ category.id }}"
+                                               value="{{ t ? t.name : '' }}"
+                                               placeholder="{{ catName }}">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="trans-footer">
+                                <button class="btn" onclick="togglePanel({{ category.id }})">Cerrar</button>
+                                <button class="trans-save" onclick="saveTranslations({{ category.id }})">
+                                    <i class="ti ti-check" aria-hidden="true"></i> Guardar traducciones
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <p style="font-size:12px;color:#333;margin-top:12px;text-align:center">
+                <i class="ti ti-grip-vertical" aria-hidden="true"></i>
+                Arrastra las categorías para cambiar el orden
+            </p>
+        {% endif %}
+
+    </div>
+
+    {# ── Desktop modal ── #}
+    <div class="modal-overlay" id="d-modal" onclick="if(event.target===this)UI.close()">
+        <div class="modal">
+            <div class="panel-header">
+                <div class="panel-title" id="d-modal-title">Nueva categoría</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="panel-body">
+                <div class="field">
+                    <label for="cat-name-d">Nombre <span style="color:#C1440E">*</span></label>
+                    <input type="text" id="cat-name-d"
+                           placeholder="Ej: Entrantes, Pizzas, Postres…"
+                           onkeydown="if(event.key==='Enter') UI.save()">
+                    <div class="field-error" id="cat-error-d">El nombre es obligatorio</div>
+                </div>
+                <p style="font-size:13px;color:#444;line-height:1.5">
+                    💡 Las traducciones a otros idiomas las puedes añadir después expandiendo la categoría.
+                </p>
+            </div>
+            <div class="panel-footer">
+                <button class="btn" onclick="UI.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="UI.save()">
+                    <i class="ti ti-check" aria-hidden="true"></i> Crear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# ── Mobile bottom sheet ── #}
+    <div class="sheet-overlay" id="m-sheet" onclick="if(event.target===this)UI.close()">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <div class="panel-header">
+                <div class="panel-title" id="m-sheet-title">Nueva categoría</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="panel-body">
+                <div class="field">
+                    <label for="cat-name-m">Nombre <span style="color:#C1440E">*</span></label>
+                    <input type="text" id="cat-name-m"
+                           placeholder="Ej: Entrantes, Pizzas, Postres…"
+                           onkeydown="if(event.key==='Enter') UI.save()">
+                    <div class="field-error" id="cat-error-m">El nombre es obligatorio</div>
+                </div>
+                <p style="font-size:14px;color:#444;line-height:1.5">
+                    💡 Las traducciones las añades después expandiendo la categoría.
+                </p>
+            </div>
+            <div class="panel-footer">
+                <button class="btn" onclick="UI.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="UI.save()">
+                    <i class="ti ti-check" aria-hidden="true"></i> Crear
+                </button>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const isMobile = () => window.innerWidth < 768;
+
+        const UI = {
+            openNew() {
+                document.getElementById('cat-name-d').value = '';
+                document.getElementById('cat-name-m').value = '';
+                document.getElementById('cat-error-d').classList.remove('show');
+                document.getElementById('cat-error-m').classList.remove('show');
+                if (isMobile()) {
+                    document.getElementById('m-sheet').classList.add('open');
+                    setTimeout(() => document.getElementById('cat-name-m').focus(), 80);
+                } else {
+                    document.getElementById('d-modal').classList.add('open');
+                    setTimeout(() => document.getElementById('cat-name-d').focus(), 80);
+                }
+            },
+            close() {
+                document.getElementById('d-modal').classList.remove('open');
+                document.getElementById('m-sheet').classList.remove('open');
+            },
+            async save() {
+                const inputId = isMobile() ? 'cat-name-m' : 'cat-name-d';
+                const errorId = isMobile() ? 'cat-error-m' : 'cat-error-d';
+                const name    = document.getElementById(inputId).value.trim();
+
+                if (!name) {
+                    document.getElementById(errorId).classList.add('show');
+                    return;
+                }
+                document.getElementById(errorId).classList.remove('show');
+
+                const data = await api('/admin/categories/create', { name });
+                if (data.error) { showToast(data.error, 'error'); return; }
+
+                showToast('Categoría creada ✓', 'success');
+                this.close();
+                setTimeout(() => location.reload(), 700);
+            },
+        };
+
+        // ── Toggle expanded panel ──
+        function togglePanel(id) {
+            const panel   = document.getElementById(`panel-${id}`);
+            const chevron = document.getElementById(`chevron-${id}`);
+            const isOpen  = panel.classList.toggle('open');
+            chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+        }
+
+        // ── Toggle active ──
+        async function toggleCat(id, btn) {
+            const data = await api(`/admin/categories/${id}/toggle`);
+            btn.classList.toggle('on', data.active);
+            const card = btn.closest('.cat-card');
+            const meta = card.querySelector('.cat-meta');
+            if (meta) meta.innerHTML = meta.innerHTML.replace(/Visible|Oculta/, data.active ? 'Visible' : 'Oculta');
+            showToast(data.active ? 'Categoría visible' : 'Categoría oculta');
+        }
+
+        // ── Delete ──
+        async function deleteCat(id, name, count, btn) {
+            const msg = count > 0
+                ? `¿Eliminar "${name}" y sus ${count} platos? No se puede deshacer.`
+                : `¿Eliminar la categoría "${name}"?`;
+            if (!confirm(msg)) return;
+            const data = await api(`/admin/categories/${id}/delete`);
+            if (data.ok) {
+                btn.closest('.cat-card').remove();
+                showToast('Categoría eliminada', 'success');
+                if (!document.querySelector('.cat-card')) location.reload();
+            }
+        }
+
+        // ── Save translations ──
+        async function saveTranslations(catId) {
+            const inputs      = document.querySelectorAll(`.trans-input[data-cat-id="${catId}"]`);
+            const translations = {};
+            inputs.forEach(input => {
+                const val = input.value.trim();
+                if (val) translations[input.dataset.locale] = val;
+            });
+
+            const data = await api(`/admin/categories/${catId}/translations/save`, { translations });
+            if (data.ok) showToast('Traducciones guardadas ✓', 'success');
+            else showToast('Error al guardar', 'error');
+        }
+
+        // ── API helper ──
+        async function api(url, body = null, method = null) {
+            const m    = method ?? 'POST';
+            const opts = { method: m, headers: body ? { 'Content-Type': 'application/json' } : {} };
+            if (body) opts.body = JSON.stringify(body);
+            const res  = await fetch(url, opts);
+            return res.json();
+        }
+
+        function showToast(msg, type = 'info') { window.showToast?.(msg, type); }
+    </script>
+{% endblock %}

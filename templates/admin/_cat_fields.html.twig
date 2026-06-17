@@ -1,0 +1,14 @@
+{# templates/admin/_cat_fields.html.twig #}
+<div class="field">
+    <label class="field-label">
+        Nombre <span class="req">*</span>
+    </label>
+    <input type="text"
+           id="cat-name-input"
+           placeholder="Ej: Entrantes, Pizzas, Postres…"
+           onkeydown="if(event.key==='Enter') saveCategory()">
+    <div class="field-error" id="cat-name-error">El nombre es obligatorio</div>
+</div>
+<p style="font-size:12px;color:#444;line-height:1.5">
+    💡 Las traducciones a otros idiomas se añadirán automáticamente con IA.
+</p>

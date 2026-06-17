@@ -5,28 +5,22 @@ namespace App\Controller\Admin;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin', name: 'admin_')]
+#[IsGranted('ROLE_USER')]
 class DashboardController extends AbstractController
 {
+    // Redirige /admin → /admin/menu
     #[Route('', name: 'dashboard')]
     public function index(): Response
     {
         return $this->redirectToRoute('admin_menu');
     }
 
-    #[Route('/menu', name: 'menu')]
-    public function menu(): Response
-    {
-        // Placeholder — será la vista principal en el siguiente paso
-        return $this->render('admin/menu.html.twig');
-    }
-
-    #[Route('/categories', name: 'categories')]
-    public function categories(): Response
-    {
-        return $this->render('admin/categories.html.twig');
-    }
+    // Estas rutas las gestiona MenuAdminController:
+    // admin_menu, admin_category_*, admin_product_*
+    // admin_ingredients_list, admin_reorder_*
 
     #[Route('/tags', name: 'tags')]
     public function tags(): Response

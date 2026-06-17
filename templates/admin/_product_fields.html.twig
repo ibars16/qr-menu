@@ -1,0 +1,140 @@
+{# templates/admin/_product_fields.html.twig #}
+
+{# Nombre — obligatorio #}
+<div class="field">
+    <label class="field-label">
+        Nombre del plato <span class="req">*</span>
+    </label>
+    <input type="text"
+           id="p-name"
+           placeholder="Ej: Pizza Margherita">
+    <div class="field-error" id="p-name-error">El nombre es obligatorio</div>
+</div>
+
+{# Descripción — obligatoria #}
+<div class="field">
+    <label class="field-label">
+        Descripción <span class="req">*</span>
+    </label>
+    <textarea id="p-desc"
+              placeholder="Describe brevemente el plato, ingredientes principales, forma de preparación…"></textarea>
+    <div class="field-error" id="p-desc-error">La descripción es obligatoria</div>
+</div>
+
+{# Precio + Calorías #}
+<div class="field-row">
+    <div class="field">
+        <label class="field-label">
+            Precio ({{ restaurant.currency }}) <span class="req">*</span>
+        </label>
+        <input type="number"
+               id="p-price"
+               min="0" step="0.01"
+               placeholder="0.00"
+               inputmode="decimal">
+        <div class="field-error" id="p-price-error">El precio es obligatorio</div>
+    </div>
+    <div class="field">
+        <label class="field-label">
+            Calorías <span class="opt">(opcional)</span>
+        </label>
+        <input type="number"
+               id="p-calories"
+               min="0"
+               placeholder="kcal"
+               inputmode="numeric">
+    </div>
+</div>
+
+{# Imagen — opcional #}
+<div class="field">
+    <label class="field-label">
+        Foto del plato <span class="opt">(opcional)</span>
+    </label>
+    <div class="img-upload"
+         id="img-upload-area"
+         onclick="document.getElementById('p-img-input').click()"
+         role="button"
+         tabindex="0"
+         aria-label="Subir imagen del plato">
+        <div class="img-upload-hint">
+            <i class="ti ti-photo-up" style="font-size:20px" aria-hidden="true"></i>
+            Haz clic o arrastra una imagen aquí
+        </div>
+    </div>
+    <input type="file"
+           id="p-img-input"
+           accept="image/*"
+           style="display:none"
+           onchange="previewImage(this)">
+</div>
+
+{# Picante — opcional #}
+<div class="field">
+    <label class="field-label">
+        Nivel de picante <span class="opt">(opcional)</span>
+    </label>
+    <div class="spicy-row">
+        {% for i in 1..5 %}
+            <div class="spicy-pip"
+                 data-level="{{ i }}"
+                 onclick="setSpicy({{ i }})"
+                 role="button"
+                 tabindex="0"
+                 aria-label="Nivel de picante {{ i }}">🌶</div>
+        {% endfor %}
+        <span class="spicy-text">Sin picante</span>
+    </div>
+</div>
+
+{# Etiquetas — opcional #}
+{% if restaurant.productTags|length > 0 %}
+    <div class="field">
+        <label class="field-label">
+            Etiquetas <span class="opt">(opcional)</span>
+        </label>
+        <div class="tag-pills">
+            {% for tag in restaurant.productTags %}
+                {% set tagT = null %}
+                {% for tr in tag.translations %}
+                    {% if tr.locale == locale %}{% set tagT = tr %}{% endif %}
+                {% endfor %}
+                {% if tagT %}
+                    <div class="tag-pill"
+                         data-tag-id="{{ tag.id }}"
+                         onclick="this.classList.toggle('on')"
+                         role="checkbox"
+                         aria-checked="false">
+                        {{ tag.icon }} {{ tagT.name }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <div style="font-size:12px;color:#444;padding:8px 12px;background:#141414;border-radius:8px;border:1px solid #1c1c1c">
+        Sin etiquetas configuradas —
+        <a href="{{ path('admin_tags') }}" style="color:#888">créalas en Etiquetas</a>
+        para poder marcar platos como Vegetariano, Sin gluten, etc.
+    </div>
+{% endif %}
+
+{# Ingredientes — opcional #}
+<div class="field">
+    <label class="field-label">
+        Ingredientes <span class="opt">(opcional)</span>
+    </label>
+    <div class="ing-wrap">
+        <input type="text"
+               id="ing-input"
+               placeholder="Escribe un ingrediente y pulsa Enter…"
+               autocomplete="off"
+               oninput="searchIngredients(this.value)"
+               onkeydown="ingKeydown(event)">
+        <div class="ing-suggestions" id="ing-suggestions"></div>
+    </div>
+    <div class="ing-tags" id="ing-tags"></div>
+    <p style="font-size:11px;color:#333;margin-top:6px;line-height:1.5">
+        Los ingredientes nuevos se añaden automáticamente al banco del restaurante.
+    </p>
+</div>

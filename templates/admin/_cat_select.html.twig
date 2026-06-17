@@ -1,0 +1,23 @@
+{# templates/admin/_cat_select.html.twig #}
+<div class="field">
+    <label class="field-label">¿A qué categoría pertenece?</label>
+</div>
+
+<div class="cat-select-grid">
+    {% for category in categories %}
+        {% set catT = category.getTranslation(locale) %}
+        <button class="cat-select-card cat-card"
+                data-cat-id="{{ category.id }}">
+            <div class="cat-select-card-name">{{ catT ? catT.name : '(sin nombre)' }}</div>
+            <div class="cat-select-card-count">{{ category.products|length }} platos</div>
+        </button>
+    {% endfor %}
+    <button class="cat-select-new" onclick="UI.closeProduct(); UI.openNewCategory()">
+        <i class="ti ti-folder-plus" aria-hidden="true"></i> Nueva categoría
+    </button>
+</div>
+
+<p id="cat-select-error" style="font-size:12px;color:#F0997B;display:none;margin-top:8px">
+    <i class="ti ti-alert-circle" aria-hidden="true"></i>
+    Selecciona una categoría para continuar.
+</p>
