@@ -11,16 +11,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class DashboardController extends AbstractController
 {
-    // Redirige /admin → /admin/menu
     #[Route('', name: 'dashboard')]
     public function index(): Response
     {
         return $this->redirectToRoute('admin_menu');
     }
-
-    // Estas rutas las gestiona MenuAdminController:
-    // admin_menu, admin_category_*, admin_product_*
-    // admin_ingredients_list, admin_reorder_*
 
     #[Route('/tags', name: 'tags')]
     public function tags(): Response
@@ -32,11 +27,5 @@ class DashboardController extends AbstractController
     public function tables(): Response
     {
         return $this->render('admin/tables.html.twig');
-    }
-
-    #[Route('/settings', name: 'settings')]
-    public function settings(): Response
-    {
-        return $this->render('admin/settings.html.twig');
     }
 }
