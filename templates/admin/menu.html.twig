@@ -948,10 +948,8 @@
         const setVal = (id, v) => { const el=document.getElementById(id); if(el) el.value=v??''; };
 
         async function apiFetch(url, body=null, method=null) {
-            const opts = {
-                method: method ?? (body ? 'POST' : 'POST'),
-                headers: body ? {'Content-Type':'application/json'} : {},
-            };
+            const m = method ?? (body !== null ? 'POST' : 'GET');
+            const opts = { method: m, headers: body ? {'Content-Type':'application/json'} : {} };
             if (body) opts.body = JSON.stringify(body);
             const res = await fetch(url, opts);
             return res.json();

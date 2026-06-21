@@ -1,9 +1,8 @@
-{#/home/david/gitProjects/qr-menu/templates/admin/base.html.twig#}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}Admin{% endblock %} — QR Menu</title>
     <style>
         :root { --brand: #C1440E; }
@@ -15,27 +14,18 @@
             min-height: 100vh;
         }
 
-        /* ══════════════════════════════
-           DESKTOP LAYOUT (≥768px)
-        ══════════════════════════════ */
-        .admin-layout {
-            display: flex; min-height: 100vh;
-        }
+        /* ══ DESKTOP ══ */
+        .admin-layout { display: flex; min-height: 100vh; }
 
-        /* Sidebar */
         .sidebar {
             width: 220px; flex-shrink: 0;
             background: #111; border-right: 1px solid #1c1c1c;
             display: flex; flex-direction: column;
             position: sticky; top: 0; height: 100vh;
         }
-        .sidebar-header {
-            padding: 16px;
-            border-bottom: 1px solid #1c1c1c;
-        }
+        .sidebar-header { padding: 16px; border-bottom: 1px solid #1c1c1c; }
         .sidebar-restaurant {
-            font-size: 14px; font-weight: 600; color: #fff;
-            letter-spacing: -0.3px;
+            font-size: 14px; font-weight: 600; color: #fff; letter-spacing: -0.3px;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .sidebar-role { font-size: 11px; color: #555; margin-top: 2px; }
@@ -52,14 +42,10 @@
             border-right: 2px solid transparent;
         }
         .nav-item:hover { color: #ccc; background: #161616; }
-        .nav-item.active {
-            color: #fff; background: #161616;
-            border-right-color: var(--brand); font-weight: 500;
-        }
+        .nav-item.active { color: #fff; background: #161616; border-right-color: var(--brand); font-weight: 500; }
         .nav-item i { font-size: 16px; flex-shrink: 0; }
         .sidebar-footer { margin-top: auto; border-top: 1px solid #1c1c1c; padding: 8px 0; }
 
-        /* Main */
         .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         .main-header {
             padding: 14px 24px; border-bottom: 1px solid #1c1c1c;
@@ -68,56 +54,46 @@
         }
         .main-header-title { font-size: 16px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
         .main-header-actions { display: flex; gap: 8px; }
-        .main-body { flex: 1; padding: 24px; overflow-y: auto; }
+        .main-body { flex: 1; padding: 24px; }
 
-        /* ══════════════════════════════
-           MOBILE LAYOUT (<768px)
-        ══════════════════════════════ */
+        /* ══ MOBILE ══ */
         @media (max-width: 767px) {
-            .admin-layout { flex-direction: column; padding-bottom: 60px; }
+            .admin-layout { flex-direction: column; min-height: 100vh; padding-bottom: 68px; }
             .sidebar { display: none; }
-
-            .main-header {
-                padding: 12px 16px;
-                position: sticky; top: 0; z-index: 100;
-            }
+            .main-header { padding: 12px 16px; }
             .main-header-title { font-size: 17px; }
             .main-body { padding: 12px; }
+        }
 
-            /* Bottom nav */
+        /* Bottom nav — ONLY mobile */
+        .bottom-nav { display: none; }
+        @media (max-width: 767px) {
             .bottom-nav {
+                display: flex;
                 position: fixed; bottom: 0; left: 0; right: 0;
                 background: #111; border-top: 1px solid #1c1c1c;
-                display: flex; height: 60px; z-index: 200;
-                padding-bottom: env(safe-area-inset-bottom);
+                height: 60px; z-index: 300;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
             }
             .bottom-nav-tab {
                 flex: 1; display: flex; flex-direction: column;
                 align-items: center; justify-content: center;
                 gap: 3px; color: #444; font-size: 10px;
                 font-weight: 500; text-decoration: none;
-                min-height: 44px; cursor: pointer;
-                transition: color 0.1s;
+                min-height: 44px; transition: color 0.1s;
             }
             .bottom-nav-tab.active { color: var(--brand); }
             .bottom-nav-tab i { font-size: 22px; }
         }
 
-        @media (min-width: 768px) {
-            .bottom-nav { display: none; }
-        }
-
-        /* ══════════════════════════════
-           SHARED COMPONENTS
-        ══════════════════════════════ */
+        /* ══ SHARED BUTTONS ══ */
         .btn {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 7px 14px; border-radius: 8px;
-            font-size: 13px; font-weight: 500;
-            cursor: pointer; text-decoration: none;
-            border: 1px solid #2a2a2a; background: #1a1a1a; color: #ccc;
-            transition: border-color 0.15s, color 0.15s;
-            min-height: 36px;
+            font-size: 13px; font-weight: 500; cursor: pointer;
+            text-decoration: none; border: 1px solid #2a2a2a;
+            background: #1a1a1a; color: #ccc;
+            transition: border-color 0.15s, color 0.15s; min-height: 36px;
         }
         .btn:hover { border-color: #444; color: #fff; }
         .btn i { font-size: 15px; }
@@ -129,50 +105,37 @@
         .btn-danger:hover { color: #F0997B; border-color: rgba(240,153,123,0.3); }
 
         @media (max-width: 767px) {
-            .btn { min-height: 44px; padding: 0 16px; font-size: 14px; }
-            .btn i { font-size: 17px; }
+            .btn { min-height: 44px; padding: 0 14px; font-size: 14px; }
         }
 
         /* Flash */
-        .flash {
-            padding: 10px 16px; border-radius: 8px;
-            font-size: 13px; margin-bottom: 16px;
-            display: flex; align-items: center; gap: 8px;
-        }
+        .flash { padding: 10px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         .flash-success { background: rgba(40,80,10,0.2); border: 1px solid rgba(99,153,34,0.3); color: #7aad40; }
         .flash-error   { background: rgba(193,68,14,0.15); border: 1px solid rgba(193,68,14,0.3); color: #F0997B; }
 
         /* Toast */
         .toast {
-            position: fixed; bottom: 72px; left: 50%;
+            position: fixed; bottom: 80px; left: 50%;
             transform: translateX(-50%) translateY(12px);
             background: #1e1e1e; border: 1px solid #2a2a2a;
             border-radius: 10px; padding: 10px 18px;
             font-size: 13px; color: #ccc; z-index: 9999;
             opacity: 0; transition: opacity 0.2s, transform 0.2s;
             white-space: nowrap; pointer-events: none;
-            display: flex; align-items: center; gap: 8px;
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         .toast.success { border-color: rgba(99,153,34,0.4); color: #7aad40; }
         .toast.error   { border-color: rgba(240,100,80,0.4); color: #F0997B; }
-
-        @media (min-width: 768px) {
-            .toast { bottom: 24px; }
-        }
+        @media (min-width: 768px) { .toast { bottom: 24px; } }
     </style>
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
 
 <div class="admin-layout">
-
-    {# ── Desktop sidebar ── #}
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-restaurant">
-                {{ app.user.restaurant ? app.user.restaurant.name : 'QR Menu' }}
-            </div>
+            <div class="sidebar-restaurant">{{ app.user.restaurant ? app.user.restaurant.name : 'QR Menu' }}</div>
             <div class="sidebar-role">Panel de administración</div>
         </div>
 
@@ -180,6 +143,10 @@
         <a href="{{ path('admin_menu') }}"
            class="nav-item {{ app.request.attributes.get('_route') == 'admin_menu' ? 'active' : '' }}">
             <i class="ti ti-layout-list" aria-hidden="true"></i> Carta
+        </a>
+        <a href="{{ path('admin_categories') }}"
+           class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_categor' ? 'active' : '' }}">
+            <i class="ti ti-category" aria-hidden="true"></i> Categorías
         </a>
         <a href="{{ path('admin_tags') }}"
            class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_tag' ? 'active' : '' }}">
@@ -211,72 +178,60 @@
         </div>
     </aside>
 
-    {# ── Main content ── #}
     <main class="main">
         <div class="main-header">
             <div class="main-header-title">{% block page_title %}{% endblock %}</div>
             <div class="main-header-actions">{% block header_actions %}{% endblock %}</div>
         </div>
-
         <div class="main-body">
             {% for message in app.flashes('success') %}
-                <div class="flash flash-success">
-                    <i class="ti ti-check" style="font-size:15px" aria-hidden="true"></i> {{ message }}
-                </div>
+                <div class="flash flash-success"><i class="ti ti-check" aria-hidden="true"></i> {{ message }}</div>
             {% endfor %}
             {% for message in app.flashes('error') %}
-                <div class="flash flash-error">
-                    <i class="ti ti-alert-circle" style="font-size:15px" aria-hidden="true"></i> {{ message }}
-                </div>
+                <div class="flash flash-error"><i class="ti ti-alert-circle" aria-hidden="true"></i> {{ message }}</div>
             {% endfor %}
             {% block body %}{% endblock %}
         </div>
     </main>
-
 </div>
 
-{# ── Mobile bottom navigation ── #}
-<nav class="bottom-nav" aria-label="Navegación principal">
+{# Mobile bottom nav #}
+<nav class="bottom-nav" aria-label="Navegación">
     <a href="{{ path('admin_menu') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_menu' ? 'active' : '' }}">
-        <i class="ti ti-layout-list" aria-hidden="true"></i>
-        Carta
+        <i class="ti ti-layout-list" aria-hidden="true"></i> Carta
+    </a>
+    <a href="{{ path('admin_categories') }}"
+       class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_categor' ? 'active' : '' }}">
+        <i class="ti ti-category" aria-hidden="true"></i> Cats
     </a>
     <a href="{{ path('admin_tables') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_table' ? 'active' : '' }}">
-        <i class="ti ti-table" aria-hidden="true"></i>
-        Mesas
-    </a>
-    <a href="{{ path('admin_tags') }}"
-       class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_tag' ? 'active' : '' }}">
-        <i class="ti ti-tag" aria-hidden="true"></i>
-        Etiquetas
+        <i class="ti ti-table" aria-hidden="true"></i> Mesas
     </a>
     <a href="{{ path('admin_settings') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
-        <i class="ti ti-settings" aria-hidden="true"></i>
-        Config
+        <i class="ti ti-settings" aria-hidden="true"></i> Config
     </a>
 </nav>
 
-{# Toast global #}
 <div class="toast" id="global-toast" role="status" aria-live="polite"></div>
 
-{% block javascripts %}
-    <script>
-        let _toastTimer;
-        window.showToast = function(msg, type = 'info') {
-            const t = document.getElementById('global-toast');
-            t.textContent = msg;
-            t.className   = `toast show ${type}`;
-            clearTimeout(_toastTimer);
-            _toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
-        };
+{# showToast BEFORE child blocks so it's always available #}
+<script>
+    let _toastTimer;
+    window.showToast = function(msg, type) {
+        type = type || 'info';
+        var t = document.getElementById('global-toast');
+        t.textContent = msg;
+        t.className = 'toast show ' + type;
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+    };
+    window.isMobile = function() { return window.innerWidth < 768; };
+</script>
 
-        // Detect mobile
-        window.isMobile = () => window.innerWidth < 768;
-    </script>
-{% endblock %}
+{% block javascripts %}{% endblock %}
 
 </body>
 </html>
