@@ -1,4 +1,4 @@
-{# Theme: Bold list — dark, numbered rows, fast to scan #}
+{# Theme: Compact List — dark, numbered flip cards, fast to scan #}
 <style>
     :root { --brand: {{ restaurant.primaryColor }}; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -9,14 +9,14 @@
     .logo-wrap { display: flex; align-items: center; gap: 10px; }
     .logo { width: 36px; height: 36px; border-radius: 10px; background: var(--brand); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; font-weight: 700; flex-shrink: 0; overflow: hidden; }
     .logo img { width: 100%; height: 100%; object-fit: cover; }
-    .resto-name  { font-size: 15px; font-weight: 700; color: #fff; }
+    .resto-name { font-size: 15px; font-weight: 700; color: #fff; }
     .selectors { display: flex; gap: 6px; }
     .sel-wrap { position: relative; }
     .sel-wrap select { appearance: none; background: #1a1a1a; border: 1px solid #2a2a2a; color: #888; font-size: 12px; padding: 6px 22px 6px 10px; border-radius: 20px; cursor: pointer; outline: none; }
     .sel-wrap .chev { position: absolute; right: 7px; top: 50%; transform: translateY(-50%); font-size: 9px; color: #444; pointer-events: none; }
 
     .hero { padding: 20px 18px 16px; border-bottom: 1px solid #1c1c1c; }
-    .hero-name  { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+    .hero-name { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
 
     .search-wrap { padding: 12px 18px 0; position: relative; }
     .search-input { width: 100%; background: #141414; border: 1px solid #1c1c1c; color: #fff; font-size: 15px; padding: 11px 14px 11px 40px; border-radius: 10px; outline: none; }
@@ -37,23 +37,57 @@
     @media (min-width: 768px) { .content { max-width: 760px; margin: 0 auto; } }
 
     .cat-section { padding-top: 20px; }
-    .cat-title { font-size: 11px; font-weight: 700; color: #2a2a2a; text-transform: uppercase; letter-spacing: 0.12em; padding: 0 18px; margin-bottom: 4px; }
+    .cat-title { font-size: 11px; font-weight: 700; color: #2a2a2a; text-transform: uppercase; letter-spacing: 0.12em; padding: 0 18px; margin-bottom: 8px; }
 
-    .product-row {
-        display: flex; align-items: center; gap: 12px;
-        padding: 14px 18px; border-bottom: 1px solid #111;
-        cursor: pointer; transition: background 0.1s;
-    }
-    .product-row:hover { background: #111; }
-    .product-num { font-size: 12px; font-weight: 700; color: #2a2a2a; width: 22px; flex-shrink: 0; }
-    .product-info { flex: 1; min-width: 0; }
-    .product-name { font-size: 15px; font-weight: 600; color: #eee; }
-    .product-meta { font-size: 12px; color: #444; margin-top: 3px; }
-    .product-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-    .product-price { font-size: 16px; font-weight: 700; color: #fff; }
-    .product-flip  { font-size: 11px; color: #2a2a2a; display: flex; align-items: center; gap: 2px; }
+    .cards-list { display: flex; flex-direction: column; gap: 4px; padding: 0 18px; }
+
+    /* ── Flip card ── */
+    .card-wrap { perspective: 1200px; cursor: pointer; }
+    .card { width: 100%; height: 90px; position: relative; transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.4,0.2,0.2,1); border-radius: 10px; }
+    .card.flipped { transform: rotateY(180deg); }
+    .card-front, .card-back { position: absolute; inset: 0; border-radius: 10px; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+
+    /* ── Front ── */
+    .card-front { background: #111; border: 1px solid #1a1a1a; display: flex; align-items: center; transition: background 0.1s; }
+    .card-wrap:hover .card:not(.flipped) .card-front { background: #161616; }
+    .front-num { font-size: 12px; font-weight: 700; color: #2a2a2a; width: 36px; text-align: center; flex-shrink: 0; }
+    .front-img { width: 60px; height: 100%; flex-shrink: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 28px; position: relative; overflow: hidden; }
+    .front-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .front-info { flex: 1; padding: 12px 10px; min-width: 0; }
+    .front-name { font-size: 15px; font-weight: 600; color: #eee; letter-spacing: -0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+    .front-meta { font-size: 12px; color: #444; }
+    .front-right { padding: 0 14px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 5px; flex-shrink: 0; }
+    .front-price { font-size: 16px; font-weight: 700; color: #fff; }
+    .flip-hint { font-size: 11px; color: #2a2a2a; display: flex; align-items: center; gap: 2px; }
+
+    /* ── Back ── */
+    .card-back { background: #0d0d0d; border: 1px solid #1a1a1a; transform: rotateY(180deg); display: flex; flex-direction: row; align-items: stretch; }
+    .back-close { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%; background: #1a1a1a; border: 1px solid #2a2a2a; cursor: pointer; color: #555; display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 2; transition: color 0.15s; }
+    .back-close:hover { color: #ccc; }
+    .back-header { padding: 10px 36px 10px 14px; border-right: 1px solid #1a1a1a; flex-shrink: 0; width: 120px; display: flex; flex-direction: column; justify-content: center; }
+    .back-name  { font-size: 13px; font-weight: 600; color: #eee; line-height: 1.3; margin-bottom: 4px; }
+    .back-price { font-size: 14px; color: var(--brand); font-weight: 700; }
+    .back-body  { flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden; padding: 10px 12px; scrollbar-width: none; display: flex; align-items: flex-start; gap: 16px; }
+    .back-body::-webkit-scrollbar { display: none; }
+    .back-section { flex-shrink: 0; }
+    .bsec-title { font-size: 10px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .back-desc  { font-size: 12px; color: #555; line-height: 1.4; max-width: 200px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .ing-list   { display: flex; flex-wrap: wrap; gap: 3px; max-width: 180px; }
+    .ing        { font-size: 11px; padding: 2px 7px; border-radius: 20px; background: #1a1a1a; color: #555; border: 1px solid #252525; }
+    .lbl-list   { display: flex; flex-wrap: wrap; gap: 3px; max-width: 160px; }
+    .lbl        { font-size: 11px; padding: 2px 7px; border-radius: 20px; }
+    .lbl-g      { background: rgba(59,109,17,0.18); color: #7aad40; border: 1px solid rgba(99,153,34,0.2); }
+    .lbl-o      { background: rgba(193,68,14,0.14); color: #d06040; border: 1px solid rgba(240,153,123,0.2); }
+    .nut        { background: #1a1a1a; border-radius: 6px; padding: 5px 8px; border: 1px solid #222; }
+    .nut-v      { font-size: 14px; font-weight: 600; color: #aaa; }
+    .nut-u      { font-size: 10px; color: #444; }
+    .spicy-row  { display: flex; align-items: center; gap: 3px; }
+    .dot        { width: 7px; height: 7px; border-radius: 50%; background: #222; }
+    .dot.on     { background: #D85A30; }
+    .spicy-txt  { font-size: 11px; color: #444; margin-left: 3px; }
 
     .no-results { text-align: center; padding: 60px 20px; color: #333; font-size: 15px; display: none; }
+    .empty { text-align: center; padding: 80px 20px; color: #2a2a2a; font-size: 15px; }
 </style>
 
 <header class="header">
@@ -84,28 +118,78 @@
         {% if catT and category.activeProductsSorted|length > 0 %}
             <section class="cat-section" id="cat-{{ category.id }}" data-section="cat-{{ category.id }}">
                 <div class="cat-title">{{ catT.name }}</div>
-                {% for product in category.activeProductsSorted %}
-                    {% set pT = product.getTranslation(locale) %}{% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if not pT %}{% set pT = product.translations.first %}{% endif %}
-                    {% if pT %}
-                        <div class="product-row" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}">
-                            <div class="product-num">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</div>
-                            <div class="product-info">
-                                <div class="product-name">{{ pT.name }}</div>
-                                <div class="product-meta">
-                                    {% if product.spicyLevel > 0 %}{% for i in 1..product.spicyLevel %}🌶{% endfor %} · {% endif %}
-                                    {% if product.calories %}{{ product.calories }} kcal · {% endif %}
-                                    {% for tag in product.tags %}{% set tagT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tagT = tr %}{% endif %}{% endfor %}{% if tagT %}{{ tag.icon }} {{ tagT.name }} · {% endif %}{% endfor %}
+                <div class="cards-list">
+                    {% for product in category.activeProductsSorted %}
+                        {% set pT = product.getTranslation(locale) %}
+                        {% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}
+                        {% if not pT %}{% set pT = product.translations.first %}{% endif %}
+                        {% if pT %}
+                            <div class="card-wrap"
+                                 onclick="flipCard(this)"
+                                 data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}">
+                                <div class="card">
+                                    {# Front #}
+                                    <div class="card-front">
+                                        <div class="front-num">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</div>
+                                        <div class="front-img">
+                                            {% if product.image %}<img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">{% else %}🍽️{% endif %}
+                                        </div>
+                                        <div class="front-info">
+                                            <div class="front-name">{{ pT.name }}</div>
+                                            <div class="front-meta">
+                                                {% if product.spicyLevel > 0 %}{% for i in 1..product.spicyLevel %}🌶{% endfor %} · {% endif %}
+                                                {% if product.calories %}{{ product.calories }} kcal · {% endif %}
+                                                {% for tag in product.tags %}{% set tagT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tagT = tr %}{% endif %}{% endfor %}{% if tagT %}{{ tag.icon }} {{ tagT.name }} · {% endif %}{% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="front-right">
+                                            <div class="front-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div>
+                                            <div class="flip-hint"><i class="ti ti-rotate-clockwise" aria-hidden="true"></i> ver más</div>
+                                        </div>
+                                    </div>
+                                    {# Back — horizontal scroll layout to keep compact height #}
+                                    <div class="card-back">
+                                        <button class="back-close" onclick="unflipCard(event, this)" aria-label="Volver">
+                                            <i class="ti ti-x" aria-hidden="true"></i>
+                                        </button>
+                                        <div class="back-header">
+                                            <div class="back-name">{{ pT.name }}</div>
+                                            <div class="back-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div>
+                                        </div>
+                                        <div class="back-body">
+                                            {% if pT.description %}<div class="back-section"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
+                                            {% if product.spicyLevel > 0 %}
+                                                <div class="back-section">
+                                                    <div class="bsec-title">Picante</div>
+                                                    <div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}Suave{% elseif product.spicyLevel == 2 %}Medio{% elseif product.spicyLevel == 3 %}Picante{% elseif product.spicyLevel == 4 %}Muy picante{% else %}Extremo{% endif %}</span></div>
+                                                </div>
+                                            {% endif %}
+                                            {% if product.tags|length > 0 %}
+                                                <div class="back-section">
+                                                    <div class="bsec-title">Etiquetas</div>
+                                                    <div class="lbl-list">{% for tag in product.tags %}{% set tagT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tagT = tr %}{% endif %}{% endfor %}{% if tagT %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagT.name }}</div>{% endif %}{% endfor %}</div>
+                                                </div>
+                                            {% endif %}
+                                            {% if product.ingredients|length > 0 %}
+                                                <div class="back-section">
+                                                    <div class="bsec-title">Ingredientes</div>
+                                                    <div class="ing-list">{% for ingredient in product.ingredients %}{% set ingT = ingredient.getTranslation(locale) %}{% if not ingT %}{% set ingT = ingredient.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if ingT %}<div class="ing">{{ ingT.name }}</div>{% endif %}{% endfor %}</div>
+                                                </div>
+                                            {% endif %}
+                                            {% if product.calories %}
+                                                <div class="back-section"><div class="bsec-title">Calorías</div><div class="nut"><span class="nut-v">{{ product.calories }}</span> <span class="nut-u">kcal</span></div></div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="product-right">
-                                <div class="product-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div>
-                                <div class="product-flip"><i class="ti ti-rotate-clockwise" aria-hidden="true"></i> ver más</div>
-                            </div>
-                        </div>
-                    {% endif %}
-                {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
             </section>
         {% endif %}
+    {% else %}
+        <div class="empty">No hay productos disponibles.</div>
     {% endfor %}
 </div>
 

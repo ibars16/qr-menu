@@ -1,6 +1,8 @@
 <script>
 function changeLanguage(lang) { const u = new URL(window.location); u.searchParams.set('lang', lang); window.location.href = u.toString(); }
 function changeCurrency(c)    { const u = new URL(window.location); u.searchParams.set('currency', c); window.location.href = u.toString(); }
+function flipCard(wrap)        { wrap.querySelector('.card').classList.toggle('flipped'); }
+function unflipCard(e, btn)    { e.stopPropagation(); btn.closest('.card').classList.remove('flipped'); }
 
 const searchInput = document.getElementById('menu-search');
 const noResults   = document.getElementById('no-results');
@@ -18,10 +20,10 @@ function applyFilters() {
     sections.forEach(sec => {
         const catMatch = cat === 'all' || cat === sec.dataset.section;
         if (!catMatch) { sec.style.display = 'none'; return; }
-        const rows = sec.querySelectorAll('.product-row, .card');
+        const rows = sec.querySelectorAll('.card-wrap, .product-row');
         let secVisible = false;
         rows.forEach(row => {
-            const name     = row.querySelector('.product-name, .card-name')?.textContent.toLowerCase() ?? '';
+            const name     = row.querySelector('.front-name, .product-name')?.textContent.toLowerCase() ?? '';
             const tags     = (row.dataset.tags ?? '').trim().split(/\s+/).filter(Boolean);
             const search   = !q || name.includes(q);
             const tagMatch = activeTag === 'all' || tags.includes(activeTag);
