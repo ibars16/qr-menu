@@ -61,4 +61,29 @@ const obs = new IntersectionObserver(entries => {
     catTabs.forEach(t => t.classList.toggle('active', t.dataset.cat === id));
 }, { threshold: 0.3 });
 sections.forEach(s => obs.observe(s));
+
+// Scroll-fade indicator for card backs
+(function() {
+    document.querySelectorAll('.card-wrap').forEach(wrap => {
+        let checkFn = null;
+        wrap.addEventListener('click', () => {
+            setTimeout(() => {
+                const body = wrap.querySelector('.back-body');
+                if (!body) return;
+                const scroll = body.parentElement;
+                const horiz  = scroll.classList.contains('horiz');
+                if (!checkFn) {
+                    checkFn = function() {
+                        const noMore = horiz
+                            ? body.scrollWidth  <= body.clientWidth  + 4 || body.scrollLeft + body.clientWidth  >= body.scrollWidth  - 4
+                            : body.scrollHeight <= body.clientHeight + 4 || body.scrollTop  + body.clientHeight >= body.scrollHeight - 4;
+                        scroll.classList.toggle('no-fade', noMore);
+                    };
+                    body.addEventListener('scroll', checkFn, { passive: true });
+                }
+                checkFn();
+            }, 560);
+        });
+    });
+})();
 </script>
