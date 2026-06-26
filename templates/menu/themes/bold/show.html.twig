@@ -10,7 +10,6 @@
     .logo { width: 36px; height: 36px; border-radius: 10px; background: var(--brand); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; font-weight: 700; flex-shrink: 0; overflow: hidden; }
     .logo img { width: 100%; height: 100%; object-fit: cover; }
     .resto-name  { font-size: 15px; font-weight: 700; color: #fff; }
-    .resto-table { font-size: 11px; color: #444; margin-top: 1px; }
     .selectors { display: flex; gap: 6px; }
     .sel-wrap { position: relative; }
     .sel-wrap select { appearance: none; background: #1a1a1a; border: 1px solid #2a2a2a; color: #888; font-size: 12px; padding: 6px 22px 6px 10px; border-radius: 20px; cursor: pointer; outline: none; }
@@ -18,7 +17,6 @@
 
     .hero { padding: 20px 18px 16px; border-bottom: 1px solid #1c1c1c; }
     .hero-name  { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
-    .hero-table { font-size: 13px; color: #444; margin-top: 3px; }
 
     .search-wrap { padding: 12px 18px 0; position: relative; }
     .search-input { width: 100%; background: #141414; border: 1px solid #1c1c1c; color: #fff; font-size: 15px; padding: 11px 14px 11px 40px; border-radius: 10px; outline: none; }
@@ -62,7 +60,7 @@
     <div class="header-row">
         <div class="logo-wrap">
             <div class="logo">{% if restaurant.logo %}<img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}" alt="">{% else %}{{ restaurant.name|slice(0,1)|upper }}{% endif %}</div>
-            <div><div class="resto-name">{{ restaurant.name }}</div><div class="resto-table">Mesa {{ table.number }}</div></div>
+            <div><div class="resto-name">{{ restaurant.name }}</div></div>
         </div>
         <div class="selectors">
             <div class="sel-wrap"><select onchange="changeLanguage(this.value)">{% for code, lang in languages %}<option value="{{ code }}" {{ locale == code ? 'selected' : '' }}>{{ lang.flag }} {{ code|upper }}</option>{% endfor %}</select><span class="chev">▾</span></div>
@@ -71,7 +69,7 @@
     </div>
 </header>
 
-<div class="hero"><div class="hero-name">{{ restaurant.name }}</div><div class="hero-table">Mesa {{ table.number }}</div></div>
+<div class="hero"><div class="hero-name">{{ restaurant.name }}</div></div>
 
 <div class="search-wrap"><i class="ti ti-search search-icon" aria-hidden="true"></i><input type="text" class="search-input" id="menu-search" placeholder="Buscar…" autocomplete="off"></div>
 

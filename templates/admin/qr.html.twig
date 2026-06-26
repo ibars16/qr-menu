@@ -1,0 +1,145 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Mi QR{% endblock %}
+{% block page_title %}Mi QR{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .qr-wrap { max-width: 560px; }
+
+        .qr-section {
+            background: #141414; border: 1px solid #1c1c1c;
+            border-radius: 14px; overflow: hidden; margin-bottom: 16px;
+        }
+        .qr-section-title {
+            font-size: 12px; font-weight: 600; color: #444;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            padding: 14px 18px 12px; border-bottom: 1px solid #1c1c1c;
+            background: #111;
+        }
+        .qr-section-body { padding: 24px 18px; }
+
+        /* QR display */
+        .qr-center { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+        .qr-canvas-wrap {
+            background: #fff; border-radius: 16px; padding: 16px;
+            display: inline-flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.06);
+        }
+        .qr-canvas-wrap canvas { display: block; }
+
+        .qr-download-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 11px 22px; background: var(--brand); color: #fff;
+            border: none; border-radius: 10px; font-size: 14px;
+            font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+        }
+        .qr-download-btn:hover { opacity: 0.9; }
+
+        /* URL section */
+        .url-row {
+            display: flex; align-items: center; gap: 10px;
+            background: #111; border: 1px solid #1c1c1c;
+            border-radius: 10px; padding: 12px 14px;
+        }
+        .url-text {
+            flex: 1; font-size: 13px; color: #666;
+            font-family: monospace; word-break: break-all;
+            line-height: 1.5;
+        }
+        .copy-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 7px 14px; border-radius: 8px; font-size: 12px;
+            border: 1px solid #2a2a2a; background: #1a1a1a; color: #888;
+            cursor: pointer; flex-shrink: 0; transition: color 0.15s, border-color 0.15s;
+        }
+        .copy-btn:hover { color: #fff; border-color: #444; }
+
+        /* Hint */
+        .hint {
+            font-size: 13px; color: #444; line-height: 1.6;
+            padding: 14px 16px; background: #111; border: 1px solid #1c1c1c;
+            border-radius: 10px; display: flex; gap: 10px; align-items: flex-start;
+        }
+        .hint i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+        @media (max-width: 767px) {
+            .qr-section-body { padding: 20px 14px; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="qr-wrap">
+
+        <div class="hint">
+            <i class="ti ti-info-circle" aria-hidden="true"></i>
+            Imprime este código QR y colócalo en tus mesas o en la entrada. Los clientes lo escanean para ver tu carta digital al instante.
+        </div>
+
+        <div class="qr-section" style="margin-top:16px">
+            <div class="qr-section-title">Código QR de tu carta</div>
+            <div class="qr-section-body">
+                <div class="qr-center">
+                    <div class="qr-canvas-wrap" id="qr-wrap">
+                        {# Rendered by JS #}
+                    </div>
+                    <button class="qr-download-btn" onclick="downloadQr()">
+                        <i class="ti ti-download" aria-hidden="true"></i> Descargar QR
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="qr-section">
+            <div class="qr-section-title">URL de tu carta digital</div>
+            <div class="qr-section-body">
+                <div class="url-row">
+                    <span class="url-text" id="menu-url">{{ menuUrl }}</span>
+                    <button class="copy-btn" onclick="copyUrl()">
+                        <i class="ti ti-copy" aria-hidden="true"></i> Copiar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        const MENU_URL = {{ menuUrl|json_encode }};
+
+        // Generate QR on load
+        QRCode.toCanvas(MENU_URL, { width: 220, margin: 0, color: { dark: '#000', light: '#fff' } }, (err, canvas) => {
+            if (!err) document.getElementById('qr-wrap').appendChild(canvas);
+        });
+
+        function downloadQr() {
+            const src = document.querySelector('#qr-wrap canvas');
+            if (!src) { showToast('QR no disponible', 'error'); return; }
+
+            const size = 1024;
+            const out  = document.createElement('canvas');
+            out.width  = size;
+            out.height = size;
+            const ctx  = out.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            ctx.drawImage(src, 0, 0, size, size);
+
+            const a      = document.createElement('a');
+            a.download   = '{{ restaurant.slug }}-qr.png';
+            a.href       = out.toDataURL('image/png');
+            a.click();
+            showToast('QR descargado ✓', 'success');
+        }
+
+        function copyUrl() {
+            const url = document.getElementById('menu-url')?.textContent?.trim();
+            if (!url) return;
+            navigator.clipboard.writeText(url).then(() => showToast('URL copiada ✓', 'success'));
+        }
+    </script>
+{% endblock %}

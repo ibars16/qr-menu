@@ -156,19 +156,15 @@
                     </div>
 
                     {# URL pública de la carta #}
-                    {% if restaurant.tables.first %}
-                        <div class="field">
-                            <label>URL de tu carta digital</label>
-                            <div class="qr-info">
-                        <span class="qr-url" id="menu-url">
-                            {{ app.request.schemeAndHttpHost }}/r/{{ restaurant.slug }}/table/{{ restaurant.tables.first.qrToken }}
-                        </span>
-                                <button type="button" class="copy-btn" onclick="copyUrl()">
-                                    <i class="ti ti-copy" aria-hidden="true"></i> Copiar
-                                </button>
-                            </div>
+                    <div class="field">
+                        <label>URL de tu carta digital</label>
+                        <div class="qr-info">
+                            <span class="qr-url" id="menu-url">{{ app.request.schemeAndHttpHost ~ path('menu_show', {slug: restaurant.slug}) }}</span>
+                            <button type="button" class="copy-btn" onclick="copyUrl()">
+                                <i class="ti ti-copy" aria-hidden="true"></i> Copiar
+                            </button>
                         </div>
-                    {% endif %}
+                    </div>
 
                 </div>
             </div>

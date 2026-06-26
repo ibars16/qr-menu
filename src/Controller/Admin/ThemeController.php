@@ -45,14 +45,7 @@ class ThemeController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        // Build preview URL using first table if available
-        $previewBase = null;
-        if ($restaurant->getTables()->first()) {
-            $previewBase = $this->generateUrl('menu_show', [
-                'slug'     => $restaurant->getSlug(),
-                'qrToken'  => $restaurant->getTables()->first()->getQrToken(),
-            ]);
-        }
+        $previewBase = $this->generateUrl('menu_show', ['slug' => $restaurant->getSlug()]);
 
         return $this->render('admin/theme.html.twig', [
             'restaurant'  => $restaurant,

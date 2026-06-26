@@ -159,9 +159,9 @@
         </a>
 
         <div class="nav-section">Restaurante</div>
-        <a href="{{ path('admin_tables') }}"
-           class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_table' ? 'active' : '' }}">
-            <i class="ti ti-table" aria-hidden="true"></i> Mesas y QRs
+        <a href="{{ path('admin_qr') }}"
+           class="nav-item {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">
+            <i class="ti ti-qrcode" aria-hidden="true"></i> Mi QR
         </a>
         <a href="{{ path('admin_settings') }}"
            class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
@@ -202,9 +202,9 @@
        class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_theme' ? 'active' : '' }}">
         <i class="ti ti-palette" aria-hidden="true"></i> Estilo
     </a>
-    <a href="{{ path('admin_tables') }}"
-       class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_table' ? 'active' : '' }}">
-        <i class="ti ti-table" aria-hidden="true"></i> Mesas
+    <a href="{{ path('admin_qr') }}"
+       class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">
+        <i class="ti ti-qrcode" aria-hidden="true"></i> QR
     </a>
     <a href="{{ path('admin_settings') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">

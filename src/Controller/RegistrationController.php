@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Restaurant;
-use App\Entity\Table;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -52,15 +51,7 @@ class RegistrationController extends AbstractController
 
             $em->persist($restaurant);
 
-            // 2. Create default table automatically (hidden from user)
-            $table = new Table();
-            $table->setRestaurant($restaurant);
-            $table->setNumber('1');
-            $table->setQrToken(bin2hex(random_bytes(16)));
-            $table->setActive(true);
-            $em->persist($table);
-
-            // 3. Create User
+            // 2. Create User
             $user = new User();
             $user->setEmail($data['email']);
             $user->setRoles(['ROLE_USER']);
@@ -70,7 +61,7 @@ class RegistrationController extends AbstractController
             $em->persist($user);
             $em->flush();
 
-            // 4. Log in automatically
+            // 3. Log in automatically
             return $security->login($user, 'form_login', 'main');
         }
 
