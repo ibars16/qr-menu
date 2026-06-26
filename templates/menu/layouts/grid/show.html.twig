@@ -1,0 +1,192 @@
+{# Layout: Grid — portrait flip cards, 2/3/4 column grid #}
+{% include 'menu/themes/' ~ theme ~ '/vars.html.twig' %}
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); background-attachment: var(--bg-attach); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+    .header { position: sticky; top: 0; z-index: 200; background: var(--hdr-bg); backdrop-filter: var(--hdr-blur); -webkit-backdrop-filter: var(--hdr-blur); border-bottom: 1px solid var(--hdr-border); padding: 11px 18px; }
+    .header-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; max-width: 920px; margin: 0 auto; }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo { width: 34px; height: 34px; border-radius: 9px; background: var(--logo-bg); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 700; flex-shrink: 0; overflow: hidden; }
+    .logo img { width: 100%; height: 100%; object-fit: cover; }
+    .resto-name { font-size: 15px; font-weight: 700; color: var(--fg); letter-spacing: -0.2px; }
+    .selectors { display: flex; gap: 6px; }
+    .sel-wrap { position: relative; }
+    .sel-wrap select { appearance: none; background: var(--surface); border: 1px solid var(--b1); color: var(--fg-2); font-size: 12px; padding: 6px 22px 6px 10px; border-radius: 20px; cursor: pointer; outline: none; transition: border-color 0.15s; }
+    .sel-wrap select:hover { border-color: var(--b2); }
+    .sel-wrap .chev { position: absolute; right: 7px; top: 50%; transform: translateY(-50%); font-size: 9px; color: var(--fg-3); pointer-events: none; }
+
+    .hero { padding: 32px 18px 28px; background: var(--hero-bg); border-bottom: 1px solid var(--hero-border); }
+    .hero-inner { max-width: 920px; margin: 0 auto; }
+    .hero-name { font-size: 26px; font-weight: 800; color: var(--fg); letter-spacing: -0.7px; }
+    .hero-sub  { font-size: 13px; color: var(--fg-2); margin-top: 4px; }
+
+    .ui-wrap { padding: 0 12px; }
+    @media (min-width: 768px) { .ui-wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; } }
+
+    .search-wrap { padding-top: 16px; position: relative; }
+    .search-input { width: 100%; background: var(--in-bg); border: 1px solid var(--in-border); color: var(--in-text); font-size: 15px; padding: 11px 14px 11px 42px; border-radius: 12px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .search-input::placeholder { color: var(--in-ph); }
+    .search-input:focus { border-color: var(--in-focus-border); box-shadow: var(--in-focus-shadow); }
+    .search-icon { position: absolute; left: 14px; top: 27px; font-size: 15px; color: var(--fg-3); pointer-events: none; }
+
+    .diet-filters { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 12px; }
+    .diet-filter { background: var(--tab-bg); border: 1px solid var(--tab-border); color: var(--tab-text); border-radius: 20px; padding: 6px 13px; cursor: pointer; font-size: 12px; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+    .diet-filter:hover { background: var(--tab-hbg); color: var(--tab-htext); }
+    .diet-filter.active { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); }
+    .sep { height: 1px; margin: 14px 0 0; background: var(--sep-bg); }
+
+    .cat-tabs { display: flex; gap: 5px; padding-top: 14px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab { font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: 20px; border: 1px solid var(--tab-border); background: var(--tab-bg); color: var(--tab-text); white-space: nowrap; flex-shrink: 0; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+    .cat-tab:hover { background: var(--tab-hbg); color: var(--tab-htext); }
+    .cat-tab.active { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); box-shadow: var(--tab-act-shadow); }
+
+    .content { padding: 0 12px 100px; }
+    @media (min-width: 768px) { .content { padding: 0 24px 100px; max-width: 920px; margin: 0 auto; } }
+    .cat-section { padding-top: 28px; }
+    .cat-title { font-size: 10px; font-weight: 700; color: var(--cat-title); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 14px; }
+    .no-results { display: none; text-align: center; padding: 60px 20px; color: var(--fg-3); font-size: 15px; }
+    .empty-state { text-align: center; padding: 80px 20px; color: var(--fg-3); font-size: 15px; }
+
+    .cards-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+    @media (min-width: 580px) { .cards-grid { grid-template-columns: repeat(3,1fr); } }
+    @media (min-width: 900px) { .cards-grid { grid-template-columns: repeat(4,1fr); } }
+
+    /* ── Flip card ── */
+    .card-wrap { perspective: 1400px; cursor: pointer; }
+    .card { width: 100%; height: 224px; position: relative; transform-style: preserve-3d; transition: transform 0.52s cubic-bezier(0.4,0.2,0.2,1); border-radius: 12px; }
+    .card.flipped { transform: rotateY(180deg); }
+    .card-front, .card-back { position: absolute; inset: 0; border-radius: 12px; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+
+    /* ── Front ── */
+    .card-front { background: var(--cf-bg); border: 1px solid var(--cf-border); display: flex; flex-direction: column; transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s; }
+    .card-front::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--cf-accent); opacity: var(--cf-accent-op); border-radius: 12px 12px 0 0; z-index: 1; }
+    .card-wrap:hover .card:not(.flipped) .card-front { box-shadow: var(--cf-hshadow); border-color: var(--cf-hborder); transform: translateY(-2px); }
+    .front-img { height: 114px; background: var(--cf-img); display: flex; align-items: center; justify-content: center; font-size: 36px; position: relative; overflow: hidden; flex-shrink: 0; }
+    .front-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .front-img-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.06) 100%); pointer-events: none; }
+    .front-body { flex: 1; padding: 9px 10px 10px; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
+    .front-badges { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 3px; }
+    .fbadge { font-size: 10px; padding: 1px 6px; border-radius: 10px; background: var(--cbg); border: 1px solid var(--cbc); color: var(--cbt); }
+    .fbadge-hot { color: #e07050; }
+    .front-name { font-size: 13px; font-weight: 700; color: var(--cn); letter-spacing: -0.2px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 4px; }
+    .front-bottom { display: flex; align-items: center; justify-content: space-between; }
+    .front-price { font-size: 16px; font-weight: 800; color: var(--cp); letter-spacing: -0.4px; font-variant-numeric: tabular-nums; }
+    .flip-hint { font-size: 10px; color: var(--hint); display: flex; align-items: center; gap: 2px; transition: color 0.15s; }
+    .card-wrap:hover .flip-hint { color: var(--hint-h); }
+
+    /* ── Back ── */
+    .card-back { background: var(--cb-bg); border: 1px solid var(--cb-border); transform: rotateY(180deg); display: flex; flex-direction: column; }
+    .back-close { position: absolute; top: 9px; right: 9px; width: 24px; height: 24px; border-radius: 50%; background: var(--close-bg); border: 1px solid var(--close-b); cursor: pointer; color: var(--close-t); display: flex; align-items: center; justify-content: center; font-size: 10px; z-index: 2; transition: color 0.15s, background 0.15s; }
+    .back-close:hover { color: var(--close-ht); background: var(--close-hbg); }
+    .back-header { padding: 11px 36px 10px 12px; border-bottom: 1px solid var(--bdiv); flex-shrink: 0; }
+    .back-name  { font-size: 13px; font-weight: 700; color: var(--bn); letter-spacing: -0.2px; line-height: 1.2; }
+    .back-price { font-size: 12px; color: var(--bp); margin-top: 2px; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+    /* Scroll area with gradient fade + cue */
+    .back-scroll { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+    .back-scroll::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 36px; background: linear-gradient(transparent, var(--fade)); pointer-events: none; transition: opacity 0.25s; }
+    .back-scroll.no-fade::after { opacity: 0; }
+    @keyframes cue-bounce { 0%,100% { transform: translateX(-50%); } 50% { transform: translateX(-50%) translateY(-2px); } }
+    .scroll-cue { position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%); background: var(--cue-bg); color: var(--cue-text); border-radius: 20px; padding: 2px 9px 3px; font-size: 9px; pointer-events: none; white-space: nowrap; transition: opacity 0.25s; animation: cue-bounce 2s ease-in-out infinite; }
+    .back-scroll.no-fade .scroll-cue { opacity: 0; }
+
+    .back-body  { height: 100%; overflow-y: auto; padding: 10px 12px 34px; scrollbar-width: none; display: flex; flex-direction: column; gap: 8px; }
+    .back-body::-webkit-scrollbar { display: none; }
+    .bsec { display: flex; flex-direction: column; gap: 3px; }
+    .bsec + .bsec { padding-top: 5px; border-top: 1px solid var(--bdiv); }
+    .bsec-title { font-size: 9px; font-weight: 700; color: var(--btt); text-transform: uppercase; letter-spacing: 0.1em; }
+    .back-desc  { font-size: 11px; color: var(--bdesc); line-height: 1.55; }
+    .ing-list   { display: flex; flex-wrap: wrap; gap: 3px; }
+    .ing        { font-size: 10px; padding: 2px 7px; border-radius: 10px; background: var(--ing-bg); color: var(--ing-t); border: 1px solid var(--ing-b); }
+    .lbl-list   { display: flex; flex-wrap: wrap; gap: 3px; }
+    .lbl        { font-size: 10px; padding: 2px 7px; border-radius: 10px; }
+    .lbl-g      { background: var(--lg-bg); color: var(--lg); border: 1px solid var(--lg-b); }
+    .lbl-o      { background: var(--lo-bg); color: var(--lo); border: 1px solid var(--lo-b); }
+    .nut        { display: inline-flex; align-items: baseline; gap: 3px; background: var(--nut-bg); border: 1px solid var(--nut-b); border-radius: 7px; padding: 4px 8px; }
+    .nut-v      { font-size: 14px; font-weight: 700; color: var(--nut-v); font-variant-numeric: tabular-nums; }
+    .nut-u      { font-size: 10px; color: var(--nut-u); }
+    .spicy-row  { display: flex; align-items: center; gap: 3px; }
+    .dot        { width: 7px; height: 7px; border-radius: 50%; background: var(--dot-off); flex-shrink: 0; }
+    .dot.on     { background: var(--dot-on); }
+    .spicy-txt  { font-size: 10px; color: var(--spicy-t); margin-left: 3px; }
+</style>
+
+<header class="header">
+    <div class="header-row">
+        <div class="logo-wrap">
+            <div class="logo">{% if restaurant.logo %}<img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}" alt="">{% else %}{{ restaurant.name|slice(0,1)|upper }}{% endif %}</div>
+            <div><div class="resto-name">{{ restaurant.name }}</div></div>
+        </div>
+        <div class="selectors">
+            <div class="sel-wrap"><select onchange="changeLanguage(this.value)">{% for code, lang in languages %}<option value="{{ code }}" {{ locale == code ? 'selected' : '' }}>{{ lang.flag }} {{ code|upper }}</option>{% endfor %}</select><span class="chev">▾</span></div>
+            <div class="sel-wrap"><select onchange="changeCurrency(this.value)">{% for code, curr in currencies %}<option value="{{ code }}" {{ currency == code ? 'selected' : '' }}>{{ curr.symbol }} {{ code }}</option>{% endfor %}</select><span class="chev">▾</span></div>
+        </div>
+    </div>
+</header>
+
+<div class="hero"><div class="hero-inner"><div class="hero-name">{{ restaurant.name }}</div><div class="hero-sub">Explora nuestra carta</div></div></div>
+
+<div class="ui-wrap">
+    <div class="search-wrap"><i class="ti ti-search search-icon"></i><input type="text" class="search-input" id="menu-search" placeholder="Buscar platos…" autocomplete="off"></div>
+    {% if tags|length > 0 %}<div class="diet-filters"><button class="diet-filter active" data-tag="all">Todo</button>{% for tag in tags %}{% set tT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tT = tr %}{% endif %}{% endfor %}{% if tT %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tT.name }}</button>{% endif %}{% endfor %}</div><div class="sep"></div>{% endif %}
+    <div class="cat-tabs" id="cat-tabs"><span class="cat-tab active" data-cat="all">Todo</span>{% for category in categories %}{% set t = category.getTranslation(locale) %}{% if t %}<span class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</span>{% endif %}{% endfor %}</div>
+</div>
+
+<div class="content">
+    <div class="no-results" id="no-results">No se encontraron platos</div>
+    {% for category in categories %}
+        {% set catT = category.getTranslation(locale) %}
+        {% if catT and category.activeProductsSorted|length > 0 %}
+            <section class="cat-section" id="cat-{{ category.id }}" data-section="cat-{{ category.id }}">
+                <div class="cat-title">{{ catT.name }}</div>
+                <div class="cards-grid">
+                    {% for product in category.activeProductsSorted %}
+                        {% set pT = product.getTranslation(locale) %}
+                        {% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}
+                        {% if not pT %}{% set pT = product.translations.first %}{% endif %}
+                        {% if pT %}
+                            <div class="card-wrap" onclick="flipCard(this)" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}">
+                                <div class="card">
+                                    <div class="card-front">
+                                        <div class="front-img">
+                                            {% if product.image %}<img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">{% else %}🍽️{% endif %}
+                                            <div class="front-img-overlay"></div>
+                                        </div>
+                                        <div class="front-body">
+                                            <div>
+                                                <div class="front-badges">{% if product.spicyLevel > 0 %}<div class="fbadge fbadge-hot">{% if product.spicyLevel <= 2 %}🌶{% elseif product.spicyLevel <= 4 %}🌶🌶{% else %}🌶🌶🌶{% endif %}</div>{% endif %}{% for tag in product.tags %}{% set tT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tT = tr %}{% endif %}{% endfor %}{% if tT %}<div class="fbadge">{{ tag.icon }} {{ tT.name }}</div>{% endif %}{% endfor %}</div>
+                                                <div class="front-name">{{ pT.name }}</div>
+                                            </div>
+                                            <div class="front-bottom">
+                                                <div class="front-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div>
+                                                <div class="flip-hint"><i class="ti ti-rotate-clockwise" style="font-size:10px"></i></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-back">
+                                        <button class="back-close" onclick="unflipCard(event,this)" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+                                        <div class="back-header"><div class="back-name">{{ pT.name }}</div><div class="back-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div></div>
+                                        <div class="back-scroll">
+                                            <div class="back-body">
+                                                {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
+                                                {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">Picante</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}Suave{% elseif product.spicyLevel == 2 %}Medio{% elseif product.spicyLevel == 3 %}Picante{% elseif product.spicyLevel == 4 %}Muy picante{% else %}Extremo{% endif %}</span></div></div>{% endif %}
+                                                {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">Etiquetas</div><div class="lbl-list">{% for tag in product.tags %}{% set tT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tT = tr %}{% endif %}{% endfor %}{% if tT %}<div class="lbl lbl-g">{{ tag.icon }} {{ tT.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
+                                                {% if product.ingredients|length > 0 %}<div class="bsec"><div class="bsec-title">Ingredientes</div><div class="ing-list">{% for ingredient in product.ingredients %}{% set iT = ingredient.getTranslation(locale) %}{% if not iT %}{% set iT = ingredient.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if iT %}<div class="ing">{{ iT.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
+                                                {% if product.calories %}<div class="bsec"><div class="bsec-title">Calorías</div><div class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
+                                            </div>
+                                            <div class="scroll-cue" aria-hidden="true">↓ ver más</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    {% else %}<div class="empty-state">No hay productos disponibles.</div>{% endfor %}
+</div>
+
+{% include 'menu/_search_js.html.twig' %}

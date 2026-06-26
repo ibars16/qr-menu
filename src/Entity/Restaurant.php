@@ -37,9 +37,13 @@ class Restaurant
     #[ORM\Column(length: 5)]
     private string $defaultLanguage = 'en';
 
-    /** Visual theme for the public menu: classic | glass | bold | grid */
+    /** Visual layout for the public menu: standard | compact | grid */
     #[ORM\Column(length: 20)]
-    private string $theme = 'classic';
+    private string $layout = 'standard';
+
+    /** Visual theme for the public menu: classic-dark | classic-warm | glass | ocean | noir */
+    #[ORM\Column(length: 20)]
+    private string $theme = 'classic-dark';
 
     #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Table::class, cascade: ['persist', 'remove'])]
     private Collection $tables;
@@ -129,6 +133,16 @@ class Restaurant
     public function setDefaultLanguage(string $defaultLanguage): void
     {
         $this->defaultLanguage = $defaultLanguage;
+    }
+
+    public function getLayout(): string
+    {
+        return $this->layout;
+    }
+
+    public function setLayout(string $layout): void
+    {
+        $this->layout = $layout;
     }
 
     public function getTheme(): string

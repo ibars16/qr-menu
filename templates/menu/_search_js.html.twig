@@ -62,7 +62,7 @@ const obs = new IntersectionObserver(entries => {
 }, { threshold: 0.3 });
 sections.forEach(s => obs.observe(s));
 
-// Scroll-fade indicator for card backs
+// Scroll-fade + scroll-cue indicator for card backs
 (function() {
     document.querySelectorAll('.card-wrap').forEach(wrap => {
         let checkFn = null;

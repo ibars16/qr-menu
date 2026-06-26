@@ -4,365 +4,437 @@
 {% block page_title %}Personalizar carta{% endblock %}
 
 {% block stylesheets %}
-    <style>
-        .theme-wrap { max-width: 760px; }
+<style>
+    .customizer { max-width: 840px; }
 
-        .theme-intro {
-            font-size: 14px; color: #555; line-height: 1.6;
-            margin-bottom: 20px; padding: 14px 16px;
-            background: #111; border: 1px solid #1c1c1c; border-radius: 10px;
-        }
-        .theme-intro strong { color: #888; }
+    /* ── Confirmation modal ── */
+    .confirm-backdrop {
+        position: fixed; inset: 0; z-index: 2000;
+        background: rgba(0,0,0,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; pointer-events: none; transition: opacity 0.18s;
+        padding: 16px;
+    }
+    .confirm-backdrop.show { opacity: 1; pointer-events: all; }
+    .confirm-modal {
+        background: #141414; border: 1px solid #272727; border-radius: 18px;
+        padding: 28px 26px 24px; width: 340px; max-width: 100%;
+        box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+        transform: translateY(10px) scale(0.96); transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .confirm-backdrop.show .confirm-modal { transform: none; }
+    .confirm-title { font-size: 17px; font-weight: 700; color: #fff; letter-spacing: -0.4px; margin-bottom: 7px; line-height: 1.3; }
+    .confirm-sub   { font-size: 13px; color: #4a4a4a; line-height: 1.6; margin-bottom: 22px; }
+    .confirm-btns  { display: flex; gap: 8px; }
+    .confirm-cancel { flex: 1; padding: 11px; border-radius: 11px; border: 1px solid #252525; background: transparent; color: #555; font-size: 14px; cursor: pointer; transition: border-color 0.15s, color 0.15s; }
+    .confirm-cancel:hover { border-color: #3a3a3a; color: #aaa; }
+    .confirm-apply  { flex: 1.6; padding: 11px; border-radius: 11px; border: none; background: #C1440E; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; letter-spacing: -0.2px; }
+    .confirm-apply:hover    { opacity: 0.86; }
+    .confirm-apply:disabled { opacity: 0.45; cursor: default; }
 
-        /* Preview bar */
-        .preview-bar {
-            display: none;
-            align-items: center; gap: 12px;
-            background: #150d2e; border: 1.5px solid #534AB7;
-            border-radius: 12px; padding: 12px 16px; margin-bottom: 20px;
-        }
-        .preview-bar.show { display: flex; }
-        .preview-bar-icon { font-size: 22px; flex-shrink: 0; }
-        .preview-bar-text { flex: 1; min-width: 0; }
-        .preview-bar-title { font-size: 14px; font-weight: 600; color: #c4b5fd; }
-        .preview-bar-sub   { font-size: 12px; color: #7c6ca0; margin-top: 2px; }
-        .preview-bar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    /* ── Preview bar ── */
+    .preview-bar {
+        display: none; align-items: center; gap: 12px;
+        background: #0c091c; border: 1.5px solid #332e60; border-radius: 13px;
+        padding: 11px 14px; margin-bottom: 26px;
+    }
+    .preview-bar.show { display: flex; }
+    .preview-dot { width: 7px; height: 7px; border-radius: 50%; background: #a78bfa; flex-shrink: 0; animation: dot-pulse 2.2s ease-in-out infinite; }
+    @keyframes dot-pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.8); } }
+    .preview-bar-text { flex: 1; min-width: 0; }
+    .preview-bar-title { font-size: 13px; font-weight: 600; color: #c4b5fd; line-height: 1.3; }
+    .preview-bar-sub   { font-size: 11px; color: #5a508a; margin-top: 2px; }
+    .preview-bar-btns  { display: flex; gap: 7px; flex-shrink: 0; }
 
-        /* Grid */
-        .themes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 14px;
-        }
-        @media (max-width: 767px) {
-            .themes-grid { grid-template-columns: 1fr; }
-        }
+    /* ── Section header ── */
+    .sec-hdr { margin-bottom: 18px; }
+    .sec-eyebrow { font-size: 10px; font-weight: 700; color: #333; text-transform: uppercase; letter-spacing: 0.13em; margin-bottom: 3px; }
+    .sec-title   { font-size: 18px; font-weight: 700; color: #e8e8e8; letter-spacing: -0.4px; }
+    .sec-desc    { font-size: 13px; color: #444; margin-top: 4px; }
+    .sec-divider { height: 1px; background: linear-gradient(90deg, transparent, #202020 30%, #202020 70%, transparent); margin: 34px 0; }
 
-        .theme-card {
-            border: 1.5px solid #1c1c1c; border-radius: 14px; overflow: hidden;
-            transition: border-color 0.15s, box-shadow 0.15s;
-            position: relative;
-        }
-        .theme-card:hover          { border-color: #2a2a2a; }
-        .theme-card.is-active      { border-color: #C1440E; box-shadow: 0 0 0 3px rgba(193,68,14,0.12); }
-        .theme-card.is-previewing  { border-color: #534AB7; box-shadow: 0 0 0 3px rgba(83,74,183,0.15); }
+    /* ── Shared card styles ── */
+    .sel-card {
+        border: 1.5px solid #181818; border-radius: 14px; overflow: hidden;
+        background: #0c0c0c; cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+    .sel-card:hover { border-color: #2e2e2e; transform: translateY(-1px); }
+    .sel-card.is-active {
+        border-color: #C1440E;
+        box-shadow: 0 0 0 3px rgba(193,68,14,0.1), 0 8px 24px rgba(193,68,14,0.06);
+    }
+    .sel-card.is-preview {
+        border-color: #534AB7;
+        box-shadow: 0 0 0 3px rgba(83,74,183,0.1);
+    }
+    .card-footer { padding: 11px 13px 13px; border-top: 1px solid #161616; }
+    .card-label  { font-size: 13px; font-weight: 600; color: #d8d8d8; margin-bottom: 2px; letter-spacing: -0.2px; }
+    .card-desc   { font-size: 11px; color: #3d3d3d; line-height: 1.5; margin-bottom: 9px; }
+    .active-chip {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px;
+        background: rgba(193,68,14,0.12); color: #C1440E;
+        border: 1px solid rgba(193,68,14,0.18); margin-bottom: 10px;
+    }
+    .card-actions { display: flex; gap: 7px; }
+    .btn-eye {
+        flex: 1; padding: 8px 6px; border-radius: 9px; font-size: 11px; font-weight: 500;
+        border: 1px solid #202020; background: #141414; color: #484848;
+        cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;
+        transition: all 0.15s;
+    }
+    .btn-eye:hover  { border-color: #534AB7; color: #a78bfa; background: rgba(83,74,183,0.08); }
+    .btn-eye.active { border-color: #534AB7; color: #a78bfa; background: rgba(83,74,183,0.12); }
+    .btn-use {
+        flex: 1; padding: 8px 6px; border-radius: 9px; font-size: 12px; font-weight: 600;
+        border: none; background: #C1440E; color: #fff;
+        cursor: pointer; transition: opacity 0.15s;
+    }
+    .btn-use:hover { opacity: 0.84; }
+    .btn-use.is-current { background: #161616; border: 1px solid #1e1e1e; color: #2e2e2e; cursor: default; }
+    .btn-use.is-current:hover { opacity: 1; }
 
-        .theme-badge {
-            position: absolute; top: 10px; left: 10px;
-            font-size: 10px; font-weight: 700; padding: 3px 9px;
-            border-radius: 20px; letter-spacing: 0.05em; z-index: 2;
-        }
-        .badge-active    { background: #C1440E; color: #fff; }
-        .badge-previewing { background: #534AB7; color: #fff; }
+    /* ── Layout cards ── */
+    .layouts-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    @media (max-width: 580px) { .layouts-grid { grid-template-columns: 1fr; } }
 
-        /* Preview thumbnails */
-        .theme-preview {
-            height: 180px; overflow: hidden; position: relative;
-        }
+    .layout-thumb {
+        height: 110px; background: #090909; overflow: hidden;
+        display: flex; flex-direction: column; justify-content: center;
+        padding: 10px; gap: 5px;
+    }
+    /* Standard rows */
+    .lt-row  { display: flex; align-items: center; gap: 6px; background: #141414; border-radius: 7px; padding: 7px 9px; border: 1px solid #1c1c1c; }
+    .lt-img  { width: 26px; height: 26px; border-radius: 5px; background: #1e1e1e; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+    .lt-info { flex: 1; }
+    .lt-name { height: 6px; background: #272727; border-radius: 3px; width: 76%; }
+    .lt-desc { height: 4px; background: #1c1c1c; border-radius: 3px; width: 50%; margin-top: 4px; }
+    .lt-price{ font-size: 9px; font-weight: 800; color: #C1440E; }
+    /* Compact rows */
+    .lt-crow  { display: flex; align-items: center; gap: 5px; padding: 5px 8px; border-bottom: 1px solid #151515; }
+    .lt-num   { font-size: 8px; font-weight: 700; color: #282828; width: 14px; flex-shrink: 0; }
+    .lt-cimg  { width: 19px; height: 19px; border-radius: 3px; background: #1c1c1c; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    .lt-cname { flex: 1; height: 5px; background: #272727; border-radius: 3px; }
+    .lt-cprice{ font-size: 8px; font-weight: 700; color: #444; }
+    /* Grid cells */
+    .lt-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 8px; }
+    .lt-gcell { background: #141414; border-radius: 6px; overflow: hidden; border: 1px solid #1c1c1c; }
+    .lt-gimg  { height: 28px; display: flex; align-items: center; justify-content: center; font-size: 13px; background: #1c1c1c; }
+    .lt-gbody { padding: 4px 5px 5px; }
+    .lt-gname { height: 4px; background: #272727; border-radius: 3px; width: 85%; }
+    .lt-gprice{ font-size: 7px; font-weight: 800; color: #C1440E; margin-top: 3px; }
 
-        /* Classic */
-        .preview-classic { background: #faf9f7; }
-        .c-row {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 14px; border-bottom: 1px solid #f0ede8;
-        }
-        .c-img {
-            width: 44px; height: 44px; border-radius: 8px;
-            flex-shrink: 0; display: flex; align-items: center;
-            justify-content: center; font-size: 20px;
-        }
-        .c-info { flex: 1; min-width: 0; }
-        .c-name { font-size: 13px; font-weight: 600; color: #1a1a1a; }
-        .c-desc { font-size: 11px; color: #888; margin-top: 1px; }
-        .c-price { font-size: 14px; font-weight: 700; color: #C1440E; flex-shrink: 0; }
+    /* ── Theme cards ── */
+    .themes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(218px,1fr)); gap: 10px; }
+    @media (max-width: 500px) { .themes-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 360px) { .themes-grid { grid-template-columns: 1fr; } }
 
-        /* Glass */
-        .preview-glass {
-            background: linear-gradient(135deg, #1a0a2e 0%, #0d1a2e 100%);
-            padding: 12px; display: flex; gap: 8px;
-        }
-        .g-card {
-            flex: 1; background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 10px; overflow: hidden;
-        }
-        .g-img { height: 80px; display: flex; align-items: center; justify-content: center; font-size: 30px; background: rgba(255,255,255,0.04); }
-        .g-info { padding: 8px 10px; }
-        .g-name { font-size: 12px; font-weight: 600; color: #fff; }
-        .g-desc { font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 2px; }
-        .g-price { font-size: 13px; font-weight: 700; color: #a78bfa; margin-top: 6px; }
+    /* Theme swatch — mini UI preview */
+    .theme-swatch { height: 132px; padding: 8px 9px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; position: relative; }
 
-        /* Bold */
-        .preview-bold { background: #0a0a0a; }
-        .b-row {
-            display: flex; align-items: center; gap: 8px;
-            padding: 11px 14px; border-bottom: 1px solid #1a1a1a;
-        }
-        .b-num { font-size: 11px; font-weight: 700; color: #2a2a2a; width: 18px; flex-shrink: 0; }
-        .b-info { flex: 1; min-width: 0; }
-        .b-name { font-size: 13px; font-weight: 600; color: #ddd; }
-        .b-meta { font-size: 10px; color: #444; margin-top: 1px; }
-        .b-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-        .b-price { font-size: 13px; font-weight: 700; color: #fff; }
-        .b-arr   { font-size: 12px; color: #333; }
-
-        /* Grid */
-        .preview-grid { background: #faf9f7; padding: 10px; }
-        .g-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .g-gcard { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #f0ede8; }
-        .g-gimg  { height: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .g-ginfo { padding: 5px 8px; }
-        .g-gname { font-size: 10px; font-weight: 600; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .g-gprice{ font-size: 11px; font-weight: 700; color: #C1440E; margin-top: 2px; }
-
-        /* Card footer */
-        .theme-footer { padding: 14px 16px; background: #111; border-top: 1px solid #1c1c1c; }
-        .theme-header-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-        .theme-icon { font-size: 20px; }
-        .theme-name { font-size: 15px; font-weight: 600; color: #fff; }
-        .theme-desc { font-size: 12px; color: #555; line-height: 1.5; margin-bottom: 12px; }
-        .theme-actions { display: flex; gap: 8px; }
-        .btn-preview-theme {
-            flex: 1; padding: 9px; border-radius: 9px; font-size: 13px;
-            font-weight: 500; border: 1px solid #2a2a2a; background: #1a1a1a;
-            color: #888; cursor: pointer; display: flex; align-items: center;
-            justify-content: center; gap: 6px; transition: all 0.15s;
-        }
-        .btn-preview-theme:hover  { border-color: #534AB7; color: #a78bfa; }
-        .btn-preview-theme.active { border-color: #534AB7; background: rgba(83,74,183,0.15); color: #a78bfa; }
-        .btn-apply-theme {
-            flex: 1; padding: 9px; border-radius: 9px; font-size: 13px;
-            font-weight: 600; border: none; background: #C1440E; color: #fff;
-            cursor: pointer; display: flex; align-items: center;
-            justify-content: center; gap: 6px; transition: opacity 0.15s;
-        }
-        .btn-apply-theme:hover { opacity: 0.88; }
-        .btn-apply-theme.is-current {
-            background: #1a1a1a; border: 1px solid #2a2a2a; color: #555; cursor: default;
-        }
-        .btn-apply-theme.is-current:hover { opacity: 1; }
-    </style>
+    /* header row */
+    .sw-hdr   { display: flex; align-items: center; gap: 5px; padding: 3px 5px 4px; border-radius: 5px; flex-shrink: 0; }
+    .sw-logo  { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+    .sw-brand { height: 5px; border-radius: 3px; width: 42px; opacity: 0.75; }
+    .sw-sel   { height: 10px; border-radius: 5px; width: 22px; margin-left: auto; opacity: 0.4; }
+    /* search */
+    .sw-srch  { height: 11px; border-radius: 5px; flex-shrink: 0; opacity: 0.55; }
+    /* tabs */
+    .sw-tabs  { display: flex; gap: 3px; flex-shrink: 0; }
+    .sw-tab   { height: 9px; border-radius: 9px; width: 24px; opacity: 0.25; }
+    .sw-tab.on{ width: 30px; opacity: 1; }
+    /* card row */
+    .sw-row   { display: flex; align-items: center; gap: 4px; border-radius: 5px; padding: 4px 5px; flex-shrink: 0; }
+    .sw-rimg  { width: 18px; height: 18px; border-radius: 3px; flex-shrink: 0; }
+    .sw-rinfo { flex: 1; min-width: 0; }
+    .sw-rname { height: 5px; border-radius: 3px; width: 68%; opacity: 0.8; margin-bottom: 3px; }
+    .sw-rdesc { height: 3px; border-radius: 3px; width: 42%; opacity: 0.3; }
+    .sw-rprice{ font-size: 9px; font-weight: 800; letter-spacing: -0.2px; flex-shrink: 0; }
+</style>
 {% endblock %}
 
 {% block body %}
-    <div class="theme-wrap">
+<div class="customizer">
 
-        <div class="theme-intro">
-            <strong>Cómo funciona:</strong> pulsa <em>Previsualizar</em> para ver cómo quedaría la carta
-            con ese tema — solo tú lo ves. Cuando estés seguro, pulsa <em>Aplicar</em> y tus clientes
-            lo verán al instante.
-        </div>
-
-        {# Preview bar — shown when previewing #}
-        <div class="preview-bar" id="preview-bar">
-            <div class="preview-bar-icon">👁️</div>
-            <div class="preview-bar-text">
-                <div class="preview-bar-title" id="preview-bar-title">Previsualizando tema</div>
-                <div class="preview-bar-sub">Solo tú lo ves. Tus clientes siguen viendo el tema actual.</div>
-            </div>
-            <div class="preview-bar-actions">
-                <button class="btn btn-danger" onclick="cancelPreview()">Cancelar</button>
-                <button class="btn btn-primary" onclick="applyFromBar()">
-                    <i class="ti ti-check" aria-hidden="true"></i> Aplicar este tema
-                </button>
+    {# ── Confirmation modal ── #}
+    <div class="confirm-backdrop" id="confirm-backdrop">
+        <div class="confirm-modal">
+            <div class="confirm-title" id="confirm-title">Aplicar cambio</div>
+            <div class="confirm-sub" id="confirm-sub">El cambio será visible de inmediato para todos los visitantes de tu menú.</div>
+            <div class="confirm-btns">
+                <button class="confirm-cancel" onclick="closeConfirm()">Cancelar</button>
+                <button class="confirm-apply" id="confirm-apply-btn" onclick="doConfirm()">Aplicar ahora</button>
             </div>
         </div>
-
-        <div class="themes-grid">
-            {% for key, theme in themes %}
-                <div class="theme-card {{ restaurant.theme == key ? 'is-active' : '' }}"
-                     id="card-{{ key }}"
-                     data-theme="{{ key }}"
-                     data-name="{{ theme.name }}">
-
-                    {% if restaurant.theme == key %}
-                        <div class="theme-badge badge-active">✓ ACTIVO</div>
-                    {% endif %}
-
-                    {# Thumbnail preview #}
-                    <div class="theme-preview">
-                        {% if key == 'classic' %}
-                            <div class="preview-classic">
-                                <div class="c-row">
-                                    <div class="c-img" style="background:#fff3ee">🥩</div>
-                                    <div class="c-info"><div class="c-name">Jamón ibérico</div><div class="c-desc">Bellota curado 36 meses</div></div>
-                                    <div class="c-price">24,50 €</div>
-                                </div>
-                                <div class="c-row">
-                                    <div class="c-img" style="background:#f0f9f0">🥗</div>
-                                    <div class="c-info"><div class="c-name">Ensalada César</div><div class="c-desc">Lechuga, pollo, parmesano</div></div>
-                                    <div class="c-price">16,00 €</div>
-                                </div>
-                                <div class="c-row">
-                                    <div class="c-img" style="background:#fff8ee">🍕</div>
-                                    <div class="c-info"><div class="c-name">Pizza Margherita</div><div class="c-desc">Tomate, mozzarella</div></div>
-                                    <div class="c-price">14,00 €</div>
-                                </div>
-                            </div>
-
-                        {% elseif key == 'glass' %}
-                            <div class="preview-glass">
-                                <div class="g-card">
-                                    <div class="g-img">🥩</div>
-                                    <div class="g-info">
-                                        <div class="g-name">Jamón ibérico</div>
-                                        <div class="g-desc">Bellota curado</div>
-                                        <div class="g-price">24,50 €</div>
-                                    </div>
-                                </div>
-                                <div class="g-card">
-                                    <div class="g-img">🍕</div>
-                                    <div class="g-info">
-                                        <div class="g-name">Margherita</div>
-                                        <div class="g-desc">Tomate, mozz.</div>
-                                        <div class="g-price">14,00 €</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        {% elseif key == 'bold' %}
-                            <div class="preview-bold">
-                                <div class="b-row"><span class="b-num">01</span><div class="b-info"><div class="b-name">Jamón ibérico</div><div class="b-meta">210 kcal</div></div><div class="b-right"><span class="b-price">24,50 €</span><span class="b-arr">›</span></div></div>
-                                <div class="b-row"><span class="b-num">02</span><div class="b-info"><div class="b-name">Ensalada César</div><div class="b-meta">🥗 Vegetariano</div></div><div class="b-right"><span class="b-price">16,00 €</span><span class="b-arr">›</span></div></div>
-                                <div class="b-row"><span class="b-num">03</span><div class="b-info"><div class="b-name">Pizza Margherita</div><div class="b-meta">750 kcal</div></div><div class="b-right"><span class="b-price">14,00 €</span><span class="b-arr">›</span></div></div>
-                                <div class="b-row"><span class="b-num">04</span><div class="b-info"><div class="b-name">Nduja calabresa</div><div class="b-meta">🌶🌶 Picante</div></div><div class="b-right"><span class="b-price">18,00 €</span><span class="b-arr">›</span></div></div>
-                            </div>
-
-                        {% elseif key == 'grid' %}
-                            <div class="preview-grid">
-                                <div class="g-grid">
-                                    <div class="g-gcard"><div class="g-gimg" style="background:#fff3ee">🥩</div><div class="g-ginfo"><div class="g-gname">Jamón ibérico</div><div class="g-gprice">24,50 €</div></div></div>
-                                    <div class="g-gcard"><div class="g-gimg" style="background:#f0f9f0">🥗</div><div class="g-ginfo"><div class="g-gname">Ensalada César</div><div class="g-gprice">16,00 €</div></div></div>
-                                    <div class="g-gcard"><div class="g-gimg" style="background:#fff8ee">🍕</div><div class="g-ginfo"><div class="g-gname">Margherita</div><div class="g-gprice">14,00 €</div></div></div>
-                                    <div class="g-gcard"><div class="g-gimg" style="background:#fff0f0">🌶️</div><div class="g-ginfo"><div class="g-gname">Nduja</div><div class="g-gprice">18,00 €</div></div></div>
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    {# Footer #}
-                    <div class="theme-footer">
-                        <div class="theme-header-row">
-                            <span class="theme-icon">{{ theme.icon }}</span>
-                            <span class="theme-name">{{ theme.name }}</span>
-                        </div>
-                        <div class="theme-desc">{{ theme.desc }}</div>
-                        <div class="theme-actions">
-                            {% if previewBase %}
-                                <button class="btn-preview-theme"
-                                        id="prev-btn-{{ key }}"
-                                        onclick="previewTheme('{{ key }}', '{{ theme.name }}')">
-                                    <i class="ti ti-eye" aria-hidden="true"></i> Previsualizar
-                                </button>
-                            {% endif %}
-                            <button class="btn-apply-theme {{ restaurant.theme == key ? 'is-current' : '' }}"
-                                    id="apply-btn-{{ key }}"
-                                    onclick="applyTheme('{{ key }}', '{{ theme.name }}')">
-                                {{ restaurant.theme == key ? '✓ Activo' : 'Aplicar' }}
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
-            {% endfor %}
-        </div>
-
     </div>
+
+    {# ── Preview bar ── #}
+    <div class="preview-bar" id="preview-bar">
+        <div class="preview-dot"></div>
+        <div class="preview-bar-text">
+            <div class="preview-bar-title" id="preview-bar-title">Vista previa activa</div>
+            <div class="preview-bar-sub">Solo tú ves esta combinación. Tus clientes siguen viendo la configuración activa.</div>
+        </div>
+        <div class="preview-bar-btns">
+            <button class="btn btn-sm btn-secondary" onclick="cancelPreview()">Cerrar</button>
+            <button class="btn btn-sm btn-primary" onclick="applyFromBar()">Aplicar</button>
+        </div>
+    </div>
+
+    {# ── Layouts ── #}
+    <div class="sec-hdr">
+        <div class="sec-eyebrow">Paso 1 · Estructura</div>
+        <div class="sec-title">Layout del menú</div>
+        <div class="sec-desc">Elige cómo se organizan los platos en la pantalla.</div>
+    </div>
+
+    <div class="layouts-grid">
+        {% for key, layout in layouts %}
+            <div class="sel-card {{ restaurant.layout == key ? 'is-active' : '' }}" id="lcard-{{ key }}">
+                <div class="layout-thumb">
+                    {% if key == 'standard' %}
+                        <div class="lt-row"><div class="lt-img">🥩</div><div class="lt-info"><div class="lt-name"></div><div class="lt-desc"></div></div><div class="lt-price">24 €</div></div>
+                        <div class="lt-row"><div class="lt-img">🥗</div><div class="lt-info"><div class="lt-name"></div><div class="lt-desc"></div></div><div class="lt-price">16 €</div></div>
+                    {% elseif key == 'compact' %}
+                        <div class="lt-crow"><div class="lt-num">01</div><div class="lt-cimg">🥩</div><div class="lt-cname"></div><div class="lt-cprice">24 €</div></div>
+                        <div class="lt-crow"><div class="lt-num">02</div><div class="lt-cimg">🥗</div><div class="lt-cname"></div><div class="lt-cprice">16 €</div></div>
+                        <div class="lt-crow"><div class="lt-num">03</div><div class="lt-cimg">🍕</div><div class="lt-cname"></div><div class="lt-cprice">14 €</div></div>
+                        <div class="lt-crow"><div class="lt-num">04</div><div class="lt-cimg">🌶️</div><div class="lt-cname"></div><div class="lt-cprice">18 €</div></div>
+                    {% else %}
+                        <div class="lt-grid">
+                            <div class="lt-gcell"><div class="lt-gimg">🥩</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">24 €</div></div></div>
+                            <div class="lt-gcell"><div class="lt-gimg">🥗</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">16 €</div></div></div>
+                            <div class="lt-gcell"><div class="lt-gimg">🍕</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">14 €</div></div></div>
+                            <div class="lt-gcell"><div class="lt-gimg">🌶️</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">18 €</div></div></div>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <div class="card-label">{{ layout.icon }} {{ layout.name }}</div>
+                    <div class="card-desc">{{ layout.desc }}</div>
+                    {% if restaurant.layout == key %}<div class="active-chip">✓ Activo</div>{% endif %}
+                    <div class="card-actions">
+                        <button class="btn-eye" id="lprev-{{ key }}" onclick="previewLayout('{{ key }}')">
+                            <i class="ti ti-eye"></i> Vista previa
+                        </button>
+                        <button class="btn-use {{ restaurant.layout == key ? 'is-current' : '' }}" onclick="selectLayout('{{ key }}')">
+                            {{ restaurant.layout == key ? '✓ Activo' : 'Usar' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="sec-divider"></div>
+
+    {# ── Themes ── #}
+    <div class="sec-hdr">
+        <div class="sec-eyebrow">Paso 2 · Apariencia</div>
+        <div class="sec-title">Tema visual</div>
+        <div class="sec-desc">Colores, fondos y estilo. Funciona con todos los layouts.</div>
+    </div>
+
+    <div class="themes-grid">
+        {% for key, thm in themes %}
+            <div class="sel-card {{ restaurant.theme == key ? 'is-active' : '' }}" id="tcard-{{ key }}">
+
+                {# Mini UI preview swatch #}
+                <div class="theme-swatch" style="background:{{ thm.preview_bg }}">
+                    {# header #}
+                    <div class="sw-hdr" style="background:{{ thm.preview_surface }};border:1px solid {{ thm.preview_border }}">
+                        <div class="sw-logo" style="background:{{ thm.preview_accent }}"></div>
+                        <div class="sw-brand" style="background:{{ thm.preview_fg }}"></div>
+                        <div class="sw-sel"   style="background:{{ thm.preview_border }}"></div>
+                    </div>
+                    {# search #}
+                    <div class="sw-srch" style="background:{{ thm.preview_surface }};border:1px solid {{ thm.preview_border }}"></div>
+                    {# tabs #}
+                    <div class="sw-tabs">
+                        <div class="sw-tab on" style="background:{{ thm.preview_accent }}"></div>
+                        <div class="sw-tab"    style="background:{{ thm.preview_fg }}"></div>
+                        <div class="sw-tab"    style="background:{{ thm.preview_fg }}"></div>
+                    </div>
+                    {# card row 1 #}
+                    <div class="sw-row" style="background:{{ thm.preview_surface }};border:1px solid {{ thm.preview_border }}">
+                        <div class="sw-rimg" style="background:{{ thm.preview_border }}"></div>
+                        <div class="sw-rinfo">
+                            <div class="sw-rname" style="background:{{ thm.preview_fg }}"></div>
+                            <div class="sw-rdesc" style="background:{{ thm.preview_fg }}"></div>
+                        </div>
+                        <div class="sw-rprice" style="color:{{ thm.preview_accent }}">€€</div>
+                    </div>
+                    {# card row 2 #}
+                    <div class="sw-row" style="background:{{ thm.preview_surface }};border:1px solid {{ thm.preview_border }}">
+                        <div class="sw-rimg" style="background:{{ thm.preview_border }}"></div>
+                        <div class="sw-rinfo">
+                            <div class="sw-rname" style="background:{{ thm.preview_fg }}"></div>
+                            <div class="sw-rdesc" style="background:{{ thm.preview_fg }}"></div>
+                        </div>
+                        <div class="sw-rprice" style="color:{{ thm.preview_accent }}">€€</div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="card-label">{{ thm.icon }} {{ thm.name }}</div>
+                    <div class="card-desc">{{ thm.desc }}</div>
+                    {% if restaurant.theme == key %}<div class="active-chip">✓ Activo</div>{% endif %}
+                    <div class="card-actions">
+                        <button class="btn-eye" id="tprev-{{ key }}" onclick="previewTheme('{{ key }}')">
+                            <i class="ti ti-eye"></i> Vista previa
+                        </button>
+                        <button class="btn-use {{ restaurant.theme == key ? 'is-current' : '' }}" onclick="selectTheme('{{ key }}')">
+                            {{ restaurant.theme == key ? '✓ Activo' : 'Usar' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
 {% endblock %}
 
 {% block javascripts %}
-    <script>
-        const PREVIEW_BASE   = '{{ previewBase|default('') }}';
-        const CURRENT_THEME  = '{{ restaurant.theme }}';
-        let   previewingKey  = null;
-        let   previewingName = null;
-        let   previewWindow  = null;
+<script>
+const PREVIEW_BASE   = '{{ previewBase|default('') }}';
+const CURRENT_LAYOUT = '{{ restaurant.layout }}';
+const CURRENT_THEME  = '{{ restaurant.theme }}';
+const LAYOUT_NAMES   = { {% for k, l in layouts %}'{{ k }}': '{{ l.name }}',{% endfor %} };
+const THEME_NAMES    = { {% for k, t in themes %}'{{ k }}': '{{ t.name }}',{% endfor %} };
 
-        function previewTheme(key, name) {
-            previewingKey  = key;
-            previewingName = name;
+let curPrevLayout  = CURRENT_LAYOUT;
+let curPrevTheme   = CURRENT_THEME;
+let previewWindow  = null;
+let confirmAction  = null;  // function to call on confirm
 
-            // Update UI
-            resetPreviewing();
-            const card = document.getElementById('card-' + key);
-            card.classList.add('is-previewing');
-            const badge = card.querySelector('.theme-badge');
-            if (badge) badge.remove();
-            const nb = document.createElement('div');
-            nb.className = 'theme-badge badge-previewing';
-            nb.id = 'badge-' + key;
-            nb.textContent = '👁 PREVIEW';
-            card.insertBefore(nb, card.firstChild);
-            document.getElementById('prev-btn-' + key)?.classList.add('active');
+// ── Confirm modal ──
+function openConfirm(title, sub, action) {
+    document.getElementById('confirm-title').textContent    = title;
+    document.getElementById('confirm-sub').textContent      = sub;
+    const btn = document.getElementById('confirm-apply-btn');
+    btn.disabled    = false;
+    btn.textContent = 'Aplicar ahora';
+    confirmAction   = action;
+    document.getElementById('confirm-backdrop').classList.add('show');
+}
+function closeConfirm() {
+    document.getElementById('confirm-backdrop').classList.remove('show');
+    confirmAction = null;
+}
+function doConfirm() {
+    const btn = document.getElementById('confirm-apply-btn');
+    btn.disabled    = true;
+    btn.textContent = 'Aplicando…';
+    if (confirmAction) confirmAction();
+}
+document.getElementById('confirm-backdrop').addEventListener('click', function(e) {
+    if (e.target === this) closeConfirm();
+});
 
-            // Show bar
-            document.getElementById('preview-bar-title').textContent = 'Previsualizando: ' + name;
-            document.getElementById('preview-bar').classList.add('show');
+// ── Layout ──
+function selectLayout(key) {
+    if (key === CURRENT_LAYOUT) return;
+    openConfirm(
+        '¿Usar layout "' + LAYOUT_NAMES[key] + '"?',
+        'Se aplicará de inmediato y todos tus clientes verán el nuevo layout.',
+        () => applyNow({ layout: key })
+    );
+}
+function previewLayout(key) {
+    curPrevLayout = key;
+    openPreviewTab();
+    document.querySelectorAll('.layout-card, [id^="lcard-"]').forEach(c => c.classList.remove('is-preview'));
+    document.querySelectorAll('[id^="lprev-"]').forEach(b => b.classList.remove('active'));
+    if (key !== CURRENT_LAYOUT) {
+        document.getElementById('lcard-' + key)?.classList.add('is-preview');
+        document.getElementById('lprev-' + key)?.classList.add('active');
+    }
+    showPreviewBar();
+}
 
-            // Open preview in new tab
-            if (PREVIEW_BASE) {
-                const url = PREVIEW_BASE + '?preview_theme=' + key;
-                if (previewWindow && !previewWindow.closed) {
-                    previewWindow.location.href = url;
-                } else {
-                    previewWindow = window.open(url, 'menu_preview');
-                }
-            }
+// ── Theme ──
+function selectTheme(key) {
+    if (key === CURRENT_THEME) return;
+    openConfirm(
+        '¿Usar tema "' + THEME_NAMES[key] + '"?',
+        'Se aplicará de inmediato y todos tus clientes verán el nuevo tema.',
+        () => applyNow({ theme: key })
+    );
+}
+function previewTheme(key) {
+    curPrevTheme = key;
+    openPreviewTab();
+    document.querySelectorAll('[id^="tcard-"]').forEach(c => c.classList.remove('is-preview'));
+    document.querySelectorAll('[id^="tprev-"]').forEach(b => b.classList.remove('active'));
+    if (key !== CURRENT_THEME) {
+        document.getElementById('tcard-' + key)?.classList.add('is-preview');
+        document.getElementById('tprev-' + key)?.classList.add('active');
+    }
+    showPreviewBar();
+}
 
-            showToast('Vista previa abierta — solo tú la ves 👁');
+// ── Preview tab ──
+function openPreviewTab() {
+    if (!PREVIEW_BASE) return;
+    const url = PREVIEW_BASE + '?preview_layout=' + curPrevLayout + '&preview_theme=' + curPrevTheme;
+    if (previewWindow && !previewWindow.closed) {
+        previewWindow.location.href = url;
+    } else {
+        previewWindow = window.open(url, 'menu_preview');
+    }
+}
+function showPreviewBar() {
+    const ln = LAYOUT_NAMES[curPrevLayout] ?? curPrevLayout;
+    const tn = THEME_NAMES[curPrevTheme]   ?? curPrevTheme;
+    document.getElementById('preview-bar-title').textContent = 'Vista previa: ' + ln + ' · ' + tn;
+    document.getElementById('preview-bar').classList.add('show');
+}
+function cancelPreview() {
+    curPrevLayout = CURRENT_LAYOUT;
+    curPrevTheme  = CURRENT_THEME;
+    if (previewWindow && !previewWindow.closed) previewWindow.close();
+    document.querySelectorAll('[id^="lcard-"],[id^="tcard-"]').forEach(c => c.classList.remove('is-preview'));
+    document.querySelectorAll('[id^="lprev-"],[id^="tprev-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById('preview-bar').classList.remove('show');
+    showToast('Vista previa cerrada');
+}
+function applyFromBar() {
+    const chLayout = curPrevLayout !== CURRENT_LAYOUT ? curPrevLayout : null;
+    const chTheme  = curPrevTheme  !== CURRENT_THEME  ? curPrevTheme  : null;
+    if (!chLayout && !chTheme) { cancelPreview(); return; }
+    const parts = [];
+    if (chLayout) parts.push('"' + LAYOUT_NAMES[chLayout] + '"');
+    if (chTheme)  parts.push('"' + THEME_NAMES[chTheme]   + '"');
+    openConfirm(
+        '¿Aplicar combinación previsualizada?',
+        'Se aplicará: ' + parts.join(' + ') + '.',
+        () => {
+            const body = {};
+            if (chLayout) body.layout = chLayout;
+            if (chTheme)  body.theme  = chTheme;
+            applyNow(body);
         }
+    );
+}
 
-        function cancelPreview() {
-            previewingKey  = null;
-            previewingName = null;
-            if (previewWindow && !previewWindow.closed) previewWindow.close();
-            resetPreviewing();
-            document.getElementById('preview-bar').classList.remove('show');
-            showToast('Preview cancelada');
-        }
-
-        function applyFromBar() {
-            if (previewingKey) applyTheme(previewingKey, previewingName);
-        }
-
-        async function applyTheme(key, name) {
-            if (key === CURRENT_THEME && !previewingKey) return;
-
-            try {
-                const res  = await fetch('/admin/theme/apply', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ theme: key }),
-                });
-                const data = await res.json();
-                if (!data.ok) { showToast('Error al aplicar el tema', 'error'); return; }
-
-                // Reload to reflect new active theme
-                showToast('✓ Tema "' + name + '" aplicado al instante', 'success');
-                setTimeout(() => location.reload(), 900);
-            } catch(e) {
-                showToast('Error de conexión', 'error');
-            }
-        }
-
-        function resetPreviewing() {
-            ['classic','glass','bold','grid'].forEach(k => {
-                const card = document.getElementById('card-' + k);
-                if (!card) return;
-                card.classList.remove('is-previewing');
-                const badge = document.getElementById('badge-' + k);
-                if (badge) badge.remove();
-                document.getElementById('prev-btn-' + k)?.classList.remove('active');
-                // Re-add active badge if this is the current theme
-                if (k === CURRENT_THEME) {
-                    card.classList.add('is-active');
-                    const ab = document.createElement('div');
-                    ab.className = 'theme-badge badge-active';
-                    ab.id = 'badge-' + k;
-                    ab.textContent = '✓ ACTIVO';
-                    card.insertBefore(ab, card.firstChild);
-                }
-            });
-        }
-    </script>
+// ── Apply (immediate) ──
+async function applyNow(body) {
+    try {
+        const res  = await fetch('/admin/theme/apply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!data.ok) { showToast('Error al guardar', 'error'); closeConfirm(); return; }
+        showToast('✓ Cambio aplicado correctamente');
+        setTimeout(() => location.reload(), 700);
+    } catch(e) {
+        showToast('Error de conexión', 'error');
+        closeConfirm();
+    }
+}
+</script>
 {% endblock %}

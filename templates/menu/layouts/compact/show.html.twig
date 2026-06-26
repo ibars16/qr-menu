@@ -1,0 +1,184 @@
+{# Layout: Compact — numbered rows, horizontal-scroll card back #}
+{% include 'menu/themes/' ~ theme ~ '/vars.html.twig' %}
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); background-attachment: var(--bg-attach); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+    .header { position: sticky; top: 0; z-index: 200; background: var(--hdr-bg); backdrop-filter: var(--hdr-blur); -webkit-backdrop-filter: var(--hdr-blur); border-bottom: 1px solid var(--hdr-border); padding: 11px 18px; }
+    .header-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; max-width: 760px; margin: 0 auto; }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo { width: 32px; height: 32px; border-radius: 8px; background: var(--logo-bg); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 800; flex-shrink: 0; overflow: hidden; }
+    .logo img { width: 100%; height: 100%; object-fit: cover; }
+    .resto-name { font-size: 15px; font-weight: 800; color: var(--fg); letter-spacing: -0.3px; }
+    .selectors { display: flex; gap: 6px; }
+    .sel-wrap { position: relative; }
+    .sel-wrap select { appearance: none; background: var(--surface); border: 1px solid var(--b1); color: var(--fg-2); font-size: 12px; padding: 6px 22px 6px 10px; border-radius: 20px; cursor: pointer; outline: none; transition: border-color 0.15s; }
+    .sel-wrap select:hover { border-color: var(--b2); }
+    .sel-wrap .chev { position: absolute; right: 7px; top: 50%; transform: translateY(-50%); font-size: 9px; color: var(--fg-3); pointer-events: none; }
+
+    .hero { padding: 28px 18px 24px; background: var(--hero-bg); border-bottom: 1px solid var(--hero-border); }
+    .hero-inner { max-width: 760px; margin: 0 auto; }
+    .hero-name { font-size: 28px; font-weight: 800; color: var(--fg); letter-spacing: -0.8px; }
+    .hero-sub  { font-size: 13px; color: var(--fg-2); margin-top: 4px; }
+
+    .ui-wrap { max-width: 760px; margin: 0 auto; padding: 0 18px; }
+
+    .search-wrap { padding-top: 16px; position: relative; }
+    .search-input { width: 100%; background: var(--in-bg); border: 1px solid var(--in-border); color: var(--in-text); font-size: 15px; padding: 11px 14px 11px 42px; border-radius: 10px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .search-input::placeholder { color: var(--in-ph); }
+    .search-input:focus { border-color: var(--in-focus-border); box-shadow: var(--in-focus-shadow); }
+    .search-icon { position: absolute; left: 14px; top: 27px; font-size: 15px; color: var(--fg-3); pointer-events: none; }
+
+    .diet-filters { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 12px; }
+    .diet-filter { background: var(--tab-bg); border: 1px solid var(--tab-border); color: var(--tab-text); border-radius: 20px; padding: 6px 13px; cursor: pointer; font-size: 12px; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+    .diet-filter:hover { background: var(--tab-hbg); color: var(--tab-htext); }
+    .diet-filter.active { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); }
+    .sep { height: 1px; margin: 14px 0 0; background: var(--sep-bg); }
+
+    .cat-tabs { display: flex; gap: 5px; padding-top: 14px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab { font-size: 13px; font-weight: 500; padding: 7px 15px; border-radius: 8px; background: var(--tab-bg); border: 1px solid var(--tab-border); color: var(--tab-text); white-space: nowrap; flex-shrink: 0; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .cat-tab:hover { background: var(--tab-hbg); color: var(--tab-htext); }
+    .cat-tab.active { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); }
+
+    .content { max-width: 760px; margin: 0 auto; padding: 0 0 100px; }
+    .cat-section { padding-top: 28px; }
+    .cat-title-row { display: flex; align-items: center; gap: 10px; padding: 0 18px 14px; }
+    .cat-title { font-size: 11px; font-weight: 700; color: var(--cat-title); text-transform: uppercase; letter-spacing: 0.12em; }
+    .cat-sep { flex: 1; height: 1px; background: var(--cat-sep); }
+    .no-results { text-align: center; padding: 60px 20px; color: var(--fg-3); font-size: 15px; display: none; max-width: 760px; margin: 0 auto; }
+    .empty-state { text-align: center; padding: 80px 20px; color: var(--fg-3); font-size: 15px; }
+    .cards-list { display: flex; flex-direction: column; }
+
+    /* ── Flip card row ── */
+    .card-wrap { perspective: 1400px; cursor: pointer; }
+    .card { width: 100%; height: 90px; position: relative; transform-style: preserve-3d; transition: transform 0.48s cubic-bezier(0.4,0.2,0.2,1); }
+    .card.flipped { transform: rotateY(180deg); }
+    .card-front, .card-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+
+    /* ── Front ── */
+    .card-front { background: var(--surface); border-bottom: 1px solid var(--row-border); display: flex; align-items: center; padding: 0 18px; transition: background 0.15s; }
+    .card-wrap:hover .card:not(.flipped) .card-front { background: var(--row-hover); }
+    .row-num { font-size: 12px; font-weight: 700; color: var(--num); width: 28px; flex-shrink: 0; transition: color 0.15s; }
+    .card-wrap:hover .row-num { color: var(--num-h); }
+    .front-img { width: 58px; height: 58px; flex-shrink: 0; border-radius: 8px; background: var(--cf-img); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-right: 14px; }
+    .front-img img { width: 100%; height: 100%; object-fit: cover; }
+    .front-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .front-name { font-size: 15px; font-weight: 600; color: var(--cn); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.15s; }
+    .card-wrap:hover .front-name { color: var(--fg); }
+    .front-meta { display: flex; align-items: center; gap: 6px; }
+    .front-badge { font-size: 11px; padding: 1px 7px; border-radius: 10px; background: var(--cbg); border: 1px solid var(--cbc); color: var(--cbt); }
+    .front-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; margin-left: 12px; }
+    .front-price { font-size: 17px; font-weight: 700; color: var(--cp); letter-spacing: -0.4px; font-variant-numeric: tabular-nums; }
+    .flip-hint { font-size: 10px; color: var(--hint); transition: color 0.15s; }
+    .card-wrap:hover .flip-hint { color: var(--hint-h); }
+
+    /* ── Back (horizontal scroll) ── */
+    .card-back { background: var(--cb-bg); border-bottom: 1px solid var(--cb-border); transform: rotateY(180deg); display: flex; flex-direction: row; align-items: stretch; }
+    .back-close { flex-shrink: 0; width: 40px; display: flex; align-items: center; justify-content: center; color: var(--close-t); cursor: pointer; background: transparent; border: none; border-right: 1px solid var(--bdiv); transition: color 0.15s, background 0.15s; }
+    .back-close:hover { color: var(--close-ht); background: var(--close-hbg); }
+
+    /* Horizontal scroll with right-edge fade + cue */
+    .back-scroll { position: relative; flex: 1; overflow: hidden; }
+    .back-scroll::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 40px; background: linear-gradient(to right, transparent, var(--fade)); pointer-events: none; transition: opacity 0.25s; }
+    .back-scroll.no-fade::after { opacity: 0; }
+    @keyframes cue-slide { 0%,100% { transform: translateY(-50%); } 50% { transform: translateY(-50%) translateX(2px); } }
+    .scroll-cue-h { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: var(--cue-bg); color: var(--cue-text); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; pointer-events: none; transition: opacity 0.25s; animation: cue-slide 2s ease-in-out infinite; }
+    .back-scroll.no-fade .scroll-cue-h { opacity: 0; }
+
+    .back-body { height: 100%; overflow-x: auto; overflow-y: hidden; display: flex; align-items: stretch; scrollbar-width: none; }
+    .back-body::-webkit-scrollbar { display: none; }
+    .bsec { flex-shrink: 0; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; border-right: 1px solid var(--bdiv); }
+    .bsec-title { font-size: 9px; font-weight: 700; color: var(--btt); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 2px; }
+    .back-desc  { font-size: 12px; color: var(--bdesc); line-height: 1.5; max-width: 200px; }
+    .ing-list   { display: flex; gap: 4px; align-items: center; flex-wrap: nowrap; }
+    .ing        { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--ing-bg); color: var(--ing-t); border: 1px solid var(--ing-b); white-space: nowrap; }
+    .lbl-list   { display: flex; gap: 4px; }
+    .lbl        { font-size: 11px; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+    .lbl-g      { background: var(--lg-bg); color: var(--lg); border: 1px solid var(--lg-b); }
+    .lbl-o      { background: var(--lo-bg); color: var(--lo); border: 1px solid var(--lo-b); }
+    .nut-row    { display: flex; align-items: baseline; gap: 4px; }
+    .nut-v      { font-size: 18px; font-weight: 700; color: var(--nut-v); font-variant-numeric: tabular-nums; }
+    .nut-u      { font-size: 11px; color: var(--nut-u); }
+    .spicy-row  { display: flex; align-items: center; gap: 4px; }
+    .dot        { width: 7px; height: 7px; border-radius: 50%; background: var(--dot-off); flex-shrink: 0; }
+    .dot.on     { background: var(--dot-on); }
+    .spicy-txt  { font-size: 11px; color: var(--spicy-t); white-space: nowrap; }
+</style>
+
+<header class="header">
+    <div class="header-row">
+        <div class="logo-wrap">
+            <div class="logo">{% if restaurant.logo %}<img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}" alt="">{% else %}{{ restaurant.name|slice(0,1)|upper }}{% endif %}</div>
+            <div class="resto-name">{{ restaurant.name }}</div>
+        </div>
+        <div class="selectors">
+            <div class="sel-wrap"><select onchange="changeLanguage(this.value)">{% for code, lang in languages %}<option value="{{ code }}" {{ locale == code ? 'selected' : '' }}>{{ lang.flag }} {{ code|upper }}</option>{% endfor %}</select><span class="chev">▾</span></div>
+            <div class="sel-wrap"><select onchange="changeCurrency(this.value)">{% for code, curr in currencies %}<option value="{{ code }}" {{ currency == code ? 'selected' : '' }}>{{ curr.symbol }} {{ code }}</option>{% endfor %}</select><span class="chev">▾</span></div>
+        </div>
+    </div>
+</header>
+
+<div class="hero"><div class="hero-inner"><div class="hero-name">{{ restaurant.name }}</div><div class="hero-sub">Nuestra carta</div></div></div>
+
+<div class="ui-wrap">
+    <div class="search-wrap"><i class="ti ti-search search-icon"></i><input type="text" class="search-input" id="menu-search" placeholder="Buscar platos…" autocomplete="off"></div>
+    {% if tags|length > 0 %}<div class="diet-filters"><button class="diet-filter active" data-tag="all">Todo</button>{% for tag in tags %}{% set tT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tT = tr %}{% endif %}{% endfor %}{% if tT %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tT.name }}</button>{% endif %}{% endfor %}</div><div class="sep"></div>{% endif %}
+    <div class="cat-tabs" id="cat-tabs"><span class="cat-tab active" data-cat="all">Todo</span>{% for category in categories %}{% set t = category.getTranslation(locale) %}{% if t %}<span class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</span>{% endif %}{% endfor %}</div>
+</div>
+
+<div class="content">
+    <div class="no-results" id="no-results">No se encontraron platos</div>
+    {% for category in categories %}
+        {% set catT = category.getTranslation(locale) %}
+        {% if catT and category.activeProductsSorted|length > 0 %}
+            <section class="cat-section" id="cat-{{ category.id }}" data-section="cat-{{ category.id }}">
+                <div class="cat-title-row"><div class="cat-title">{{ catT.name }}</div><div class="cat-sep"></div></div>
+                <div class="cards-list">
+                    {% for product in category.activeProductsSorted %}
+                        {% set pT = product.getTranslation(locale) %}
+                        {% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}
+                        {% if not pT %}{% set pT = product.translations.first %}{% endif %}
+                        {% if pT %}
+                            <div class="card-wrap" onclick="flipCard(this)" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}">
+                                <div class="card">
+                                    <div class="card-front">
+                                        <div class="row-num">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</div>
+                                        <div class="front-img">{% if product.image %}<img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">{% else %}🍽️{% endif %}</div>
+                                        <div class="front-info">
+                                            <div class="front-name">{{ pT.name }}</div>
+                                            <div class="front-meta">
+                                                {% if product.spicyLevel > 0 %}<span class="front-badge">{% if product.spicyLevel <= 2 %}🌶{% elseif product.spicyLevel <= 4 %}🌶🌶{% else %}🌶🌶🌶{% endif %}</span>{% endif %}
+                                                {% for tag in product.tags %}{% set tT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tT = tr %}{% endif %}{% endfor %}{% if tT %}<span class="front-badge">{{ tag.icon }} {{ tT.name }}</span>{% endif %}{% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="front-right">
+                                            <div class="front-price">{{ (product.convertedPrice / 100)|number_format(2) }}</div>
+                                            <div class="flip-hint"><i class="ti ti-rotate-clockwise"></i></div>
+                                        </div>
+                                    </div>
+                                    <div class="card-back">
+                                        <button class="back-close" onclick="unflipCard(event,this)" aria-label="Volver"><i class="ti ti-x"></i></button>
+                                        <div class="back-scroll horiz">
+                                            <div class="back-body">
+                                                <div class="bsec"><div class="bsec-title">Plato</div><div class="back-desc" style="font-weight:600;font-size:13px;color:var(--bn)">{{ pT.name }}</div><div style="font-size:16px;font-weight:700;color:var(--bp);margin-top:4px;font-variant-numeric:tabular-nums">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div></div>
+                                                {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
+                                                {% if product.ingredients|length > 0 %}<div class="bsec"><div class="bsec-title">Ingredientes</div><div class="ing-list">{% for ingredient in product.ingredients %}{% set iT = ingredient.getTranslation(locale) %}{% if not iT %}{% set iT = ingredient.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if iT %}<div class="ing">{{ iT.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
+                                                {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">Etiquetas</div><div class="lbl-list">{% for tag in product.tags %}{% set tT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tT = tr %}{% endif %}{% endfor %}{% if tT %}<div class="lbl lbl-g">{{ tag.icon }} {{ tT.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
+                                                {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">Picante</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}Suave{% elseif product.spicyLevel == 2 %}Medio{% elseif product.spicyLevel == 3 %}Picante{% elseif product.spicyLevel == 4 %}Muy picante{% else %}Extremo{% endif %}</span></div></div>{% endif %}
+                                                {% if product.calories %}<div class="bsec"><div class="bsec-title">Calorías</div><div class="nut-row"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
+                                            </div>
+                                            <div class="scroll-cue-h" aria-hidden="true">›</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    {% else %}<div class="empty-state">No hay productos disponibles.</div>{% endfor %}
+</div>
+
+{% include 'menu/_search_js.html.twig' %}

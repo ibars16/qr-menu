@@ -85,16 +85,24 @@ class MenuController extends AbstractController
         $tags = $restaurant->getProductTags()->toArray();
         usort($tags, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
 
-        // Theme and preview
-        $theme        = $restaurant->getTheme();
-        $isPreview    = false;
-        $previewTheme = $request->query->get('preview_theme');
+        // Layout + theme (with preview support)
+        $layout        = $restaurant->getLayout();
+        $theme         = $restaurant->getTheme();
+        $isPreview     = false;
+        $validLayouts  = ['standard', 'compact', 'grid'];
+        $validThemes   = ['classic-dark', 'classic-warm', 'glass', 'ocean', 'noir'];
 
-        if ($previewTheme) {
+        $previewLayout = $request->query->get('preview_layout');
+        $previewTheme  = $request->query->get('preview_theme');
+
+        if ($previewLayout || $previewTheme) {
             $user = $this->getUser();
             if ($user && method_exists($user, 'getRestaurant') && $user->getRestaurant() === $restaurant) {
-                $validThemes = ['classic', 'glass', 'bold', 'grid'];
-                if (in_array($previewTheme, $validThemes)) {
+                if ($previewLayout && in_array($previewLayout, $validLayouts)) {
+                    $layout    = $previewLayout;
+                    $isPreview = true;
+                }
+                if ($previewTheme && in_array($previewTheme, $validThemes)) {
                     $theme     = $previewTheme;
                     $isPreview = true;
                 }
@@ -102,16 +110,18 @@ class MenuController extends AbstractController
         }
 
         return $this->render('menu/show.html.twig', [
-            'restaurant'   => $restaurant,
-            'categories'   => $categories,
-            'locale'       => $locale,
-            'currency'     => $currency,
-            'languages'    => $languages,
-            'currencies'   => $currencies,
-            'tags'         => $tags,
-            'theme'        => $theme,
-            'isPreview'    => $isPreview,
-            'previewTheme' => $previewTheme,
+            'restaurant'    => $restaurant,
+            'categories'    => $categories,
+            'locale'        => $locale,
+            'currency'      => $currency,
+            'languages'     => $languages,
+            'currencies'    => $currencies,
+            'tags'          => $tags,
+            'layout'        => $layout,
+            'theme'         => $theme,
+            'isPreview'     => $isPreview,
+            'previewLayout' => $previewLayout,
+            'previewTheme'  => $previewTheme,
         ]);
     }
 }
