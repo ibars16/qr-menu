@@ -166,7 +166,7 @@
         }
         .panel-close:hover { color:#ccc; }
         .panel-body {
-            flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column;
+            flex:1; min-height:0; overflow-y:auto; padding:18px; display:flex; flex-direction:column;
             gap:15px; scrollbar-width:thin; scrollbar-color:#222 transparent;
         }
         .panel-footer {
@@ -181,6 +181,16 @@
             .panel-footer { justify-content:stretch; }
             .panel-footer .btn { flex:1; justify-content:center; min-height:48px; font-size:15px; }
             .panel-footer .btn-danger { flex:0; min-width:48px; padding:0; }
+        }
+
+        /* Step body wrappers — must be flex containers so the constrained height from
+           .sheet/.modal (max-height: 92/90vh) reaches .panel-body and enables scroll */
+        #d-step1-body, #d-step2-body,
+        #m-step1-body, #m-step2-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
         }
 
         /* Steps */
