@@ -1,5 +1,16 @@
 {# templates/admin/_product_fields.html.twig #}
 
+{# Categoría — siempre visible y editable #}
+<div class="field">
+    <label class="field-label">Categoría <span class="req">*</span></label>
+    <select id="p-category">
+        {% for category in categories %}
+            {% set catT = category.getTranslation(locale) %}
+            <option value="{{ category.id }}">{{ catT ? catT.name : '(sin nombre)' }}</option>
+        {% endfor %}
+    </select>
+</div>
+
 {# Nombre — obligatorio #}
 <div class="field">
     <label class="field-label">

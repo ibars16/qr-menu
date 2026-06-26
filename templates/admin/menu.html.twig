@@ -648,12 +648,13 @@
                 this._showDeleteBtn(true);
                 this._hideSteps();
                 this._hideBackBtn();
-                this.goStep2();
+                this.goStep2(true);
                 this._openProduct();
 
                 try {
                     const data = await apiFetch(`/admin/products/${id}`);
                     S.categoryId = data.categoryId;
+                    document.querySelectorAll('[id="p-category"]').forEach(el => { el.value = data.categoryId; });
                     S.spicy      = data.spicyLevel ?? 0;
                     updateSpicyUI();
 
@@ -702,18 +703,21 @@
                 ['d-step-1','m-step-1'].forEach(id => document.getElementById(id)?.classList.add('active'));
                 ['d-step-2','m-step-2'].forEach(id => document.getElementById(id)?.classList.remove('active'));
             },
-            goStep2() {
-                if (!S.categoryId) {
+            goStep2(force = false) {
+                if (!force && !S.categoryId) {
                     const sel = document.querySelector('.cat-card.selected');
                     if (!sel) { document.getElementById('cat-select-error').style.display=''; return; }
                     S.categoryId = parseInt(sel.dataset.catId);
+                }
+                if (S.categoryId) {
+                    document.querySelectorAll('[id="p-category"]').forEach(el => { el.value = S.categoryId; });
                 }
                 ['d-step1-body','m-step1-body'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
                 ['d-step2-body','m-step2-body'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display=''; });
                 ['d-step-2','m-step-2'].forEach(id => document.getElementById(id)?.classList.add('active'));
                 ['d-step-1','m-step-1'].forEach(id => document.getElementById(id)?.classList.remove('active'));
                 loadIngredients();
-                setTimeout(() => document.getElementById('p-name')?.focus(), 80);
+                setTimeout(() => panelEl('p-name')?.focus(), 80);
             },
 
             openAiImport() { showToast('Importación con IA — próximamente ✨'); },
@@ -761,10 +765,10 @@
         function validateProduct() {
             let ok = true;
             [['p-name','p-name-error'],['p-desc','p-desc-error'],['p-price','p-price-error']].forEach(([fid,eid]) => {
-                const val = document.getElementById(fid)?.value?.trim();
+                const val = panelEl(fid)?.value?.trim();
                 const empty = !val || (fid === 'p-price' && parseFloat(val) <= 0);
-                document.getElementById(eid)?.classList.toggle('show', empty);
-                document.getElementById(fid)?.classList.toggle('error', empty);
+                panelEl(eid)?.classList.toggle('show', empty);
+                panelEl(fid)?.classList.toggle('error', empty);
                 if (empty) ok = false;
             });
             return ok;
@@ -781,7 +785,7 @@
 
             const payload = {
                 id:          S.productId,
-                categoryId:  S.categoryId,
+                categoryId:  parseInt(getVal('p-category')) || S.categoryId,
                 basePrice:   parseFloat(getVal('p-price')) || 0,
                 calories:    parseInt(getVal('p-calories')) || null,
                 spicyLevel:  S.spicy || null,
@@ -845,7 +849,7 @@
         }
 
         function searchIngredients(query) {
-            const box = document.getElementById('ing-suggestions');
+            const box = panelEl('ing-suggestions');
             if (!query.trim()) { box.classList.remove('open'); return; }
             const lower    = query.toLowerCase();
             const existing = S.ingredients.map(i => i.name.toLowerCase());
@@ -878,15 +882,15 @@
                 const exact = S.allIngredients.find(i => i.name.toLowerCase() === q.toLowerCase());
                 addIng(exact?.id ?? null, exact?.name ?? q);
             }
-            if (e.key === 'Escape') document.getElementById('ing-suggestions').classList.remove('open');
+            if (e.key === 'Escape') panelEl('ing-suggestions').classList.remove('open');
         }
 
         function addIng(id, name) {
             if (S.ingredients.some(i => i.name.toLowerCase() === name.toLowerCase())) return;
             S.ingredients.push({ id, name });
             renderIngTags();
-            document.getElementById('ing-input').value = '';
-            document.getElementById('ing-suggestions').classList.remove('open');
+            panelEl('ing-input').value = '';
+            panelEl('ing-suggestions').classList.remove('open');
         }
 
         function removeIng(name) {
@@ -895,7 +899,7 @@
         }
 
         function renderIngTags() {
-            document.getElementById('ing-tags').innerHTML = S.ingredients.map(i =>
+            const html = S.ingredients.map(i =>
                 `<div class="ing-tag">${i.name}
             <button onclick="removeIng('${i.name.replace(/'/g,"\\'")}')
 " aria-label="Quitar ${i.name}">
@@ -903,12 +907,13 @@
             </button>
         </div>`
             ).join('');
+            document.querySelectorAll('[id="ing-tags"]').forEach(el => { el.innerHTML = html; });
         }
 
         // ── Image preview ──────────────────────────────────────────────────────────
         function previewImage(input) {
             if (!input.files?.length) return;
-            const area = document.getElementById('img-upload-area');
+            const area = panelEl('img-upload-area');
             const url  = URL.createObjectURL(input.files[0]);
             let img    = area.querySelector('img');
             if (!img) { img = document.createElement('img'); area.appendChild(img); }
@@ -918,20 +923,23 @@
 
         // ── Reset ──────────────────────────────────────────────────────────────────
         function resetProduct() {
-            ['p-name','p-desc','p-price','p-calories','ing-input'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) { el.value=''; el.classList.remove('error'); }
-            });
-            ['p-name-error','p-desc-error','p-price-error'].forEach(id =>
-                document.getElementById(id)?.classList.remove('show')
+            ['p-name','p-desc','p-price','p-calories','ing-input'].forEach(id =>
+                document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value=''; el.classList.remove('error'); })
             );
+            ['p-name-error','p-desc-error','p-price-error'].forEach(id =>
+                document.querySelectorAll('[id="' + id + '"]').forEach(el => el.classList.remove('show'))
+            );
+            document.querySelectorAll('[id="p-category"]').forEach(el => { el.selectedIndex = 0; });
             document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('on'));
             document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
-            document.getElementById('ing-tags').innerHTML = '';
-            document.getElementById('ing-suggestions')?.classList.remove('open');
+            document.querySelectorAll('[id="ing-tags"]').forEach(el => { el.innerHTML = ''; });
+            document.querySelectorAll('[id="ing-suggestions"]').forEach(el => el.classList.remove('open'));
             document.getElementById('cat-select-error').style.display = 'none';
-            const area = document.getElementById('img-upload-area');
-            if (area) { area.querySelector('img')?.remove(); area.querySelector('.img-upload-hint').style.display=''; }
+            document.querySelectorAll('[id="img-upload-area"]').forEach(area => {
+                area.querySelector('img')?.remove();
+                const hint = area.querySelector('.img-upload-hint');
+                if (hint) hint.style.display = '';
+            });
             S.productId=null; S.categoryId=null; S.spicy=0; S.ingredients=[];
             // Reset steps visibility
             ['product-modal-steps','product-sheet-steps'].forEach(id => {
@@ -944,8 +952,18 @@
         }
 
         // ── Utils ──────────────────────────────────────────────────────────────────
-        const getVal = id => document.getElementById(id)?.value?.trim() ?? '';
-        const setVal = (id, v) => { const el=document.getElementById(id); if(el) el.value=v??''; };
+        // The product-fields partial is included twice (desktop modal + mobile sheet).
+        // panelEl() queries inside the currently-open panel first, so reads always hit
+        // the visible copy. setVal() writes to both copies so they stay in sync.
+        function activePanel() {
+            return document.querySelector('.modal-overlay.open, .sheet-overlay.open');
+        }
+        function panelEl(id) {
+            const p = activePanel();
+            return p?.querySelector('[id="' + id + '"]') ?? document.getElementById(id);
+        }
+        const getVal = id => panelEl(id)?.value?.trim() ?? '';
+        const setVal = (id, v) => document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value = v ?? ''; });
 
         async function apiFetch(url, body=null, method=null) {
             const m = method ?? (body !== null ? 'POST' : 'GET');
@@ -958,7 +976,7 @@
         // Close suggestions on outside click
         document.addEventListener('click', e => {
             if (!e.target.closest('.ing-wrap')) {
-                document.getElementById('ing-suggestions')?.classList.remove('open');
+                document.querySelectorAll('[id="ing-suggestions"]').forEach(el => el.classList.remove('open'));
             }
         });
     </script>

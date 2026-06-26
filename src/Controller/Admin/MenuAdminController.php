@@ -188,6 +188,13 @@ class MenuAdminController extends AbstractController
             if (!$product || $product->getCategory()->getRestaurant() !== $restaurant) {
                 return $this->json(['error' => 'Plato no encontrado.'], 404);
             }
+            // Allow moving the product to a different category
+            if (!empty($data['categoryId']) && $data['categoryId'] != $product->getCategory()->getId()) {
+                $newCat = $em->getRepository(Category::class)->find($data['categoryId']);
+                if ($newCat && $newCat->getRestaurant() === $restaurant) {
+                    $product->setCategory($newCat);
+                }
+            }
         } else {
             $category = $em->getRepository(Category::class)->find($data['categoryId'] ?? 0);
             if (!$category || $category->getRestaurant() !== $restaurant) {
