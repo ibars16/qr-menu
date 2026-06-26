@@ -1,5 +1,540 @@
-
 {% extends 'admin/base.html.twig' %}
+
 {% block title %}Mesas y QRs{% endblock %}
 {% block page_title %}Mesas y QRs{% endblock %}
-{% block body %}<p style="color:#555;font-size:14px">Próximamente.</p>{% endblock %}
+
+{% block header_actions %}
+    <button class="btn btn-primary" onclick="UI.openNew()">
+        <i class="ti ti-plus" aria-hidden="true"></i>
+        Nueva mesa
+    </button>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .tables-wrap { max-width: 800px; }
+
+        /* Empty state */
+        .empty-state  { text-align:center; padding:80px 24px; }
+        .empty-icon   { font-size:52px; display:block; margin-bottom:16px; opacity:0.2; }
+        .empty-title  { font-size:20px; font-weight:600; color:#fff; margin-bottom:8px; letter-spacing:-0.3px; }
+        .empty-sub    { font-size:14px; color:#444; line-height:1.6; margin-bottom:28px; max-width:340px; margin-left:auto; margin-right:auto; }
+
+        /* Info banner */
+        .info-banner {
+            background:#111; border:1px solid #1c1c1c; border-radius:10px;
+            padding:12px 16px; font-size:13px; color:#555; line-height:1.6;
+            margin-bottom:20px; display:flex; align-items:flex-start; gap:10px;
+        }
+        .info-banner i { font-size:16px; flex-shrink:0; margin-top:1px; }
+
+        /* Table grid */
+        .tables-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));
+            gap:12px;
+        }
+        @media (max-width:767px) { .tables-grid { grid-template-columns:1fr; } }
+
+        /* Table card */
+        .table-card {
+            background:#141414; border:1px solid #1c1c1c;
+            border-radius:12px; overflow:hidden;
+            transition:border-color 0.1s;
+        }
+        .table-card:hover { border-color:#242424; }
+        .table-card.inactive { opacity:0.5; }
+
+        .table-card-header {
+            display:flex; align-items:center; gap:10px;
+            padding:14px 16px 12px; border-bottom:1px solid #1c1c1c;
+            background:#111;
+        }
+        .table-number-badge {
+            font-size:18px; font-weight:700; color:#fff;
+            letter-spacing:-0.5px; flex:1;
+        }
+        .table-number-badge span { font-size:11px; color:#444; font-weight:400; display:block; margin-top:1px; }
+
+        .toggle {
+            width:32px; height:18px; border-radius:9px; background:#222;
+            position:relative; cursor:pointer; transition:background 0.15s;
+            border:none; padding:0; flex-shrink:0;
+        }
+        .toggle::after {
+            content:''; position:absolute; width:12px; height:12px;
+            border-radius:50%; background:#444; top:3px; left:3px;
+            transition:left 0.15s, background 0.15s;
+        }
+        .toggle.on { background:rgba(193,68,14,0.25); }
+        .toggle.on::after { left:17px; background:#C1440E; }
+
+        .icon-btn {
+            width:30px; height:30px; border-radius:7px; border:1px solid #242424;
+            background:#1a1a1a; display:flex; align-items:center; justify-content:center;
+            cursor:pointer; color:#444; font-size:13px;
+            transition:color 0.1s, border-color 0.1s;
+        }
+        .icon-btn:hover        { color:#ccc; border-color:#3a3a3a; }
+        .icon-btn.danger:hover { color:#F0997B; border-color:rgba(240,153,123,0.3); }
+
+        @media (max-width:767px) {
+            .icon-btn { width:38px; height:38px; font-size:16px; }
+            .toggle   { width:38px; height:22px; }
+            .toggle::after { width:14px; height:14px; top:4px; left:4px; }
+            .toggle.on::after { left:20px; }
+        }
+
+        .table-card-body {
+            padding:14px 16px; display:flex; gap:14px; align-items:flex-start;
+        }
+
+        /* QR block */
+        .qr-block {
+            flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:8px;
+        }
+        .qr-canvas-wrap {
+            width:110px; height:110px; background:#fff; border-radius:8px;
+            display:flex; align-items:center; justify-content:center;
+            overflow:hidden;
+        }
+        .qr-canvas-wrap canvas { display:block; }
+        .qr-actions { display:flex; gap:5px; }
+        .qr-btn {
+            flex:1; display:flex; align-items:center; justify-content:center; gap:4px;
+            padding:5px 8px; border-radius:7px; font-size:11px;
+            border:1px solid #2a2a2a; background:#1a1a1a; color:#666;
+            cursor:pointer; transition:color 0.1s, border-color 0.1s; white-space:nowrap;
+        }
+        .qr-btn:hover { color:#ccc; border-color:#444; }
+        .qr-btn i { font-size:13px; }
+
+        /* URL block */
+        .url-block { flex:1; min-width:0; }
+        .url-label { font-size:11px; font-weight:600; color:#444; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; }
+        .url-box {
+            background:#111; border:1px solid #1c1c1c; border-radius:8px;
+            padding:9px 12px; font-size:12px; color:#555;
+            font-family:monospace; word-break:break-all; line-height:1.5;
+            margin-bottom:8px;
+        }
+        .url-copy-btn {
+            display:inline-flex; align-items:center; gap:5px;
+            padding:6px 12px; border-radius:7px; font-size:12px;
+            border:1px solid #2a2a2a; background:#1a1a1a; color:#666;
+            cursor:pointer; transition:color 0.1s;
+        }
+        .url-copy-btn:hover { color:#ccc; border-color:#444; }
+        .regenerate-btn {
+            display:inline-flex; align-items:center; gap:5px;
+            padding:6px 12px; border-radius:7px; font-size:12px;
+            border:1px solid rgba(240,100,80,0.2); background:rgba(240,100,80,0.06); color:#555;
+            cursor:pointer; transition:color 0.1s;
+            margin-left:5px;
+        }
+        .regenerate-btn:hover { color:#F0997B; border-color:rgba(240,100,80,0.3); }
+
+        /* Modal / Sheet */
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.75);
+            z-index:500; display:flex; align-items:center; justify-content:center;
+            padding:20px; opacity:0; pointer-events:none; transition:opacity 0.2s;
+        }
+        .modal-overlay.open { opacity:1; pointer-events:all; }
+        .modal {
+            background:#141414; border:1px solid #242424; border-radius:16px;
+            width:100%; max-width:380px; max-height:90vh; display:flex; flex-direction:column;
+            transform:translateY(8px) scale(0.98); transition:transform 0.2s;
+        }
+        .modal-overlay.open .modal { transform:translateY(0) scale(1); }
+
+        .sheet-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.75);
+            z-index:500; display:flex; align-items:flex-end;
+            opacity:0; pointer-events:none; transition:opacity 0.25s;
+        }
+        .sheet-overlay.open { opacity:1; pointer-events:all; }
+        .sheet {
+            width:100%; background:#141414; border-radius:20px 20px 0 0;
+            border-top:1px solid #242424; max-height:92vh;
+            display:flex; flex-direction:column;
+            transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);
+        }
+        .sheet-overlay.open .sheet { transform:translateY(0); }
+        .sheet-handle {
+            width:36px; height:4px; border-radius:2px; background:#2a2a2a;
+            margin:10px auto 0; flex-shrink:0;
+        }
+
+        .panel-header {
+            padding:14px 16px 12px; border-bottom:1px solid #1c1c1c;
+            display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+        }
+        .panel-title { font-size:16px; font-weight:600; color:#fff; letter-spacing:-0.3px; }
+        .panel-close {
+            width:30px; height:30px; border-radius:50%; border:1px solid #2a2a2a;
+            background:#1a1a1a; display:flex; align-items:center; justify-content:center;
+            cursor:pointer; color:#555; font-size:13px;
+        }
+        .panel-close:hover { color:#ccc; }
+        .panel-body {
+            flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column;
+            gap:16px; scrollbar-width:thin; scrollbar-color:#222 transparent;
+        }
+        .panel-footer {
+            padding:12px 18px; border-top:1px solid #1c1c1c;
+            display:flex; gap:8px; justify-content:flex-end; flex-shrink:0;
+            padding-bottom:calc(12px + env(safe-area-inset-bottom));
+        }
+
+        @media (max-width:767px) {
+            .panel-title  { font-size:17px; }
+            .panel-body   { padding:16px; }
+            .panel-footer { justify-content:stretch; }
+            .panel-footer .btn { flex:1; justify-content:center; min-height:48px; font-size:15px; }
+            .panel-footer .btn-danger { flex:0; min-width:48px; padding:0; }
+        }
+
+        /* Form fields */
+        .field { display:flex; flex-direction:column; gap:5px; }
+        .field-label { font-size:11px; font-weight:600; color:#555; text-transform:uppercase; letter-spacing:0.07em; }
+        .req { color:#C1440E; }
+        .field input {
+            background:#1a1a1a; border:1px solid #2a2a2a; color:#ccc;
+            font-size:14px; padding:10px 12px; border-radius:9px;
+            outline:none; width:100%; font-family:inherit;
+            transition:border-color 0.15s; min-height:42px;
+        }
+        .field input::placeholder { color:#333; }
+        .field input:focus { border-color:#555; }
+        .field input.error { border-color:rgba(240,100,80,0.6); }
+        .field-error { font-size:11px; color:#F0997B; margin-top:2px; display:none; }
+        .field-error.show { display:block; }
+        .field-hint { font-size:12px; color:#444; line-height:1.4; }
+
+        @media (max-width:767px) {
+            .field input { font-size:16px; min-height:48px; }
+        }
+
+        /* Mobile hides desktop modal, desktop hides sheet */
+        @media (max-width:767px)  { .modal-overlay { display:none !important; } }
+        @media (min-width:768px)  { .sheet-overlay { display:none !important; } }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="tables-wrap">
+
+        <div class="info-banner">
+            <i class="ti ti-qrcode" aria-hidden="true"></i>
+            Cada mesa tiene su propio código QR. Imprime el QR y colócalo en la mesa — los clientes lo escanean para ver la carta.
+        </div>
+
+        {% if tables|length == 0 %}
+            <div class="empty-state">
+                <span class="empty-icon">🪑</span>
+                <div class="empty-title">Sin mesas todavía</div>
+                <div class="empty-sub">
+                    Crea tus mesas para generar los códigos QR que pondrás sobre ellas.
+                </div>
+                <button class="btn btn-primary" onclick="UI.openNew()">
+                    <i class="ti ti-plus" aria-hidden="true"></i> Crear primera mesa
+                </button>
+            </div>
+        {% else %}
+            <div class="tables-grid" id="tables-grid">
+                {% for table in tables %}
+                    {% set tableUrl = app.request.schemeAndHttpHost ~ path('menu_show_table', {slug: restaurant.slug, qrToken: table.qrToken}) %}
+                    <div class="table-card {{ not table.isActive ? 'inactive' : '' }}"
+                         id="table-card-{{ table.id }}"
+                         data-id="{{ table.id }}">
+
+                        <div class="table-card-header">
+                            <div class="table-number-badge">
+                                Mesa {{ table.number }}
+                                <span>{{ table.isActive ? 'Activa' : 'Inactiva' }}</span>
+                            </div>
+                            <button class="toggle {{ table.isActive ? 'on' : '' }}"
+                                    onclick="toggleTable({{ table.id }}, this)"
+                                    title="{{ table.isActive ? 'Activa · pulsa para desactivar' : 'Inactiva · pulsa para activar' }}"
+                                    aria-label="Activar/desactivar mesa"></button>
+                            <button class="icon-btn"
+                                    onclick="UI.openEdit({{ table.id }}, '{{ table.number|e('js') }}')"
+                                    title="Editar número de mesa">
+                                <i class="ti ti-edit" aria-hidden="true"></i>
+                            </button>
+                            <button class="icon-btn danger"
+                                    onclick="deleteTable({{ table.id }}, '{{ table.number|e('js') }}')"
+                                    title="Eliminar mesa">
+                                <i class="ti ti-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+
+                        <div class="table-card-body">
+                            <div class="qr-block">
+                                <div class="qr-canvas-wrap" id="qr-wrap-{{ table.id }}">
+                                    {# QR generated by JS #}
+                                </div>
+                                <div class="qr-actions">
+                                    <button class="qr-btn" onclick="downloadQr({{ table.id }}, '{{ table.number|e('js') }}')">
+                                        <i class="ti ti-download" aria-hidden="true"></i> Descargar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="url-block">
+                                <div class="url-label">URL de la mesa</div>
+                                <div class="url-box" id="url-{{ table.id }}">{{ tableUrl }}</div>
+                                <button class="url-copy-btn" onclick="copyUrl({{ table.id }})">
+                                    <i class="ti ti-copy" aria-hidden="true"></i> Copiar URL
+                                </button>
+                                <button class="regenerate-btn" onclick="regenerateQr({{ table.id }})">
+                                    <i class="ti ti-refresh" aria-hidden="true"></i> Regenerar QR
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    </div>
+
+    {# ── DESKTOP MODAL ── #}
+    <div class="modal-overlay" id="desktop-modal"
+         onclick="if(event.target===this)UI.close()">
+        <div class="modal">
+            <div class="panel-header">
+                <div class="panel-title" id="modal-title">Nueva mesa</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="Cerrar">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="panel-body">
+                {% include 'admin/_table_fields.html.twig' %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn btn-danger" id="d-delete-btn" style="display:none"
+                        onclick="deleteCurrentTable()">
+                    <i class="ti ti-trash" aria-hidden="true"></i>
+                </button>
+                <button class="btn" style="margin-right:auto" onclick="UI.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveTable()">
+                    <i class="ti ti-check" aria-hidden="true"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# ── MOBILE SHEET ── #}
+    <div class="sheet-overlay" id="mobile-sheet"
+         onclick="if(event.target===this)UI.close()">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <div class="panel-header">
+                <div class="panel-title" id="sheet-title">Nueva mesa</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="Cerrar">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="panel-body">
+                {% include 'admin/_table_fields.html.twig' %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn btn-danger" id="m-delete-btn" style="display:none"
+                        onclick="deleteCurrentTable()">
+                    <i class="ti ti-trash" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-primary" onclick="saveTable()">
+                    <i class="ti ti-check" aria-hidden="true"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        let editingId = null;
+
+        // ── Panel-aware field helpers ──────────────────────────────────────────
+        function activePanel() {
+            return document.querySelector('.modal-overlay.open') ||
+                   document.querySelector('.sheet-overlay.open');
+        }
+        function getFieldVal(id) {
+            const p = activePanel();
+            return (p?.querySelector('[id="' + id + '"]') ?? document.getElementById(id))?.value?.trim() ?? '';
+        }
+        function setFieldVal(id, val) {
+            document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value = val ?? ''; });
+        }
+        function fieldError(id, errorId, show) {
+            document.querySelectorAll('[id="' + id + '"]').forEach(el => el.classList.toggle('error', show));
+            document.querySelectorAll('[id="' + errorId + '"]').forEach(el => el.classList.toggle('show', show));
+        }
+
+        // ── Generate QR codes on load ──────────────────────────────────────────
+        document.querySelectorAll('.table-card').forEach(card => {
+            const id    = card.dataset.id;
+            const url   = document.getElementById('url-' + id)?.textContent?.trim();
+            const wrap  = document.getElementById('qr-wrap-' + id);
+            if (!url || !wrap) return;
+            QRCode.toCanvas(url, { width: 110, margin: 1, color: { dark: '#000', light: '#fff' } }, (err, canvas) => {
+                if (!err) wrap.appendChild(canvas);
+            });
+        });
+
+        // ── UI ─────────────────────────────────────────────────────────────────
+        const UI = {
+            openNew() {
+                editingId = null;
+                this._setTitle('Nueva mesa');
+                this._showDelete(false);
+                setFieldVal('table-number', '');
+                fieldError('table-number', 'table-number-error', false);
+                this._open();
+                setTimeout(() => activePanel()?.querySelector('[id="table-number"]')?.focus(), 80);
+            },
+            openEdit(id, number) {
+                editingId = id;
+                this._setTitle('Editar mesa');
+                this._showDelete(true);
+                setFieldVal('table-number', number);
+                fieldError('table-number', 'table-number-error', false);
+                this._open();
+                setTimeout(() => {
+                    const el = activePanel()?.querySelector('[id="table-number"]');
+                    if (el) { el.focus(); el.select(); }
+                }, 80);
+            },
+            _open() {
+                if (window.isMobile())
+                    document.getElementById('mobile-sheet').classList.add('open');
+                else
+                    document.getElementById('desktop-modal').classList.add('open');
+            },
+            close() {
+                document.getElementById('mobile-sheet').classList.remove('open');
+                document.getElementById('desktop-modal').classList.remove('open');
+            },
+            _setTitle(t) {
+                document.getElementById('modal-title').textContent = t;
+                document.getElementById('sheet-title').textContent = t;
+            },
+            _showDelete(show) {
+                document.getElementById('d-delete-btn').style.display = show ? '' : 'none';
+                document.getElementById('m-delete-btn').style.display = show ? '' : 'none';
+            },
+        };
+
+        // ── CRUD ───────────────────────────────────────────────────────────────
+        async function saveTable() {
+            const number = getFieldVal('table-number');
+            if (!number) {
+                fieldError('table-number', 'table-number-error', true);
+                return;
+            }
+            fieldError('table-number', 'table-number-error', false);
+
+            const url    = editingId ? `/admin/tables/${editingId}/edit` : '/admin/tables/create';
+            const result = await apiFetch(url, { number });
+
+            if (result.error) { showToast(result.error, 'error'); return; }
+
+            showToast(editingId ? 'Mesa actualizada ✓' : 'Mesa creada ✓', 'success');
+            UI.close();
+            setTimeout(() => location.reload(), 700);
+        }
+
+        async function toggleTable(id, btn) {
+            const result = await apiFetch(`/admin/tables/${id}/toggle`);
+            btn.classList.toggle('on', result.active);
+            const card  = document.getElementById('table-card-' + id);
+            card.classList.toggle('inactive', !result.active);
+            const badge = card.querySelector('.table-number-badge span');
+            if (badge) badge.textContent = result.active ? 'Activa' : 'Inactiva';
+            btn.title = result.active ? 'Activa · pulsa para desactivar' : 'Inactiva · pulsa para activar';
+            showToast(result.active ? 'Mesa activada' : 'Mesa desactivada');
+        }
+
+        async function deleteTable(id, number) {
+            if (!confirm(`¿Eliminar la mesa "${number}"? Se borrará su código QR.`)) return;
+            const result = await apiFetch(`/admin/tables/${id}/delete`);
+            if (result.ok) {
+                document.getElementById('table-card-' + id)?.remove();
+                showToast('Mesa eliminada', 'success');
+                if (!document.querySelector('.table-card')) location.reload();
+            }
+        }
+
+        function deleteCurrentTable() {
+            if (!editingId) return;
+            const card   = document.getElementById('table-card-' + editingId);
+            const number = card?.querySelector('.table-number-badge')?.childNodes[0]?.textContent?.replace('Mesa ', '').trim() ?? '';
+            UI.close();
+            deleteTable(editingId, number);
+        }
+
+        async function regenerateQr(id) {
+            if (!confirm('¿Regenerar el QR? El QR anterior dejará de funcionar y tendrás que reimprimir.')) return;
+            const result = await apiFetch(`/admin/tables/${id}/regenerate-qr`);
+            if (result.error) { showToast(result.error, 'error'); return; }
+
+            // Update URL display
+            const urlEl = document.getElementById('url-' + id);
+            if (urlEl) urlEl.textContent = result.url;
+
+            // Re-render QR
+            const wrap = document.getElementById('qr-wrap-' + id);
+            if (wrap) {
+                wrap.innerHTML = '';
+                QRCode.toCanvas(result.url, { width: 110, margin: 1, color: { dark: '#000', light: '#fff' } }, (err, canvas) => {
+                    if (!err) wrap.appendChild(canvas);
+                });
+            }
+
+            showToast('QR regenerado — descárgalo e imprímelo', 'success');
+        }
+
+        // ── Copy URL ───────────────────────────────────────────────────────────
+        function copyUrl(id) {
+            const url = document.getElementById('url-' + id)?.textContent?.trim();
+            if (!url) return;
+            navigator.clipboard.writeText(url).then(() => showToast('URL copiada ✓', 'success'));
+        }
+
+        // ── Download QR ────────────────────────────────────────────────────────
+        function downloadQr(id, number) {
+            const canvas = document.querySelector('#qr-wrap-' + id + ' canvas');
+            if (!canvas) { showToast('QR no disponible', 'error'); return; }
+
+            // Draw on a larger canvas for better print quality
+            const size   = 512;
+            const out    = document.createElement('canvas');
+            out.width    = size;
+            out.height   = size;
+            const ctx    = out.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            ctx.drawImage(canvas, 0, 0, size, size);
+
+            const a      = document.createElement('a');
+            a.download   = `mesa-${number}-qr.png`;
+            a.href       = out.toDataURL('image/png');
+            a.click();
+            showToast('QR descargado ✓', 'success');
+        }
+
+        // ── Utils ──────────────────────────────────────────────────────────────
+        async function apiFetch(url, body = null) {
+            const opts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
+            if (body) opts.body = JSON.stringify(body);
+            const res  = await fetch(url, opts);
+            return res.json();
+        }
+    </script>
+{% endblock %}

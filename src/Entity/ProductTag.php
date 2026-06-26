@@ -130,5 +130,13 @@ class ProductTag
         $this->translations = $translations;
     }
 
-
+    public function getTranslation(string $locale): ?ProductTagTranslation
+    {
+        foreach ($this->translations as $t) {
+            if ($t->getLocale() === $locale) {
+                return $t;
+            }
+        }
+        return null;
+    }
 }

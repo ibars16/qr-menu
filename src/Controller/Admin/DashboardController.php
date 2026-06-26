@@ -16,16 +16,4 @@ class DashboardController extends AbstractController
     {
         return $this->redirectToRoute('admin_menu');
     }
-
-    #[Route('/tags', name: 'tags')]
-    public function tags(): Response
-    {
-        return $this->render('admin/tags.html.twig');
-    }
-
-    #[Route('/tables', name: 'tables')]
-    public function tables(): Response
-    {
-        return $this->render('admin/tables.html.twig');
-    }
 }

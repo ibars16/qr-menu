@@ -1,5 +1,470 @@
-{#/home/david/gitProjects/qr-menu/templates/admin/tags.html.twig#}
 {% extends 'admin/base.html.twig' %}
+
 {% block title %}Etiquetas{% endblock %}
 {% block page_title %}Etiquetas{% endblock %}
-{% block body %}<p style="color:#555;font-size:14px">Próximamente.</p>{% endblock %}
+
+{% block header_actions %}
+    <button class="btn btn-primary" onclick="UI.openNew()">
+        <i class="ti ti-plus" aria-hidden="true"></i>
+        Nueva etiqueta
+    </button>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .tags-wrap { max-width: 680px; }
+
+        /* Empty state */
+        .empty-state  { text-align:center; padding:80px 24px; }
+        .empty-icon   { font-size:52px; display:block; margin-bottom:16px; opacity:0.2; }
+        .empty-title  { font-size:20px; font-weight:600; color:#fff; margin-bottom:8px; letter-spacing:-0.3px; }
+        .empty-sub    { font-size:14px; color:#444; line-height:1.6; margin-bottom:28px; max-width:340px; margin-left:auto; margin-right:auto; }
+
+        /* Info banner */
+        .info-banner {
+            background:#111; border:1px solid #1c1c1c; border-radius:10px;
+            padding:12px 16px; font-size:13px; color:#555; line-height:1.6;
+            margin-bottom:20px; display:flex; align-items:flex-start; gap:10px;
+        }
+        .info-banner i { font-size:16px; flex-shrink:0; margin-top:1px; }
+
+        /* Tag list */
+        .tags-list { display:flex; flex-direction:column; gap:6px; }
+
+        .tag-row {
+            display:flex; align-items:center; gap:10px;
+            padding:12px 14px; background:#141414;
+            border:1px solid #1c1c1c; border-radius:10px;
+            transition:border-color 0.1s;
+        }
+        .tag-row:hover { border-color:#242424; }
+
+        .tag-drag {
+            color:#2a2a2a; cursor:grab; font-size:16px; flex-shrink:0;
+        }
+        .tag-drag:active { cursor:grabbing; }
+
+        .tag-chip {
+            width:36px; height:36px; border-radius:8px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:18px; flex-shrink:0; border:1px solid rgba(255,255,255,0.06);
+        }
+
+        .tag-info { flex:1; min-width:0; }
+        .tag-name { font-size:14px; font-weight:500; color:#ccc; }
+        .tag-meta { font-size:11px; color:#3a3a3a; margin-top:2px; }
+
+        .tag-actions { display:flex; gap:4px; }
+
+        .icon-btn {
+            width:30px; height:30px; border-radius:7px; border:1px solid #242424;
+            background:#1a1a1a; display:flex; align-items:center; justify-content:center;
+            cursor:pointer; color:#444; font-size:13px;
+            transition:color 0.1s, border-color 0.1s;
+        }
+        .icon-btn:hover        { color:#ccc; border-color:#3a3a3a; }
+        .icon-btn.danger:hover { color:#F0997B; border-color:rgba(240,153,123,0.3); }
+
+        @media (max-width:767px) {
+            .icon-btn { width:38px; height:38px; font-size:16px; }
+            .tag-row  { padding:10px 12px; }
+            .tag-chip { width:40px; height:40px; font-size:20px; }
+        }
+
+        /* Modal / Sheet */
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.75);
+            z-index:500; display:flex; align-items:center; justify-content:center;
+            padding:20px; opacity:0; pointer-events:none; transition:opacity 0.2s;
+        }
+        .modal-overlay.open { opacity:1; pointer-events:all; }
+        .modal {
+            background:#141414; border:1px solid #242424; border-radius:16px;
+            width:100%; max-width:420px; max-height:90vh; display:flex; flex-direction:column;
+            transform:translateY(8px) scale(0.98); transition:transform 0.2s;
+        }
+        .modal-overlay.open .modal { transform:translateY(0) scale(1); }
+
+        .sheet-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.75);
+            z-index:500; display:flex; align-items:flex-end;
+            opacity:0; pointer-events:none; transition:opacity 0.25s;
+        }
+        .sheet-overlay.open { opacity:1; pointer-events:all; }
+        .sheet {
+            width:100%; background:#141414; border-radius:20px 20px 0 0;
+            border-top:1px solid #242424; max-height:92vh;
+            display:flex; flex-direction:column;
+            transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);
+        }
+        .sheet-overlay.open .sheet { transform:translateY(0); }
+        .sheet-handle {
+            width:36px; height:4px; border-radius:2px; background:#2a2a2a;
+            margin:10px auto 0; flex-shrink:0;
+        }
+
+        .panel-header {
+            padding:14px 16px 12px; border-bottom:1px solid #1c1c1c;
+            display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+        }
+        .panel-title { font-size:16px; font-weight:600; color:#fff; letter-spacing:-0.3px; }
+        .panel-close {
+            width:30px; height:30px; border-radius:50%; border:1px solid #2a2a2a;
+            background:#1a1a1a; display:flex; align-items:center; justify-content:center;
+            cursor:pointer; color:#555; font-size:13px;
+        }
+        .panel-close:hover { color:#ccc; }
+        .panel-body {
+            flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column;
+            gap:16px; scrollbar-width:thin; scrollbar-color:#222 transparent;
+        }
+        .panel-footer {
+            padding:12px 18px; border-top:1px solid #1c1c1c;
+            display:flex; gap:8px; justify-content:flex-end; flex-shrink:0;
+            padding-bottom:calc(12px + env(safe-area-inset-bottom));
+        }
+
+        @media (max-width:767px) {
+            .panel-title  { font-size:17px; }
+            .panel-body   { padding:16px; gap:16px; }
+            .panel-footer { justify-content:stretch; }
+            .panel-footer .btn { flex:1; justify-content:center; min-height:48px; font-size:15px; }
+            .panel-footer .btn-danger { flex:0; min-width:48px; padding:0; }
+        }
+
+        /* Form fields */
+        .field { display:flex; flex-direction:column; gap:5px; }
+        .field-label {
+            font-size:11px; font-weight:600; color:#555;
+            text-transform:uppercase; letter-spacing:0.07em;
+        }
+        .req { color:#C1440E; }
+        .field input {
+            background:#1a1a1a; border:1px solid #2a2a2a; color:#ccc;
+            font-size:14px; padding:10px 12px; border-radius:9px;
+            outline:none; width:100%; font-family:inherit;
+            transition:border-color 0.15s; min-height:42px;
+        }
+        .field input::placeholder { color:#333; }
+        .field input:focus { border-color:#555; }
+        .field input.error { border-color:rgba(240,100,80,0.6); }
+        .field-error { font-size:11px; color:#F0997B; margin-top:2px; display:none; }
+        .field-error.show { display:block; }
+        .field-hint { font-size:12px; color:#444; line-height:1.4; }
+
+        @media (max-width:767px) {
+            .field input { font-size:16px; min-height:48px; }
+        }
+
+        /* Color picker */
+        .color-row { display:flex; align-items:center; gap:10px; }
+        .color-swatch {
+            width:42px; height:42px; border-radius:9px; border:1px solid #2a2a2a;
+            flex-shrink:0; cursor:pointer; overflow:hidden;
+        }
+        .color-swatch input[type="color"] {
+            width:200%; height:200%; border:none; padding:0;
+            margin:-25%; cursor:pointer; background:none;
+        }
+        .color-hex {
+            background:#1a1a1a; border:1px solid #2a2a2a; color:#ccc;
+            font-size:14px; padding:10px 12px; border-radius:9px;
+            outline:none; width:130px; font-family:monospace;
+            transition:border-color 0.15s; min-height:42px;
+        }
+        .color-hex:focus { border-color:#555; }
+
+        /* Color presets */
+        .color-presets { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+        .color-preset {
+            width:28px; height:28px; border-radius:6px; cursor:pointer;
+            border:2px solid transparent; transition:border-color 0.1s, transform 0.1s;
+        }
+        .color-preset:hover { transform:scale(1.15); }
+        .color-preset.selected { border-color:#fff; }
+
+        /* Mobile hides desktop modal, desktop hides sheet */
+        @media (max-width:767px)  { .modal-overlay { display:none !important; } }
+        @media (min-width:768px)  { .sheet-overlay { display:none !important; } }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="tags-wrap">
+
+        <div class="info-banner">
+            <i class="ti ti-info-circle" aria-hidden="true"></i>
+            Las etiquetas aparecen en cada plato y ayudan a los clientes a filtrar (Vegano, Sin gluten, Picante…). Crea las que necesites y asígnalas desde la carta.
+        </div>
+
+        {% if tags|length == 0 %}
+            <div class="empty-state">
+                <span class="empty-icon">🏷️</span>
+                <div class="empty-title">Sin etiquetas todavía</div>
+                <div class="empty-sub">
+                    Crea etiquetas para clasificar tus platos: Vegano, Sin gluten, Popular, Picante…
+                </div>
+                <button class="btn btn-primary" onclick="UI.openNew()">
+                    <i class="ti ti-plus" aria-hidden="true"></i> Crear primera etiqueta
+                </button>
+            </div>
+        {% else %}
+            <div class="tags-list" id="tags-list">
+                {% for tag in tags %}
+                    {% set t = tag.getTranslation(locale) %}
+                    {% set tName = t ? t.name : tag.code %}
+                    <div class="tag-row" data-id="{{ tag.id }}">
+                        <i class="ti ti-grip-vertical tag-drag" aria-hidden="true"></i>
+                        <div class="tag-chip" style="background:{{ tag.color }}22; color:{{ tag.color }}">
+                            {{ tag.icon }}
+                        </div>
+                        <div class="tag-info">
+                            <div class="tag-name">{{ tName }}</div>
+                            <div class="tag-meta">
+                                {{ tag.products|length }} {{ tag.products|length == 1 ? 'plato' : 'platos' }}
+                            </div>
+                        </div>
+                        <div class="tag-actions">
+                            <button class="icon-btn"
+                                    onclick="UI.openEdit({{ tag.id }}, '{{ tName|e('js') }}', '{{ tag.icon|e('js') }}', '{{ tag.color|e('js') }}')"
+                                    title="Editar etiqueta">
+                                <i class="ti ti-edit" aria-hidden="true"></i>
+                            </button>
+                            <button class="icon-btn danger"
+                                    onclick="deleteTag({{ tag.id }}, '{{ tName|e('js') }}', {{ tag.products|length }})"
+                                    title="Eliminar etiqueta">
+                                <i class="ti ti-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    </div>
+
+    {# ── DESKTOP MODAL ── #}
+    <div class="modal-overlay" id="desktop-modal"
+         onclick="if(event.target===this)UI.close()">
+        <div class="modal">
+            <div class="panel-header">
+                <div class="panel-title" id="modal-title">Nueva etiqueta</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="Cerrar">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="panel-body">
+                {% include 'admin/_tag_fields.html.twig' %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn btn-danger" id="d-delete-btn" style="display:none"
+                        onclick="deleteCurrentTag()">
+                    <i class="ti ti-trash" aria-hidden="true"></i>
+                </button>
+                <button class="btn" style="margin-right:auto" onclick="UI.close()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveTag()">
+                    <i class="ti ti-check" aria-hidden="true"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# ── MOBILE SHEET ── #}
+    <div class="sheet-overlay" id="mobile-sheet"
+         onclick="if(event.target===this)UI.close()">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <div class="panel-header">
+                <div class="panel-title" id="sheet-title">Nueva etiqueta</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="Cerrar">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="panel-body">
+                {% include 'admin/_tag_fields.html.twig' %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn btn-danger" id="m-delete-btn" style="display:none"
+                        onclick="deleteCurrentTag()">
+                    <i class="ti ti-trash" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-primary" onclick="saveTag()">
+                    <i class="ti ti-check" aria-hidden="true"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        let editingId = null;
+
+        // ── Panel-aware field helpers (handle duplicate IDs across modal + sheet) ──
+        function activePanel() {
+            return document.querySelector('.modal-overlay.open') ||
+                   document.querySelector('.sheet-overlay.open');
+        }
+        function getFieldVal(id) {
+            const p = activePanel();
+            return (p?.querySelector('[id="' + id + '"]') ?? document.getElementById(id))?.value?.trim() ?? '';
+        }
+        function setFieldVal(id, val) {
+            document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value = val ?? ''; });
+        }
+        function fieldError(id, errorId, show) {
+            document.querySelectorAll('[id="' + id + '"]').forEach(el => el.classList.toggle('error', show));
+            document.querySelectorAll('[id="' + errorId + '"]').forEach(el => el.classList.toggle('show', show));
+        }
+
+        // ── UI ─────────────────────────────────────────────────────────────────
+        const UI = {
+            openNew() {
+                editingId = null;
+                this._setTitle('Nueva etiqueta');
+                this._showDelete(false);
+                this._reset();
+                this._open();
+                setTimeout(() => activePanel()?.querySelector('[id="tag-name"]')?.focus(), 80);
+            },
+            openEdit(id, name, icon, color) {
+                editingId = id;
+                this._setTitle('Editar etiqueta');
+                this._showDelete(true);
+                this._reset();
+                setFieldVal('tag-name', name);
+                setFieldVal('tag-icon', icon);
+                setFieldVal('tag-color-hex', color);
+                document.querySelectorAll('[id="tag-color-picker"]').forEach(el => el.value = color);
+                document.querySelectorAll('.color-swatch').forEach(el => el.style.background = color);
+                document.querySelectorAll('.color-preset').forEach(p =>
+                    p.classList.toggle('selected', p.dataset.color === color)
+                );
+                this._open();
+                setTimeout(() => activePanel()?.querySelector('[id="tag-name"]')?.focus(), 80);
+            },
+            _open() {
+                if (window.isMobile())
+                    document.getElementById('mobile-sheet').classList.add('open');
+                else
+                    document.getElementById('desktop-modal').classList.add('open');
+            },
+            close() {
+                document.getElementById('mobile-sheet').classList.remove('open');
+                document.getElementById('desktop-modal').classList.remove('open');
+            },
+            _setTitle(t) {
+                document.getElementById('modal-title').textContent = t;
+                document.getElementById('sheet-title').textContent = t;
+            },
+            _showDelete(show) {
+                document.getElementById('d-delete-btn').style.display = show ? '' : 'none';
+                document.getElementById('m-delete-btn').style.display = show ? '' : 'none';
+            },
+            _reset() {
+                setFieldVal('tag-name', '');
+                setFieldVal('tag-icon', '');
+                fieldError('tag-name', 'tag-name-error', false);
+                const defaultColor = '#666666';
+                setFieldVal('tag-color-hex', defaultColor);
+                document.querySelectorAll('[id="tag-color-picker"]').forEach(el => el.value = defaultColor);
+                document.querySelectorAll('.color-swatch').forEach(el => el.style.background = defaultColor);
+                document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
+            },
+        };
+
+        async function saveTag() {
+            const name  = getFieldVal('tag-name');
+            const icon  = getFieldVal('tag-icon') || '🏷️';
+            const color = getFieldVal('tag-color-hex') || '#666666';
+
+            if (!name) {
+                fieldError('tag-name', 'tag-name-error', true);
+                return;
+            }
+            fieldError('tag-name', 'tag-name-error', false);
+
+            const url    = editingId ? `/admin/tags/${editingId}/edit` : '/admin/tags/create';
+            const result = await apiFetch(url, { name, icon, color });
+
+            if (result.error) { showToast(result.error, 'error'); return; }
+
+            showToast(editingId ? 'Etiqueta actualizada ✓' : 'Etiqueta creada ✓', 'success');
+            UI.close();
+            setTimeout(() => location.reload(), 700);
+        }
+
+        async function deleteTag(id, name, count) {
+            const msg = count > 0
+                ? `¿Eliminar la etiqueta "${name}"? Se quitará de los ${count} platos que la usan.`
+                : `¿Eliminar la etiqueta "${name}"?`;
+            if (!confirm(msg)) return;
+            const result = await apiFetch(`/admin/tags/${id}/delete`);
+            if (result.ok) {
+                document.querySelector(`.tag-row[data-id="${id}"]`)?.remove();
+                showToast('Etiqueta eliminada', 'success');
+                if (!document.querySelector('.tag-row')) location.reload();
+            }
+        }
+
+        function deleteCurrentTag() {
+            if (!editingId) return;
+            const row   = document.querySelector(`.tag-row[data-id="${editingId}"]`);
+            const name  = row?.querySelector('.tag-name')?.textContent?.trim() ?? '';
+            const count = parseInt(row?.querySelector('.tag-meta')?.textContent ?? '0') || 0;
+            UI.close();
+            deleteTag(editingId, name, count);
+        }
+
+        // ── Color sync (scoped to the active panel) ────────────────────────────
+        function syncColorFromPicker(val) {
+            const p = activePanel();
+            if (p) p.querySelector('[id="tag-color-hex"]').value = val;
+            document.querySelectorAll('.color-swatch').forEach(el => el.style.background = val);
+            document.querySelectorAll('.color-preset').forEach(el =>
+                el.classList.toggle('selected', el.dataset.color === val)
+            );
+        }
+
+        function syncColorFromHex(val) {
+            if (!/^#[0-9A-Fa-f]{6}$/.test(val)) return;
+            document.querySelectorAll('[id="tag-color-picker"]').forEach(el => el.value = val);
+            document.querySelectorAll('.color-swatch').forEach(el => el.style.background = val);
+            document.querySelectorAll('.color-preset').forEach(el =>
+                el.classList.toggle('selected', el.dataset.color === val)
+            );
+        }
+
+        function pickPreset(color) {
+            setFieldVal('tag-color-hex', color);
+            document.querySelectorAll('[id="tag-color-picker"]').forEach(el => el.value = color);
+            document.querySelectorAll('.color-swatch').forEach(el => el.style.background = color);
+            document.querySelectorAll('.color-preset').forEach(el =>
+                el.classList.toggle('selected', el.dataset.color === color)
+            );
+        }
+
+        // ── Drag reorder ────────────────────────────────────────────────────────
+        const listEl = document.getElementById('tags-list');
+        if (listEl) {
+            Sortable.create(listEl, {
+                handle: '.tag-drag',
+                animation: 150,
+                onEnd: async () => {
+                    const ids = [...listEl.querySelectorAll('.tag-row')].map(r => parseInt(r.dataset.id));
+                    await apiFetch('/admin/tags/reorder', { ids });
+                },
+            });
+        }
+
+        // ── Utils ───────────────────────────────────────────────────────────────
+        async function apiFetch(url, body = null) {
+            const opts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(url, opts);
+            return res.json();
+        }
+    </script>
+{% endblock %}

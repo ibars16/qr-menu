@@ -1,0 +1,40 @@
+{# Shared tag form fields — used in both desktop modal and mobile sheet #}
+
+<div class="field">
+    <div class="field-label">Nombre <span class="req">*</span></div>
+    <input type="text" id="tag-name" placeholder="Vegano, Sin gluten, Popular…"
+           oninput="this.classList.remove('error'); document.getElementById('tag-name-error').classList.remove('show')">
+    <div class="field-error" id="tag-name-error">El nombre es obligatorio.</div>
+</div>
+
+<div class="field">
+    <div class="field-label">Icono</div>
+    <input type="text" id="tag-icon" placeholder="🌿" maxlength="10"
+           style="font-size:22px; text-align:center; letter-spacing:4px">
+    <div class="field-hint">Escribe un emoji que represente la etiqueta</div>
+</div>
+
+<div class="field">
+    <div class="field-label">Color</div>
+    <div class="color-row">
+        <div class="color-swatch" style="background:#666666">
+            <input type="color" id="tag-color-picker" value="#666666"
+                   oninput="syncColorFromPicker(this.value)">
+        </div>
+        <input type="text" class="color-hex" id="tag-color-hex" value="#666666"
+               maxlength="7" placeholder="#666666"
+               oninput="syncColorFromHex(this.value)">
+    </div>
+    <div class="color-presets" id="color-presets">
+        <script>
+            (function(){
+                const presets = ['#C1440E','#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63','#607d8b'];
+                let html = '';
+                presets.forEach(c => {
+                    html += `<div class="color-preset" style="background:${c}" data-color="${c}" onclick="pickPreset('${c}')" title="${c}"></div>`;
+                });
+                document.currentScript.insertAdjacentHTML('afterend', html);
+            })();
+        </script>
+    </div>
+</div>

@@ -22,6 +22,21 @@ class ProductTagTranslation
     #[ORM\Column(length: 5)]
     private string $locale;
 
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getTag(): ProductTag
+    {
+        return $this->tag;
+    }
+
+    public function setTag(ProductTag $tag): void
+    {
+        $this->tag = $tag;
+    }
+
     #[ORM\Column(length: 100)]
     private string $name;
 
