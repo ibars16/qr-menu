@@ -1,0 +1,368 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Personalizar carta{% endblock %}
+{% block page_title %}Personalizar carta{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .theme-wrap { max-width: 760px; }
+
+        .theme-intro {
+            font-size: 14px; color: #555; line-height: 1.6;
+            margin-bottom: 20px; padding: 14px 16px;
+            background: #111; border: 1px solid #1c1c1c; border-radius: 10px;
+        }
+        .theme-intro strong { color: #888; }
+
+        /* Preview bar */
+        .preview-bar {
+            display: none;
+            align-items: center; gap: 12px;
+            background: #150d2e; border: 1.5px solid #534AB7;
+            border-radius: 12px; padding: 12px 16px; margin-bottom: 20px;
+        }
+        .preview-bar.show { display: flex; }
+        .preview-bar-icon { font-size: 22px; flex-shrink: 0; }
+        .preview-bar-text { flex: 1; min-width: 0; }
+        .preview-bar-title { font-size: 14px; font-weight: 600; color: #c4b5fd; }
+        .preview-bar-sub   { font-size: 12px; color: #7c6ca0; margin-top: 2px; }
+        .preview-bar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+        /* Grid */
+        .themes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 14px;
+        }
+        @media (max-width: 767px) {
+            .themes-grid { grid-template-columns: 1fr; }
+        }
+
+        .theme-card {
+            border: 1.5px solid #1c1c1c; border-radius: 14px; overflow: hidden;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            position: relative;
+        }
+        .theme-card:hover          { border-color: #2a2a2a; }
+        .theme-card.is-active      { border-color: #C1440E; box-shadow: 0 0 0 3px rgba(193,68,14,0.12); }
+        .theme-card.is-previewing  { border-color: #534AB7; box-shadow: 0 0 0 3px rgba(83,74,183,0.15); }
+
+        .theme-badge {
+            position: absolute; top: 10px; left: 10px;
+            font-size: 10px; font-weight: 700; padding: 3px 9px;
+            border-radius: 20px; letter-spacing: 0.05em; z-index: 2;
+        }
+        .badge-active    { background: #C1440E; color: #fff; }
+        .badge-previewing { background: #534AB7; color: #fff; }
+
+        /* Preview thumbnails */
+        .theme-preview {
+            height: 180px; overflow: hidden; position: relative;
+        }
+
+        /* Classic */
+        .preview-classic { background: #faf9f7; }
+        .c-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; border-bottom: 1px solid #f0ede8;
+        }
+        .c-img {
+            width: 44px; height: 44px; border-radius: 8px;
+            flex-shrink: 0; display: flex; align-items: center;
+            justify-content: center; font-size: 20px;
+        }
+        .c-info { flex: 1; min-width: 0; }
+        .c-name { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+        .c-desc { font-size: 11px; color: #888; margin-top: 1px; }
+        .c-price { font-size: 14px; font-weight: 700; color: #C1440E; flex-shrink: 0; }
+
+        /* Glass */
+        .preview-glass {
+            background: linear-gradient(135deg, #1a0a2e 0%, #0d1a2e 100%);
+            padding: 12px; display: flex; gap: 8px;
+        }
+        .g-card {
+            flex: 1; background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px; overflow: hidden;
+        }
+        .g-img { height: 80px; display: flex; align-items: center; justify-content: center; font-size: 30px; background: rgba(255,255,255,0.04); }
+        .g-info { padding: 8px 10px; }
+        .g-name { font-size: 12px; font-weight: 600; color: #fff; }
+        .g-desc { font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+        .g-price { font-size: 13px; font-weight: 700; color: #a78bfa; margin-top: 6px; }
+
+        /* Bold */
+        .preview-bold { background: #0a0a0a; }
+        .b-row {
+            display: flex; align-items: center; gap: 8px;
+            padding: 11px 14px; border-bottom: 1px solid #1a1a1a;
+        }
+        .b-num { font-size: 11px; font-weight: 700; color: #2a2a2a; width: 18px; flex-shrink: 0; }
+        .b-info { flex: 1; min-width: 0; }
+        .b-name { font-size: 13px; font-weight: 600; color: #ddd; }
+        .b-meta { font-size: 10px; color: #444; margin-top: 1px; }
+        .b-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .b-price { font-size: 13px; font-weight: 700; color: #fff; }
+        .b-arr   { font-size: 12px; color: #333; }
+
+        /* Grid */
+        .preview-grid { background: #faf9f7; padding: 10px; }
+        .g-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .g-gcard { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #f0ede8; }
+        .g-gimg  { height: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .g-ginfo { padding: 5px 8px; }
+        .g-gname { font-size: 10px; font-weight: 600; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .g-gprice{ font-size: 11px; font-weight: 700; color: #C1440E; margin-top: 2px; }
+
+        /* Card footer */
+        .theme-footer { padding: 14px 16px; background: #111; border-top: 1px solid #1c1c1c; }
+        .theme-header-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .theme-icon { font-size: 20px; }
+        .theme-name { font-size: 15px; font-weight: 600; color: #fff; }
+        .theme-desc { font-size: 12px; color: #555; line-height: 1.5; margin-bottom: 12px; }
+        .theme-actions { display: flex; gap: 8px; }
+        .btn-preview-theme {
+            flex: 1; padding: 9px; border-radius: 9px; font-size: 13px;
+            font-weight: 500; border: 1px solid #2a2a2a; background: #1a1a1a;
+            color: #888; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; gap: 6px; transition: all 0.15s;
+        }
+        .btn-preview-theme:hover  { border-color: #534AB7; color: #a78bfa; }
+        .btn-preview-theme.active { border-color: #534AB7; background: rgba(83,74,183,0.15); color: #a78bfa; }
+        .btn-apply-theme {
+            flex: 1; padding: 9px; border-radius: 9px; font-size: 13px;
+            font-weight: 600; border: none; background: #C1440E; color: #fff;
+            cursor: pointer; display: flex; align-items: center;
+            justify-content: center; gap: 6px; transition: opacity 0.15s;
+        }
+        .btn-apply-theme:hover { opacity: 0.88; }
+        .btn-apply-theme.is-current {
+            background: #1a1a1a; border: 1px solid #2a2a2a; color: #555; cursor: default;
+        }
+        .btn-apply-theme.is-current:hover { opacity: 1; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="theme-wrap">
+
+        <div class="theme-intro">
+            <strong>Cómo funciona:</strong> pulsa <em>Previsualizar</em> para ver cómo quedaría la carta
+            con ese tema — solo tú lo ves. Cuando estés seguro, pulsa <em>Aplicar</em> y tus clientes
+            lo verán al instante.
+        </div>
+
+        {# Preview bar — shown when previewing #}
+        <div class="preview-bar" id="preview-bar">
+            <div class="preview-bar-icon">👁️</div>
+            <div class="preview-bar-text">
+                <div class="preview-bar-title" id="preview-bar-title">Previsualizando tema</div>
+                <div class="preview-bar-sub">Solo tú lo ves. Tus clientes siguen viendo el tema actual.</div>
+            </div>
+            <div class="preview-bar-actions">
+                <button class="btn btn-danger" onclick="cancelPreview()">Cancelar</button>
+                <button class="btn btn-primary" onclick="applyFromBar()">
+                    <i class="ti ti-check" aria-hidden="true"></i> Aplicar este tema
+                </button>
+            </div>
+        </div>
+
+        <div class="themes-grid">
+            {% for key, theme in themes %}
+                <div class="theme-card {{ restaurant.theme == key ? 'is-active' : '' }}"
+                     id="card-{{ key }}"
+                     data-theme="{{ key }}"
+                     data-name="{{ theme.name }}">
+
+                    {% if restaurant.theme == key %}
+                        <div class="theme-badge badge-active">✓ ACTIVO</div>
+                    {% endif %}
+
+                    {# Thumbnail preview #}
+                    <div class="theme-preview">
+                        {% if key == 'classic' %}
+                            <div class="preview-classic">
+                                <div class="c-row">
+                                    <div class="c-img" style="background:#fff3ee">🥩</div>
+                                    <div class="c-info"><div class="c-name">Jamón ibérico</div><div class="c-desc">Bellota curado 36 meses</div></div>
+                                    <div class="c-price">24,50 €</div>
+                                </div>
+                                <div class="c-row">
+                                    <div class="c-img" style="background:#f0f9f0">🥗</div>
+                                    <div class="c-info"><div class="c-name">Ensalada César</div><div class="c-desc">Lechuga, pollo, parmesano</div></div>
+                                    <div class="c-price">16,00 €</div>
+                                </div>
+                                <div class="c-row">
+                                    <div class="c-img" style="background:#fff8ee">🍕</div>
+                                    <div class="c-info"><div class="c-name">Pizza Margherita</div><div class="c-desc">Tomate, mozzarella</div></div>
+                                    <div class="c-price">14,00 €</div>
+                                </div>
+                            </div>
+
+                        {% elseif key == 'glass' %}
+                            <div class="preview-glass">
+                                <div class="g-card">
+                                    <div class="g-img">🥩</div>
+                                    <div class="g-info">
+                                        <div class="g-name">Jamón ibérico</div>
+                                        <div class="g-desc">Bellota curado</div>
+                                        <div class="g-price">24,50 €</div>
+                                    </div>
+                                </div>
+                                <div class="g-card">
+                                    <div class="g-img">🍕</div>
+                                    <div class="g-info">
+                                        <div class="g-name">Margherita</div>
+                                        <div class="g-desc">Tomate, mozz.</div>
+                                        <div class="g-price">14,00 €</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% elseif key == 'bold' %}
+                            <div class="preview-bold">
+                                <div class="b-row"><span class="b-num">01</span><div class="b-info"><div class="b-name">Jamón ibérico</div><div class="b-meta">210 kcal</div></div><div class="b-right"><span class="b-price">24,50 €</span><span class="b-arr">›</span></div></div>
+                                <div class="b-row"><span class="b-num">02</span><div class="b-info"><div class="b-name">Ensalada César</div><div class="b-meta">🥗 Vegetariano</div></div><div class="b-right"><span class="b-price">16,00 €</span><span class="b-arr">›</span></div></div>
+                                <div class="b-row"><span class="b-num">03</span><div class="b-info"><div class="b-name">Pizza Margherita</div><div class="b-meta">750 kcal</div></div><div class="b-right"><span class="b-price">14,00 €</span><span class="b-arr">›</span></div></div>
+                                <div class="b-row"><span class="b-num">04</span><div class="b-info"><div class="b-name">Nduja calabresa</div><div class="b-meta">🌶🌶 Picante</div></div><div class="b-right"><span class="b-price">18,00 €</span><span class="b-arr">›</span></div></div>
+                            </div>
+
+                        {% elseif key == 'grid' %}
+                            <div class="preview-grid">
+                                <div class="g-grid">
+                                    <div class="g-gcard"><div class="g-gimg" style="background:#fff3ee">🥩</div><div class="g-ginfo"><div class="g-gname">Jamón ibérico</div><div class="g-gprice">24,50 €</div></div></div>
+                                    <div class="g-gcard"><div class="g-gimg" style="background:#f0f9f0">🥗</div><div class="g-ginfo"><div class="g-gname">Ensalada César</div><div class="g-gprice">16,00 €</div></div></div>
+                                    <div class="g-gcard"><div class="g-gimg" style="background:#fff8ee">🍕</div><div class="g-ginfo"><div class="g-gname">Margherita</div><div class="g-gprice">14,00 €</div></div></div>
+                                    <div class="g-gcard"><div class="g-gimg" style="background:#fff0f0">🌶️</div><div class="g-ginfo"><div class="g-gname">Nduja</div><div class="g-gprice">18,00 €</div></div></div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Footer #}
+                    <div class="theme-footer">
+                        <div class="theme-header-row">
+                            <span class="theme-icon">{{ theme.icon }}</span>
+                            <span class="theme-name">{{ theme.name }}</span>
+                        </div>
+                        <div class="theme-desc">{{ theme.desc }}</div>
+                        <div class="theme-actions">
+                            {% if previewBase %}
+                                <button class="btn-preview-theme"
+                                        id="prev-btn-{{ key }}"
+                                        onclick="previewTheme('{{ key }}', '{{ theme.name }}')">
+                                    <i class="ti ti-eye" aria-hidden="true"></i> Previsualizar
+                                </button>
+                            {% endif %}
+                            <button class="btn-apply-theme {{ restaurant.theme == key ? 'is-current' : '' }}"
+                                    id="apply-btn-{{ key }}"
+                                    onclick="applyTheme('{{ key }}', '{{ theme.name }}')">
+                                {{ restaurant.theme == key ? '✓ Activo' : 'Aplicar' }}
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const PREVIEW_BASE   = '{{ previewBase|default('') }}';
+        const CURRENT_THEME  = '{{ restaurant.theme }}';
+        let   previewingKey  = null;
+        let   previewingName = null;
+        let   previewWindow  = null;
+
+        function previewTheme(key, name) {
+            previewingKey  = key;
+            previewingName = name;
+
+            // Update UI
+            resetPreviewing();
+            const card = document.getElementById('card-' + key);
+            card.classList.add('is-previewing');
+            const badge = card.querySelector('.theme-badge');
+            if (badge) badge.remove();
+            const nb = document.createElement('div');
+            nb.className = 'theme-badge badge-previewing';
+            nb.id = 'badge-' + key;
+            nb.textContent = '👁 PREVIEW';
+            card.insertBefore(nb, card.firstChild);
+            document.getElementById('prev-btn-' + key)?.classList.add('active');
+
+            // Show bar
+            document.getElementById('preview-bar-title').textContent = 'Previsualizando: ' + name;
+            document.getElementById('preview-bar').classList.add('show');
+
+            // Open preview in new tab
+            if (PREVIEW_BASE) {
+                const url = PREVIEW_BASE + '?preview_theme=' + key;
+                if (previewWindow && !previewWindow.closed) {
+                    previewWindow.location.href = url;
+                } else {
+                    previewWindow = window.open(url, 'menu_preview');
+                }
+            }
+
+            showToast('Vista previa abierta — solo tú la ves 👁');
+        }
+
+        function cancelPreview() {
+            previewingKey  = null;
+            previewingName = null;
+            if (previewWindow && !previewWindow.closed) previewWindow.close();
+            resetPreviewing();
+            document.getElementById('preview-bar').classList.remove('show');
+            showToast('Preview cancelada');
+        }
+
+        function applyFromBar() {
+            if (previewingKey) applyTheme(previewingKey, previewingName);
+        }
+
+        async function applyTheme(key, name) {
+            if (key === CURRENT_THEME && !previewingKey) return;
+
+            try {
+                const res  = await fetch('/admin/theme/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ theme: key }),
+                });
+                const data = await res.json();
+                if (!data.ok) { showToast('Error al aplicar el tema', 'error'); return; }
+
+                // Reload to reflect new active theme
+                showToast('✓ Tema "' + name + '" aplicado al instante', 'success');
+                setTimeout(() => location.reload(), 900);
+            } catch(e) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+
+        function resetPreviewing() {
+            ['classic','glass','bold','grid'].forEach(k => {
+                const card = document.getElementById('card-' + k);
+                if (!card) return;
+                card.classList.remove('is-previewing');
+                const badge = document.getElementById('badge-' + k);
+                if (badge) badge.remove();
+                document.getElementById('prev-btn-' + k)?.classList.remove('active');
+                // Re-add active badge if this is the current theme
+                if (k === CURRENT_THEME) {
+                    card.classList.add('is-active');
+                    const ab = document.createElement('div');
+                    ab.className = 'theme-badge badge-active';
+                    ab.id = 'badge-' + k;
+                    ab.textContent = '✓ ACTIVO';
+                    card.insertBefore(ab, card.firstChild);
+                }
+            });
+        }
+    </script>
+{% endblock %}

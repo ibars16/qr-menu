@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Restaurant;
+use App\Entity\Table;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,7 +25,6 @@ class RegistrationController extends AbstractController
         Security $security,
         SluggerInterface $slugger,
     ): Response {
-        // Redirect if already logged in
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_menu');
         }
@@ -39,7 +39,6 @@ class RegistrationController extends AbstractController
             $restaurant = new Restaurant();
             $restaurant->setName($data['restaurantName']);
 
-            // Generate unique slug from restaurant name
             $baseSlug = strtolower($slugger->slug($data['restaurantName']));
             $slug     = $baseSlug;
             $i        = 1;
@@ -53,19 +52,25 @@ class RegistrationController extends AbstractController
 
             $em->persist($restaurant);
 
-            // 2. Create User linked to restaurant
+            // 2. Create default table automatically (hidden from user)
+            $table = new Table();
+            $table->setRestaurant($restaurant);
+            $table->setNumber('1');
+            $table->setQrToken(bin2hex(random_bytes(16)));
+            $table->setActive(true);
+            $em->persist($table);
+
+            // 3. Create User
             $user = new User();
             $user->setEmail($data['email']);
             $user->setRoles(['ROLE_USER']);
-            $user->setPassword(
-                $hasher->hashPassword($user, $data['password'])
-            );
+            $user->setPassword($hasher->hashPassword($user, $data['password']));
             $user->setRestaurant($restaurant);
 
             $em->persist($user);
             $em->flush();
 
-            // 3. Log in automatically — returns Response, return it directly
+            // 4. Log in automatically
             return $security->login($user, 'form_login', 'main');
         }
 

@@ -1,0 +1,62 @@
+<script>
+function changeLanguage(lang) { const u = new URL(window.location); u.searchParams.set('lang', lang); window.location.href = u.toString(); }
+function changeCurrency(c)    { const u = new URL(window.location); u.searchParams.set('currency', c); window.location.href = u.toString(); }
+
+const searchInput = document.getElementById('menu-search');
+const noResults   = document.getElementById('no-results');
+const sections    = document.querySelectorAll('.cat-section');
+const catTabs     = document.querySelectorAll('.cat-tab');
+const dietFilters = document.querySelectorAll('.diet-filter');
+let activeTag = 'all';
+
+function applyFilters() {
+    const q      = searchInput.value.toLowerCase().trim();
+    const active = document.querySelector('.cat-tab.active');
+    const cat    = active ? active.dataset.cat : 'all';
+    let anyVisible = false;
+
+    sections.forEach(sec => {
+        const catMatch = cat === 'all' || cat === sec.dataset.section;
+        if (!catMatch) { sec.style.display = 'none'; return; }
+        const rows = sec.querySelectorAll('.product-row, .card');
+        let secVisible = false;
+        rows.forEach(row => {
+            const name     = row.querySelector('.product-name, .card-name')?.textContent.toLowerCase() ?? '';
+            const tags     = (row.dataset.tags ?? '').trim().split(/\s+/).filter(Boolean);
+            const search   = !q || name.includes(q);
+            const tagMatch = activeTag === 'all' || tags.includes(activeTag);
+            const show     = search && tagMatch;
+            row.style.display = show ? '' : 'none';
+            if (show) secVisible = true;
+        });
+        sec.style.display = secVisible ? '' : 'none';
+        if (secVisible) anyVisible = true;
+    });
+    if (noResults) noResults.style.display = anyVisible ? 'none' : 'block';
+}
+
+searchInput?.addEventListener('input', applyFilters);
+
+catTabs.forEach(tab => tab.addEventListener('click', () => {
+    catTabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    applyFilters();
+    const cat = tab.dataset.cat;
+    if (cat !== 'all') document.getElementById(cat)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}));
+
+dietFilters.forEach(btn => btn.addEventListener('click', () => {
+    dietFilters.forEach(x => x.classList.remove('active'));
+    btn.classList.add('active');
+    activeTag = btn.dataset.tag;
+    applyFilters();
+}));
+
+const obs = new IntersectionObserver(entries => {
+    const vis = entries.find(e => e.isIntersecting);
+    if (!vis) return;
+    const id = vis.target.dataset.section;
+    catTabs.forEach(t => t.classList.toggle('active', t.dataset.cat === id));
+}, { threshold: 0.3 });
+sections.forEach(s => obs.observe(s));
+</script>

@@ -7,34 +7,33 @@
     <style>
         :root { --brand: #C1440E; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0a0a0a; color: #fff;
-            min-height: 100vh;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
 
         /* ══ DESKTOP ══ */
         .admin-layout { display: flex; min-height: 100vh; }
 
         .sidebar {
-            width: 220px; flex-shrink: 0;
-            background: #111; border-right: 1px solid #1c1c1c;
-            display: flex; flex-direction: column;
-            position: sticky; top: 0; height: 100vh;
+            width: 220px; flex-shrink: 0; background: #111;
+            border-right: 1px solid #1c1c1c; display: flex;
+            flex-direction: column; position: sticky; top: 0; height: 100vh;
         }
         .sidebar-header { padding: 16px; border-bottom: 1px solid #1c1c1c; }
-        .sidebar-restaurant {
-            font-size: 14px; font-weight: 600; color: #fff; letter-spacing: -0.3px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
+        .sidebar-restaurant { font-size: 14px; font-weight: 600; color: #fff; letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sidebar-role { font-size: 11px; color: #555; margin-top: 2px; }
 
-        .nav-section {
-            font-size: 10px; font-weight: 600; color: #333;
-            text-transform: uppercase; letter-spacing: 0.1em;
-            padding: 14px 16px 4px;
+        /* Ver carta — destacado arriba */
+        .ver-carta-btn {
+            display: flex; align-items: center; gap: 8px;
+            margin: 12px; padding: 10px 14px;
+            background: var(--brand); color: #fff;
+            border-radius: 10px; text-decoration: none;
+            font-size: 13px; font-weight: 600;
+            transition: opacity 0.15s;
         }
+        .ver-carta-btn:hover { opacity: 0.88; color: #fff; }
+        .ver-carta-btn i { font-size: 16px; }
+
+        .nav-section { font-size: 10px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.1em; padding: 12px 16px 4px; }
         .nav-item {
             display: flex; align-items: center; gap: 9px;
             padding: 9px 16px; font-size: 13px; color: #555;
@@ -44,6 +43,7 @@
         .nav-item:hover { color: #ccc; background: #161616; }
         .nav-item.active { color: #fff; background: #161616; border-right-color: var(--brand); font-weight: 500; }
         .nav-item i { font-size: 16px; flex-shrink: 0; }
+
         .sidebar-footer { margin-top: auto; border-top: 1px solid #1c1c1c; padding: 8px 0; }
 
         .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -65,12 +65,10 @@
             .main-body { padding: 12px; }
         }
 
-        /* Bottom nav — ONLY mobile */
         .bottom-nav { display: none; }
         @media (max-width: 767px) {
             .bottom-nav {
-                display: flex;
-                position: fixed; bottom: 0; left: 0; right: 0;
+                display: flex; position: fixed; bottom: 0; left: 0; right: 0;
                 background: #111; border-top: 1px solid #1c1c1c;
                 height: 60px; z-index: 300;
                 padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -79,21 +77,18 @@
                 flex: 1; display: flex; flex-direction: column;
                 align-items: center; justify-content: center;
                 gap: 3px; color: #444; font-size: 10px;
-                font-weight: 500; text-decoration: none;
-                min-height: 44px; transition: color 0.1s;
+                font-weight: 500; text-decoration: none; min-height: 44px; transition: color 0.1s;
             }
             .bottom-nav-tab.active { color: var(--brand); }
             .bottom-nav-tab i { font-size: 22px; }
         }
 
-        /* ══ SHARED BUTTONS ══ */
+        /* ══ BUTTONS ══ */
         .btn {
             display: inline-flex; align-items: center; gap: 6px;
-            padding: 7px 14px; border-radius: 8px;
-            font-size: 13px; font-weight: 500; cursor: pointer;
-            text-decoration: none; border: 1px solid #2a2a2a;
-            background: #1a1a1a; color: #ccc;
-            transition: border-color 0.15s, color 0.15s; min-height: 36px;
+            padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+            cursor: pointer; text-decoration: none; border: 1px solid #2a2a2a;
+            background: #1a1a1a; color: #ccc; transition: border-color 0.15s, color 0.15s; min-height: 36px;
         }
         .btn:hover { border-color: #444; color: #fff; }
         .btn i { font-size: 15px; }
@@ -103,17 +98,12 @@
         .btn-ai:hover { background: #342870; color: #c0baff; }
         .btn-danger { background: #1a1a1a; border-color: #2a2a2a; color: #666; }
         .btn-danger:hover { color: #F0997B; border-color: rgba(240,153,123,0.3); }
+        @media (max-width: 767px) { .btn { min-height: 44px; padding: 0 14px; font-size: 14px; } }
 
-        @media (max-width: 767px) {
-            .btn { min-height: 44px; padding: 0 14px; font-size: 14px; }
-        }
-
-        /* Flash */
         .flash { padding: 10px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         .flash-success { background: rgba(40,80,10,0.2); border: 1px solid rgba(99,153,34,0.3); color: #7aad40; }
         .flash-error   { background: rgba(193,68,14,0.15); border: 1px solid rgba(193,68,14,0.3); color: #F0997B; }
 
-        /* Toast */
         .toast {
             position: fixed; bottom: 80px; left: 50%;
             transform: translateX(-50%) translateY(12px);
@@ -139,6 +129,16 @@
             <div class="sidebar-role">Panel de administración</div>
         </div>
 
+        {# VER CARTA — destacado arriba #}
+        {% if app.user.restaurant %}
+            <a href="{{ path('menu_show', {slug: app.user.restaurant.slug}) }}"
+               target="_blank"
+               class="ver-carta-btn">
+                <i class="ti ti-external-link" aria-hidden="true"></i>
+                Ver mi carta
+            </a>
+        {% endif %}
+
         <div class="nav-section">Menú</div>
         <a href="{{ path('admin_menu') }}"
            class="nav-item {{ app.request.attributes.get('_route') == 'admin_menu' ? 'active' : '' }}">
@@ -152,6 +152,10 @@
            class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_tag' ? 'active' : '' }}">
             <i class="ti ti-tag" aria-hidden="true"></i> Etiquetas
         </a>
+        <a href="{{ path('admin_theme') }}"
+           class="nav-item {{ app.request.attributes.get('_route') == 'admin_theme' ? 'active' : '' }}">
+            <i class="ti ti-palette" aria-hidden="true"></i> Personalizar carta
+        </a>
 
         <div class="nav-section">Restaurante</div>
         <a href="{{ path('admin_tables') }}"
@@ -164,14 +168,6 @@
         </a>
 
         <div class="sidebar-footer">
-            {% if app.user.restaurant and app.user.restaurant.tables.first %}
-                <a href="{{ path('menu_show', {
-                    slug: app.user.restaurant.slug,
-                    qrToken: app.user.restaurant.tables.first.qrToken
-                }) }}" target="_blank" class="nav-item">
-                    <i class="ti ti-external-link" aria-hidden="true"></i> Ver carta
-                </a>
-            {% endif %}
             <a href="{{ path('admin_logout') }}" class="nav-item">
                 <i class="ti ti-logout" aria-hidden="true"></i> Cerrar sesión
             </a>
@@ -201,9 +197,9 @@
        class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_menu' ? 'active' : '' }}">
         <i class="ti ti-layout-list" aria-hidden="true"></i> Carta
     </a>
-    <a href="{{ path('admin_categories') }}"
-       class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_categor' ? 'active' : '' }}">
-        <i class="ti ti-category" aria-hidden="true"></i> Cats
+    <a href="{{ path('admin_theme') }}"
+       class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_theme' ? 'active' : '' }}">
+        <i class="ti ti-palette" aria-hidden="true"></i> Estilo
     </a>
     <a href="{{ path('admin_tables') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_table' ? 'active' : '' }}">
@@ -217,7 +213,6 @@
 
 <div class="toast" id="global-toast" role="status" aria-live="polite"></div>
 
-{# showToast BEFORE child blocks so it's always available #}
 <script>
     let _toastTimer;
     window.showToast = function(msg, type) {

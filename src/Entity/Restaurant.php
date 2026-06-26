@@ -37,6 +37,10 @@ class Restaurant
     #[ORM\Column(length: 5)]
     private string $defaultLanguage = 'en';
 
+    /** Visual theme for the public menu: classic | glass | bold | grid */
+    #[ORM\Column(length: 20)]
+    private string $theme = 'classic';
+
     #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Table::class, cascade: ['persist', 'remove'])]
     private Collection $tables;
 
@@ -56,9 +60,9 @@ class Restaurant
 
     public function __construct()
     {
-        $this->tables = new ArrayCollection();
-        $this->categories = new ArrayCollection();
-        $this->users = new ArrayCollection();
+        $this->tables      = new ArrayCollection();
+        $this->categories  = new ArrayCollection();
+        $this->users       = new ArrayCollection();
         $this->productTags = new ArrayCollection();
     }
 
@@ -127,6 +131,16 @@ class Restaurant
         $this->defaultLanguage = $defaultLanguage;
     }
 
+    public function getTheme(): string
+    {
+        return $this->theme;
+    }
+
+    public function setTheme(string $theme): void
+    {
+        $this->theme = $theme;
+    }
+
     public function getTables(): Collection
     {
         return $this->tables;
@@ -171,5 +185,18 @@ class Restaurant
     public function getProductTags(): Collection
     {
         return $this->productTags;
+    }
+
+    public function addProductTag(ProductTag $tag): void
+    {
+        if (!$this->productTags->contains($tag)) {
+            $this->productTags->add($tag);
+            $tag->setRestaurant($this);
+        }
+    }
+
+    public function removeProductTag(ProductTag $tag): void
+    {
+        $this->productTags->removeElement($tag);
     }
 }

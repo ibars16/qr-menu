@@ -32,7 +32,7 @@ security:
 
             remember_me:
                 secret: '%kernel.secret%'
-                lifetime: 604800  # 7 days
+                lifetime: 604800
 
     access_control:
         - { path: ^/admin/login, roles: PUBLIC_ACCESS }
