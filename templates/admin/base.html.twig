@@ -60,16 +60,16 @@
         /* ══ MOBILE ══ */
         @media (max-width: 767px) {
             .admin-layout { flex-direction: column; min-height: 100vh; padding-bottom: 68px; }
-            .sidebar { display: none; }
+            .sidebar { display: none !important; }
             .main-header { padding: 12px 16px; }
             .main-header-title { font-size: 17px; }
             .main-body { padding: 12px; }
         }
 
-        .bottom-nav { display: none; }
+        .bottom-nav { display: none !important; }
         @media (max-width: 767px) {
             .bottom-nav {
-                display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+                display: flex !important; position: fixed; bottom: 0; left: 0; right: 0;
                 background: #111; border-top: 1px solid #1c1c1c;
                 height: 60px; z-index: 300;
                 padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -81,7 +81,7 @@
                 font-weight: 500; text-decoration: none; min-height: 44px; transition: color 0.1s;
             }
             .bottom-nav-tab.active { color: var(--brand); }
-            .bottom-nav-tab i { font-size: 22px; }
+            .bottom-nav-tab i { font-size: 20px; }
         }
 
         /* ══ BUTTONS ══ */
@@ -198,9 +198,13 @@
        class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_menu' ? 'active' : '' }}">
         <i class="ti ti-layout-list" aria-hidden="true"></i> Carta
     </a>
-    <a href="{{ path('admin_theme') }}"
-       class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_theme' ? 'active' : '' }}">
-        <i class="ti ti-palette" aria-hidden="true"></i> Estilo
+    <a href="{{ path('admin_categories') }}"
+       class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_categor' ? 'active' : '' }}">
+        <i class="ti ti-category" aria-hidden="true"></i> Categ.
+    </a>
+    <a href="{{ path('admin_tags') }}"
+       class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_tag' ? 'active' : '' }}">
+        <i class="ti ti-tag" aria-hidden="true"></i> Etiq.
     </a>
     <a href="{{ path('admin_qr') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">
@@ -225,6 +229,21 @@
         _toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
     };
     window.isMobile = function() { return window.innerWidth < 768; };
+
+    // Close any open modal/sheet when the viewport crosses the mobile breakpoint.
+    // Prevents stale open state when the user rotates their device or resizes the window.
+    (function() {
+        var _prevMobile = window.innerWidth < 768;
+        window.addEventListener('resize', function() {
+            var nowMobile = window.innerWidth < 768;
+            if (nowMobile !== _prevMobile) {
+                _prevMobile = nowMobile;
+                document.querySelectorAll('.modal-overlay.open, .sheet-overlay.open').forEach(function(el) {
+                    el.classList.remove('open');
+                });
+            }
+        });
+    })();
 </script>
 
 {% block javascripts %}{% endblock %}
