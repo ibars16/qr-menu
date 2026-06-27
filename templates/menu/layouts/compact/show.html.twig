@@ -70,7 +70,9 @@
     .card-wrap:hover .card:not(.flipped) .card-front { background: var(--row-hover); }
     .row-num { font-size: 13px; font-weight: 700; color: var(--num); width: 30px; flex-shrink: 0; transition: color 0.2s; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; }
     .card-wrap:hover .row-num { color: var(--num-h); }
-    .front-img { width: 64px; height: 64px; flex-shrink: 0; border-radius: var(--badge-radius, 10px); background: var(--cf-img); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 28px; margin-right: 16px; }
+    .front-img { width: 64px; height: 64px; flex-shrink: 0; border-radius: var(--badge-radius, 10px); background: var(--cf-img); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 28px; margin-right: 16px; position: relative; }
+    .front-img[data-lightbox] { cursor: zoom-in; }
+    .spicy-badge { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border-radius: 10px; padding: 1px 4px; font-size: 9px; line-height: 1.5; z-index: 2; }
     .front-img img { width: 100%; height: 100%; object-fit: cover; }
     .front-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
     .front-name { font-size: 16px; font-weight: 600; color: var(--cn); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.2s; }
@@ -88,12 +90,25 @@
     .back-close:hover { color: var(--close-ht); background: var(--close-hbg); }
 
     .back-scroll { position: relative; flex: 1; overflow: hidden; }
-    .back-scroll::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 44px; background: linear-gradient(to right, transparent, var(--fade)); pointer-events: none; transition: opacity 0.25s; }
-    .back-scroll.no-fade::after { opacity: 0; }
-    @keyframes cue-slide { 0%,100% { transform: translateY(-50%) translateX(0); } 50% { transform: translateY(-50%) translateX(3px); } }
-    .scroll-cue-h { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); background: var(--cue-bg); color: var(--cue-text); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: none; cursor: pointer; pointer-events: auto; user-select: none; transition: opacity 0.25s; animation: cue-slide 2s ease-in-out infinite; z-index: 2; }
+    .back-scroll::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 44px; background: linear-gradient(to right, transparent, var(--fade)); pointer-events: none; transition: opacity 0.22s; opacity: 0; }
+    .back-scroll.can-right::after { opacity: 1; }
+    @keyframes cue-slide   { 0%,100% { transform: translateY(-50%) translateX(0); } 50% { transform: translateY(-50%) translateX(3px);  } }
+    @keyframes cue-slide-l { 0%,100% { transform: translateY(-50%) translateX(0); } 50% { transform: translateY(-50%) translateX(-3px); } }
+    .scroll-cue-h, .scroll-cue-l { position: absolute; top: 50%; transform: translateY(-50%); background: var(--cue-bg); color: var(--cue-text); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: none; cursor: pointer; pointer-events: none; opacity: 0; user-select: none; transition: opacity 0.22s; z-index: 2; }
+    .scroll-cue-h { right: 9px; }
     .scroll-cue-h::after { content: '›'; }
-    .back-scroll.no-fade .scroll-cue-h { opacity: 0; pointer-events: none; }
+    .scroll-cue-l { left: 9px; }
+    .scroll-cue-l::after { content: '‹'; }
+    .back-scroll.can-right .scroll-cue-h { opacity: 1; pointer-events: auto; animation: cue-slide   2s ease-in-out infinite; }
+    .back-scroll.can-left  .scroll-cue-l { opacity: 1; pointer-events: auto; animation: cue-slide-l 2s ease-in-out infinite; }
+    /* Lightbox */
+    .lb-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.26s; }
+    .lb-overlay.open { opacity: 1; pointer-events: auto; }
+    .lb-content { position: relative; max-width: min(92vw, 560px); width: 100%; }
+    .lb-img { width: 100%; height: auto; max-height: 78vh; object-fit: contain; border-radius: 12px; display: block; transform: scale(0.88); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    .lb-overlay.open .lb-img { transform: scale(1); }
+    .lb-close { position: absolute; top: -14px; right: -14px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.3); color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; transition: background 0.18s; }
+    .lb-close:hover { background: rgba(255,255,255,0.3); }
 
     .back-body { height: 100%; overflow-x: auto; overflow-y: hidden; display: flex; align-items: stretch; scrollbar-width: none; }
     .back-body::-webkit-scrollbar { display: none; }
@@ -158,11 +173,10 @@
                                 <div class="card">
                                     <div class="card-front">
                                         <div class="row-num">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</div>
-                                        <div class="front-img">{% if product.image %}<img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">{% else %}🍽️{% endif %}</div>
+                                        <div class="front-img" {% if product.image %}data-lightbox="{{ asset('uploads/products/' ~ product.image) }}"{% endif %}>{% if product.image %}<img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">{% else %}🍽️{% endif %}{% if product.spicyLevel > 0 %}<div class="spicy-badge">{% if product.spicyLevel <= 2 %}🌶{% elseif product.spicyLevel <= 4 %}🌶🌶{% else %}🌶🌶🌶{% endif %}</div>{% endif %}</div>
                                         <div class="front-info">
                                             <div class="front-name">{{ pT.name }}</div>
                                             <div class="front-meta">
-                                                {% if product.spicyLevel > 0 %}<span class="front-badge">{% if product.spicyLevel <= 2 %}🌶{% elseif product.spicyLevel <= 4 %}🌶🌶{% else %}🌶🌶🌶{% endif %}</span>{% endif %}
                                                 {% for tag in product.tags %}{% set tT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tT = tr %}{% endif %}{% endfor %}{% if tT %}<span class="front-badge">{{ tag.icon }} {{ tT.name }}</span>{% endif %}{% endfor %}
                                             </div>
                                         </div>
@@ -182,7 +196,8 @@
                                                 {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">Picante</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}Suave{% elseif product.spicyLevel == 2 %}Medio{% elseif product.spicyLevel == 3 %}Picante{% elseif product.spicyLevel == 4 %}Muy picante{% else %}Extremo{% endif %}</span></div></div>{% endif %}
                                                 {% if product.calories %}<div class="bsec"><div class="bsec-title">Calorías</div><div class="nut-row"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
                                             </div>
-                                            <button class="scroll-cue-h" type="button" aria-label="Desplazarse"></button>
+                                            <button class="scroll-cue-l" type="button" aria-label="Volver"></button>
+                                            <button class="scroll-cue-h" type="button" aria-label="Siguiente"></button>
                                         </div>
                                     </div>
                                 </div>
@@ -193,6 +208,13 @@
             </section>
         {% endif %}
     {% else %}<div class="empty-state">No hay productos disponibles.</div>{% endfor %}
+</div>
+
+<div class="lb-overlay" id="lb-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="lb-content" id="lb-content">
+        <img class="lb-img" id="lb-img" src="" alt="">
+        <button class="lb-close" id="lb-close" aria-label="Cerrar">×</button>
+    </div>
 </div>
 
 {% include 'menu/_search_js.html.twig' %}
