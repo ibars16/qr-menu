@@ -99,58 +99,57 @@
     .layouts-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
     @media (max-width: 580px) { .layouts-grid { grid-template-columns: 1fr; } }
 
-    .layout-thumb {
-        height: 110px; background: #090909; overflow: hidden;
-        display: flex; flex-direction: column; justify-content: center;
-        padding: 10px; gap: 5px;
-    }
-    /* Standard rows */
-    .lt-row  { display: flex; align-items: center; gap: 6px; background: #141414; border-radius: 7px; padding: 7px 9px; border: 1px solid #1c1c1c; }
-    .lt-img  { width: 26px; height: 26px; border-radius: 5px; background: #1e1e1e; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; }
-    .lt-info { flex: 1; }
-    .lt-name { height: 6px; background: #272727; border-radius: 3px; width: 76%; }
-    .lt-desc { height: 4px; background: #1c1c1c; border-radius: 3px; width: 50%; margin-top: 4px; }
-    .lt-price{ font-size: 9px; font-weight: 800; color: #C1440E; }
-    /* Compact rows */
-    .lt-crow  { display: flex; align-items: center; gap: 5px; padding: 5px 8px; border-bottom: 1px solid #151515; }
-    .lt-num   { font-size: 8px; font-weight: 700; color: #282828; width: 14px; flex-shrink: 0; }
-    .lt-cimg  { width: 19px; height: 19px; border-radius: 3px; background: #1c1c1c; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; }
-    .lt-cname { flex: 1; height: 5px; background: #272727; border-radius: 3px; }
-    .lt-cprice{ font-size: 8px; font-weight: 700; color: #444; }
-    /* Grid cells */
-    .lt-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 8px; }
-    .lt-gcell { background: #141414; border-radius: 6px; overflow: hidden; border: 1px solid #1c1c1c; }
-    .lt-gimg  { height: 28px; display: flex; align-items: center; justify-content: center; font-size: 13px; background: #1c1c1c; }
-    .lt-gbody { padding: 4px 5px 5px; }
-    .lt-gname { height: 4px; background: #272727; border-radius: 3px; width: 85%; }
-    .lt-gprice{ font-size: 7px; font-weight: 800; color: #C1440E; margin-top: 3px; }
+    .layout-thumb { height: 128px; background: #060606; overflow: hidden; display: flex; flex-direction: column; }
+
+    /* Standard: portrait cards side by side */
+    .lt-pcards { display: flex; gap: 6px; padding: 10px; flex: 1; }
+    .lt-pcard  { flex: 1; background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #1d1d1d; display: flex; flex-direction: column; }
+    .lt-pimg   { flex: 0 0 56px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .lt-pbody  { flex: 1; padding: 5px 7px; display: flex; flex-direction: column; justify-content: space-between; }
+    .lt-pname  { height: 5px; background: #262626; border-radius: 3px; width: 78%; }
+    .lt-pprice { font-size: 8px; font-weight: 800; color: #C1440E; }
+
+    /* Compact: numbered list rows */
+    .lt-crow  { display: flex; align-items: center; gap: 5px; padding: 5px 9px; border-bottom: 1px solid #111; }
+    .lt-num   { font-size: 8px; font-weight: 700; color: #252525; width: 14px; flex-shrink: 0; text-align: right; }
+    .lt-cimg  { width: 20px; height: 20px; border-radius: 3px; background: #1a1a1a; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .lt-cname { flex: 1; height: 4px; background: #222; border-radius: 3px; }
+    .lt-cprice{ font-size: 8px; font-weight: 700; color: #3c3c3c; }
+
+    /* Grid: 2×2 portrait cells */
+    .lt-grid  { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 5px; padding: 8px; flex: 1; }
+    .lt-gcell { background: #111; border-radius: 7px; overflow: hidden; border: 1px solid #1d1d1d; display: flex; flex-direction: column; }
+    .lt-gimg  { flex: 0 0 36px; display: flex; align-items: center; justify-content: center; font-size: 14px; background: #1a1a1a; }
+    .lt-gbody { flex: 1; padding: 3px 5px; display: flex; flex-direction: column; justify-content: space-between; }
+    .lt-gname { height: 4px; background: #262626; border-radius: 3px; width: 85%; }
+    .lt-gprice{ font-size: 7px; font-weight: 800; color: #C1440E; }
 
     /* ── Theme cards ── */
     .themes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(218px,1fr)); gap: 10px; }
     @media (max-width: 500px) { .themes-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 360px) { .themes-grid { grid-template-columns: 1fr; } }
 
-    /* Theme swatch — mini UI preview */
-    .theme-swatch { height: 132px; padding: 8px 9px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; position: relative; }
+    /* Theme swatch — mini UI with portrait cards */
+    .theme-swatch { height: 158px; padding: 8px 9px; display: flex; flex-direction: column; gap: 5px; overflow: hidden; position: relative; }
 
-    /* header row */
-    .sw-hdr   { display: flex; align-items: center; gap: 5px; padding: 3px 5px 4px; border-radius: 5px; flex-shrink: 0; }
-    .sw-logo  { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
-    .sw-brand { height: 5px; border-radius: 3px; width: 42px; opacity: 0.75; }
-    .sw-sel   { height: 10px; border-radius: 5px; width: 22px; margin-left: auto; opacity: 0.4; }
-    /* search */
-    .sw-srch  { height: 11px; border-radius: 5px; flex-shrink: 0; opacity: 0.55; }
-    /* tabs */
+    /* Swatch header */
+    .sw-hdr   { display: flex; align-items: center; gap: 5px; padding: 4px 6px; border-radius: 5px; flex-shrink: 0; border-width: 1px; border-style: solid; }
+    .sw-logo  { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+    .sw-brand { height: 4px; border-radius: 3px; width: 38px; opacity: 0.7; }
+
+    /* Swatch tabs */
     .sw-tabs  { display: flex; gap: 3px; flex-shrink: 0; }
-    .sw-tab   { height: 9px; border-radius: 9px; width: 24px; opacity: 0.25; }
-    .sw-tab.on{ width: 30px; opacity: 1; }
-    /* card row */
-    .sw-row   { display: flex; align-items: center; gap: 4px; border-radius: 5px; padding: 4px 5px; flex-shrink: 0; }
-    .sw-rimg  { width: 18px; height: 18px; border-radius: 3px; flex-shrink: 0; }
-    .sw-rinfo { flex: 1; min-width: 0; }
-    .sw-rname { height: 5px; border-radius: 3px; width: 68%; opacity: 0.8; margin-bottom: 3px; }
-    .sw-rdesc { height: 3px; border-radius: 3px; width: 42%; opacity: 0.3; }
-    .sw-rprice{ font-size: 9px; font-weight: 800; letter-spacing: -0.2px; flex-shrink: 0; }
+    .sw-tab   { height: 8px; border-radius: 8px; width: 22px; opacity: 0.18; }
+    .sw-tab.on{ width: 28px; opacity: 1; }
+
+    /* Swatch portrait mini-cards */
+    .sw-cards { display: flex; gap: 4px; flex: 1; min-height: 0; }
+    .sw-card  { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-width: 1px; border-style: solid; }
+    .sw-cimg  { flex: 0 0 46px; }
+    .sw-cbody { flex: 1; padding: 4px 5px; display: flex; flex-direction: column; justify-content: space-between; }
+    .sw-cname { height: 4px; border-radius: 3px; width: 72%; }
+    .sw-cname2{ height: 3px; border-radius: 3px; width: 48%; margin-top: 2px; opacity: 0.32; }
+    .sw-cprice{ font-size: 8px; font-weight: 800; letter-spacing: -0.2px; }
 </style>
 {% endblock %}
 
@@ -194,8 +193,10 @@
             <div class="sel-card {{ restaurant.layout == key ? 'is-active' : '' }}" id="lcard-{{ key }}">
                 <div class="layout-thumb">
                     {% if key == 'standard' %}
-                        <div class="lt-row"><div class="lt-img">🥩</div><div class="lt-info"><div class="lt-name"></div><div class="lt-desc"></div></div><div class="lt-price">24 €</div></div>
-                        <div class="lt-row"><div class="lt-img">🥗</div><div class="lt-info"><div class="lt-name"></div><div class="lt-desc"></div></div><div class="lt-price">16 €</div></div>
+                        <div class="lt-pcards">
+                            <div class="lt-pcard"><div class="lt-pimg">🥩</div><div class="lt-pbody"><div class="lt-pname"></div><div class="lt-pprice">24 €</div></div></div>
+                            <div class="lt-pcard"><div class="lt-pimg">🥗</div><div class="lt-pbody"><div class="lt-pname"></div><div class="lt-pprice">16 €</div></div></div>
+                        </div>
                     {% elseif key == 'compact' %}
                         <div class="lt-crow"><div class="lt-num">01</div><div class="lt-cimg">🥩</div><div class="lt-cname"></div><div class="lt-cprice">24 €</div></div>
                         <div class="lt-crow"><div class="lt-num">02</div><div class="lt-cimg">🥗</div><div class="lt-cname"></div><div class="lt-cprice">16 €</div></div>
@@ -243,36 +244,39 @@
                 {# Mini UI preview swatch #}
                 <div class="theme-swatch" style="background:{{ thm.preview_bg }}">
                     {# header #}
-                    <div class="sw-hdr" style="background:{{ thm.preview_surface }};border:1px solid {{ thm.preview_border }}">
+                    <div class="sw-hdr" style="background:{{ thm.preview_surface }};border-color:{{ thm.preview_border }}">
                         <div class="sw-logo" style="background:{{ thm.preview_accent }}"></div>
                         <div class="sw-brand" style="background:{{ thm.preview_fg }}"></div>
-                        <div class="sw-sel"   style="background:{{ thm.preview_border }}"></div>
                     </div>
-                    {# search #}
-                    <div class="sw-srch" style="background:{{ thm.preview_surface }};border:1px solid {{ thm.preview_border }}"></div>
-                    {# tabs #}
+                    {# category tabs #}
                     <div class="sw-tabs">
                         <div class="sw-tab on" style="background:{{ thm.preview_accent }}"></div>
                         <div class="sw-tab"    style="background:{{ thm.preview_fg }}"></div>
                         <div class="sw-tab"    style="background:{{ thm.preview_fg }}"></div>
                     </div>
-                    {# card row 1 #}
-                    <div class="sw-row" style="background:{{ thm.preview_surface }};border:1px solid {{ thm.preview_border }}">
-                        <div class="sw-rimg" style="background:{{ thm.preview_border }}"></div>
-                        <div class="sw-rinfo">
-                            <div class="sw-rname" style="background:{{ thm.preview_fg }}"></div>
-                            <div class="sw-rdesc" style="background:{{ thm.preview_fg }}"></div>
+                    {# portrait mini-cards #}
+                    <div class="sw-cards">
+                        <div class="sw-card" style="background:{{ thm.preview_surface }};border-color:{{ thm.preview_border }};border-radius:{{ thm.preview_radius|default('12px') }}">
+                            <div class="sw-cimg" style="background:{{ thm.preview_border }}"></div>
+                            <div class="sw-cbody">
+                                <div><div class="sw-cname" style="background:{{ thm.preview_fg }}"></div><div class="sw-cname2" style="background:{{ thm.preview_fg }}"></div></div>
+                                <div class="sw-cprice" style="color:{{ thm.preview_accent }}">€€</div>
+                            </div>
                         </div>
-                        <div class="sw-rprice" style="color:{{ thm.preview_accent }}">€€</div>
-                    </div>
-                    {# card row 2 #}
-                    <div class="sw-row" style="background:{{ thm.preview_surface }};border:1px solid {{ thm.preview_border }}">
-                        <div class="sw-rimg" style="background:{{ thm.preview_border }}"></div>
-                        <div class="sw-rinfo">
-                            <div class="sw-rname" style="background:{{ thm.preview_fg }}"></div>
-                            <div class="sw-rdesc" style="background:{{ thm.preview_fg }}"></div>
+                        <div class="sw-card" style="background:{{ thm.preview_surface }};border-color:{{ thm.preview_border }};border-radius:{{ thm.preview_radius|default('12px') }}">
+                            <div class="sw-cimg" style="background:{{ thm.preview_border }}"></div>
+                            <div class="sw-cbody">
+                                <div><div class="sw-cname" style="background:{{ thm.preview_fg }};width:85%"></div><div class="sw-cname2" style="background:{{ thm.preview_fg }}"></div></div>
+                                <div class="sw-cprice" style="color:{{ thm.preview_accent }}">€€</div>
+                            </div>
                         </div>
-                        <div class="sw-rprice" style="color:{{ thm.preview_accent }}">€€</div>
+                        <div class="sw-card" style="background:{{ thm.preview_surface }};border-color:{{ thm.preview_border }};border-radius:{{ thm.preview_radius|default('12px') }}">
+                            <div class="sw-cimg" style="background:{{ thm.preview_border }}"></div>
+                            <div class="sw-cbody">
+                                <div><div class="sw-cname" style="background:{{ thm.preview_fg }};width:60%"></div><div class="sw-cname2" style="background:{{ thm.preview_fg }}"></div></div>
+                                <div class="sw-cprice" style="color:{{ thm.preview_accent }}">€€</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
