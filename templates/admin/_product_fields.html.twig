@@ -123,9 +123,9 @@
         </div>
     </div>
 {% else %}
-    <div style="font-size:12px;color:#444;padding:8px 12px;background:#141414;border-radius:8px;border:1px solid #1c1c1c">
+    <div style="font-size:12px;color:var(--tx-6);padding:8px 12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--bd-1)">
         Sin etiquetas configuradas —
-        <a href="{{ path('admin_tags') }}" style="color:#888">créalas en Etiquetas</a>
+        <a href="{{ path('admin_tags') }}" style="color:var(--tx-3)">créalas en Etiquetas</a>
         para poder marcar platos como Vegetariano, Sin gluten, etc.
     </div>
 {% endif %}
@@ -145,7 +145,7 @@
         <div class="ing-suggestions" id="ing-suggestions"></div>
     </div>
     <div class="ing-tags" id="ing-tags"></div>
-    <p style="font-size:11px;color:#333;margin-top:6px;line-height:1.5">
+    <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
         Los ingredientes nuevos se añaden automáticamente al banco del restaurante.
     </p>
 </div>

@@ -8,14 +8,14 @@
         .qr-wrap { max-width: 560px; }
 
         .qr-section {
-            background: #141414; border: 1px solid #1c1c1c;
+            background: var(--bg-card); border: 1px solid var(--bd-1);
             border-radius: 14px; overflow: hidden; margin-bottom: 16px;
         }
         .qr-section-title {
-            font-size: 12px; font-weight: 600; color: #444;
+            font-size: 12px; font-weight: 600; color: var(--tx-6);
             text-transform: uppercase; letter-spacing: 0.08em;
-            padding: 14px 18px 12px; border-bottom: 1px solid #1c1c1c;
-            background: #111;
+            padding: 14px 18px 12px; border-bottom: 1px solid var(--bd-1);
+            background: var(--bg-nav);
         }
         .qr-section-body { padding: 24px 18px; }
 
@@ -24,7 +24,7 @@
         .qr-canvas-wrap {
             background: #fff; border-radius: 16px; padding: 16px;
             display: inline-flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.06);
+            box-shadow: 0 0 0 1px var(--bd-1);
         }
         .qr-canvas-wrap canvas { display: block; }
 
@@ -39,26 +39,26 @@
         /* URL section */
         .url-row {
             display: flex; align-items: center; gap: 10px;
-            background: #111; border: 1px solid #1c1c1c;
+            background: var(--bg-nav); border: 1px solid var(--bd-1);
             border-radius: 10px; padding: 12px 14px;
         }
         .url-text {
-            flex: 1; font-size: 13px; color: #666;
+            flex: 1; font-size: 13px; color: var(--tx-4);
             font-family: monospace; word-break: break-all;
             line-height: 1.5;
         }
         .copy-btn {
             display: inline-flex; align-items: center; gap: 5px;
             padding: 7px 14px; border-radius: 8px; font-size: 12px;
-            border: 1px solid #2a2a2a; background: #1a1a1a; color: #888;
+            border: 1px solid var(--bd-2); background: var(--bg-input); color: var(--tx-3);
             cursor: pointer; flex-shrink: 0; transition: color 0.15s, border-color 0.15s;
         }
-        .copy-btn:hover { color: #fff; border-color: #444; }
+        .copy-btn:hover { color: var(--tx-hi); border-color: var(--tx-6); }
 
         /* Hint */
         .hint {
-            font-size: 13px; color: #444; line-height: 1.6;
-            padding: 14px 16px; background: #111; border: 1px solid #1c1c1c;
+            font-size: 13px; color: var(--tx-6); line-height: 1.6;
+            padding: 14px 16px; background: var(--bg-nav); border: 1px solid var(--bd-1);
             border-radius: 10px; display: flex; gap: 10px; align-items: flex-start;
         }
         .hint i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
