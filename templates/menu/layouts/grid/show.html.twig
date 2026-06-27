@@ -59,7 +59,7 @@
 
     /* ── Flip card ── */
     .card-wrap { perspective: 1400px; cursor: pointer; }
-    .card { width: 100%; height: 248px; position: relative; transform-style: preserve-3d; transition: transform 0.52s cubic-bezier(0.4,0.18,0.18,1); border-radius: var(--card-radius, 18px); }
+    .card { width: 100%; height: 262px; position: relative; transform-style: preserve-3d; transition: transform 0.52s cubic-bezier(0.4,0.18,0.18,1); border-radius: var(--card-radius, 18px); }
     .card.flipped { transform: rotateY(180deg); }
     .card-front, .card-back { position: absolute; inset: 0; border-radius: var(--card-radius, 18px); backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
 
@@ -67,15 +67,15 @@
     .card-front { background: var(--cf-bg); border: 1px solid var(--cf-border); display: flex; flex-direction: column; box-shadow: var(--card-shadow, none); transition: box-shadow 0.25s, border-color 0.25s, transform 0.25s; }
     .card-front::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: var(--accent-line-h, 3px); background: var(--cf-accent); opacity: var(--cf-accent-op); border-radius: var(--card-radius, 18px) var(--card-radius, 18px) 0 0; z-index: 1; }
     .card-wrap:hover .card:not(.flipped) .card-front { box-shadow: var(--card-hover-shadow, var(--cf-hshadow, none)); border-color: var(--cf-hborder); transform: translateY(var(--card-lift, -4px)); }
-    .front-img { height: 150px; background: var(--cf-img); display: flex; align-items: center; justify-content: center; font-size: 36px; position: relative; overflow: hidden; flex-shrink: 0; }
+    .front-img { height: 170px; background: var(--cf-img); display: flex; align-items: center; justify-content: center; font-size: 36px; position: relative; overflow: hidden; flex-shrink: 0; }
     .front-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .front-img-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.1) 100%); pointer-events: none; }
-    .spicy-badge { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.46); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: 16px; padding: 2px 6px; font-size: 11px; line-height: 1.3; z-index: 3; }
-    .front-body { flex: 1; padding: 11px 12px 12px; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
+    .front-img-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.12) 100%); pointer-events: none; }
+    .spicy-badge { position: absolute; top: 6px; right: 6px; background: rgba(210,32,18,0.88); border-radius: 16px; padding: 2px 6px; font-size: 11px; line-height: 1.3; z-index: 3; }
+    .front-body { flex: 1; padding: 9px 12px 10px; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; overflow: hidden; }
     .front-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 4px; }
     .fbadge { font-size: 10px; padding: 2px 7px; border-radius: var(--badge-radius, 7px); background: var(--cbg); border: 1px solid var(--cbc); color: var(--cbt); font-weight: 500; }
     .fbadge-hot { color: #e06840; border-color: rgba(224,104,64,0.22); background: rgba(224,104,64,0.08); }
-    .front-name { font-size: 15px; font-weight: 700; color: var(--cn); letter-spacing: -0.3px; line-height: 1.28; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 6px; }
+    .front-name { font-size: 14px; font-weight: 700; color: var(--cn); letter-spacing: -0.3px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .front-bottom { display: flex; align-items: center; justify-content: space-between; }
     .front-price { font-size: 18px; font-weight: 800; color: var(--cp); letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
     .flip-hint { font-size: 10px; color: var(--hint); display: flex; align-items: center; gap: 2px; padding: 4px 9px; border-radius: 16px; border: 1px solid var(--tab-border); background: var(--tab-bg); transition: color 0.2s, border-color 0.2s; white-space: nowrap; }

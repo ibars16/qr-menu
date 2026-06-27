@@ -122,34 +122,22 @@ sections.forEach(s => obs.observe(s));
     }, true);
 })();
 
-// Lightbox for compact layout image zoom
-(function() {
-    const overlay = document.getElementById('lb-overlay');
-    const lbImg   = document.getElementById('lb-img');
-    const lbClose = document.getElementById('lb-close');
-    if (!overlay || !lbImg) return;
-
-    function open(src) {
-        lbImg.src = src;
-        overlay.classList.add('open');
-        overlay.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-    }
-    function close() {
-        overlay.classList.remove('open');
-        overlay.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
-    }
-
-    // Open on image click — capture phase stops card flip
-    document.addEventListener('click', function(e) {
-        const wrap = e.target.closest('.front-img[data-lightbox]');
-        if (wrap) { e.stopPropagation(); open(wrap.dataset.lightbox); }
-    }, true);
-
-    // Close on overlay background click or close button
-    overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
-    if (lbClose) lbClose.addEventListener('click', close);
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
-})();
+// Lightbox — global functions called via inline onclick attributes
+function lbOpen(src) {
+    var overlay = document.getElementById('lb-overlay');
+    var img = document.getElementById('lb-img');
+    if (!overlay || !img || !src) return;
+    img.src = src;
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+}
+function lbClose() {
+    var overlay = document.getElementById('lb-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') lbClose(); });
 </script>
