@@ -1,77 +1,116 @@
 <style>
 :root {
-    --bg: #080808;
+    /* ── Identity: The Grand Table — Michelin fine dining, champagne gold on black ── */
+    --card-radius: 12px;
+    --badge-radius: 6px;
+    --tab-radius: 6px;
+    --search-radius: 10px;
+    --accent-line-h: 1px;
+    --card-lift: -3px;
+
+    /* ── Palette ── */
+    --bg: #030302;
     --bg-attach: scroll;
-    --surface: #0e0e0c;
-    --surface-2: #161410;
-    --fg: #f0e8d4;
-    --fg-2: #8a7860;
-    --fg-3: #40382a;
-    --accent: #d4a847;
-    --b1: #1c1811;
-    --b2: #2a2218;
-    --hdr-bg: rgba(8,8,8,0.96);
-    --hdr-border: #1c1811;
-    --hdr-blur: blur(12px);
-    --hero-bg: linear-gradient(160deg, #120e06, #1c1608);
-    --hero-border: #1c1811;
-    --in-bg: #0e0e0c;
-    --in-border: #1c1811;
-    --in-focus-border: rgba(212,168,71,0.45);
-    --in-focus-shadow: 0 0 0 3px rgba(212,168,71,0.08);
-    --in-text: #d4c8b0;
-    --in-ph: #40382a;
-    --tab-bg: #0e0e0c;
-    --tab-border: #1c1811;
-    --tab-text: #40382a;
-    --tab-hbg: #161410;
-    --tab-htext: #8a7860;
-    --tab-act-bg: #d4a847;
-    --tab-act-border: #d4a847;
-    --tab-act-text: #0a0800;
-    --tab-act-shadow: 0 2px 12px rgba(212,168,71,0.25);
-    --cf-bg: #0e0e0c;
-    --cf-border: #1c1811;
-    --cf-hborder: rgba(212,168,71,0.45);
-    --cf-hshadow: 0 4px 20px rgba(212,168,71,0.07);
-    --cf-img: #161410;
-    --cf-accent: linear-gradient(90deg, transparent, rgba(212,168,71,0.6) 40%, transparent);
+    --surface: #09080a;
+    --surface-2: #0e0d0c;
+    --fg: #eee0c0;
+    --fg-2: #7a6a48;
+    --fg-3: #332c1a;
+    --accent: #c4a040;
+    --b1: rgba(196,160,64,0.12);
+    --b2: rgba(196,160,64,0.22);
+
+    /* ── Header ── */
+    --hdr-bg: rgba(3,3,2,0.97);
+    --hdr-border: rgba(196,160,64,0.1);
+    --hdr-blur: blur(16px);
+
+    /* ── Hero ── */
+    --hero-bg: linear-gradient(160deg, #100c04, #180e03);
+    --hero-border: rgba(196,160,64,0.08);
+
+    /* ── Search input ── */
+    --in-bg: #09080a;
+    --in-border: rgba(196,160,64,0.14);
+    --in-focus-border: rgba(196,160,64,0.5);
+    --in-focus-shadow: 0 0 0 3px rgba(196,160,64,0.07);
+    --in-text: #d8c8a8;
+    --in-ph: #332c1a;
+
+    /* ── Tabs & filters ── */
+    --tab-bg: #09080a;
+    --tab-border: rgba(196,160,64,0.12);
+    --tab-text: #332c1a;
+    --tab-hbg: #0e0d0c;
+    --tab-htext: #8a7858;
+    --tab-act-bg: #c4a040;
+    --tab-act-border: #c4a040;
+    --tab-act-text: #030302;
+    --tab-act-shadow: 0 4px 18px rgba(196,160,64,0.35);
+
+    /* ── Card front ── */
+    --cf-bg: #09080a;
+    --cf-border: rgba(196,160,64,0.1);
+    --cf-hborder: rgba(196,160,64,0.48);
+    --cf-hshadow: 0 0 0 1px rgba(196,160,64,0.32), 0 12px 40px rgba(0,0,0,0.55), 0 4px 16px rgba(196,160,64,0.06);
+    --cf-img: #0e0d0c;
+    --cf-accent: linear-gradient(90deg, transparent 0%, rgba(196,160,64,0.8) 40%, transparent 100%);
     --cf-accent-op: 1;
-    --cn: #f0e8d4;
-    --cd: #8a7860;
-    --cp: #d4a847;
-    --cbg: rgba(212,168,71,0.08);
-    --cbc: rgba(212,168,71,0.15);
-    --cbt: #8a7860;
-    --hint: rgba(212,168,71,0.25);
-    --hint-h: rgba(212,168,71,0.6);
-    --cb-bg: #0a0808;
-    --cb-border: rgba(212,168,71,0.15);
-    --bn: #f0e8d4;
-    --bp: #d4a847;
-    --close-bg: rgba(212,168,71,0.08);
-    --close-b: rgba(212,168,71,0.15);
-    --close-t: #8a7860;
-    --close-hbg: rgba(212,168,71,0.16);
-    --close-ht: #d4a847;
-    --bdiv: rgba(212,168,71,0.08);
-    --btt: #40382a;
-    --bdesc: #8a7860;
-    --fade: #0a0808;
-    --cue-bg: rgba(212,168,71,0.12);
-    --cue-text: rgba(212,168,71,0.55);
-    --row-border: #141208;
-    --row-hover: #0e0c08;
-    --num: #28221a;
-    --num-h: #40382a;
-    --cat-title: #30281a;
-    --cat-sep: #1c1811;
-    --sep-bg: rgba(212,168,71,0.08);
-    --logo-bg: #d4a847;
+    --card-shadow: 0 2px 10px rgba(0,0,0,0.65), 0 0 0 1px rgba(196,160,64,0.06);
+    --card-hover-shadow: 0 0 0 1px rgba(196,160,64,0.32), 0 12px 40px rgba(0,0,0,0.55), 0 4px 16px rgba(196,160,64,0.06);
+
+    /* ── Card content ── */
+    --cn: #eee0c0;
+    --cd: #7a6a48;
+    --cp: #c4a040;
+    --cbg: rgba(196,160,64,0.08);
+    --cbc: rgba(196,160,64,0.16);
+    --cbt: #7a6a48;
+    --hint: rgba(196,160,64,0.28);
+    --hint-h: rgba(196,160,64,0.65);
+
+    /* ── Card back ── */
+    --cb-bg: #070605;
+    --cb-border: rgba(196,160,64,0.14);
+    --bn: #eee0c0;
+    --bp: #c4a040;
+    --close-bg: rgba(196,160,64,0.07);
+    --close-b: rgba(196,160,64,0.14);
+    --close-t: #7a6a48;
+    --close-hbg: rgba(196,160,64,0.18);
+    --close-ht: #c4a040;
+    --bdiv: rgba(196,160,64,0.08);
+    --btt: #332c1a;
+    --bdesc: #7a6a48;
+    --fade: #070605;
+    --cue-bg: rgba(196,160,64,0.12);
+    --cue-text: rgba(196,160,64,0.55);
+
+    /* ── Compact-layout rows ── */
+    --row-border: rgba(196,160,64,0.07);
+    --row-hover: rgba(196,160,64,0.03);
+    --num: #1e1a10;
+    --num-h: #332c1a;
+
+    /* ── Category titles ── */
+    --cat-title: rgba(196,160,64,0.35);
+    --cat-sep: rgba(196,160,64,0.1);
+    --sep-bg: rgba(196,160,64,0.08);
+
+    /* ── Logo ── */
+    --logo-bg: #c4a040;
+
+    /* ── Label colours ── */
     --lg: #7aad40; --lg-bg: rgba(59,109,17,0.18); --lg-b: rgba(99,153,34,0.18);
     --lo: #d06040; --lo-bg: rgba(216,90,48,0.14); --lo-b: rgba(240,153,123,0.18);
-    --ing-bg: rgba(212,168,71,0.07); --ing-b: rgba(212,168,71,0.13); --ing-t: #8a7860;
-    --nut-bg: rgba(212,168,71,0.07); --nut-b: rgba(212,168,71,0.13); --nut-v: #d4c8b0; --nut-u: #40382a;
-    --dot-on: #D85A30; --dot-off: #1c1811; --spicy-t: #8a7860;
+
+    /* ── Ingredient chips ── */
+    --ing-bg: rgba(196,160,64,0.07); --ing-b: rgba(196,160,64,0.14); --ing-t: #7a6a48;
+
+    /* ── Nutrition ── */
+    --nut-bg: rgba(196,160,64,0.07); --nut-b: rgba(196,160,64,0.14); --nut-v: #d8c8a8; --nut-u: #332c1a;
+
+    /* ── Spicy ── */
+    --dot-on: #D85A30; --dot-off: rgba(196,160,64,0.12); --spicy-t: #7a6a48;
 }
 </style>

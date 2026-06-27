@@ -90,7 +90,7 @@ class MenuController extends AbstractController
         $theme         = $restaurant->getTheme();
         $isPreview     = false;
         $validLayouts  = ['standard', 'compact', 'grid'];
-        $validThemes   = ['classic-dark', 'classic-warm', 'glass', 'ocean', 'noir'];
+        $validThemes   = ['classic-dark', 'classic-warm', 'glass', 'ocean', 'noir', 'forest', 'terra'];
 
         $previewLayout = $request->query->get('preview_layout');
         $previewTheme  = $request->query->get('preview_theme');

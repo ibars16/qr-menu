@@ -1,77 +1,116 @@
 <style>
 :root {
-    --bg: #f0f6ff;
+    /* ── Identity: La Marina — premium coastal, deep navy meets pearl white ── */
+    --card-radius: 18px;
+    --badge-radius: 8px;
+    --tab-radius: 24px;
+    --search-radius: 16px;
+    --accent-line-h: 3px;
+    --card-lift: -4px;
+
+    /* ── Palette ── */
+    --bg: #f0f7ff;
     --bg-attach: scroll;
     --surface: #ffffff;
-    --surface-2: #e4eefc;
-    --fg: #0d1b2e;
-    --fg-2: #4a6480;
-    --fg-3: #9ab0c8;
-    --accent: #2563eb;
-    --b1: #dce8f5;
-    --b2: #c8d8ec;
-    --hdr-bg: rgba(240,246,255,0.92);
-    --hdr-border: #dce8f5;
-    --hdr-blur: blur(14px);
-    --hero-bg: linear-gradient(135deg, #e4eefc 0%, #f0f6ff 100%);
-    --hero-border: #dce8f5;
+    --surface-2: #e2f0fc;
+    --fg: #061626;
+    --fg-2: #2a547a;
+    --fg-3: #74a8c8;
+    --accent: #0852d0;
+    --b1: #c6dff5;
+    --b2: #a4c8e8;
+
+    /* ── Header ── */
+    --hdr-bg: rgba(240,247,255,0.95);
+    --hdr-border: #c6dff5;
+    --hdr-blur: blur(20px);
+
+    /* ── Hero ── */
+    --hero-bg: linear-gradient(150deg, #d8eeff 0%, #c2e0ff 45%, #f0f7ff 100%);
+    --hero-border: #c6dff5;
+
+    /* ── Search input ── */
     --in-bg: #ffffff;
-    --in-border: #dce8f5;
-    --in-focus-border: #2563eb;
-    --in-focus-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-    --in-text: #0d1b2e;
-    --in-ph: #9ab0c8;
-    --tab-bg: #fff;
-    --tab-border: #dce8f5;
-    --tab-text: #9ab0c8;
-    --tab-hbg: #e4eefc;
-    --tab-htext: #4a6480;
-    --tab-act-bg: #2563eb;
-    --tab-act-border: #2563eb;
-    --tab-act-text: #fff;
-    --tab-act-shadow: 0 2px 10px rgba(37,99,235,0.25);
+    --in-border: #c6dff5;
+    --in-focus-border: #0852d0;
+    --in-focus-shadow: 0 0 0 4px rgba(8,82,208,0.1);
+    --in-text: #061626;
+    --in-ph: #74a8c8;
+
+    /* ── Tabs & filters ── */
+    --tab-bg: #ffffff;
+    --tab-border: #c6dff5;
+    --tab-text: #74a8c8;
+    --tab-hbg: #e2f0fc;
+    --tab-htext: #2a547a;
+    --tab-act-bg: #0852d0;
+    --tab-act-border: #0852d0;
+    --tab-act-text: #ffffff;
+    --tab-act-shadow: 0 4px 18px rgba(8,82,208,0.32);
+
+    /* ── Card front ── */
     --cf-bg: #ffffff;
-    --cf-border: #dce8f5;
-    --cf-hborder: #2563eb;
-    --cf-hshadow: 0 4px 20px rgba(37,99,235,0.1);
-    --cf-img: #e4eefc;
-    --cf-accent: linear-gradient(90deg, transparent, rgba(37,99,235,0.6) 40%, transparent);
+    --cf-border: #cce1f5;
+    --cf-hborder: #0852d0;
+    --cf-hshadow: 0 4px 8px rgba(5,30,80,0.07), 0 16px 40px rgba(5,30,100,0.14);
+    --cf-img: #e2f0fc;
+    --cf-accent: linear-gradient(90deg, transparent 0%, rgba(8,82,208,0.7) 40%, transparent 100%);
     --cf-accent-op: 1;
-    --cn: #0d1b2e;
-    --cd: #4a6480;
-    --cp: #2563eb;
-    --cbg: #e4eefc;
-    --cbc: #c8d8ec;
-    --cbt: #4a6480;
-    --hint: rgba(0,0,0,0.16);
-    --hint-h: rgba(37,99,235,0.5);
-    --cb-bg: #f0f6ff;
-    --cb-border: #dce8f5;
-    --bn: #0d1b2e;
-    --bp: #2563eb;
-    --close-bg: #e4eefc;
-    --close-b: #c8d8ec;
-    --close-t: #9ab0c8;
-    --close-hbg: #d0e2f8;
-    --close-ht: #1a3a6e;
-    --bdiv: #e8f0fa;
-    --btt: #9ab0c8;
-    --bdesc: #4a6480;
-    --fade: #f0f6ff;
-    --cue-bg: rgba(37,99,235,0.1);
-    --cue-text: rgba(37,99,235,0.6);
-    --row-border: #e4eefc;
-    --row-hover: #f5f9ff;
-    --num: #c8d8ec;
-    --num-h: #9ab0c8;
-    --cat-title: #9ab0c8;
-    --cat-sep: #dce8f5;
-    --sep-bg: #dce8f5;
-    --logo-bg: #0d1b2e;
-    --lg: #3a7a18; --lg-bg: rgba(59,109,17,0.08); --lg-b: rgba(99,153,34,0.15);
-    --lo: #c04828; --lo-bg: rgba(193,68,14,0.07); --lo-b: rgba(240,153,123,0.15);
-    --ing-bg: #e4eefc; --ing-b: #c8d8ec; --ing-t: #4a6480;
-    --nut-bg: #e4eefc; --nut-b: #c8d8ec; --nut-v: #0d1b2e; --nut-u: #9ab0c8;
-    --dot-on: #D85A30; --dot-off: #c8d8ec; --spicy-t: #9ab0c8;
+    --card-shadow: 0 1px 3px rgba(5,30,80,0.07), 0 4px 14px rgba(5,30,80,0.05);
+    --card-hover-shadow: 0 4px 8px rgba(5,30,80,0.07), 0 16px 40px rgba(5,30,100,0.14);
+
+    /* ── Card content ── */
+    --cn: #061626;
+    --cd: #527898;
+    --cp: #0852d0;
+    --cbg: #e2f0fc;
+    --cbc: #c6dff5;
+    --cbt: #527898;
+    --hint: rgba(0,0,0,0.2);
+    --hint-h: rgba(8,82,208,0.6);
+
+    /* ── Card back ── */
+    --cb-bg: #f0f7ff;
+    --cb-border: #cce1f5;
+    --bn: #061626;
+    --bp: #0852d0;
+    --close-bg: #e2f0fc;
+    --close-b: #c6dff5;
+    --close-t: #74a8c8;
+    --close-hbg: #ccdff5;
+    --close-ht: #061626;
+    --bdiv: #deedf8;
+    --btt: #74a8c8;
+    --bdesc: #2a547a;
+    --fade: #f0f7ff;
+    --cue-bg: rgba(8,82,208,0.1);
+    --cue-text: rgba(8,82,208,0.6);
+
+    /* ── Compact-layout rows ── */
+    --row-border: #deedf8;
+    --row-hover: #f4faff;
+    --num: #c6dff5;
+    --num-h: #74a8c8;
+
+    /* ── Category titles ── */
+    --cat-title: #74a8c8;
+    --cat-sep: #c6dff5;
+    --sep-bg: #c6dff5;
+
+    /* ── Logo ── */
+    --logo-bg: #061626;
+
+    /* ── Label colours ── */
+    --lg: #3a8a18; --lg-bg: rgba(59,109,17,0.09); --lg-b: rgba(99,153,34,0.16);
+    --lo: #c04828; --lo-bg: rgba(193,68,14,0.07); --lo-b: rgba(240,153,123,0.16);
+
+    /* ── Ingredient chips ── */
+    --ing-bg: #e2f0fc; --ing-b: #c6dff5; --ing-t: #2a547a;
+
+    /* ── Nutrition ── */
+    --nut-bg: #e2f0fc; --nut-b: #c6dff5; --nut-v: #061626; --nut-u: #74a8c8;
+
+    /* ── Spicy ── */
+    --dot-on: #D85A30; --dot-off: #c6dff5; --spicy-t: #74a8c8;
 }
 </style>

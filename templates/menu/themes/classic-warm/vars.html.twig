@@ -1,77 +1,116 @@
 <style>
 :root {
-    --bg: #faf7f2;
+    /* ── Identity: Artisan Bistro — warm linen, handcrafted luxury ── */
+    --card-radius: 20px;
+    --badge-radius: 8px;
+    --tab-radius: 24px;
+    --search-radius: 18px;
+    --accent-line-h: 3px;
+    --card-lift: -4px;
+
+    /* ── Palette ── */
+    --bg: #f9f4ee;
     --bg-attach: scroll;
     --surface: #ffffff;
-    --surface-2: #f5f0e8;
-    --fg: #1a1209;
-    --fg-2: #6b5c44;
-    --fg-3: #aaa09a;
+    --surface-2: #f2e9dc;
+    --fg: #1c0e08;
+    --fg-2: #6b5243;
+    --fg-3: #baa898;
     --accent: {{ restaurant.primaryColor }};
-    --b1: #e8e2d8;
-    --b2: #d5cfc5;
-    --hdr-bg: rgba(250,247,242,0.92);
-    --hdr-border: #e8e2d8;
-    --hdr-blur: blur(14px);
-    --hero-bg: linear-gradient(135deg, #f5f0e8 0%, #fdf8f2 100%);
-    --hero-border: #e8e2d8;
+    --b1: #e8ddd0;
+    --b2: #d4c6b4;
+
+    /* ── Header ── */
+    --hdr-bg: rgba(249,244,238,0.95);
+    --hdr-border: #e8ddd0;
+    --hdr-blur: blur(20px);
+
+    /* ── Hero ── */
+    --hero-bg: linear-gradient(148deg, #f0e0ca 0%, #e8d4bc 45%, #f9f4ee 100%);
+    --hero-border: #e8ddd0;
+
+    /* ── Search input ── */
     --in-bg: #ffffff;
-    --in-border: #e0dcd5;
+    --in-border: #e0d5c6;
     --in-focus-border: {{ restaurant.primaryColor }};
-    --in-focus-shadow: 0 0 0 3px rgba(0,0,0,0.05);
-    --in-text: #1a1209;
-    --in-ph: #bbb5ad;
-    --tab-bg: #fff;
-    --tab-border: #e0dcd5;
-    --tab-text: #999;
-    --tab-hbg: #f5f0e8;
-    --tab-htext: #555;
+    --in-focus-shadow: 0 0 0 4px rgba(0,0,0,0.05);
+    --in-text: #1c0e08;
+    --in-ph: #baa898;
+
+    /* ── Tabs & filters ── */
+    --tab-bg: #ffffff;
+    --tab-border: #e0d5c6;
+    --tab-text: #b8aa9a;
+    --tab-hbg: #f5ede0;
+    --tab-htext: #6b5243;
     --tab-act-bg: {{ restaurant.primaryColor }};
     --tab-act-border: {{ restaurant.primaryColor }};
-    --tab-act-text: #fff;
-    --tab-act-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    --tab-act-text: #ffffff;
+    --tab-act-shadow: 0 4px 16px rgba(0,0,0,0.18);
+
+    /* ── Card front ── */
     --cf-bg: #ffffff;
-    --cf-border: #e8e2d8;
+    --cf-border: #ece4d8;
     --cf-hborder: {{ restaurant.primaryColor }};
-    --cf-hshadow: 0 4px 20px rgba(0,0,0,0.08);
-    --cf-img: #f5f0e8;
-    --cf-accent: linear-gradient(90deg, transparent, {{ restaurant.primaryColor }} 40%, transparent);
-    --cf-accent-op: 0.4;
-    --cn: #1a1209;
-    --cd: #8a7860;
+    --cf-hshadow: 0 4px 8px rgba(60,30,10,0.06), 0 16px 40px rgba(60,30,10,0.14);
+    --cf-img: #f2e9dc;
+    --cf-accent: linear-gradient(90deg, transparent 0%, {{ restaurant.primaryColor }} 40%, transparent 100%);
+    --cf-accent-op: 0.55;
+    --card-shadow: 0 1px 3px rgba(60,30,10,0.06), 0 4px 14px rgba(60,30,10,0.05);
+    --card-hover-shadow: 0 4px 8px rgba(60,30,10,0.06), 0 16px 40px rgba(60,30,10,0.14);
+
+    /* ── Card content ── */
+    --cn: #1c0e08;
+    --cd: #9a8878;
     --cp: {{ restaurant.primaryColor }};
-    --cbg: #f5f0e8;
-    --cbc: #e8e2d8;
-    --cbt: #888;
-    --hint: rgba(0,0,0,0.18);
-    --hint-h: rgba(0,0,0,0.45);
-    --cb-bg: #faf7f2;
-    --cb-border: #e8e2d8;
-    --bn: #1a1209;
+    --cbg: #f2e9dc;
+    --cbc: #e4d8c8;
+    --cbt: #9a8878;
+    --hint: rgba(0,0,0,0.22);
+    --hint-h: rgba(0,0,0,0.55);
+
+    /* ── Card back ── */
+    --cb-bg: #faf6f0;
+    --cb-border: #ece4d8;
+    --bn: #1c0e08;
     --bp: {{ restaurant.primaryColor }};
-    --close-bg: #f5f0e8;
-    --close-b: #e0dbd2;
-    --close-t: #aaa;
-    --close-hbg: #e8e3db;
-    --close-ht: #333;
-    --bdiv: #f0ede8;
-    --btt: #c0bab2;
-    --bdesc: #6b5c44;
-    --fade: #faf7f2;
+    --close-bg: #f2e9dc;
+    --close-b: #e4d8c8;
+    --close-t: #baa898;
+    --close-hbg: #e6d8c8;
+    --close-ht: #3a2212;
+    --bdiv: #ece4d8;
+    --btt: #c0b4a4;
+    --bdesc: #6b5243;
+    --fade: #faf6f0;
     --cue-bg: rgba(0,0,0,0.07);
     --cue-text: rgba(0,0,0,0.3);
-    --row-border: #ede9e2;
-    --row-hover: #f5f0e8;
-    --num: #d5cfc5;
-    --num-h: #b5afa5;
-    --cat-title: #c0bab2;
-    --cat-sep: #ede9e2;
-    --sep-bg: #e8e2d8;
+
+    /* ── Compact-layout rows ── */
+    --row-border: #ece4d8;
+    --row-hover: #faf5ee;
+    --num: #d4c8b8;
+    --num-h: #b8aa9a;
+
+    /* ── Category titles ── */
+    --cat-title: #c0b4a4;
+    --cat-sep: #e8ddd0;
+    --sep-bg: #e8ddd0;
+
+    /* ── Logo ── */
     --logo-bg: {{ restaurant.primaryColor }};
-    --lg: #5a8c2a; --lg-bg: rgba(59,109,17,0.08); --lg-b: rgba(99,153,34,0.15);
-    --lo: #b05030; --lo-bg: rgba(193,68,14,0.08); --lo-b: rgba(240,153,123,0.15);
-    --ing-bg: #f5f0e8; --ing-b: #e5e0d8; --ing-t: #888;
-    --nut-bg: #f5f0e8; --nut-b: #e5e0d8; --nut-v: #333; --nut-u: #aaa;
-    --dot-on: #D85A30; --dot-off: #e5e0d8; --spicy-t: #aaa;
+
+    /* ── Label colours ── */
+    --lg: #3e8018; --lg-bg: rgba(59,109,17,0.09); --lg-b: rgba(99,153,34,0.16);
+    --lo: #b04828; --lo-bg: rgba(193,68,14,0.08); --lo-b: rgba(240,153,123,0.16);
+
+    /* ── Ingredient chips ── */
+    --ing-bg: #f2e9dc; --ing-b: #e4d8c8; --ing-t: #8a7860;
+
+    /* ── Nutrition ── */
+    --nut-bg: #f2e9dc; --nut-b: #e4d8c8; --nut-v: #2a1a0e; --nut-u: #baa898;
+
+    /* ── Spicy ── */
+    --dot-on: #c84020; --dot-off: #e4d8c8; --spicy-t: #baa898;
 }
 </style>

@@ -83,6 +83,26 @@ class ThemeController extends AbstractController
             'preview_border'   => '#1e1c18',
             'preview_fg'       => '#f0e8d4',
         ],
+        'forest' => [
+            'name'             => 'Bosque',
+            'desc'             => 'Verde natural y orgánico. Perfecto para cocina de mercado y productos locales.',
+            'icon'             => '🌿',
+            'preview_bg'       => '#f0f4f0',
+            'preview_accent'   => '#2e7d3a',
+            'preview_surface'  => '#ffffff',
+            'preview_border'   => '#d8e8d8',
+            'preview_fg'       => '#1a2e1e',
+        ],
+        'terra' => [
+            'name'             => 'Terra',
+            'desc'             => 'Terracota mediterránea. Ideal para tapas, pintxos y cocina informal.',
+            'icon'             => '🏺',
+            'preview_bg'       => '#faf5f0',
+            'preview_accent'   => '#c05028',
+            'preview_surface'  => '#ffffff',
+            'preview_border'   => '#e8ddd4',
+            'preview_fg'       => '#2c1c10',
+        ],
     ];
 
     #[Route('/theme', name: 'theme')]

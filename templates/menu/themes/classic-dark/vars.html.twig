@@ -1,77 +1,116 @@
 <style>
 :root {
-    --bg: #0a0a0a;
+    /* ── Identity: Urban Kitchen — pure dark minimalism, brand accent ── */
+    --card-radius: 16px;
+    --badge-radius: 8px;
+    --tab-radius: 24px;
+    --search-radius: 16px;
+    --accent-line-h: 3px;
+    --card-lift: -4px;
+
+    /* ── Palette ── */
+    --bg: #080808;
     --bg-attach: scroll;
-    --surface: #161616;
-    --surface-2: #1c1c1c;
-    --fg: #ffffff;
-    --fg-2: rgba(255,255,255,0.42);
-    --fg-3: #555;
+    --surface: #111111;
+    --surface-2: #181818;
+    --fg: #f4f4f4;
+    --fg-2: rgba(244,244,244,0.48);
+    --fg-3: #303030;
     --accent: {{ restaurant.primaryColor }};
-    --b1: #242424;
-    --b2: #303030;
-    --hdr-bg: rgba(10,10,10,0.97);
-    --hdr-border: #1c1c1c;
-    --hdr-blur: blur(12px);
-    --hero-bg: linear-gradient(160deg, #1a0905, #2d1108);
-    --hero-border: transparent;
-    --in-bg: #161616;
-    --in-border: #242424;
-    --in-focus-border: #444;
-    --in-focus-shadow: 0 0 0 3px rgba(255,255,255,0.04);
-    --in-text: #ccc;
-    --in-ph: #3a3a3a;
-    --tab-bg: #141414;
-    --tab-border: #252525;
-    --tab-text: #555;
-    --tab-hbg: #1e1e1e;
-    --tab-htext: #aaa;
+    --b1: #1e1e1e;
+    --b2: #2a2a2a;
+
+    /* ── Header ── */
+    --hdr-bg: rgba(8,8,8,0.97);
+    --hdr-border: #181818;
+    --hdr-blur: blur(16px);
+
+    /* ── Hero ── */
+    --hero-bg: linear-gradient(160deg, #161616 0%, #0e0e0e 100%);
+    --hero-border: #1a1a1a;
+
+    /* ── Search input ── */
+    --in-bg: #111111;
+    --in-border: #222222;
+    --in-focus-border: {{ restaurant.primaryColor }};
+    --in-focus-shadow: 0 0 0 3px rgba(255,255,255,0.05);
+    --in-text: #e8e8e8;
+    --in-ph: #303030;
+
+    /* ── Tabs & filters ── */
+    --tab-bg: #111111;
+    --tab-border: #222222;
+    --tab-text: #484848;
+    --tab-hbg: #1a1a1a;
+    --tab-htext: #b0b0b0;
     --tab-act-bg: {{ restaurant.primaryColor }};
     --tab-act-border: {{ restaurant.primaryColor }};
-    --tab-act-text: #fff;
-    --tab-act-shadow: none;
-    --cf-bg: #161616;
-    --cf-border: #242424;
-    --cf-hborder: #444;
-    --cf-hshadow: none;
-    --cf-img: #1c1c1c;
-    --cf-accent: linear-gradient(90deg, transparent, {{ restaurant.primaryColor }} 40%, transparent);
-    --cf-accent-op: 0.5;
-    --cn: #ffffff;
-    --cd: rgba(255,255,255,0.38);
+    --tab-act-text: #ffffff;
+    --tab-act-shadow: 0 4px 16px rgba(0,0,0,0.5);
+
+    /* ── Card front ── */
+    --cf-bg: #111111;
+    --cf-border: #1e1e1e;
+    --cf-hborder: #363636;
+    --cf-hshadow: 0 4px 8px rgba(0,0,0,0.4), 0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+    --cf-img: #181818;
+    --cf-accent: linear-gradient(90deg, transparent 0%, {{ restaurant.primaryColor }} 40%, transparent 100%);
+    --cf-accent-op: 0.65;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.32);
+    --card-hover-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+
+    /* ── Card content ── */
+    --cn: #f4f4f4;
+    --cd: rgba(244,244,244,0.38);
     --cp: {{ restaurant.primaryColor }};
-    --cbg: rgba(255,255,255,0.07);
+    --cbg: rgba(255,255,255,0.06);
     --cbc: rgba(255,255,255,0.1);
-    --cbt: #aaa;
-    --hint: rgba(255,255,255,0.16);
-    --hint-h: rgba(255,255,255,0.45);
-    --cb-bg: #131313;
-    --cb-border: #2a2a2a;
-    --bn: #ffffff;
+    --cbt: #888888;
+    --hint: rgba(255,255,255,0.18);
+    --hint-h: rgba(255,255,255,0.48);
+
+    /* ── Card back ── */
+    --cb-bg: #0d0d0d;
+    --cb-border: #222222;
+    --bn: #f4f4f4;
     --bp: {{ restaurant.primaryColor }};
-    --close-bg: rgba(255,255,255,0.06);
+    --close-bg: rgba(255,255,255,0.07);
     --close-b: rgba(255,255,255,0.1);
-    --close-t: rgba(255,255,255,0.35);
-    --close-hbg: rgba(255,255,255,0.12);
-    --close-ht: #fff;
+    --close-t: rgba(255,255,255,0.32);
+    --close-hbg: rgba(255,255,255,0.14);
+    --close-ht: #f4f4f4;
     --bdiv: rgba(255,255,255,0.06);
-    --btt: rgba(255,255,255,0.2);
-    --bdesc: rgba(255,255,255,0.48);
-    --fade: #131313;
-    --cue-bg: rgba(255,255,255,0.1);
-    --cue-text: rgba(255,255,255,0.35);
+    --btt: rgba(255,255,255,0.22);
+    --bdesc: rgba(255,255,255,0.5);
+    --fade: #0d0d0d;
+    --cue-bg: rgba(255,255,255,0.09);
+    --cue-text: rgba(255,255,255,0.32);
+
+    /* ── Compact-layout rows ── */
     --row-border: #181818;
     --row-hover: #0e0e0e;
-    --num: #2a2a2a;
-    --num-h: #3d3d3d;
-    --cat-title: #2a2a2a;
-    --cat-sep: #181818;
+    --num: #282828;
+    --num-h: #404040;
+
+    /* ── Category titles ── */
+    --cat-title: #2e2e2e;
+    --cat-sep: #1a1a1a;
     --sep-bg: rgba(255,255,255,0.06);
+
+    /* ── Logo ── */
     --logo-bg: {{ restaurant.primaryColor }};
+
+    /* ── Label colours ── */
     --lg: #7aad40; --lg-bg: rgba(59,109,17,0.18); --lg-b: rgba(99,153,34,0.18);
     --lo: #d06040; --lo-bg: rgba(216,90,48,0.14); --lo-b: rgba(240,153,123,0.18);
+
+    /* ── Ingredient chips ── */
     --ing-bg: rgba(255,255,255,0.05); --ing-b: rgba(255,255,255,0.09); --ing-t: rgba(255,255,255,0.38);
-    --nut-bg: rgba(255,255,255,0.05); --nut-b: rgba(255,255,255,0.08); --nut-v: rgba(255,255,255,0.7); --nut-u: rgba(255,255,255,0.28);
+
+    /* ── Nutrition ── */
+    --nut-bg: rgba(255,255,255,0.05); --nut-b: rgba(255,255,255,0.08); --nut-v: rgba(255,255,255,0.72); --nut-u: rgba(255,255,255,0.28);
+
+    /* ── Spicy ── */
     --dot-on: #D85A30; --dot-off: rgba(255,255,255,0.1); --spicy-t: rgba(255,255,255,0.38);
 }
 </style>

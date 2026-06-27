@@ -1,77 +1,116 @@
 <style>
 :root {
-    --bg: linear-gradient(160deg,#120820 0%,#0a1528 60%,#0d1220 100%);
+    /* ── Identity: Crystalline Cosmos — deep space glassmorphism ── */
+    --card-radius: 16px;
+    --badge-radius: 20px;
+    --tab-radius: 24px;
+    --search-radius: 16px;
+    --accent-line-h: 1px;
+    --card-lift: -3px;
+
+    /* ── Palette ── */
+    --bg: linear-gradient(135deg, #07031c 0%, #0c0628 50%, #050d20 100%);
     --bg-attach: fixed;
-    --surface: rgba(255,255,255,0.06);
+    --surface: rgba(255,255,255,0.08);
     --surface-2: rgba(255,255,255,0.04);
-    --fg: #ffffff;
-    --fg-2: rgba(255,255,255,0.4);
-    --fg-3: rgba(255,255,255,0.22);
-    --accent: #a78bfa;
-    --b1: rgba(255,255,255,0.1);
-    --b2: rgba(255,255,255,0.16);
-    --hdr-bg: rgba(18,8,32,0.88);
+    --fg: #ece8ff;
+    --fg-2: rgba(236,232,255,0.44);
+    --fg-3: rgba(236,232,255,0.18);
+    --accent: #9d6ef8;
+    --b1: rgba(255,255,255,0.11);
+    --b2: rgba(255,255,255,0.2);
+
+    /* ── Header ── */
+    --hdr-bg: rgba(7,3,28,0.88);
     --hdr-border: rgba(255,255,255,0.07);
-    --hdr-blur: blur(20px);
-    --hero-bg: linear-gradient(135deg, rgba(167,139,250,0.18) 0%, rgba(83,74,183,0.12) 50%, rgba(10,8,32,0) 100%);
+    --hdr-blur: blur(28px);
+
+    /* ── Hero ── */
+    --hero-bg: linear-gradient(135deg, rgba(157,110,248,0.16) 0%, rgba(70,50,190,0.1) 50%, rgba(7,3,28,0) 100%);
     --hero-border: rgba(255,255,255,0.06);
+
+    /* ── Search input ── */
     --in-bg: rgba(255,255,255,0.07);
-    --in-border: rgba(255,255,255,0.11);
-    --in-focus-border: rgba(167,139,250,0.5);
-    --in-focus-shadow: 0 0 0 3px rgba(167,139,250,0.12);
-    --in-text: #fff;
-    --in-ph: rgba(255,255,255,0.22);
-    --tab-bg: rgba(255,255,255,0.04);
+    --in-border: rgba(255,255,255,0.13);
+    --in-focus-border: rgba(157,110,248,0.6);
+    --in-focus-shadow: 0 0 0 4px rgba(120,80,230,0.14);
+    --in-text: #ece8ff;
+    --in-ph: rgba(236,232,255,0.22);
+
+    /* ── Tabs & filters ── */
+    --tab-bg: rgba(255,255,255,0.05);
     --tab-border: rgba(255,255,255,0.1);
-    --tab-text: rgba(255,255,255,0.38);
-    --tab-hbg: rgba(255,255,255,0.07);
-    --tab-htext: rgba(255,255,255,0.7);
-    --tab-act-bg: #a78bfa;
-    --tab-act-border: #a78bfa;
-    --tab-act-text: #fff;
-    --tab-act-shadow: 0 2px 12px rgba(167,139,250,0.35);
-    --cf-bg: rgba(255,255,255,0.06);
-    --cf-border: rgba(255,255,255,0.1);
-    --cf-hborder: rgba(167,139,250,0.5);
-    --cf-hshadow: 0 4px 20px rgba(167,139,250,0.12);
-    --cf-img: rgba(255,255,255,0.04);
-    --cf-accent: linear-gradient(90deg, transparent, rgba(167,139,250,0.7) 40%, transparent);
+    --tab-text: rgba(236,232,255,0.32);
+    --tab-hbg: rgba(255,255,255,0.1);
+    --tab-htext: rgba(236,232,255,0.75);
+    --tab-act-bg: #9d6ef8;
+    --tab-act-border: #9d6ef8;
+    --tab-act-text: #ffffff;
+    --tab-act-shadow: 0 4px 20px rgba(120,70,240,0.45);
+
+    /* ── Card front ── */
+    --cf-bg: rgba(157,110,248,0.07);
+    --cf-border: rgba(255,255,255,0.12);
+    --cf-hborder: rgba(157,110,248,0.55);
+    --cf-hshadow: 0 0 0 1px rgba(157,110,248,0.35), 0 16px 48px rgba(80,40,200,0.3), 0 4px 16px rgba(80,40,200,0.15);
+    --cf-img: rgba(255,255,255,0.05);
+    --cf-accent: linear-gradient(90deg, transparent 0%, rgba(157,110,248,0.9) 40%, transparent 100%);
     --cf-accent-op: 1;
-    --cn: #ffffff;
-    --cd: rgba(255,255,255,0.35);
-    --cp: #a78bfa;
+    --card-shadow: 0 2px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+    --card-hover-shadow: 0 0 0 1px rgba(157,110,248,0.35), 0 16px 48px rgba(80,40,200,0.3), 0 4px 16px rgba(80,40,200,0.15);
+
+    /* ── Card content ── */
+    --cn: #ece8ff;
+    --cd: rgba(236,232,255,0.36);
+    --cp: #b48ef0;
     --cbg: rgba(255,255,255,0.07);
-    --cbc: rgba(255,255,255,0.09);
-    --cbt: rgba(255,255,255,0.45);
-    --hint: rgba(255,255,255,0.16);
-    --hint-h: rgba(167,139,250,0.6);
-    --cb-bg: rgba(10,6,26,0.98);
-    --cb-border: rgba(167,139,250,0.18);
-    --bn: #ffffff;
-    --bp: #a78bfa;
-    --close-bg: rgba(255,255,255,0.06);
-    --close-b: rgba(255,255,255,0.1);
-    --close-t: rgba(255,255,255,0.35);
-    --close-hbg: rgba(255,255,255,0.12);
-    --close-ht: #fff;
-    --bdiv: rgba(255,255,255,0.06);
-    --btt: rgba(255,255,255,0.2);
-    --bdesc: rgba(255,255,255,0.5);
-    --fade: #0a061a;
-    --cue-bg: rgba(167,139,250,0.15);
-    --cue-text: rgba(167,139,250,0.7);
+    --cbc: rgba(255,255,255,0.11);
+    --cbt: rgba(236,232,255,0.46);
+    --hint: rgba(236,232,255,0.18);
+    --hint-h: rgba(157,110,248,0.7);
+
+    /* ── Card back ── */
+    --cb-bg: rgba(7,3,22,0.98);
+    --cb-border: rgba(157,110,248,0.22);
+    --bn: #ece8ff;
+    --bp: #b48ef0;
+    --close-bg: rgba(255,255,255,0.07);
+    --close-b: rgba(255,255,255,0.11);
+    --close-t: rgba(236,232,255,0.32);
+    --close-hbg: rgba(255,255,255,0.15);
+    --close-ht: #ece8ff;
+    --bdiv: rgba(255,255,255,0.07);
+    --btt: rgba(236,232,255,0.2);
+    --bdesc: rgba(236,232,255,0.5);
+    --fade: #07031a;
+    --cue-bg: rgba(157,110,248,0.18);
+    --cue-text: rgba(157,110,248,0.75);
+
+    /* ── Compact-layout rows ── */
     --row-border: rgba(255,255,255,0.06);
     --row-hover: rgba(255,255,255,0.04);
-    --num: rgba(255,255,255,0.1);
-    --num-h: rgba(255,255,255,0.2);
-    --cat-title: rgba(255,255,255,0.2);
-    --cat-sep: rgba(255,255,255,0.06);
-    --sep-bg: rgba(255,255,255,0.06);
-    --logo-bg: linear-gradient(135deg,#a78bfa,#7c3aed);
+    --num: rgba(255,255,255,0.12);
+    --num-h: rgba(255,255,255,0.26);
+
+    /* ── Category titles ── */
+    --cat-title: rgba(236,232,255,0.2);
+    --cat-sep: rgba(255,255,255,0.07);
+    --sep-bg: rgba(255,255,255,0.07);
+
+    /* ── Logo ── */
+    --logo-bg: linear-gradient(135deg, #b48ef0, #6d28d9);
+
+    /* ── Label colours ── */
     --lg: #7aad40; --lg-bg: rgba(59,109,17,0.2); --lg-b: rgba(99,153,34,0.18);
     --lo: #d06040; --lo-bg: rgba(216,90,48,0.14); --lo-b: rgba(240,153,123,0.18);
-    --ing-bg: rgba(255,255,255,0.05); --ing-b: rgba(255,255,255,0.09); --ing-t: rgba(255,255,255,0.38);
-    --nut-bg: rgba(255,255,255,0.05); --nut-b: rgba(255,255,255,0.08); --nut-v: rgba(255,255,255,0.7); --nut-u: rgba(255,255,255,0.28);
-    --dot-on: #D85A30; --dot-off: rgba(255,255,255,0.1); --spicy-t: rgba(255,255,255,0.38);
+
+    /* ── Ingredient chips ── */
+    --ing-bg: rgba(255,255,255,0.06); --ing-b: rgba(255,255,255,0.1); --ing-t: rgba(236,232,255,0.4);
+
+    /* ── Nutrition ── */
+    --nut-bg: rgba(255,255,255,0.06); --nut-b: rgba(255,255,255,0.1); --nut-v: rgba(236,232,255,0.75); --nut-u: rgba(236,232,255,0.28);
+
+    /* ── Spicy ── */
+    --dot-on: #D85A30; --dot-off: rgba(255,255,255,0.12); --spicy-t: rgba(236,232,255,0.36);
 }
 </style>
