@@ -90,10 +90,15 @@
 
     .back-scroll { position: relative; flex: 1; min-height: 0; overflow: hidden; }
     .back-scroll::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 36px; background: linear-gradient(transparent, var(--fade)); pointer-events: none; transition: opacity 0.25s; }
-    .back-scroll.no-fade::after { opacity: 0; }
-    @keyframes cue-bounce { 0%,100% { transform: translateX(-50%); } 50% { transform: translateX(-50%) translateY(-3px); } }
-    .scroll-cue { position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%); background: var(--cue-bg); color: var(--cue-text); border-radius: 20px; padding: 3px 10px 4px; font-size: 9px; font-weight: 500; pointer-events: none; white-space: nowrap; transition: opacity 0.25s; animation: cue-bounce 2s ease-in-out infinite; }
-    .back-scroll.no-fade .scroll-cue { opacity: 0; }
+    .back-scroll.no-fade::after,
+    .back-scroll.at-bottom::after { opacity: 0; }
+    .back-scroll.no-scroll::after { opacity: 0; }
+    @keyframes cue-bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-3px); } }
+    .scroll-cue { position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%); background: var(--cue-bg); color: var(--cue-text); border: none; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; pointer-events: auto; user-select: none; transition: opacity 0.25s, background 0.18s; animation: cue-bounce 2s ease-in-out infinite; z-index: 2; }
+    .scroll-cue::after { content: '↓'; }
+    .back-scroll.at-bottom .scroll-cue::after { content: '↑'; }
+    .back-scroll.at-bottom .scroll-cue { animation: none; }
+    .back-scroll.no-scroll .scroll-cue { opacity: 0; pointer-events: none; }
 
     .back-body { height: 100%; overflow-y: auto; padding: 11px 13px 34px; scrollbar-width: none; display: flex; flex-direction: column; gap: 8px; }
     .back-body::-webkit-scrollbar { display: none; }
@@ -180,7 +185,7 @@
                                                 {% if product.ingredients|length > 0 %}<div class="bsec"><div class="bsec-title">Ingredientes</div><div class="ing-list">{% for ingredient in product.ingredients %}{% set iT = ingredient.getTranslation(locale) %}{% if not iT %}{% set iT = ingredient.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if iT %}<div class="ing">{{ iT.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
                                                 {% if product.calories %}<div class="bsec"><div class="bsec-title">Calorías</div><div class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
                                             </div>
-                                            <div class="scroll-cue" aria-hidden="true">↓ ver más</div>
+                                            <button class="scroll-cue" type="button" aria-label="Desplazarse"></button>
                                         </div>
                                     </div>
                                 </div>

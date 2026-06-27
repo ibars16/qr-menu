@@ -1,4 +1,4 @@
-{# Layout: Standard — landscape flip cards, 1/2/3 column grid #}
+{# Layout: Standard — portrait cards (image top, content bottom), 1/2/3 column grid #}
 {% include 'menu/themes/' ~ theme ~ '/vars.html.twig' %}
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -64,33 +64,37 @@
     @media (min-width: 500px) { .cards-grid { grid-template-columns: repeat(2,1fr); } }
     @media (min-width: 920px) { .cards-grid { grid-template-columns: repeat(3,1fr); } }
 
-    /* ── Flip card ── */
+    /* ── Flip card — portrait (image top, content bottom) ── */
     .card-wrap { perspective: 1200px; cursor: pointer; }
-    .card { width: 100%; height: 232px; position: relative; transform-style: preserve-3d; transition: transform 0.58s cubic-bezier(0.35,0.14,0.18,1); border-radius: var(--card-radius, 20px); }
-    @media (min-width: 500px) { .card { height: 248px; } }
-    @media (min-width: 1100px) { .card { height: 264px; } }
+    .card { width: 100%; height: 276px; position: relative; transform-style: preserve-3d; transition: transform 0.58s cubic-bezier(0.35,0.14,0.18,1); border-radius: var(--card-radius, 20px); }
+    @media (min-width: 500px) { .card { height: 290px; } }
+    @media (min-width: 1100px) { .card { height: 306px; } }
     .card.flipped { transform: rotateY(180deg); }
     .card-front, .card-back { position: absolute; inset: 0; border-radius: var(--card-radius, 20px); backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
 
-    /* ── Front face ── */
-    .card-front { background: var(--cf-bg); border: 1px solid var(--cf-border); display: flex; flex-direction: row; box-shadow: var(--card-shadow, none); transition: border-color 0.25s, box-shadow 0.3s, transform 0.25s; will-change: transform; }
+    /* ── Front face — column layout ── */
+    .card-front { background: var(--cf-bg); border: 1px solid var(--cf-border); display: flex; flex-direction: column; box-shadow: var(--card-shadow, none); transition: border-color 0.25s, box-shadow 0.3s, transform 0.25s; will-change: transform; }
     .card-front::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: var(--accent-line-h, 3px); background: var(--cf-accent); opacity: var(--cf-accent-op); border-radius: var(--card-radius, 20px) var(--card-radius, 20px) 0 0; pointer-events: none; z-index: 1; }
     .card-wrap:hover .card:not(.flipped) .card-front { border-color: var(--cf-hborder); box-shadow: var(--card-hover-shadow, var(--cf-hshadow, none)); transform: translateY(var(--card-lift, -4px)); }
 
-    .front-img { width: var(--front-img-w, 158px); flex-shrink: 0; background: var(--cf-img); display: flex; align-items: center; justify-content: center; font-size: 46px; position: relative; overflow: hidden; }
+    /* ── Image — full width at top ── */
+    .front-img { width: 100%; height: 150px; flex-shrink: 0; background: var(--cf-img); display: flex; align-items: center; justify-content: center; font-size: 46px; position: relative; overflow: hidden; }
     .front-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .front-img-overlay { position: absolute; inset: 0; background: var(--img-overlay, radial-gradient(ellipse at center bottom, rgba(0,0,0,0.1) 0%, transparent 60%)); pointer-events: none; }
-    @media (min-width: 500px) { .front-img { width: var(--front-img-w-md, 178px); } }
+    .front-img-overlay { position: absolute; inset: 0; background: var(--img-overlay, linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 100%)); pointer-events: none; }
 
-    .front-info { flex: 1; padding: 17px 16px 15px; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
-    .front-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
-    .fbadge { font-size: 11px; padding: 3px 9px; border-radius: var(--badge-radius, 8px); background: var(--cbg); border: 1px solid var(--cbc); color: var(--cbt); font-weight: 500; }
+    /* ── Info — below image, full width ── */
+    .front-info { flex: 1; padding: 11px 14px 12px; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; overflow: hidden; }
+    .front-top { min-height: 0; overflow: hidden; }
+    .front-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 5px; }
+    .fbadge { font-size: 10px; padding: 2px 8px; border-radius: var(--badge-radius, 8px); background: var(--cbg); border: 1px solid var(--cbc); color: var(--cbt); font-weight: 500; white-space: nowrap; }
     .fbadge-hot { color: #e06840; border-color: rgba(224,104,64,0.22); background: rgba(224,104,64,0.08); }
-    .front-name { font-size: 18px; font-weight: 700; color: var(--cn); letter-spacing: -0.5px; line-height: 1.23; margin-bottom: 6px; }
-    .front-desc { font-size: 13px; color: var(--cd); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .front-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 12px; gap: 8px; }
-    .front-price { font-size: 24px; font-weight: 800; color: var(--cp); letter-spacing: -0.9px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
-    .flip-hint { font-size: 11px; color: var(--hint); display: flex; align-items: center; gap: 4px; padding: 5px 12px 5px 10px; border-radius: 20px; border: 1px solid var(--tab-border); background: var(--tab-bg); transition: color 0.2s, border-color 0.2s, background 0.2s; white-space: nowrap; flex-shrink: 0; }
+    .front-name { font-size: 16px; font-weight: 700; color: var(--cn); letter-spacing: -0.4px; line-height: 1.28; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+    .front-desc { font-size: 12px; color: var(--cd); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+
+    /* ── Bottom row — always fully visible ── */
+    .front-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; gap: 8px; flex-shrink: 0; }
+    .front-price { font-size: 22px; font-weight: 800; color: var(--cp); letter-spacing: -0.7px; font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; }
+    .flip-hint { font-size: 11px; color: var(--hint); display: flex; align-items: center; gap: 4px; padding: 5px 11px 5px 9px; border-radius: 20px; border: 1px solid var(--tab-border); background: var(--tab-bg); transition: color 0.2s, border-color 0.2s, background 0.2s; white-space: nowrap; flex-shrink: 0; }
     .card-wrap:hover .flip-hint { color: var(--hint-h); border-color: var(--cf-hborder); background: var(--tab-hbg); }
 
     /* ── Back face ── */
@@ -101,12 +105,20 @@
     .back-name { font-size: 15px; font-weight: 700; color: var(--bn); letter-spacing: -0.4px; line-height: 1.23; }
     .back-price { font-size: 14px; color: var(--bp); font-weight: 700; margin-top: 3px; font-variant-numeric: tabular-nums; }
 
+    /* ── Scroll area with gradient fade ── */
     .back-scroll { position: relative; flex: 1; min-height: 0; overflow: hidden; }
     .back-scroll::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 44px; background: linear-gradient(transparent, var(--fade)); pointer-events: none; transition: opacity 0.25s; }
-    .back-scroll.no-fade::after { opacity: 0; }
-    @keyframes cue-bounce { 0%,100% { transform: translateX(-50%); } 50% { transform: translateX(-50%) translateY(-4px); } }
-    .scroll-cue { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: var(--cue-bg); color: var(--cue-text); border-radius: 20px; padding: 4px 12px 5px; font-size: 10px; font-weight: 500; pointer-events: none; white-space: nowrap; transition: opacity 0.25s; animation: cue-bounce 2.2s ease-in-out infinite; }
-    .back-scroll.no-fade .scroll-cue { opacity: 0; }
+    .back-scroll.no-fade::after,
+    .back-scroll.at-bottom::after { opacity: 0; }
+    .back-scroll.no-scroll::after { opacity: 0; }
+
+    /* ── Scroll cue — interactive arrow ── */
+    @keyframes cue-bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-4px); } }
+    .scroll-cue { position: absolute; bottom: 9px; left: 50%; transform: translateX(-50%); background: var(--cue-bg); color: var(--cue-text); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; pointer-events: auto; user-select: none; transition: opacity 0.25s, background 0.18s; animation: cue-bounce 2.2s ease-in-out infinite; z-index: 2; }
+    .scroll-cue::after { content: '↓'; }
+    .back-scroll.at-bottom .scroll-cue::after { content: '↑'; }
+    .back-scroll.at-bottom .scroll-cue { animation: none; }
+    .back-scroll.no-scroll .scroll-cue { opacity: 0; pointer-events: none; }
 
     .back-body { height: 100%; overflow-y: auto; padding: 14px 17px 44px; scrollbar-width: none; display: flex; flex-direction: column; gap: 12px; }
     .back-body::-webkit-scrollbar { display: none; }
@@ -193,7 +205,7 @@
                                             <div class="front-img-overlay"></div>
                                         </div>
                                         <div class="front-info">
-                                            <div>
+                                            <div class="front-top">
                                                 <div class="front-badges">
                                                     {% if product.spicyLevel > 0 %}<div class="fbadge fbadge-hot">{% if product.spicyLevel <= 2 %}🌶{% elseif product.spicyLevel <= 4 %}🌶🌶{% else %}🌶🌶🌶{% endif %}</div>{% endif %}
                                                     {% for tag in product.tags %}{% set tT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tT = tr %}{% endif %}{% endfor %}{% if tT %}<div class="fbadge">{{ tag.icon }} {{ tT.name }}</div>{% endif %}{% endfor %}
@@ -203,7 +215,7 @@
                                             </div>
                                             <div class="front-bottom">
                                                 <div class="front-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div>
-                                                <div class="flip-hint"><i class="ti ti-rotate-clockwise" style="font-size:12px"></i> ver más</div>
+                                                <div class="flip-hint"><i class="ti ti-rotate-clockwise" style="font-size:11px"></i> ver más</div>
                                             </div>
                                         </div>
                                     </div>
@@ -221,7 +233,7 @@
                                                 {% if product.ingredients|length > 0 %}<div class="bsec"><div class="bsec-title">Ingredientes</div><div class="ing-list">{% for ingredient in product.ingredients %}{% set iT = ingredient.getTranslation(locale) %}{% if not iT %}{% set iT = ingredient.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if iT %}<div class="ing">{{ iT.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
                                                 {% if product.calories %}<div class="bsec"><div class="bsec-title">Calorías</div><div class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
                                             </div>
-                                            <div class="scroll-cue" aria-hidden="true">↓ ver más</div>
+                                            <button class="scroll-cue" type="button" aria-label="Desplazarse"></button>
                                         </div>
                                     </div>
                                 </div>

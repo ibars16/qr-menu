@@ -62,28 +62,60 @@ const obs = new IntersectionObserver(entries => {
 }, { threshold: 0.3 });
 sections.forEach(s => obs.observe(s));
 
-// Scroll-fade + scroll-cue indicator for card backs
+// Scroll-fade + scroll-cue indicators for card backs
 (function() {
     document.querySelectorAll('.card-wrap').forEach(wrap => {
-        let checkFn = null;
-        wrap.addEventListener('click', () => {
-            setTimeout(() => {
+        let initialized = false;
+        wrap.addEventListener('click', function() {
+            if (initialized) return;
+            setTimeout(function() {
                 const body = wrap.querySelector('.back-body');
                 if (!body) return;
-                const scroll = body.parentElement;
-                const horiz  = scroll.classList.contains('horiz');
-                if (!checkFn) {
-                    checkFn = function() {
-                        const noMore = horiz
-                            ? body.scrollWidth  <= body.clientWidth  + 4 || body.scrollLeft + body.clientWidth  >= body.scrollWidth  - 4
-                            : body.scrollHeight <= body.clientHeight + 4 || body.scrollTop  + body.clientHeight >= body.scrollHeight - 4;
-                        scroll.classList.toggle('no-fade', noMore);
-                    };
-                    body.addEventListener('scroll', checkFn, { passive: true });
+                const scroll = body.closest('.back-scroll');
+                if (!scroll) return;
+                const horiz = scroll.classList.contains('horiz');
+
+                function check() {
+                    if (horiz) {
+                        const canScroll = body.scrollWidth > body.clientWidth + 4;
+                        const atEnd = body.scrollLeft + body.clientWidth >= body.scrollWidth - 4;
+                        scroll.classList.toggle('no-fade', !canScroll || atEnd);
+                    } else {
+                        const canScroll = body.scrollHeight > body.clientHeight + 4;
+                        const atBottom = body.scrollTop + body.clientHeight >= body.scrollHeight - 4;
+                        scroll.classList.toggle('no-scroll', !canScroll);
+                        scroll.classList.toggle('at-bottom', canScroll && atBottom);
+                        scroll.classList.toggle('no-fade', !canScroll || atBottom);
+                    }
                 }
-                checkFn();
+
+                body.addEventListener('scroll', check, { passive: true });
+                check();
+                initialized = true;
             }, 560);
         });
     });
+
+    // Vertical scroll cue — click scrolls down or back up
+    document.addEventListener('click', function(e) {
+        const cue = e.target.closest('.scroll-cue');
+        if (!cue) return;
+        e.stopPropagation();
+        const scroll = cue.closest('.back-scroll');
+        const body = scroll && scroll.querySelector('.back-body');
+        if (!body) return;
+        body.scrollBy({ top: scroll.classList.contains('at-bottom') ? -120 : 120, behavior: 'smooth' });
+    }, true);
+
+    // Horizontal scroll cue — click scrolls right
+    document.addEventListener('click', function(e) {
+        const cue = e.target.closest('.scroll-cue-h');
+        if (!cue) return;
+        e.stopPropagation();
+        const scroll = cue.closest('.back-scroll');
+        const body = scroll && scroll.querySelector('.back-body');
+        if (!body) return;
+        body.scrollBy({ left: 180, behavior: 'smooth' });
+    }, true);
 })();
 </script>

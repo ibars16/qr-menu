@@ -90,9 +90,10 @@
     .back-scroll { position: relative; flex: 1; overflow: hidden; }
     .back-scroll::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 44px; background: linear-gradient(to right, transparent, var(--fade)); pointer-events: none; transition: opacity 0.25s; }
     .back-scroll.no-fade::after { opacity: 0; }
-    @keyframes cue-slide { 0%,100% { transform: translateY(-50%); } 50% { transform: translateY(-50%) translateX(3px); } }
-    .scroll-cue-h { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); background: var(--cue-bg); color: var(--cue-text); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 13px; pointer-events: none; transition: opacity 0.25s; animation: cue-slide 2s ease-in-out infinite; }
-    .back-scroll.no-fade .scroll-cue-h { opacity: 0; }
+    @keyframes cue-slide { 0%,100% { transform: translateY(-50%) translateX(0); } 50% { transform: translateY(-50%) translateX(3px); } }
+    .scroll-cue-h { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); background: var(--cue-bg); color: var(--cue-text); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: none; cursor: pointer; pointer-events: auto; user-select: none; transition: opacity 0.25s; animation: cue-slide 2s ease-in-out infinite; z-index: 2; }
+    .scroll-cue-h::after { content: '›'; }
+    .back-scroll.no-fade .scroll-cue-h { opacity: 0; pointer-events: none; }
 
     .back-body { height: 100%; overflow-x: auto; overflow-y: hidden; display: flex; align-items: stretch; scrollbar-width: none; }
     .back-body::-webkit-scrollbar { display: none; }
@@ -181,7 +182,7 @@
                                                 {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">Picante</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}Suave{% elseif product.spicyLevel == 2 %}Medio{% elseif product.spicyLevel == 3 %}Picante{% elseif product.spicyLevel == 4 %}Muy picante{% else %}Extremo{% endif %}</span></div></div>{% endif %}
                                                 {% if product.calories %}<div class="bsec"><div class="bsec-title">Calorías</div><div class="nut-row"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
                                             </div>
-                                            <div class="scroll-cue-h" aria-hidden="true">›</div>
+                                            <button class="scroll-cue-h" type="button" aria-label="Desplazarse"></button>
                                         </div>
                                     </div>
                                 </div>
