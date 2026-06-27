@@ -99,29 +99,32 @@
     .layouts-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
     @media (max-width: 580px) { .layouts-grid { grid-template-columns: 1fr; } }
 
-    .layout-thumb { height: 128px; background: #060606; overflow: hidden; display: flex; flex-direction: column; }
+    .layout-thumb { height: 148px; background: #060606; overflow: hidden; display: flex; flex-direction: column; }
 
-    /* Standard: portrait cards side by side */
-    .lt-pcards { display: flex; gap: 6px; padding: 10px; flex: 1; }
-    .lt-pcard  { flex: 1; background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #1d1d1d; display: flex; flex-direction: column; }
-    .lt-pimg   { flex: 0 0 56px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-    .lt-pbody  { flex: 1; padding: 5px 7px; display: flex; flex-direction: column; justify-content: space-between; }
-    .lt-pname  { height: 5px; background: #262626; border-radius: 3px; width: 78%; }
-    .lt-pprice { font-size: 8px; font-weight: 800; color: #C1440E; }
+    /* Standard: full-width stacked portrait cards (one per row) */
+    .lt-stdstack  { display: flex; flex-direction: column; gap: 6px; padding: 9px; flex: 1; }
+    .lt-stdcard   { flex: 1; background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #1e1e1e; display: flex; flex-direction: column; }
+    .lt-stdimg    { flex: 0 0 34px; background: #181818; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .lt-stdbody   { flex: 1; padding: 5px 9px 6px; display: flex; flex-direction: column; justify-content: space-between; }
+    .lt-stdname   { height: 5px; background: #272727; border-radius: 3px; width: 65%; }
+    .lt-stdbot    { display: flex; align-items: center; justify-content: space-between; }
+    .lt-stdprice  { font-size: 8px; font-weight: 800; color: #C1440E; }
+    .lt-stdhint   { height: 7px; width: 26px; background: #181818; border: 1px solid #252525; border-radius: 8px; }
 
     /* Compact: numbered list rows */
-    .lt-crow  { display: flex; align-items: center; gap: 5px; padding: 5px 9px; border-bottom: 1px solid #111; }
-    .lt-num   { font-size: 8px; font-weight: 700; color: #252525; width: 14px; flex-shrink: 0; text-align: right; }
-    .lt-cimg  { width: 20px; height: 20px; border-radius: 3px; background: #1a1a1a; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; }
-    .lt-cname { flex: 1; height: 4px; background: #222; border-radius: 3px; }
-    .lt-cprice{ font-size: 8px; font-weight: 700; color: #3c3c3c; }
+    .lt-compact-wrap { display: flex; flex-direction: column; flex: 1; }
+    .lt-crow  { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid #0e0e0e; }
+    .lt-num   { font-size: 8px; font-weight: 700; color: #383838; width: 14px; flex-shrink: 0; text-align: right; }
+    .lt-cimg  { width: 22px; height: 22px; border-radius: 4px; background: #181818; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+    .lt-cname { flex: 1; height: 5px; background: #242424; border-radius: 3px; }
+    .lt-cprice{ font-size: 8px; font-weight: 700; color: #555; }
 
-    /* Grid: 2×2 portrait cells */
-    .lt-grid  { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 5px; padding: 8px; flex: 1; }
-    .lt-gcell { background: #111; border-radius: 7px; overflow: hidden; border: 1px solid #1d1d1d; display: flex; flex-direction: column; }
-    .lt-gimg  { flex: 0 0 36px; display: flex; align-items: center; justify-content: center; font-size: 14px; background: #1a1a1a; }
-    .lt-gbody { flex: 1; padding: 3px 5px; display: flex; flex-direction: column; justify-content: space-between; }
-    .lt-gname { height: 4px; background: #262626; border-radius: 3px; width: 85%; }
+    /* Grid: 2×2 image-heavy portrait cells */
+    .lt-grid  { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px; padding: 9px; flex: 1; }
+    .lt-gcell { background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #1e1e1e; display: flex; flex-direction: column; }
+    .lt-gimg  { flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; background: #181818; }
+    .lt-gbody { flex: 1; padding: 4px 6px; display: flex; flex-direction: column; justify-content: space-between; }
+    .lt-gname { height: 4px; background: #272727; border-radius: 3px; width: 82%; }
     .lt-gprice{ font-size: 7px; font-weight: 800; color: #C1440E; }
 
     /* ── Theme cards ── */
@@ -193,21 +196,36 @@
             <div class="sel-card {{ restaurant.layout == key ? 'is-active' : '' }}" id="lcard-{{ key }}">
                 <div class="layout-thumb">
                     {% if key == 'standard' %}
-                        <div class="lt-pcards">
-                            <div class="lt-pcard"><div class="lt-pimg">🥩</div><div class="lt-pbody"><div class="lt-pname"></div><div class="lt-pprice">24 €</div></div></div>
-                            <div class="lt-pcard"><div class="lt-pimg">🥗</div><div class="lt-pbody"><div class="lt-pname"></div><div class="lt-pprice">16 €</div></div></div>
+                        <div class="lt-stdstack">
+                            <div class="lt-stdcard">
+                                <div class="lt-stdimg">🥩</div>
+                                <div class="lt-stdbody">
+                                    <div class="lt-stdname"></div>
+                                    <div class="lt-stdbot"><div class="lt-stdprice">24 €</div><div class="lt-stdhint"></div></div>
+                                </div>
+                            </div>
+                            <div class="lt-stdcard">
+                                <div class="lt-stdimg">🥗</div>
+                                <div class="lt-stdbody">
+                                    <div class="lt-stdname"></div>
+                                    <div class="lt-stdbot"><div class="lt-stdprice">16 €</div><div class="lt-stdhint"></div></div>
+                                </div>
+                            </div>
                         </div>
                     {% elseif key == 'compact' %}
-                        <div class="lt-crow"><div class="lt-num">01</div><div class="lt-cimg">🥩</div><div class="lt-cname"></div><div class="lt-cprice">24 €</div></div>
-                        <div class="lt-crow"><div class="lt-num">02</div><div class="lt-cimg">🥗</div><div class="lt-cname"></div><div class="lt-cprice">16 €</div></div>
-                        <div class="lt-crow"><div class="lt-num">03</div><div class="lt-cimg">🍕</div><div class="lt-cname"></div><div class="lt-cprice">14 €</div></div>
-                        <div class="lt-crow"><div class="lt-num">04</div><div class="lt-cimg">🌶️</div><div class="lt-cname"></div><div class="lt-cprice">18 €</div></div>
+                        <div class="lt-compact-wrap">
+                            <div class="lt-crow"><div class="lt-num">01</div><div class="lt-cimg">🥩</div><div class="lt-cname"></div><div class="lt-cprice">24 €</div></div>
+                            <div class="lt-crow"><div class="lt-num">02</div><div class="lt-cimg">🥗</div><div class="lt-cname"></div><div class="lt-cprice">16 €</div></div>
+                            <div class="lt-crow"><div class="lt-num">03</div><div class="lt-cimg">🍕</div><div class="lt-cname"></div><div class="lt-cprice">14 €</div></div>
+                            <div class="lt-crow"><div class="lt-num">04</div><div class="lt-cimg">🥑</div><div class="lt-cname"></div><div class="lt-cprice">18 €</div></div>
+                            <div class="lt-crow"><div class="lt-num">05</div><div class="lt-cimg">🦐</div><div class="lt-cname"></div><div class="lt-cprice">22 €</div></div>
+                        </div>
                     {% else %}
                         <div class="lt-grid">
                             <div class="lt-gcell"><div class="lt-gimg">🥩</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">24 €</div></div></div>
                             <div class="lt-gcell"><div class="lt-gimg">🥗</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">16 €</div></div></div>
                             <div class="lt-gcell"><div class="lt-gimg">🍕</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">14 €</div></div></div>
-                            <div class="lt-gcell"><div class="lt-gimg">🌶️</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">18 €</div></div></div>
+                            <div class="lt-gcell"><div class="lt-gimg">🦐</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">22 €</div></div></div>
                         </div>
                     {% endif %}
                 </div>
