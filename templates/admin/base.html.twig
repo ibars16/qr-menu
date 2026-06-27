@@ -99,6 +99,34 @@
 
         .sidebar-footer { margin-top: auto; border-top: 1px solid var(--bd-1); padding: 8px 0; }
 
+        /* Sidebar theme toggle */
+        .sidebar-theme-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 16px 8px; border-bottom: 1px solid var(--bd-1);
+        }
+        .sidebar-theme-info {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: var(--tx-5);
+        }
+        .sidebar-theme-info i { font-size: 15px; }
+        .theme-label-dark  { }
+        .theme-label-light { display: none; }
+        html.light .theme-label-dark  { display: none; }
+        html.light .theme-label-light { display: inline; }
+        .sidebar-theme-switch {
+            width: 36px; height: 20px; border-radius: 10px;
+            background: var(--bd-2); border: none; padding: 0;
+            cursor: pointer; position: relative; flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        html.light .sidebar-theme-switch { background: var(--brand); }
+        .sidebar-theme-knob {
+            display: block; width: 14px; height: 14px; border-radius: 50%;
+            background: #fff; position: absolute; top: 3px; left: 3px;
+            transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+        }
+        html.light .sidebar-theme-knob { left: 19px; }
+
         .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         .main-header {
             padding: 14px 24px; border-bottom: 1px solid var(--bd-1);
@@ -181,6 +209,7 @@
             flex-shrink: 0;
         }
         .theme-toggle-btn:hover { color: var(--tx-hi); border-color: var(--tx-6); }
+        @media (min-width: 768px) { .theme-toggle-btn { display: none; } }
         @media (max-width: 767px) { .theme-toggle-btn { width: 40px; height: 40px; } }
     </style>
     {% block stylesheets %}{% endblock %}
@@ -233,6 +262,22 @@
         </a>
 
         <div class="sidebar-footer">
+            <div class="sidebar-theme-row">
+                <div class="sidebar-theme-info">
+                    <i class="ti ti-moon theme-icon-dark" aria-hidden="true"></i>
+                    <i class="ti ti-sun theme-icon-light" aria-hidden="true"></i>
+                    <span>
+                        <span class="theme-label-dark">Modo oscuro</span>
+                        <span class="theme-label-light">Modo claro</span>
+                    </span>
+                </div>
+                <button class="sidebar-theme-switch"
+                        onclick="toggleAdminTheme()"
+                        title="Cambiar modo claro / oscuro"
+                        aria-label="Cambiar tema">
+                    <span class="sidebar-theme-knob"></span>
+                </button>
+            </div>
             <a href="{{ path('admin_logout') }}" class="nav-item">
                 <i class="ti ti-logout" aria-hidden="true"></i> Cerrar sesión
             </a>
