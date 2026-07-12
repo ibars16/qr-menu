@@ -49,6 +49,8 @@ ingredients:
     hint: New ingredients are automatically added to the restaurant's ingredient bank.
     placeholder: 'Type an ingredient and press Enter…'
     no_results: No ingredients found
+    source_global: Global
+    source_restaurant: Restaurant
 
 js:
     ai_import_soon: 'AI import — coming soon ✨'

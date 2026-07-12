@@ -49,6 +49,8 @@ ingredients:
     hint: I nuovi ingredienti vengono aggiunti automaticamente alla banca ingredienti del ristorante.
     placeholder: 'Scrivi un ingrediente e premi Invio…'
     no_results: Nessun ingrediente trovato
+    source_global: Globale
+    source_restaurant: Ristorante
 
 js:
     ai_import_soon: 'Importazione con IA — prossimamente ✨'

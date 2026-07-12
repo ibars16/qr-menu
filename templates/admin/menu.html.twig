@@ -330,9 +330,16 @@
             padding:10px 13px; font-size:13px; color:var(--tx-2);
         }
         .ts-dropdown .option.active { background:var(--bg-hover); color:var(--tx-2); }
+        .ts-dropdown .option > div { display:flex; align-items:center; justify-content:space-between; gap:10px; }
         .ts-dropdown .create { color:var(--tx-5); cursor:pointer; }
         .ts-dropdown .create strong { color:var(--tx-2); font-weight:600; }
         .ts-dropdown .no-results { padding:10px 13px; font-size:13px; color:var(--tx-6); }
+        .ing-source {
+            font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;
+            padding:2px 8px; border-radius:20px; white-space:nowrap; flex-shrink:0;
+        }
+        .ing-source-restaurant { background:rgba(99,153,34,0.15); color:#7aad40; }
+        .ing-source-global { background:rgba(84,144,187,0.15); color:#5ba3d0; }
 
         @media (max-width: 767px) {
             .ts-dropdown .option, .ts-dropdown .create { padding:13px; font-size:14px; }
@@ -629,6 +636,8 @@
         const MSG_NEW_INGREDIENT_LABEL = "{{ 'js.new_ingredient_label'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_NO_INGREDIENTS_FOUND = "{{ 'ingredients.no_results'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_INGREDIENTS_PLACEHOLDER = "{{ 'ingredients.placeholder'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_GLOBAL_INGREDIENT_LABEL = "{{ 'ingredients.source_global'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_RESTAURANT_INGREDIENT_LABEL = "{{ 'ingredients.source_restaurant'|trans({}, 'admin_menu')|e('js') }}";
 
         const S = {
             productId:   null,
@@ -912,7 +921,7 @@
                 if (el.tomselect) return;
                 new TomSelect(el, {
                     plugins: ['remove_button'],
-                    valueField: 'id',
+                    valueField: 'value',
                     labelField: 'name',
                     searchField: [],
                     options: [],
@@ -921,7 +930,7 @@
                     closeAfterSelect: true,
                     placeholder: MSG_INGREDIENTS_PLACEHOLDER,
                     create(input) {
-                        return { id: 'new:' + input.trim(), name: input.trim() };
+                        return { value: 'new:' + input.trim(), name: input.trim(), source: 'new' };
                     },
                     createFilter(input) {
                         const q = input.trim().toLowerCase();
@@ -935,6 +944,18 @@
                             .catch(() => callback());
                     },
                     render: {
+                        // Restaurant Ingredients vs the Global Ingredient Library
+                        // must always be visually distinguishable in the dropdown.
+                        option(data, escape) {
+                            const badge = data.source === 'global'
+                                ? `<span class="ing-source ing-source-global">${MSG_GLOBAL_INGREDIENT_LABEL}</span>`
+                                : `<span class="ing-source ing-source-restaurant">${MSG_RESTAURANT_INGREDIENT_LABEL}</span>`;
+                            return `<div>${escape(data.name)} ${badge}</div>`;
+                        },
+                        item(data, escape) {
+                            const icon = data.source === 'global' ? '<i class="ti ti-world" style="font-size:11px" aria-hidden="true"></i> ' : '';
+                            return `<div>${icon}${escape(data.name)}</div>`;
+                        },
                         option_create(data, escape) {
                             return `<div class="create"><i class="ti ti-plus" style="font-size:14px" aria-hidden="true"></i> ${escape(data.input.trim())} <span>${MSG_NEW_INGREDIENT_LABEL}</span></div>`;
                         },
@@ -946,32 +967,27 @@
             });
         }
 
-        // Replaces every panel's current selection with `list` ([{id, name}]).
+        // Replaces every panel's current selection with `list` ([{value, name, source}]).
         async function setIngredientItems(list) {
             await initIngredientSelects();
             ingSelects().forEach(ts => {
                 ts.clear(true);
                 ts.clearOptions();
                 (list || []).forEach(item => {
-                    const value = item.id != null ? String(item.id) : ('new:' + item.name);
-                    ts.addOption({ id: value, name: item.name });
-                    ts.addItem(value, true);
+                    ts.addOption(item);
+                    ts.addItem(item.value, true);
                 });
             });
         }
 
-        // Reads the currently-visible panel's selection back into [{id, name}],
-        // translating the "new:" placeholder ids created client-side back to null
-        // so the backend knows to create them.
+        // Reads the currently-visible panel's selection back into [{value, name}]
+        // for submission — the backend interprets the r:/g:/new: value prefix.
         function collectIngredients() {
             const ts = panelEl('ing-select')?.tomselect;
             if (!ts) return [];
             return ts.items.map(value => {
                 const opt = ts.options[value];
-                return {
-                    id:   value.startsWith('new:') ? null : parseInt(value, 10),
-                    name: opt?.name ?? value,
-                };
+                return { value, name: opt?.name ?? value };
             });
         }
 

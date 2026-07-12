@@ -49,6 +49,8 @@ ingredients:
     hint: Neue Zutaten werden automatisch zur Zutatenliste des Restaurants hinzugefügt.
     placeholder: 'Zutat eingeben und Enter drücken…'
     no_results: Keine Zutaten gefunden
+    source_global: Global
+    source_restaurant: Restaurant
 
 js:
     ai_import_soon: 'KI-Import — demnächst verfügbar ✨'

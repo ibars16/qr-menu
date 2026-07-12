@@ -18,36 +18,37 @@ class IngredientRepository extends ServiceEntityRepository
     /**
      * Search for autocomplete: matches only within the given locale, so the
      * admin never sees ingredient names from a language other than the one
-     * their Admin Panel is currently displayed in.
+     * their Admin Panel is currently displayed in. Ranked by relevance — see
+     * IngredientRelevanceRanking — not alphabetically.
      *
-     * Uses a raw query (rather than DQL) so the ILIKE match can hit the
-     * pg_trgm GIN index on ingredient_translation.name.
+     * Uses a raw query (rather than DQL) so the ranking's ILIKE/similarity
+     * matches can hit the pg_trgm GIN index on ingredient_translation.name.
      *
      * @return list<array{id: int, name: string}>
      */
     public function searchByLocale(Restaurant $restaurant, string $locale, string $query, int $limit = 20): array
     {
-        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], trim($query));
+        $ranking = IngredientRelevanceRanking::build('it.name', $query);
 
         $rows = $this->getEntityManager()->getConnection()->executeQuery(
-            'SELECT i.id, it.name
+            "SELECT i.id, it.name
              FROM ingredient i
              INNER JOIN ingredient_translation it ON it.ingredient_id = i.id
              WHERE i.restaurant_id = :restaurant
                AND it.locale = :locale
-               AND it.name ILIKE :pattern
-             ORDER BY it.name ASC
-             LIMIT :limit',
+               AND {$ranking['where']}
+             ORDER BY {$ranking['orderBy']}
+             LIMIT :limit",
             [
                 'restaurant' => $restaurant->getId(),
                 'locale'     => $locale,
-                'pattern'    => '%' . $escaped . '%',
+                ...$ranking['params'],
                 'limit'      => $limit,
             ],
             [
                 'restaurant' => ParameterType::INTEGER,
                 'locale'     => ParameterType::STRING,
-                'pattern'    => ParameterType::STRING,
+                ...$ranking['types'],
                 'limit'      => ParameterType::INTEGER,
             ]
         )->fetchAllAssociative();

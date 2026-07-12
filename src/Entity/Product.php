@@ -66,6 +66,18 @@ class Product
     private Collection $ingredients;
 
     /**
+     * Ingredients from the shared, application-managed Global Ingredient
+     * Library (see GlobalIngredient). Deliberately a separate join table and
+     * a separate collection from $ingredients (the restaurant's own private
+     * ingredients) — the two sources must never be conflated. Unidirectional:
+     * GlobalIngredient has no inverse side, to avoid ever hydrating its
+     * (potentially huge) list of products.
+     */
+    #[ORM\ManyToMany(targetEntity: GlobalIngredient::class)]
+    #[ORM\JoinTable(name: 'product_global_ingredient')]
+    private Collection $globalIngredients;
+
+    /**
      * Temporary price after currency conversion.
      * NOT mapped to database — calculated at runtime in MenuController.
      */
@@ -73,8 +85,9 @@ class Product
 
     public function __construct()
     {
-        $this->translations = new ArrayCollection();
-        $this->ingredients  = new ArrayCollection();
+        $this->translations      = new ArrayCollection();
+        $this->ingredients       = new ArrayCollection();
+        $this->globalIngredients = new ArrayCollection();
         $this->tags = new ArrayCollection();
     }
 
@@ -217,6 +230,23 @@ class Product
     public function removeIngredient(Ingredient $ingredient): void
     {
         $this->ingredients->removeElement($ingredient);
+    }
+
+    public function getGlobalIngredients(): Collection
+    {
+        return $this->globalIngredients;
+    }
+
+    public function addGlobalIngredient(GlobalIngredient $ingredient): void
+    {
+        if (!$this->globalIngredients->contains($ingredient)) {
+            $this->globalIngredients->add($ingredient);
+        }
+    }
+
+    public function removeGlobalIngredient(GlobalIngredient $ingredient): void
+    {
+        $this->globalIngredients->removeElement($ingredient);
     }
 
     public function getTags(): Collection

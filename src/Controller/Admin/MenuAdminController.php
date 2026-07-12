@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Category;
 use App\Entity\CategoryTranslation;
+use App\Entity\GlobalIngredient;
 use App\Entity\Ingredient;
 use App\Entity\IngredientTranslation;
 use App\Entity\Product;
@@ -39,6 +40,29 @@ class MenuAdminController extends AbstractController
         if ($restaurant !== $this->restaurant()) {
             throw $this->createAccessDeniedException();
         }
+    }
+
+    /**
+     * Tom Select item values are prefixed so the two independent ingredient
+     * sources (and brand-new, not-yet-persisted ingredients) never collide:
+     * "r:<id>" a restaurant-private Ingredient, "g:<id>" a GlobalIngredient,
+     * "new:<name>" typed by the admin and not yet matched to either.
+     *
+     * @return array{type: 'restaurant'|'global'|'new'|'unknown', id: ?int, name: ?string}
+     */
+    private function parseIngredientValue(string $value): array
+    {
+        if (str_starts_with($value, 'r:')) {
+            return ['type' => 'restaurant', 'id' => (int) substr($value, 2), 'name' => null];
+        }
+        if (str_starts_with($value, 'g:')) {
+            return ['type' => 'global', 'id' => (int) substr($value, 2), 'name' => null];
+        }
+        if (str_starts_with($value, 'new:')) {
+            return ['type' => 'new', 'id' => null, 'name' => substr($value, 4)];
+        }
+
+        return ['type' => 'unknown', 'id' => null, 'name' => null];
     }
 
     // ── Main view ────────────────────────────────────────────────────────────
@@ -156,18 +180,28 @@ class MenuAdminController extends AbstractController
             $tags[] = $tag->getId();
         }
 
-        // Show already-attached ingredients in the current Admin Panel
+        // Show already-attached ingredients (from both the restaurant's own
+        // list and the Global Ingredient Library) in the current Admin Panel
         // language, same as the autocomplete — falling back to the
-        // restaurant's own content language, then the raw code, only if this
-        // particular ingredient was never translated into the admin locale.
+        // restaurant's own content language, then English (the one language
+        // the global library always has), then the raw code.
         $adminLocale     = $request->getLocale();
         $contentLocale   = $product->getCategory()->getRestaurant()->getDefaultLanguage();
         $ingredientsList = [];
         foreach ($product->getIngredients() as $ing) {
             $t = $ing->getTranslation($adminLocale) ?? $ing->getTranslation($contentLocale);
             $ingredientsList[] = [
-                'id'   => $ing->getId(),
-                'name' => $t?->getName() ?? $ing->getCode(),
+                'value'  => 'r:' . $ing->getId(),
+                'name'   => $t?->getName() ?? $ing->getCode(),
+                'source' => 'restaurant',
+            ];
+        }
+        foreach ($product->getGlobalIngredients() as $gIng) {
+            $t = $gIng->getTranslation($adminLocale) ?? $gIng->getTranslation($contentLocale) ?? $gIng->getTranslation('en');
+            $ingredientsList[] = [
+                'value'  => 'g:' . $gIng->getId(),
+                'name'   => $t?->getName() ?? $gIng->getCode(),
+                'source' => 'global',
             ];
         }
 
@@ -251,49 +285,83 @@ class MenuAdminController extends AbstractController
             }
         }
 
-        // Ingredients — create new ones if needed
+        // Ingredients — from the restaurant's own list, the Global
+        // Ingredient Library, or newly typed (see parseIngredientValue()).
         if (isset($data['ingredients'])) {
             foreach ($product->getIngredients() as $ing) {
                 $product->removeIngredient($ing);
             }
+            foreach ($product->getGlobalIngredients() as $gIng) {
+                $product->removeGlobalIngredient($gIng);
+            }
 
-            $adminLocale       = $request->getLocale();
-            $ingredientRepo    = $em->getRepository(Ingredient::class);
+            $adminLocale          = $request->getLocale();
+            $ingredientRepo       = $em->getRepository(Ingredient::class);
+            $globalIngredientRepo = $em->getRepository(GlobalIngredient::class);
 
             foreach ($data['ingredients'] as $ingData) {
-                $id   = $ingData['id'] ?? null;
-                $name = trim($ingData['name'] ?? '');
-                if (!$name) continue;
+                $parsed = $this->parseIngredientValue(trim($ingData['value'] ?? ''));
 
-                if ($id) {
-                    $ingredient = $ingredientRepo->find($id);
-                } else {
-                    // The autocomplete only ever shows/matches names in the
-                    // current admin locale, but the same ingredient concept
-                    // may already exist under a different locale (e.g. the
-                    // admin previously typed it while the panel was in
-                    // Spanish, and is now typing it again in French). Reuse
-                    // that Ingredient instead of creating a duplicate.
-                    $ingredient = $ingredientRepo->findExistingByNameAnyLocale($restaurant, $name);
-
-                    if (!$ingredient) {
-                        $ingredient = new Ingredient();
-                        $ingredient->setCode(strtolower(str_replace(' ', '-', $name)));
-                        $ingredient->setRestaurant($restaurant);
-                        $em->persist($ingredient);
+                if ($parsed['type'] === 'restaurant') {
+                    $ingredient = $ingredientRepo->find($parsed['id']);
+                    if ($ingredient && $ingredient->getRestaurant() === $restaurant) {
+                        $product->addIngredient($ingredient);
                     }
-
-                    if (!$ingredient->getTranslation($adminLocale)) {
-                        $ingT = new IngredientTranslation();
-                        $ingT->setIngredient($ingredient);
-                        $ingT->setLocale($adminLocale);
-                        $ingT->setName($name);
-                        $ingredient->addTranslation($ingT);
-                        $em->persist($ingT);
-                    }
+                    continue;
                 }
 
-                if ($ingredient && $ingredient->getRestaurant() === $restaurant) {
+                if ($parsed['type'] === 'global') {
+                    $globalIngredient = $globalIngredientRepo->find($parsed['id']);
+                    if ($globalIngredient) {
+                        $product->addGlobalIngredient($globalIngredient);
+                    }
+                    continue;
+                }
+
+                if ($parsed['type'] === 'new') {
+                    $name = trim($parsed['name'] ?? '');
+                    if (!$name) continue;
+
+                    // 1) The same ingredient concept may already exist for
+                    //    this restaurant under a different admin locale —
+                    //    reuse it rather than creating a duplicate.
+                    $ingredient = $ingredientRepo->findExistingByNameAnyLocale($restaurant, $name);
+                    if ($ingredient) {
+                        if (!$ingredient->getTranslation($adminLocale)) {
+                            $ingT = new IngredientTranslation();
+                            $ingT->setIngredient($ingredient);
+                            $ingT->setLocale($adminLocale);
+                            $ingT->setName($name);
+                            $ingredient->addTranslation($ingT);
+                            $em->persist($ingT);
+                        }
+                        $product->addIngredient($ingredient);
+                        continue;
+                    }
+
+                    // 2) Never create a restaurant-private duplicate of
+                    //    something the Global Ingredient Library already
+                    //    has — associate that instead. Restaurants can only
+                    //    ever read the global library, never write to it.
+                    $globalIngredient = $globalIngredientRepo->findExistingByNameAnyLocale($name);
+                    if ($globalIngredient) {
+                        $product->addGlobalIngredient($globalIngredient);
+                        continue;
+                    }
+
+                    // 3) Genuinely new — create as a restaurant-private ingredient.
+                    $ingredient = new Ingredient();
+                    $ingredient->setCode(strtolower(str_replace(' ', '-', $name)));
+                    $ingredient->setRestaurant($restaurant);
+                    $em->persist($ingredient);
+
+                    $ingT = new IngredientTranslation();
+                    $ingT->setIngredient($ingredient);
+                    $ingT->setLocale($adminLocale);
+                    $ingT->setName($name);
+                    $ingredient->addTranslation($ingT);
+                    $em->persist($ingT);
+
                     $product->addIngredient($ingredient);
                 }
             }
@@ -337,6 +405,8 @@ class MenuAdminController extends AbstractController
     {
         $restaurant = $this->restaurant();
         $query      = trim($request->query->get('q', ''));
+        $locale     = $request->getLocale();
+        $limit      = 20;
 
         if (mb_strlen($query) < 2) {
             return $this->json([]);
@@ -344,13 +414,26 @@ class MenuAdminController extends AbstractController
 
         // Only ever matches/returns names in the current Admin Panel
         // language — an ingredient translated in another locale must never
-        // appear in these results, even if it exists for this restaurant.
-        $results = $em->getRepository(Ingredient::class)->searchByLocale(
-            $restaurant,
-            $request->getLocale(),
-            $query,
-            20
+        // appear in these results, even if it exists for this restaurant (or
+        // the global library).
+        //
+        // The restaurant's own ingredients are searched first; the Global
+        // Ingredient Library only fills whatever's left of the result cap,
+        // so a restaurant's own ingredients always take priority.
+        $restaurantMatches = $em->getRepository(Ingredient::class)->searchByLocale($restaurant, $locale, $query, $limit);
+
+        $results = array_map(
+            static fn (array $r) => ['value' => 'r:' . $r['id'], 'name' => $r['name'], 'source' => 'restaurant'],
+            $restaurantMatches
         );
+
+        $remaining = $limit - count($results);
+        if ($remaining > 0) {
+            $globalMatches = $em->getRepository(GlobalIngredient::class)->searchByLocale($locale, $query, $remaining);
+            foreach ($globalMatches as $r) {
+                $results[] = ['value' => 'g:' . $r['id'], 'name' => $r['name'], 'source' => 'global'];
+            }
+        }
 
         return $this->json($results);
     }

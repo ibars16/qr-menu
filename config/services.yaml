@@ -31,12 +31,28 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Command\GenerateGlobalIngredientsDatasetCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Command\ImportGlobalIngredientsCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $geminiApiKey: '%gemini_api_key%'
+
     App\Service\GeminiTagTranslator:
         arguments:
             $geminiApiKey: '%gemini_api_key%'
 
     App\Service\TagTranslatorInterface:
         alias: App\Service\GeminiTagTranslator
+
+    App\Service\GeminiIngredientTranslator:
+        arguments:
+            $geminiApiKey: '%gemini_api_key%'
+
+    App\Service\IngredientTranslatorInterface:
+        alias: App\Service\GeminiIngredientTranslator
 
     App\Service\TagTranslationProviderInterface:
         alias: App\Service\DatabaseTagTranslationProvider
