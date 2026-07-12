@@ -1,0 +1,107 @@
+title: Menu
+
+action:
+    import_ai: Importa con IA
+    cancel: Annulla
+    next: Avanti
+    back: Indietro
+    save: Salva
+    save_product: Salva piatto
+
+category:
+    delete_title: Elimina categoria
+    edit_title: Modifica nome categoria
+    toggle_aria: Attiva/disattiva categoria
+    toggle_hide_title: 'Visibile · tocca per nascondere'
+    toggle_show_title: 'Nascosta · tocca per mostrare'
+    toggle_visible: Categoria visibile
+    toggle_hidden: Categoria nascosta
+
+common:
+    optional: facoltativo
+    unnamed: (senza nome)
+
+empty:
+    title: Il tuo menu è vuoto
+    subtitle: 'Crea la tua prima categoria (Antipasti, Pizze, Dolci…) e poi aggiungi i tuoi piatti. Oppure importa l''intero menu da una foto con l''IA.'
+    import_ai: Importa menu con IA
+    create_first_category: Crea la prima categoria
+
+field:
+    calories: Calorie
+    category: Categoria
+    description: Descrizione
+    description_placeholder: 'Descrivi brevemente il piatto, gli ingredienti principali, il metodo di preparazione…'
+    ingredients: Ingredienti
+    photo: Foto del piatto
+    price: 'Prezzo (%currency%)'
+    product_name: Nome del piatto
+    product_name_placeholder: 'Es: Pizza Margherita'
+    spicy_level: Livello di piccantezza
+    tags: Etichette
+
+field_error:
+    name_required: Il nome è obbligatorio
+    description_required: La descrizione è obbligatoria
+    price_required: Il prezzo è obbligatorio
+
+ingredients:
+    hint: I nuovi ingredienti vengono aggiunti automaticamente alla banca ingredienti del ristorante.
+    placeholder: 'Scrivi un ingrediente e premi Invio…'
+
+js:
+    ai_import_soon: 'Importazione con IA — prossimamente ✨'
+    category_created: 'Categoria creata ✓'
+    category_deleted: Categoria eliminata
+    category_updated: 'Categoria aggiornata ✓'
+    confirm_delete_category: 'Eliminare la categoria "%name%"?'
+    confirm_delete_category_with_products: 'Eliminare "%name%" e i suoi %count% piatti? Non può essere annullato.'
+    confirm_delete_product: 'Eliminare "%name%"? Non può essere annullato.'
+    default_product_name: questo piatto
+    error_loading_product: Errore durante il caricamento del piatto
+    fill_required_fields: Compila i campi obbligatori
+    new_ingredient_label: '· Crea nuovo'
+    product_created: 'Piatto creato ✓'
+    product_deleted: Piatto eliminato
+    product_saved: 'Piatto salvato ✓'
+    remove_ingredient_aria: 'Rimuovi %name%'
+
+modal:
+    category:
+        edit_title: Modifica categoria
+        new_title: Nuova categoria
+    product:
+        edit_title: Modifica piatto
+        new_title: Nuovo piatto
+    close_aria: Chiudi
+
+product:
+    add_to_category: 'Aggiungi piatto a %category%'
+    hidden: Nascosto
+    toggle_aria: Attiva/disattiva piatto
+    visible: Visibile
+
+spicy:
+    aria: 'Livello di piccantezza %level%'
+    none: Non piccante
+    mild: 'Delicato 🌶'
+    medium: 'Medio 🌶🌶'
+    hot: 'Piccante 🌶🌶🌶'
+    very_hot: 'Molto piccante 🌶🌶🌶🌶'
+    extreme: 'Estremo 🌶🌶🌶🌶🌶'
+
+step:
+    category: Categoria
+    info: Informazioni
+
+tags:
+    none_configured: 'Nessuna etichetta configurata — %link_start%creale in Etichette%link_end% per contrassegnare i piatti come Vegetariano, Senza glutine, ecc.'
+
+upload:
+    aria: Carica foto del piatto
+    hint: Clicca o trascina un'immagine qui
+
+error:
+    category_name_required: Il nome è obbligatorio.
+    product_not_found: Piatto non trovato.
+    category_not_found: Categoria non trovata.

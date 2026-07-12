@@ -1,0 +1,74 @@
+title: Personnaliser la carte
+
+confirm:
+    default_title: Appliquer le changement
+    default_sub: Le changement sera visible immédiatement pour tous les visiteurs de votre carte.
+    cancel: Annuler
+    apply_now: Appliquer maintenant
+    applying: Application en cours…
+    use_layout_title: 'Utiliser la mise en page "%name%" ?'
+    use_layout_sub: Cela sera appliqué immédiatement et tous vos clients verront la nouvelle mise en page.
+    use_theme_title: 'Utiliser le thème "%name%" ?'
+    use_theme_sub: Cela sera appliqué immédiatement et tous vos clients verront le nouveau thème.
+    apply_preview_title: Appliquer la combinaison prévisualisée ?
+    apply_preview_sub: 'Cela appliquera : %combo%.'
+
+preview:
+    active_title: Aperçu actif
+    active_sub: Vous seul voyez cette combinaison. Vos clients continuent de voir la configuration active.
+    close: Fermer
+    apply: Appliquer
+    title_with_names: 'Aperçu : %layout% · %theme%'
+    closed_toast: Aperçu fermé
+
+section:
+    step1_eyebrow: Étape 1 · Structure
+    layout_title: Mise en page de la carte
+    layout_desc: Choisissez comment les plats sont organisés à l'écran.
+    step2_eyebrow: Étape 2 · Apparence
+    theme_title: Thème visuel
+    theme_desc: Couleurs, fonds et style. Fonctionne avec toutes les mises en page.
+
+card:
+    preview_action: Aperçu
+    use_action: Utiliser
+    active_label: Actif
+
+toast:
+    save_error: Erreur lors de l'enregistrement
+    applied: '✓ Changement appliqué avec succès'
+    connection_error: Erreur de connexion
+
+layout:
+    standard:
+        name: Standard
+        desc: Cartes avec image en haut et nom en dessous. Équilibré et percutant.
+    compact:
+        name: Liste compacte
+        desc: Lignes numérotées, à parcourir rapidement. Idéal pour les longues cartes.
+    grid:
+        name: Grille
+        desc: Cartes verticales avec grande image. Très visuel et percutant.
+
+theme:
+    classic-dark:
+        name: Classique sombre
+        desc: Fond noir, accent de la couleur de votre marque. Élégant et raffiné.
+    classic-warm:
+        name: Classique chaleureux
+        desc: Fond crème, tons chaleureux. Accueillant et convivial.
+    glass:
+        name: Glassmorphism
+        desc: Dégradé sombre avec effet verre et accent violet. Moderne et premium.
+    ocean:
+        name: Océan
+        desc: Bleu clair, propre et frais. Idéal pour une cuisine de la mer.
+    noir:
+        name: Noir
+        desc: Noir profond avec des détails dorés. Luxe et haute gastronomie.
+    forest:
+        name: Forêt
+        desc: Vert naturel et organique. Parfait pour une cuisine de marché et des produits locaux.
+    terra:
+        name: Terra
+        desc: Terracotta méditerranéenne. Idéal pour tapas, pintxos et cuisine informelle.

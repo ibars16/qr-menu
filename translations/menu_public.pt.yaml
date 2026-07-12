@@ -1,0 +1,5 @@
+dialog:
+    title: "Escolha o seu idioma e moeda"
+    language_label: "Idioma"
+    currency_label: "Moeda"
+    confirm: "Continuar"

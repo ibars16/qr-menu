@@ -1,0 +1,39 @@
+title: Einstellungen
+
+section:
+    restaurant_info: Restaurantinformationen
+    appearance: Erscheinungsbild
+    language_currency: Sprache und Währung
+
+field:
+    name: Name
+    name_placeholder: Name Ihres Restaurants
+    menu_url: URL Ihrer digitalen Speisekarte
+    logo: Restaurant-Logo
+    primary_color: Primärfarbe
+    menu_language: Hauptsprache der Speisekarte
+    admin_language: Sprache des Admin-Panels
+    currency: Basiswährung
+
+action:
+    copy: Kopieren
+    change_logo: Logo ändern
+    upload_logo: Logo hochladen
+    remove_logo: Logo entfernen
+    save: Änderungen speichern
+
+hint:
+    logo_format: 'PNG oder JPG, max. 2 MB'
+    primary_color: Wird in der gesamten digitalen Speisekarte verwendet
+    menu_language: Die Sprache, in der Sie Gerichtnamen und -beschreibungen eingeben.
+    admin_language: Die Sprache dieses Verwaltungspanels. Sie hat keinen Einfluss auf die Speisekarte Ihrer Kunden.
+    currency: Preise werden in dieser Währung gespeichert. Kunden sehen die Umrechnung in Echtzeit.
+
+flash:
+    name_required: Der Restaurantname ist erforderlich.
+    logo_upload_error: Fehler beim Hochladen des Logos.
+    saved: Einstellungen erfolgreich gespeichert.
+
+toast:
+    logo_removed: Logo wird beim Speichern entfernt
+    url_copied: 'URL kopiert ✓'

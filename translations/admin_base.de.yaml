@@ -1,0 +1,35 @@
+title:
+    default: Admin
+
+sidebar:
+    role: Admin-Panel
+
+action:
+    view_menu: Meine Speisekarte ansehen
+
+nav:
+    section:
+        menu: Speisekarte
+        restaurant: Restaurant
+    item:
+        menu: Speisekarte
+        categories: Kategorien
+        tags: Tags
+        theme: Speisekarte anpassen
+        qr: Mein QR-Code
+        settings: Einstellungen
+        logout: Abmelden
+
+theme:
+    dark_mode: Dunkler Modus
+    light_mode: Heller Modus
+    toggle_title: Hell-/Dunkelmodus wechseln
+    toggle_aria: Design wechseln
+
+bottom_nav:
+    aria_label: Navigation
+    menu: Speisekarte
+    categories: Kateg.
+    tags: Tags
+    qr: QR
+    settings: Konfig.

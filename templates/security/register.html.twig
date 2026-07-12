@@ -57,6 +57,7 @@
         }
 
         .field { margin-bottom: 14px; }
+        .field-help { font-size: 11px; color: #555; margin-top: 5px; }
         .field label {
             display: block;
             font-size: 12px; font-weight: 500; color: #666;
@@ -147,6 +148,12 @@
                     {{ form_label(form.language) }}
                     {{ form_widget(form.language) }}
                 </div>
+            </div>
+
+            <div class="field">
+                {{ form_label(form.adminLocale) }}
+                {{ form_widget(form.adminLocale) }}
+                <div class="field-help">{{ form.adminLocale.vars.help }}</div>
             </div>
 
             {# ── Cuenta ── #}

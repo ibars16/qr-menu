@@ -15,11 +15,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin', name: 'admin_')]
 #[IsGranted('ROLE_USER')]
 class MenuAdminController extends AbstractController
 {
+    public function __construct(private readonly TranslatorInterface $translator)
+    {
+    }
+
     private function restaurant(): \App\Entity\Restaurant
     {
         $restaurant = $this->getUser()->getRestaurant();
@@ -65,7 +70,7 @@ class MenuAdminController extends AbstractController
         $name       = trim($data['name'] ?? '');
 
         if (!$name) {
-            return $this->json(['error' => 'El nombre es obligatorio.'], 400);
+            return $this->json(['error' => $this->translator->trans('error.category_name_required', domain: 'admin_menu')], 400);
         }
 
         $category = new Category();
@@ -94,7 +99,7 @@ class MenuAdminController extends AbstractController
         $name = trim($data['name'] ?? '');
 
         if (!$name) {
-            return $this->json(['error' => 'El nombre es obligatorio.'], 400);
+            return $this->json(['error' => $this->translator->trans('error.category_name_required', domain: 'admin_menu')], 400);
         }
 
         $locale      = $category->getRestaurant()->getDefaultLanguage();
@@ -186,7 +191,7 @@ class MenuAdminController extends AbstractController
         if ($productId) {
             $product = $em->getRepository(Product::class)->find($productId);
             if (!$product || $product->getCategory()->getRestaurant() !== $restaurant) {
-                return $this->json(['error' => 'Plato no encontrado.'], 404);
+                return $this->json(['error' => $this->translator->trans('error.product_not_found', domain: 'admin_menu')], 404);
             }
             // Allow moving the product to a different category
             if (!empty($data['categoryId']) && $data['categoryId'] != $product->getCategory()->getId()) {
@@ -198,7 +203,7 @@ class MenuAdminController extends AbstractController
         } else {
             $category = $em->getRepository(Category::class)->find($data['categoryId'] ?? 0);
             if (!$category || $category->getRestaurant() !== $restaurant) {
-                return $this->json(['error' => 'Categoría no encontrada.'], 404);
+                return $this->json(['error' => $this->translator->trans('error.category_not_found', domain: 'admin_menu')], 404);
             }
             $product = new Product();
             $product->setCategory($category);

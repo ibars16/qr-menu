@@ -14,28 +14,23 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class ThemeController extends AbstractController
 {
+    // 'name' and 'desc' are NOT stored here — they're translated per-locale in
+    // translations/admin_theme.*.yaml under keys layout.<key>.name/.desc and
+    // theme.<key>.name/.desc, looked up in the template by array key.
     public const LAYOUTS = [
         'standard' => [
-            'name' => 'Estándar',
-            'desc' => 'Tarjetas con imagen arriba y nombre abajo. Equilibrado e impactante.',
             'icon' => '▤',
         ],
         'compact' => [
-            'name' => 'Lista compacta',
-            'desc' => 'Filas numeradas, rápidas de escanear. Ideal para cartas extensas.',
             'icon' => '≡',
         ],
         'grid' => [
-            'name' => 'Cuadrícula',
-            'desc' => 'Tarjetas verticales con imagen grande. Muy visual e impactante.',
             'icon' => '⊞',
         ],
     ];
 
     public const THEMES = [
         'classic-dark' => [
-            'name'             => 'Clásico oscuro',
-            'desc'             => 'Fondo negro, acento del color de tu marca. Elegante y sofisticado.',
             'icon'             => '🌑',
             'preview_bg'       => '#0a0a0a',
             'preview_accent'   => '#C1440E',
@@ -45,8 +40,6 @@ class ThemeController extends AbstractController
             'preview_radius'   => '10px',
         ],
         'classic-warm' => [
-            'name'             => 'Clásico cálido',
-            'desc'             => 'Fondo crema, tonos cálidos. Acogedor y cercano.',
             'icon'             => '☀️',
             'preview_bg'       => '#faf7f2',
             'preview_accent'   => '#C1440E',
@@ -56,8 +49,6 @@ class ThemeController extends AbstractController
             'preview_radius'   => '16px',
         ],
         'glass' => [
-            'name'             => 'Glassmorphism',
-            'desc'             => 'Degradado oscuro con efecto cristal y acento morado. Moderno y premium.',
             'icon'             => '💎',
             'preview_bg'       => 'linear-gradient(135deg, #0d0320 0%, #120828 50%, #050c1a 100%)',
             'preview_accent'   => '#a78bfa',
@@ -67,8 +58,6 @@ class ThemeController extends AbstractController
             'preview_radius'   => '14px',
         ],
         'ocean' => [
-            'name'             => 'Océano',
-            'desc'             => 'Azul claro, limpio y fresco. Ideal para cocina del mar.',
             'icon'             => '🌊',
             'preview_bg'       => '#f0f6ff',
             'preview_accent'   => '#2563eb',
@@ -78,8 +67,6 @@ class ThemeController extends AbstractController
             'preview_radius'   => '14px',
         ],
         'noir' => [
-            'name'             => 'Noir',
-            'desc'             => 'Negro profundo con detalles dorados. Lujo y alta gastronomía.',
             'icon'             => '✦',
             'preview_bg'       => '#080808',
             'preview_accent'   => '#d4a847',
@@ -89,8 +76,6 @@ class ThemeController extends AbstractController
             'preview_radius'   => '7px',
         ],
         'forest' => [
-            'name'             => 'Bosque',
-            'desc'             => 'Verde natural y orgánico. Perfecto para cocina de mercado y productos locales.',
             'icon'             => '🌿',
             'preview_bg'       => '#f0f4f0',
             'preview_accent'   => '#1c6030',
@@ -100,8 +85,6 @@ class ThemeController extends AbstractController
             'preview_radius'   => '16px',
         ],
         'terra' => [
-            'name'             => 'Terra',
-            'desc'             => 'Terracota mediterránea. Ideal para tapas, pintxos y cocina informal.',
             'icon'             => '🏺',
             'preview_bg'       => '#faf3ec',
             'preview_accent'   => '#b83a18',

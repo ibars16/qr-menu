@@ -1,0 +1,5 @@
+dialog:
+    title: "언어와 통화를 선택하세요"
+    language_label: "언어"
+    currency_label: "통화"
+    confirm: "계속"

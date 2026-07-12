@@ -42,19 +42,8 @@
                                 </div>
                             {% endif %}
                             {% for tag in product.tags %}
-                                {% set tagT = null %}
-
-                                {% for tr in tag.translations %}
-                                    {% if tr.locale == locale %}
-                                        {% set tagT = tr %}
-                                    {% endif %}
-                                {% endfor %}
-
-                                {% if tagT %}
-                                    <div class="fbadge">
-                                        {{ tag.icon }}
-                                        {{ tagT.name }}
-                                    </div>
+                                {% if tagNames[tag.id] is defined %}
+                                    <div class="fbadge">{{ tag.icon }} {{ tagNames[tag.id] }}</div>
                                 {% endif %}
                             {% endfor %}
                         </div>
@@ -128,20 +117,8 @@
                             <div class="lbl-list">
 
                                 {% for tag in product.tags %}
-
-                                    {% set tagT = null %}
-
-                                    {% for tr in tag.translations %}
-                                        {% if tr.locale == locale %}
-                                            {% set tagT = tr %}
-                                        {% endif %}
-                                    {% endfor %}
-
-                                    {% if tagT %}
-                                        <div class="lbl">
-                                            {{ tag.icon }}
-                                            {{ tagT.name }}
-                                        </div>
+                                    {% if tagNames[tag.id] is defined %}
+                                        <div class="lbl">{{ tag.icon }} {{ tagNames[tag.id] }}</div>
                                     {% endif %}
 
                                 {% endfor %}

@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Repository\RestaurantRepository;
 use App\Service\CurrencyConverter;
+use App\Service\MenuPreferencesResolver;
+use App\Service\TagTranslationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,14 +19,16 @@ class MenuController extends AbstractController
         string $slug,
         RestaurantRepository $restaurantRepo,
         EntityManagerInterface $em,
-        Request $request
+        Request $request,
+        TagTranslationService $tagTranslationService,
+        MenuPreferencesResolver $menuPreferencesResolver,
     ): Response {
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
             throw $this->createNotFoundException('Restaurante no encontrado.');
         }
 
-        return $this->renderMenu($restaurant, $request, $em);
+        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $menuPreferencesResolver);
     }
 
     // Backwards-compat redirect for QR codes already printed with the old table URL.
@@ -37,21 +41,34 @@ class MenuController extends AbstractController
     private function renderMenu(
         \App\Entity\Restaurant $restaurant,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        TagTranslationService $tagTranslationService,
+        MenuPreferencesResolver $menuPreferencesResolver,
     ): Response {
-        $languages  = require $this->getParameter('kernel.project_dir') . '/config/languages.php';
-        $currencies = require $this->getParameter('kernel.project_dir') . '/config/currencies.php';
+        $languages  = $menuPreferencesResolver->getLanguages();
+        $currencies = $menuPreferencesResolver->getCurrencies();
 
-        // Language
-        $supportedLanguages = array_keys($languages);
-        $browserLanguage    = substr($request->getPreferredLanguage(), 0, 2);
-        $detectedLanguage   = in_array($browserLanguage, $supportedLanguages)
-            ? $browserLanguage
-            : $restaurant->getDefaultLanguage();
-        $locale = $request->query->get('lang', $detectedLanguage);
+        // Each customer's own preference, remembered client-side (cookie) from
+        // a previous visit — never the restaurant's own settings.
+        $savedPrefs = $menuPreferencesResolver->readCookie($request);
 
-        // Currency
-        $currency = $request->query->get('currency', $restaurant->getCurrency());
+        // Language: explicit ?lang= override > saved preference > device
+        // language (if supported) > restaurant's own fallback language.
+        $queryLang = $request->query->get('lang');
+        $locale    = $menuPreferencesResolver->isLanguageSupported($queryLang)
+            ? $queryLang
+            : ($savedPrefs['lang'] ?? $menuPreferencesResolver->detectLanguage($request, $restaurant->getDefaultLanguage()));
+
+        // Currency: explicit ?currency= override > saved preference > guessed
+        // from the device's locale (if supported) > restaurant's own currency.
+        $queryCurrency = $request->query->get('currency');
+        $currency      = $menuPreferencesResolver->isCurrencySupported($queryCurrency)
+            ? $queryCurrency
+            : ($savedPrefs['currency'] ?? $menuPreferencesResolver->guessCurrency($request, $restaurant->getCurrency()));
+
+        // Only prompt when the customer has never chosen before and isn't
+        // arriving via a link that already specifies a preference.
+        $showPrefsDialog = $savedPrefs === null && $queryLang === null && $queryCurrency === null;
 
         // Active categories, sorted
         $categories = $restaurant->getCategories()
@@ -81,9 +98,10 @@ class MenuController extends AbstractController
             $category->activeProductsSorted = $products;
         }
 
-        // Tags
-        $tags = $restaurant->getProductTags()->toArray();
+        // Tags — sorted + resolved names (with lazy-dispatch fallback for missing locales)
+        $tags     = $restaurant->getProductTags()->toArray();
         usort($tags, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
+        $tagNames = $tagTranslationService->resolveForMenu($restaurant, $locale);
 
         // Layout + theme (with preview support)
         $layout        = $restaurant->getLayout();
@@ -117,11 +135,13 @@ class MenuController extends AbstractController
             'languages'     => $languages,
             'currencies'    => $currencies,
             'tags'          => $tags,
+            'tagNames'      => $tagNames,
             'layout'        => $layout,
             'theme'         => $theme,
             'isPreview'     => $isPreview,
             'previewLayout' => $previewLayout,
             'previewTheme'  => $previewTheme,
+            'showPrefsDialog' => $showPrefsDialog,
         ]);
     }
 }

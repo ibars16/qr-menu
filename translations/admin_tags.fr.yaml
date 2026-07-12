@@ -1,0 +1,43 @@
+title: Étiquettes
+
+action:
+    new_tag: Nouvelle étiquette
+    create_first: Créer la première étiquette
+    edit_tag: "Modifier l'étiquette"
+    delete_tag: "Supprimer l'étiquette"
+    cancel: Annuler
+    save: Enregistrer
+
+info_banner: "Les étiquettes apparaissent sur chaque plat et aident les clients à filtrer (Végétalien, Sans gluten, Épicé…). Créez celles dont vous avez besoin et attribuez-les depuis la carte."
+
+empty:
+    title: "Aucune étiquette pour l'instant"
+    subtitle: "Créez des étiquettes pour classer vos plats : Végétalien, Sans gluten, Populaire, Épicé…"
+
+meta:
+    dish_singular: plat
+    dish_plural: plats
+
+aria:
+    close: Fermer
+
+field:
+    name: Nom
+    name_placeholder: "Végétalien, Sans gluten, Populaire…"
+    icon: Icône
+    color: Couleur
+
+error:
+    name_required: Le nom est obligatoire.
+
+hint:
+    icon: Saisissez un emoji représentant l'étiquette
+
+toast:
+    created: "Étiquette créée ✓"
+    updated: "Étiquette mise à jour ✓"
+    deleted: "Étiquette supprimée"
+
+confirm:
+    delete_simple: 'Supprimer l''étiquette "%name%" ?'
+    delete_with_products: 'Supprimer l''étiquette "%name%" ? Elle sera retirée des %count% plats qui l''utilisent.'

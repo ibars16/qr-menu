@@ -1,0 +1,74 @@
+title: Personalizar cardápio
+
+confirm:
+    default_title: Aplicar alteração
+    default_sub: A alteração será visível imediatamente para todos os visitantes do seu cardápio.
+    cancel: Cancelar
+    apply_now: Aplicar agora
+    applying: A aplicar…
+    use_layout_title: 'Usar o layout "%name%"?'
+    use_layout_sub: Será aplicado imediatamente e todos os seus clientes verão o novo layout.
+    use_theme_title: 'Usar o tema "%name%"?'
+    use_theme_sub: Será aplicado imediatamente e todos os seus clientes verão o novo tema.
+    apply_preview_title: Aplicar a combinação pré-visualizada?
+    apply_preview_sub: 'Será aplicado: %combo%.'
+
+preview:
+    active_title: Pré-visualização ativa
+    active_sub: Só você vê esta combinação. Os seus clientes continuam a ver a configuração ativa.
+    close: Fechar
+    apply: Aplicar
+    title_with_names: 'Pré-visualização: %layout% · %theme%'
+    closed_toast: Pré-visualização fechada
+
+section:
+    step1_eyebrow: Passo 1 · Estrutura
+    layout_title: Layout do cardápio
+    layout_desc: Escolha como os pratos são organizados no ecrã.
+    step2_eyebrow: Passo 2 · Aparência
+    theme_title: Tema visual
+    theme_desc: Cores, fundos e estilo. Funciona com todos os layouts.
+
+card:
+    preview_action: Pré-visualizar
+    use_action: Usar
+    active_label: Ativo
+
+toast:
+    save_error: Erro ao guardar
+    applied: '✓ Alteração aplicada com sucesso'
+    connection_error: Erro de ligação
+
+layout:
+    standard:
+        name: Padrão
+        desc: Cartões com imagem em cima e nome em baixo. Equilibrado e impactante.
+    compact:
+        name: Lista compacta
+        desc: Linhas numeradas, rápidas de percorrer. Ideal para cardápios extensos.
+    grid:
+        name: Grelha
+        desc: Cartões verticais com imagem grande. Muito visual e impactante.
+
+theme:
+    classic-dark:
+        name: Clássico escuro
+        desc: Fundo preto, destaque na cor da sua marca. Elegante e sofisticado.
+    classic-warm:
+        name: Clássico quente
+        desc: Fundo creme, tons quentes. Acolhedor e próximo.
+    glass:
+        name: Glassmorphism
+        desc: Gradiente escuro com efeito vidro e destaque roxo. Moderno e premium.
+    ocean:
+        name: Oceano
+        desc: Azul claro, limpo e fresco. Ideal para cozinha do mar.
+    noir:
+        name: Noir
+        desc: Preto profundo com detalhes dourados. Luxo e alta gastronomia.
+    forest:
+        name: Floresta
+        desc: Verde natural e orgânico. Perfeito para cozinha de mercado e produtos locais.
+    terra:
+        name: Terra
+        desc: Terracota mediterrânica. Ideal para tapas, pintxos e cozinha informal.

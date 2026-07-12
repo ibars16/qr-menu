@@ -1,0 +1,39 @@
+title: Settings
+
+section:
+    restaurant_info: Restaurant information
+    appearance: Appearance
+    language_currency: Language and currency
+
+field:
+    name: Name
+    name_placeholder: "Your restaurant's name"
+    menu_url: Your digital menu URL
+    logo: Restaurant logo
+    primary_color: Primary color
+    menu_language: Menu's main language
+    admin_language: Admin Panel language
+    currency: Base currency
+
+action:
+    copy: Copy
+    change_logo: Change logo
+    upload_logo: Upload logo
+    remove_logo: Remove logo
+    save: Save changes
+
+hint:
+    logo_format: 'PNG or JPG, max. 2 MB'
+    primary_color: Used throughout your digital menu
+    menu_language: The language you use to enter dish names and descriptions.
+    admin_language: The language of this management panel. It doesn't affect the menu your customers see.
+    currency: Prices are stored in this currency. Customers can see a live conversion.
+
+flash:
+    name_required: The restaurant name is required.
+    logo_upload_error: Error uploading the logo.
+    saved: Settings saved successfully.
+
+toast:
+    logo_removed: Logo will be removed on save
+    url_copied: 'URL copied ✓'

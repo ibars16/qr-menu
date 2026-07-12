@@ -1,0 +1,5 @@
+dialog:
+    title: "Dil ve para biriminizi seçin"
+    language_label: "Dil"
+    currency_label: "Para Birimi"
+    confirm: "Devam"

@@ -1,0 +1,35 @@
+title:
+    default: Admin
+
+sidebar:
+    role: Pannello di amministrazione
+
+action:
+    view_menu: Vedi il mio menu
+
+nav:
+    section:
+        menu: Menu
+        restaurant: Ristorante
+    item:
+        menu: Menu
+        categories: Categorie
+        tags: Etichette
+        theme: Personalizza il menu
+        qr: Il mio QR
+        settings: Impostazioni
+        logout: Esci
+
+theme:
+    dark_mode: Modalità scura
+    light_mode: Modalità chiara
+    toggle_title: Cambia modalità chiara / scura
+    toggle_aria: Cambia tema
+
+bottom_nav:
+    aria_label: Navigazione
+    menu: Menu
+    categories: Categ.
+    tags: Etich.
+    qr: QR
+    settings: Config

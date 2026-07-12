@@ -1,0 +1,39 @@
+title: Configuración
+
+section:
+    restaurant_info: Información del restaurante
+    appearance: Apariencia
+    language_currency: Idioma y moneda
+
+field:
+    name: Nombre
+    name_placeholder: 'Nombre de tu restaurante'
+    menu_url: URL de tu carta digital
+    logo: Logo del restaurante
+    primary_color: Color principal
+    menu_language: Idioma principal del menú
+    admin_language: Idioma del Panel de Administración
+    currency: Moneda base
+
+action:
+    copy: Copiar
+    change_logo: Cambiar logo
+    upload_logo: Subir logo
+    remove_logo: Eliminar logo
+    save: Guardar cambios
+
+hint:
+    logo_format: 'PNG o JPG, máx. 2 MB'
+    primary_color: Se usará en toda la carta digital
+    menu_language: El idioma en que introduces los nombres y descripciones de los platos.
+    admin_language: El idioma de este panel de gestión. No afecta a la carta que ven tus clientes.
+    currency: Los precios se guardan en esta moneda. Los clientes pueden ver la conversión en tiempo real.
+
+flash:
+    name_required: El nombre del restaurante es obligatorio.
+    logo_upload_error: Error al subir el logo.
+    saved: Configuración guardada correctamente.
+
+toast:
+    logo_removed: Logo eliminado al guardar
+    url_copied: 'URL copiada ✓'

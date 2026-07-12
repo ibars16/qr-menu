@@ -171,10 +171,8 @@
     <div class="diet-filters">
         <button class="diet-filter active" data-tag="all">Todo</button>
         {% for tag in tags %}
-            {% set tagT = null %}
-            {% for tr in tag.translations %}{% if tr.locale == locale %}{% set tagT = tr %}{% endif %}{% endfor %}
-            {% if tagT %}
-                <button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tagT.name }}</button>
+            {% if tagNames[tag.id] is defined %}
+                <button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tagNames[tag.id] }}</button>
             {% endif %}
         {% endfor %}
     </div>
@@ -227,9 +225,7 @@
                                                         </div>
                                                     {% endif %}
                                                     {% for tag in product.tags %}
-                                                        {% set tagT = null %}
-                                                        {% for tr in tag.translations %}{% if tr.locale == locale %}{% set tagT = tr %}{% endif %}{% endfor %}
-                                                        {% if tagT %}<div class="fbadge">{{ tag.icon }} {{ tagT.name }}</div>{% endif %}
+                                                        {% if tagNames[tag.id] is defined %}<div class="fbadge">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}
                                                     {% endfor %}
                                                 </div>
                                                 <div class="front-name">{{ translation.name }}</div>
@@ -273,9 +269,7 @@
                                                     <div class="bsec-title">Etiquetas</div>
                                                     <div class="lbl-list">
                                                         {% for tag in product.tags %}
-                                                            {% set tagT = null %}
-                                                            {% for tr in tag.translations %}{% if tr.locale == locale %}{% set tagT = tr %}{% endif %}{% endfor %}
-                                                            {% if tagT %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagT.name }}</div>{% endif %}
+                                                            {% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}
                                                         {% endfor %}
                                                     </div>
                                                 </div>

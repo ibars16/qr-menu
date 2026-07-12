@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ locale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +17,9 @@
         <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
     {% endif %}
 </head>
-<body>
+<body data-menu-lang="{{ locale }}" data-menu-currency="{{ currency }}" data-menu-show-prefs-dialog="{{ showPrefsDialog ? '1' : '0' }}">
+
+{% include 'menu/_prefs_dialog.html.twig' %}
 
 {# Preview banner — only visible to the logged-in admin #}
 {% if isPreview %}

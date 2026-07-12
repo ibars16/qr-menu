@@ -1,0 +1,5 @@
+dialog:
+    title: "अपनी भाषा और मुद्रा चुनें"
+    language_label: "भाषा"
+    currency_label: "मुद्रा"
+    confirm: "जारी रखें"

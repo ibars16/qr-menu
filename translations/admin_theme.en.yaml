@@ -1,0 +1,74 @@
+title: Customize menu
+
+confirm:
+    default_title: Apply change
+    default_sub: The change will be visible immediately to everyone viewing your menu.
+    cancel: Cancel
+    apply_now: Apply now
+    applying: Applying…
+    use_layout_title: 'Use the "%name%" layout?'
+    use_layout_sub: This will be applied immediately and all your customers will see the new layout.
+    use_theme_title: 'Use the "%name%" theme?'
+    use_theme_sub: This will be applied immediately and all your customers will see the new theme.
+    apply_preview_title: Apply the previewed combination?
+    apply_preview_sub: 'This will apply: %combo%.'
+
+preview:
+    active_title: Preview active
+    active_sub: Only you can see this combination. Your customers still see the active configuration.
+    close: Close
+    apply: Apply
+    title_with_names: 'Preview: %layout% · %theme%'
+    closed_toast: Preview closed
+
+section:
+    step1_eyebrow: Step 1 · Structure
+    layout_title: Menu layout
+    layout_desc: Choose how dishes are organized on screen.
+    step2_eyebrow: Step 2 · Appearance
+    theme_title: Visual theme
+    theme_desc: Colors, backgrounds and style. Works with every layout.
+
+card:
+    preview_action: Preview
+    use_action: Use
+    active_label: Active
+
+toast:
+    save_error: Error saving
+    applied: '✓ Change applied successfully'
+    connection_error: Connection error
+
+layout:
+    standard:
+        name: Standard
+        desc: Cards with an image on top and the name below. Balanced and eye-catching.
+    compact:
+        name: Compact list
+        desc: Numbered rows, quick to scan. Ideal for long menus.
+    grid:
+        name: Grid
+        desc: Vertical cards with a large image. Very visual and eye-catching.
+
+theme:
+    classic-dark:
+        name: Classic dark
+        desc: Black background with your brand color as the accent. Elegant and sophisticated.
+    classic-warm:
+        name: Classic warm
+        desc: Cream background, warm tones. Cozy and welcoming.
+    glass:
+        name: Glassmorphism
+        desc: Dark gradient with a glass effect and a purple accent. Modern and premium.
+    ocean:
+        name: Ocean
+        desc: Light blue, clean and fresh. Ideal for seafood restaurants.
+    noir:
+        name: Noir
+        desc: Deep black with gold details. Luxury and fine dining.
+    forest:
+        name: Forest
+        desc: Natural, organic green. Perfect for market-style and local produce cuisine.
+    terra:
+        name: Terra
+        desc: Mediterranean terracotta. Ideal for tapas, pintxos and casual dining.

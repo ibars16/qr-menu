@@ -1,0 +1,39 @@
+title: Configurações
+
+section:
+    restaurant_info: Informações do restaurante
+    appearance: Aparência
+    language_currency: Idioma e moeda
+
+field:
+    name: Nome
+    name_placeholder: Nome do seu restaurante
+    menu_url: URL do seu cardápio digital
+    logo: Logo do restaurante
+    primary_color: Cor principal
+    menu_language: Idioma principal do cardápio
+    admin_language: Idioma do Painel de Administração
+    currency: Moeda base
+
+action:
+    copy: Copiar
+    change_logo: Alterar logo
+    upload_logo: Enviar logo
+    remove_logo: Remover logo
+    save: Guardar alterações
+
+hint:
+    logo_format: 'PNG ou JPG, máx. 2 MB'
+    primary_color: Usada em todo o cardápio digital
+    menu_language: O idioma em que você insere os nomes e descrições dos pratos.
+    admin_language: O idioma deste painel de gestão. Não afeta o cardápio visto pelos seus clientes.
+    currency: Os preços são guardados nesta moeda. Os clientes podem ver a conversão em tempo real.
+
+flash:
+    name_required: O nome do restaurante é obrigatório.
+    logo_upload_error: Erro ao enviar o logo.
+    saved: Configurações guardadas com sucesso.
+
+toast:
+    logo_removed: Logo será removido ao guardar
+    url_copied: 'URL copiado ✓'

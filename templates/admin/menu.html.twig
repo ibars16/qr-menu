@@ -1,21 +1,21 @@
 {#/home/david/gitProjects/qr-menu/templates/admin/menu.html.twig#}
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Carta{% endblock %}
-{% block page_title %}Carta{% endblock %}
+{% block title %}{{ 'title'|trans({}, 'admin_menu') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_menu') }}{% endblock %}
 
 {% block header_actions %}
     <button class="btn btn-ai" onclick="UI.openAiImport()">
         <i class="ti ti-sparkles" aria-hidden="true"></i>
-        <span class="hide-mobile">Importar con IA</span>
+        <span class="hide-mobile">{{ 'action.import_ai'|trans({}, 'admin_menu') }}</span>
     </button>
     <button class="btn" onclick="UI.openNewCategory()">
         <i class="ti ti-folder-plus" aria-hidden="true"></i>
-        <span class="hide-mobile">Nueva categoría</span>
+        <span class="hide-mobile">{{ 'modal.category.new_title'|trans({}, 'admin_menu') }}</span>
     </button>
     <button class="btn btn-primary" onclick="UI.openNewProduct(null)">
         <i class="ti ti-plus" aria-hidden="true"></i>
-        Nuevo plato
+        {{ 'modal.product.new_title'|trans({}, 'admin_menu') }}
     </button>
 {% endblock %}
 
@@ -353,17 +353,16 @@
         {% if categories|length == 0 %}
             <div class="empty-state">
                 <span class="empty-icon">🍽️</span>
-                <div class="empty-title">Tu carta está vacía</div>
+                <div class="empty-title">{{ 'empty.title'|trans({}, 'admin_menu') }}</div>
                 <div class="empty-sub">
-                    Crea tu primera categoría (Entrantes, Pizzas, Postres…)
-                    y después añade tus platos. O importa toda la carta desde una foto con IA.
+                    {{ 'empty.subtitle'|trans({}, 'admin_menu') }}
                 </div>
                 <div class="empty-btns">
                     <button class="btn btn-ai" onclick="UI.openAiImport()">
-                        <i class="ti ti-sparkles" aria-hidden="true"></i> Importar carta con IA
+                        <i class="ti ti-sparkles" aria-hidden="true"></i> {{ 'empty.import_ai'|trans({}, 'admin_menu') }}
                     </button>
                     <button class="btn btn-primary" onclick="UI.openNewCategory()">
-                        <i class="ti ti-folder-plus" aria-hidden="true"></i> Crear primera categoría
+                        <i class="ti ti-folder-plus" aria-hidden="true"></i> {{ 'empty.create_first_category'|trans({}, 'admin_menu') }}
                     </button>
                 </div>
             </div>
@@ -373,7 +372,7 @@
             <div id="cats-list">
                 {% for category in categories %}
                     {% set catT = category.getTranslation(locale) %}
-                    {% set catName = catT ? catT.name : '(sin nombre)' %}
+                    {% set catName = catT ? catT.name : 'common.unnamed'|trans({}, 'admin_menu') %}
 
                     <div class="cat-block" data-id="{{ category.id }}">
                         <div class="cat-header">
@@ -383,16 +382,16 @@
                             <div class="cat-actions">
                                 <button class="toggle {{ category.isActive ? 'on' : '' }}"
                                         onclick="toggleCategory({{ category.id }}, this)"
-                                        title="{{ category.isActive ? 'Visible · pulsa para ocultar' : 'Oculta · pulsa para mostrar' }}"
-                                        aria-label="Activar/desactivar categoría"></button>
+                                        title="{{ category.isActive ? 'category.toggle_hide_title'|trans({}, 'admin_menu') : 'category.toggle_show_title'|trans({}, 'admin_menu') }}"
+                                        aria-label="{{ 'category.toggle_aria'|trans({}, 'admin_menu') }}"></button>
                                 <button class="icon-btn"
                                         onclick="UI.openEditCategory({{ category.id }}, '{{ catName|e('js') }}')"
-                                        title="Editar nombre de la categoría">
+                                        title="{{ 'category.edit_title'|trans({}, 'admin_menu') }}">
                                     <i class="ti ti-edit" aria-hidden="true"></i>
                                 </button>
                                 <button class="icon-btn danger"
                                         onclick="deleteCategory({{ category.id }}, '{{ catName|e('js') }}', {{ category.products|length }}, this)"
-                                        title="Eliminar categoría">
+                                        title="{{ 'category.delete_title'|trans({}, 'admin_menu') }}">
                                     <i class="ti ti-trash" aria-hidden="true"></i>
                                 </button>
                             </div>
@@ -401,7 +400,7 @@
                         <div class="products-list" id="prods-{{ category.id }}">
                             {% for product in category.products %}
                                 {% set pT = product.getTranslation(locale) %}
-                                {% set pName = pT ? pT.name : '(sin nombre)' %}
+                                {% set pName = pT ? pT.name : 'common.unnamed'|trans({}, 'admin_menu') %}
                                 <div class="product-row {{ not product.isActive ? 'inactive' : '' }}"
                                      data-id="{{ product.id }}"
                                      onclick="UI.openEditProduct({{ product.id }})">
@@ -416,7 +415,7 @@
                                         <div class="product-meta">
                                             {% if product.spicyLevel > 0 %}<span class="chili" style="font-size:12px">🌶</span> · {% endif %}
                                             {% if product.calories %}{{ product.calories }} kcal · {% endif %}
-                                            {{ product.isActive ? 'Visible' : 'Oculto' }}
+                                            <span class="product-status">{{ product.isActive ? 'product.visible'|trans({}, 'admin_menu') : 'product.hidden'|trans({}, 'admin_menu') }}</span>
                                         </div>
                                     </div>
                                     <div class="product-price">
@@ -424,8 +423,8 @@
                                     </div>
                                     <button class="toggle {{ product.isActive ? 'on' : '' }}"
                                             onclick="event.stopPropagation(); toggleProduct({{ product.id }}, this)"
-                                            title="{{ product.isActive ? 'Visible' : 'Oculto' }}"
-                                            aria-label="Activar/desactivar plato"></button>
+                                            title="{{ product.isActive ? 'product.visible'|trans({}, 'admin_menu') : 'product.hidden'|trans({}, 'admin_menu') }}"
+                                            aria-label="{{ 'product.toggle_aria'|trans({}, 'admin_menu') }}"></button>
                                 </div>
                             {% endfor %}
                         </div>
@@ -433,7 +432,7 @@
                         <div class="add-row">
                             <button class="add-product-btn" onclick="UI.openNewProduct({{ category.id }})">
                                 <i class="ti ti-plus" aria-hidden="true"></i>
-                                Añadir plato a {{ catName }}
+                                {{ 'product.add_to_category'|trans({'%category%': catName}, 'admin_menu') }}
                             </button>
                         </div>
                     </div>
@@ -450,8 +449,8 @@
          onclick="if(event.target===this)UI.closeCat()">
         <div class="modal modal-sm">
             <div class="panel-header">
-                <div class="panel-title" id="cat-modal-title">Nueva categoría</div>
-                <button class="panel-close" onclick="UI.closeCat()" aria-label="Cerrar">
+                <div class="panel-title" id="cat-modal-title">{{ 'modal.category.new_title'|trans({}, 'admin_menu') }}</div>
+                <button class="panel-close" onclick="UI.closeCat()" aria-label="{{ 'modal.close_aria'|trans({}, 'admin_menu') }}">
                     <i class="ti ti-x" aria-hidden="true"></i>
                 </button>
             </div>
@@ -459,9 +458,9 @@
                 {% include 'admin/_cat_fields.html.twig' %}
             </div>
             <div class="panel-footer">
-                <button class="btn" onclick="UI.closeCat()">Cancelar</button>
+                <button class="btn" onclick="UI.closeCat()">{{ 'action.cancel'|trans({}, 'admin_menu') }}</button>
                 <button class="btn btn-primary" onclick="saveCategory()">
-                    <i class="ti ti-check" aria-hidden="true"></i> Guardar
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_menu') }}
                 </button>
             </div>
         </div>
@@ -475,8 +474,8 @@
         <div class="sheet">
             <div class="sheet-handle"></div>
             <div class="panel-header">
-                <div class="panel-title" id="cat-sheet-title">Nueva categoría</div>
-                <button class="panel-close" onclick="UI.closeCat()" aria-label="Cerrar">
+                <div class="panel-title" id="cat-sheet-title">{{ 'modal.category.new_title'|trans({}, 'admin_menu') }}</div>
+                <button class="panel-close" onclick="UI.closeCat()" aria-label="{{ 'modal.close_aria'|trans({}, 'admin_menu') }}">
                     <i class="ti ti-x" aria-hidden="true"></i>
                 </button>
             </div>
@@ -484,9 +483,9 @@
                 {% include 'admin/_cat_fields.html.twig' %}
             </div>
             <div class="panel-footer">
-                <button class="btn" onclick="UI.closeCat()">Cancelar</button>
+                <button class="btn" onclick="UI.closeCat()">{{ 'action.cancel'|trans({}, 'admin_menu') }}</button>
                 <button class="btn btn-primary" onclick="saveCategory()">
-                    <i class="ti ti-check" aria-hidden="true"></i> Guardar
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_menu') }}
                 </button>
             </div>
         </div>
@@ -500,14 +499,14 @@
         <div class="modal modal-md">
             <div class="panel-header">
                 <div>
-                    <div class="panel-title" id="product-modal-title">Nuevo plato</div>
+                    <div class="panel-title" id="product-modal-title">{{ 'modal.product.new_title'|trans({}, 'admin_menu') }}</div>
                     <div class="steps" id="product-modal-steps">
-                        <div class="step active" id="d-step-1"><div class="step-num">1</div> Categoría</div>
+                        <div class="step active" id="d-step-1"><div class="step-num">1</div> {{ 'step.category'|trans({}, 'admin_menu') }}</div>
                         <div class="step-sep">›</div>
-                        <div class="step" id="d-step-2"><div class="step-num">2</div> Información</div>
+                        <div class="step" id="d-step-2"><div class="step-num">2</div> {{ 'step.info'|trans({}, 'admin_menu') }}</div>
                     </div>
                 </div>
-                <button class="panel-close" onclick="UI.closeProduct()" aria-label="Cerrar">
+                <button class="panel-close" onclick="UI.closeProduct()" aria-label="{{ 'modal.close_aria'|trans({}, 'admin_menu') }}">
                     <i class="ti ti-x" aria-hidden="true"></i>
                 </button>
             </div>
@@ -516,9 +515,9 @@
                     {% include 'admin/_cat_select.html.twig' %}
                 </div>
                 <div class="panel-footer">
-                    <button class="btn" onclick="UI.closeProduct()">Cancelar</button>
+                    <button class="btn" onclick="UI.closeProduct()">{{ 'action.cancel'|trans({}, 'admin_menu') }}</button>
                     <button class="btn btn-primary" onclick="UI.goStep2()">
-                        Siguiente <i class="ti ti-arrow-right" aria-hidden="true"></i>
+                        {{ 'action.next'|trans({}, 'admin_menu') }} <i class="ti ti-arrow-right" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
@@ -531,11 +530,11 @@
                         <i class="ti ti-trash" aria-hidden="true"></i>
                     </button>
                     <button class="btn" id="d-back-btn" onclick="UI.goStep1()" style="margin-right:auto">
-                        <i class="ti ti-arrow-left" aria-hidden="true"></i> Atrás
+                        <i class="ti ti-arrow-left" aria-hidden="true"></i> {{ 'action.back'|trans({}, 'admin_menu') }}
                     </button>
-                    <button class="btn" onclick="UI.closeProduct()">Cancelar</button>
+                    <button class="btn" onclick="UI.closeProduct()">{{ 'action.cancel'|trans({}, 'admin_menu') }}</button>
                     <button class="btn btn-primary" onclick="saveProduct()">
-                        <i class="ti ti-check" aria-hidden="true"></i> Guardar plato
+                        <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save_product'|trans({}, 'admin_menu') }}
                     </button>
                 </div>
             </div>
@@ -551,14 +550,14 @@
             <div class="sheet-handle"></div>
             <div class="panel-header">
                 <div>
-                    <div class="panel-title" id="product-sheet-title">Nuevo plato</div>
+                    <div class="panel-title" id="product-sheet-title">{{ 'modal.product.new_title'|trans({}, 'admin_menu') }}</div>
                     <div class="steps" id="product-sheet-steps">
-                        <div class="step active" id="m-step-1"><div class="step-num">1</div> Categoría</div>
+                        <div class="step active" id="m-step-1"><div class="step-num">1</div> {{ 'step.category'|trans({}, 'admin_menu') }}</div>
                         <div class="step-sep">›</div>
-                        <div class="step" id="m-step-2"><div class="step-num">2</div> Información</div>
+                        <div class="step" id="m-step-2"><div class="step-num">2</div> {{ 'step.info'|trans({}, 'admin_menu') }}</div>
                     </div>
                 </div>
-                <button class="panel-close" onclick="UI.closeProduct()" aria-label="Cerrar">
+                <button class="panel-close" onclick="UI.closeProduct()" aria-label="{{ 'modal.close_aria'|trans({}, 'admin_menu') }}">
                     <i class="ti ti-x" aria-hidden="true"></i>
                 </button>
             </div>
@@ -567,9 +566,9 @@
                     {% include 'admin/_cat_select.html.twig' %}
                 </div>
                 <div class="panel-footer">
-                    <button class="btn" onclick="UI.closeProduct()">Cancelar</button>
+                    <button class="btn" onclick="UI.closeProduct()">{{ 'action.cancel'|trans({}, 'admin_menu') }}</button>
                     <button class="btn btn-primary" onclick="UI.goStep2()">
-                        Siguiente <i class="ti ti-arrow-right" aria-hidden="true"></i>
+                        {{ 'action.next'|trans({}, 'admin_menu') }} <i class="ti ti-arrow-right" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
@@ -585,7 +584,7 @@
                         <i class="ti ti-arrow-left" aria-hidden="true"></i>
                     </button>
                     <button class="btn btn-primary" onclick="saveProduct()">
-                        <i class="ti ti-check" aria-hidden="true"></i> Guardar
+                        <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_menu') }}
                     </button>
                 </div>
             </div>
@@ -598,7 +597,33 @@
     <script>
         const LOCALE   = '{{ locale }}';
         const CURRENCY = '{{ restaurant.currency }}';
-        const SPICY_LABELS = ['Sin picante','Suave 🌶','Medio 🌶🌶','Picante 🌶🌶🌶','Muy picante 🌶🌶🌶🌶','Extremo 🌶🌶🌶🌶🌶'];
+        const SPICY_LABELS = {{ ['spicy.none','spicy.mild','spicy.medium','spicy.hot','spicy.very_hot','spicy.extreme']|map(k => k|trans({}, 'admin_menu'))|json_encode|raw }};
+
+        const MSG_NEW_CATEGORY       = "{{ 'modal.category.new_title'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_EDIT_CATEGORY      = "{{ 'modal.category.edit_title'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_NEW_PRODUCT        = "{{ 'modal.product.new_title'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_EDIT_PRODUCT       = "{{ 'modal.product.edit_title'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_ERROR_LOADING_PRODUCT = "{{ 'js.error_loading_product'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_AI_IMPORT_SOON     = "{{ 'js.ai_import_soon'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CATEGORY_UPDATED   = "{{ 'js.category_updated'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CATEGORY_CREATED   = "{{ 'js.category_created'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CATEGORY_VISIBLE   = "{{ 'category.toggle_visible'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CATEGORY_HIDDEN    = "{{ 'category.toggle_hidden'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CATEGORY_HIDE_TITLE = "{{ 'category.toggle_hide_title'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CATEGORY_SHOW_TITLE = "{{ 'category.toggle_show_title'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CONFIRM_DELETE_CATEGORY_WITH_PRODUCTS = "{{ 'js.confirm_delete_category_with_products'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CONFIRM_DELETE_CATEGORY = "{{ 'js.confirm_delete_category'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CATEGORY_DELETED   = "{{ 'js.category_deleted'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_FILL_REQUIRED_FIELDS = "{{ 'js.fill_required_fields'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_PRODUCT_SAVED     = "{{ 'js.product_saved'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_PRODUCT_CREATED  = "{{ 'js.product_created'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_PRODUCT_VISIBLE  = "{{ 'product.visible'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_PRODUCT_HIDDEN   = "{{ 'product.hidden'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_PRODUCT_DELETED  = "{{ 'js.product_deleted'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CONFIRM_DELETE_PRODUCT = "{{ 'js.confirm_delete_product'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_DEFAULT_PRODUCT_NAME = "{{ 'js.default_product_name'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_NEW_INGREDIENT_LABEL = "{{ 'js.new_ingredient_label'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_REMOVE_INGREDIENT = "{{ 'js.remove_ingredient_aria'|trans({}, 'admin_menu')|e('js') }}";
 
         const S = {
             productId:   null,
@@ -616,8 +641,8 @@
         const UI = {
             openNewCategory() {
                 S.editingCatId = null;
-                document.getElementById('cat-modal-title').textContent  = 'Nueva categoría';
-                document.getElementById('cat-sheet-title').textContent  = 'Nueva categoría';
+                document.getElementById('cat-modal-title').textContent  = MSG_NEW_CATEGORY;
+                document.getElementById('cat-sheet-title').textContent  = MSG_NEW_CATEGORY;
                 document.getElementById('cat-name-input').value = '';
                 document.getElementById('cat-name-error').classList.remove('show');
                 this._openCat();
@@ -625,8 +650,8 @@
             },
             openEditCategory(id, name) {
                 S.editingCatId = id;
-                document.getElementById('cat-modal-title').textContent = 'Editar categoría';
-                document.getElementById('cat-sheet-title').textContent = 'Editar categoría';
+                document.getElementById('cat-modal-title').textContent = MSG_EDIT_CATEGORY;
+                document.getElementById('cat-sheet-title').textContent = MSG_EDIT_CATEGORY;
                 document.getElementById('cat-name-input').value = name;
                 document.getElementById('cat-name-error').classList.remove('show');
                 this._openCat();
@@ -645,7 +670,7 @@
                 resetProduct();
                 S.productId  = null;
                 S.categoryId = categoryId;
-                this._setProductTitle('Nuevo plato');
+                this._setProductTitle(MSG_NEW_PRODUCT);
                 this._showDeleteBtn(false);
                 if (categoryId) {
                     document.querySelectorAll('.cat-card').forEach(c =>
@@ -660,7 +685,7 @@
             async openEditProduct(id) {
                 resetProduct();
                 S.productId = id;
-                this._setProductTitle('Editar plato');
+                this._setProductTitle(MSG_EDIT_PRODUCT);
                 this._showDeleteBtn(true);
                 this._hideSteps();
                 this._hideBackBtn();
@@ -685,7 +710,7 @@
                     );
                     S.ingredients = data.ingredientsList ?? [];
                     renderIngTags();
-                } catch(e) { showToast('Error cargando el plato', 'error'); }
+                } catch(e) { showToast(MSG_ERROR_LOADING_PRODUCT, 'error'); }
             },
             _openProduct() {
                 if (isMobile()) document.getElementById('mobile-product-sheet').classList.add('open');
@@ -736,7 +761,7 @@
                 setTimeout(() => panelEl('p-name')?.focus(), 80);
             },
 
-            openAiImport() { showToast('Importación con IA — próximamente ✨'); },
+            openAiImport() { showToast(MSG_AI_IMPORT_SOON); },
         };
 
         // ── Category CRUD ──────────────────────────────────────────────────────────
@@ -752,7 +777,7 @@
             const data = await apiFetch(url, { name });
             if (data.error) { showToast(data.error, 'error'); return; }
 
-            showToast(S.editingCatId ? 'Categoría actualizada ✓' : 'Categoría creada ✓', 'success');
+            showToast(S.editingCatId ? MSG_CATEGORY_UPDATED : MSG_CATEGORY_CREATED, 'success');
             UI.closeCat();
             setTimeout(() => location.reload(), 700);
         }
@@ -760,19 +785,19 @@
         async function toggleCategory(id, btn) {
             const data = await apiFetch(`/admin/categories/${id}/toggle`);
             btn.classList.toggle('on', data.active);
-            btn.title = data.active ? 'Visible · pulsa para ocultar' : 'Oculta · pulsa para mostrar';
-            showToast(data.active ? 'Categoría visible' : 'Categoría oculta');
+            btn.title = data.active ? MSG_CATEGORY_HIDE_TITLE : MSG_CATEGORY_SHOW_TITLE;
+            showToast(data.active ? MSG_CATEGORY_VISIBLE : MSG_CATEGORY_HIDDEN);
         }
 
         async function deleteCategory(id, name, count, btn) {
             const msg = count > 0
-                ? `¿Eliminar "${name}" y sus ${count} platos? No se puede deshacer.`
-                : `¿Eliminar la categoría "${name}"?`;
+                ? MSG_CONFIRM_DELETE_CATEGORY_WITH_PRODUCTS.replace('%name%', name).replace('%count%', count)
+                : MSG_CONFIRM_DELETE_CATEGORY.replace('%name%', name);
             if (!confirm(msg)) return;
             const data = await apiFetch(`/admin/categories/${id}/delete`);
             if (data.ok) {
                 btn.closest('.cat-block').remove();
-                showToast('Categoría eliminada', 'success');
+                showToast(MSG_CATEGORY_DELETED, 'success');
                 if (!document.querySelector('.cat-block')) location.reload();
             }
         }
@@ -791,7 +816,7 @@
         }
 
         async function saveProduct() {
-            if (!validateProduct()) { showToast('Rellena los campos obligatorios', 'error'); return; }
+            if (!validateProduct()) { showToast(MSG_FILL_REQUIRED_FIELDS, 'error'); return; }
 
             const translations = {};
             const name = getVal('p-name'), desc = getVal('p-desc');
@@ -813,7 +838,7 @@
 
             const data = await apiFetch('/admin/products/save', payload);
             if (data.error) { showToast(data.error, 'error'); return; }
-            showToast(S.productId ? 'Plato guardado ✓' : 'Plato creado ✓', 'success');
+            showToast(S.productId ? MSG_PRODUCT_SAVED : MSG_PRODUCT_CREATED, 'success');
             UI.closeProduct();
             setTimeout(() => location.reload(), 700);
         }
@@ -821,19 +846,20 @@
         async function toggleProduct(id, btn) {
             const data = await apiFetch(`/admin/products/${id}/toggle`);
             btn.classList.toggle('on', data.active);
+            btn.title = data.active ? MSG_PRODUCT_VISIBLE : MSG_PRODUCT_HIDDEN;
             const row = btn.closest('.product-row');
             row.classList.toggle('inactive', !data.active);
-            const meta = row.querySelector('.product-meta');
-            if (meta) meta.innerHTML = meta.innerHTML.replace(/Visible|Oculto/, data.active ? 'Visible' : 'Oculto');
-            showToast(data.active ? 'Plato visible' : 'Plato oculto');
+            const status = row.querySelector('.product-status');
+            if (status) status.textContent = data.active ? MSG_PRODUCT_VISIBLE : MSG_PRODUCT_HIDDEN;
+            showToast(data.active ? MSG_PRODUCT_VISIBLE : MSG_PRODUCT_HIDDEN);
         }
 
         async function deleteProduct() {
             if (!S.productId) return;
-            const name = getVal('p-name') || 'este plato';
-            if (!confirm(`¿Eliminar "${name}"? No se puede deshacer.`)) return;
+            const name = getVal('p-name') || MSG_DEFAULT_PRODUCT_NAME;
+            if (!confirm(MSG_CONFIRM_DELETE_PRODUCT.replace('%name%', name))) return;
             const data = await apiFetch(`/admin/products/${S.productId}/delete`);
-            if (data.ok) { showToast('Plato eliminado', 'success'); UI.closeProduct(); setTimeout(() => location.reload(), 700); }
+            if (data.ok) { showToast(MSG_PRODUCT_DELETED, 'success'); UI.closeProduct(); setTimeout(() => location.reload(), 700); }
         }
 
         // ── Category selector ──────────────────────────────────────────────────────
@@ -883,7 +909,7 @@
             if (!exact && !alreadyIn) html +=
                 `<div class="ing-option" onclick="addIng(null,'${query.trim().replace(/'/g,"\\'")}')">
             <i class="ti ti-plus" style="font-size:14px;color:#555" aria-hidden="true"></i>
-            <strong>${query.trim()}</strong> <span class="new-label">· Crear nuevo</span>
+            <strong>${query.trim()}</strong> <span class="new-label">${MSG_NEW_INGREDIENT_LABEL}</span>
         </div>`;
 
             box.innerHTML = html;
@@ -918,7 +944,7 @@
             const html = S.ingredients.map(i =>
                 `<div class="ing-tag">${i.name}
             <button onclick="removeIng('${i.name.replace(/'/g,"\\'")}')
-" aria-label="Quitar ${i.name}">
+" aria-label="${MSG_REMOVE_INGREDIENT.replace('%name%', i.name)}">
                 <i class="ti ti-x" aria-hidden="true"></i>
             </button>
         </div>`

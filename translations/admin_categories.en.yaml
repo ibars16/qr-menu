@@ -1,0 +1,54 @@
+title: Categories
+
+action:
+    new_category: New category
+    create_first_category: Create first category
+    edit_name: Edit name
+    delete: Delete
+    delete_category: Delete category
+    toggle_active: Toggle active
+    cancel: Cancel
+    save: Save
+    close: Close
+
+empty_state:
+    title: No categories yet
+    subtitle: 'Categories organize your menu (Starters, Pizzas, Desserts…). Create the first one to get started.'
+
+modal:
+    edit_title: Edit category
+
+field:
+    name: Name
+    name_placeholder: 'E.g.: Starters, Pizzas, Desserts…'
+    name_required: Name is required
+    which_category: Which category does it belong to?
+
+meta:
+    dish_singular: dish
+    dish_plural: dishes
+
+status:
+    visible: Visible
+    hidden: Hidden
+
+hint:
+    drag_reorder: Drag categories to change their order
+    ai_translations: Translations into other languages will be added automatically with AI.
+
+badge:
+    position: '%position%'
+
+toast:
+    updated: 'Category updated ✓'
+    created: 'Category created ✓'
+    visible: Category visible
+    hidden: Category hidden
+    deleted: Category deleted
+
+confirm:
+    delete_with_products: 'Delete "%name%" and its %count% dishes? This cannot be undone.'
+    delete_simple: 'Delete the category "%name%"?'
+
+error:
+    select_category_required: Select a category to continue.

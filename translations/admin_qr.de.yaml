@@ -1,0 +1,17 @@
+title: Mein QR-Code
+
+section:
+    qr_code: QR-Code Ihrer Speisekarte
+    menu_url: URL Ihrer digitalen Speisekarte
+
+action:
+    download: QR-Code herunterladen
+    copy: Kopieren
+
+hint:
+    print_instructions: Drucken Sie diesen QR-Code aus und platzieren Sie ihn auf Ihren Tischen oder am Eingang. Kunden scannen ihn, um Ihre digitale Speisekarte sofort zu sehen.
+
+toast:
+    qr_unavailable: QR-Code nicht verfügbar
+    qr_downloaded: 'QR-Code heruntergeladen ✓'
+    url_copied: 'URL kopiert ✓'

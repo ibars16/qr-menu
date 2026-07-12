@@ -1,0 +1,107 @@
+title: Menu
+
+action:
+    import_ai: Import with AI
+    cancel: Cancel
+    next: Next
+    back: Back
+    save: Save
+    save_product: Save dish
+
+category:
+    delete_title: Delete category
+    edit_title: Edit category name
+    toggle_aria: Toggle category visibility
+    toggle_hide_title: 'Visible · tap to hide'
+    toggle_show_title: 'Hidden · tap to show'
+    toggle_visible: Category visible
+    toggle_hidden: Category hidden
+
+common:
+    optional: optional
+    unnamed: (unnamed)
+
+empty:
+    title: Your menu is empty
+    subtitle: 'Create your first category (Starters, Pizzas, Desserts…) and then add your dishes. Or import your whole menu from a photo with AI.'
+    import_ai: Import menu with AI
+    create_first_category: Create first category
+
+field:
+    calories: Calories
+    category: Category
+    description: Description
+    description_placeholder: 'Briefly describe the dish, main ingredients, preparation style…'
+    ingredients: Ingredients
+    photo: Dish photo
+    price: 'Price (%currency%)'
+    product_name: Dish name
+    product_name_placeholder: 'e.g. Margherita Pizza'
+    spicy_level: Spice level
+    tags: Tags
+
+field_error:
+    name_required: Name is required
+    description_required: Description is required
+    price_required: Price is required
+
+ingredients:
+    hint: New ingredients are automatically added to the restaurant's ingredient bank.
+    placeholder: 'Type an ingredient and press Enter…'
+
+js:
+    ai_import_soon: 'AI import — coming soon ✨'
+    category_created: 'Category created ✓'
+    category_deleted: Category deleted
+    category_updated: 'Category updated ✓'
+    confirm_delete_category: 'Delete the category "%name%"?'
+    confirm_delete_category_with_products: 'Delete "%name%" and its %count% dishes? This cannot be undone.'
+    confirm_delete_product: 'Delete "%name%"? This cannot be undone.'
+    default_product_name: this dish
+    error_loading_product: Error loading the dish
+    fill_required_fields: Please fill in the required fields
+    new_ingredient_label: '· Create new'
+    product_created: 'Dish created ✓'
+    product_deleted: Dish deleted
+    product_saved: 'Dish saved ✓'
+    remove_ingredient_aria: 'Remove %name%'
+
+modal:
+    category:
+        edit_title: Edit category
+        new_title: New category
+    product:
+        edit_title: Edit dish
+        new_title: New dish
+    close_aria: Close
+
+product:
+    add_to_category: 'Add dish to %category%'
+    hidden: Hidden
+    toggle_aria: Toggle dish visibility
+    visible: Visible
+
+spicy:
+    aria: 'Spice level %level%'
+    none: Not spicy
+    mild: 'Mild 🌶'
+    medium: 'Medium 🌶🌶'
+    hot: 'Hot 🌶🌶🌶'
+    very_hot: 'Very hot 🌶🌶🌶🌶'
+    extreme: 'Extreme 🌶🌶🌶🌶🌶'
+
+step:
+    category: Category
+    info: Details
+
+tags:
+    none_configured: 'No tags configured yet — %link_start%create some in Tags%link_end% so you can mark dishes as Vegetarian, Gluten-free, etc.'
+
+upload:
+    aria: Upload dish photo
+    hint: Click or drag an image here
+
+error:
+    category_name_required: Name is required.
+    product_not_found: Dish not found.
+    category_not_found: Category not found.

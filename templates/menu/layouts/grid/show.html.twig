@@ -145,14 +145,16 @@
 
 <div class="ui-wrap">
     <div class="search-wrap"><i class="ti ti-search search-icon"></i><input type="text" class="search-input" id="menu-search" placeholder="Buscar platos…" autocomplete="off"></div>
-    {% if tags|length > 0 %}<div class="diet-filters"><button class="diet-filter active" data-tag="all">Todo</button>{% for tag in tags %}{% set tT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tT = tr %}{% endif %}{% endfor %}{% if tT %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tT.name }}</button>{% endif %}{% endfor %}</div><div class="sep"></div>{% endif %}
-    <div class="cat-tabs" id="cat-tabs"><span class="cat-tab active" data-cat="all">Todo</span>{% for category in categories %}{% set t = category.getTranslation(locale) %}{% if t %}<span class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</span>{% endif %}{% endfor %}</div>
+    {% if tags|length > 0 %}<div class="diet-filters"><button class="diet-filter active" data-tag="all">Todo</button>{% for tag in tags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}</div><div class="sep"></div>{% endif %}
+    <div class="cat-tabs" id="cat-tabs"><span class="cat-tab active" data-cat="all">Todo</span>{% for category in categories %}{% set t = category.getTranslation(locale) %}{% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if not t %}{% set t = category.translations.first %}{% endif %}{% if t %}<span class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</span>{% endif %}{% endfor %}</div>
 </div>
 
 <div class="content">
     <div class="no-results" id="no-results">No se encontraron platos</div>
     {% for category in categories %}
         {% set catT = category.getTranslation(locale) %}
+        {% if not catT %}{% set catT = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
+        {% if not catT %}{% set catT = category.translations.first %}{% endif %}
         {% if catT and category.activeProductsSorted|length > 0 %}
             <section class="cat-section" id="cat-{{ category.id }}" data-section="cat-{{ category.id }}">
                 <div class="cat-title">{{ catT.name }}</div>
@@ -172,7 +174,7 @@
                                         </div>
                                         <div class="front-body">
                                             <div>
-                                                <div class="front-badges">{% for tag in product.tags %}{% set tT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tT = tr %}{% endif %}{% endfor %}{% if tT %}<div class="fbadge">{{ tag.icon }} {{ tT.name }}</div>{% endif %}{% endfor %}</div>
+                                                <div class="front-badges">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="fbadge">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div>
                                                 <div class="front-name">{{ pT.name }}</div>
                                             </div>
                                             <div class="front-bottom">
@@ -188,7 +190,7 @@
                                             <div class="back-body">
                                                 {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
                                                 {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">Picante</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}Suave{% elseif product.spicyLevel == 2 %}Medio{% elseif product.spicyLevel == 3 %}Picante{% elseif product.spicyLevel == 4 %}Muy picante{% else %}Extremo{% endif %}</span></div></div>{% endif %}
-                                                {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">Etiquetas</div><div class="lbl-list">{% for tag in product.tags %}{% set tT = null %}{% for tr in tag.translations %}{% if tr.locale == locale %}{% set tT = tr %}{% endif %}{% endfor %}{% if tT %}<div class="lbl lbl-g">{{ tag.icon }} {{ tT.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
+                                                {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">Etiquetas</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
                                                 {% if product.ingredients|length > 0 %}<div class="bsec"><div class="bsec-title">Ingredientes</div><div class="ing-list">{% for ingredient in product.ingredients %}{% set iT = ingredient.getTranslation(locale) %}{% if not iT %}{% set iT = ingredient.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if iT %}<div class="ing">{{ iT.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
                                                 {% if product.calories %}<div class="bsec"><div class="bsec-title">Calorías</div><div class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
                                             </div>

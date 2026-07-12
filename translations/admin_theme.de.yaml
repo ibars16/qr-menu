@@ -1,0 +1,74 @@
+title: Speisekarte anpassen
+
+confirm:
+    default_title: Änderung anwenden
+    default_sub: Die Änderung wird sofort für alle Besucher Ihrer Speisekarte sichtbar.
+    cancel: Abbrechen
+    apply_now: Jetzt anwenden
+    applying: Wird angewendet…
+    use_layout_title: 'Layout "%name%" verwenden?'
+    use_layout_sub: Dies wird sofort angewendet und alle Ihre Kunden sehen das neue Layout.
+    use_theme_title: 'Design "%name%" verwenden?'
+    use_theme_sub: Dies wird sofort angewendet und alle Ihre Kunden sehen das neue Design.
+    apply_preview_title: Vorschau-Kombination anwenden?
+    apply_preview_sub: 'Dies wird angewendet: %combo%.'
+
+preview:
+    active_title: Vorschau aktiv
+    active_sub: Nur Sie sehen diese Kombination. Ihre Kunden sehen weiterhin die aktive Konfiguration.
+    close: Schließen
+    apply: Anwenden
+    title_with_names: 'Vorschau: %layout% · %theme%'
+    closed_toast: Vorschau geschlossen
+
+section:
+    step1_eyebrow: Schritt 1 · Struktur
+    layout_title: Menü-Layout
+    layout_desc: Wählen Sie, wie die Gerichte auf dem Bildschirm angeordnet werden.
+    step2_eyebrow: Schritt 2 · Erscheinungsbild
+    theme_title: Visuelles Design
+    theme_desc: Farben, Hintergründe und Stil. Funktioniert mit jedem Layout.
+
+card:
+    preview_action: Vorschau
+    use_action: Verwenden
+    active_label: Aktiv
+
+toast:
+    save_error: Fehler beim Speichern
+    applied: '✓ Änderung erfolgreich angewendet'
+    connection_error: Verbindungsfehler
+
+layout:
+    standard:
+        name: Standard
+        desc: Karten mit Bild oben und Namen unten. Ausgewogen und wirkungsvoll.
+    compact:
+        name: Kompakte Liste
+        desc: Nummerierte Zeilen, schnell zu überblicken. Ideal für lange Speisekarten.
+    grid:
+        name: Raster
+        desc: Vertikale Karten mit großem Bild. Sehr visuell und wirkungsvoll.
+
+theme:
+    classic-dark:
+        name: Klassisch dunkel
+        desc: Schwarzer Hintergrund mit Ihrer Markenfarbe als Akzent. Elegant und edel.
+    classic-warm:
+        name: Klassisch warm
+        desc: Cremefarbener Hintergrund, warme Töne. Gemütlich und einladend.
+    glass:
+        name: Glassmorphism
+        desc: Dunkler Verlauf mit Glaseffekt und violettem Akzent. Modern und hochwertig.
+    ocean:
+        name: Ozean
+        desc: Hellblau, klar und frisch. Ideal für Fischrestaurants.
+    noir:
+        name: Noir
+        desc: Tiefschwarz mit goldenen Details. Luxus und gehobene Gastronomie.
+    forest:
+        name: Wald
+        desc: Natürliches, organisches Grün. Perfekt für Marktküche und regionale Produkte.
+    terra:
+        name: Terra
+        desc: Mediterrane Terrakotta. Ideal für Tapas, Pintxos und lässige Küche.

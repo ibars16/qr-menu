@@ -1,0 +1,39 @@
+title: Impostazioni
+
+section:
+    restaurant_info: Informazioni sul ristorante
+    appearance: Aspetto
+    language_currency: Lingua e valuta
+
+field:
+    name: Nome
+    name_placeholder: Nome del tuo ristorante
+    menu_url: URL del tuo menu digitale
+    logo: Logo del ristorante
+    primary_color: Colore principale
+    menu_language: Lingua principale del menu
+    admin_language: Lingua del pannello di amministrazione
+    currency: Valuta base
+
+action:
+    copy: Copia
+    change_logo: Cambia logo
+    upload_logo: Carica logo
+    remove_logo: Rimuovi logo
+    save: Salva modifiche
+
+hint:
+    logo_format: 'PNG o JPG, max. 2 MB'
+    primary_color: Utilizzato in tutto il menu digitale
+    menu_language: La lingua in cui inserisci nomi e descrizioni dei piatti.
+    admin_language: La lingua di questo pannello di gestione. Non influisce sul menu visto dai tuoi clienti.
+    currency: I prezzi vengono salvati in questa valuta. I clienti possono vedere la conversione in tempo reale.
+
+flash:
+    name_required: Il nome del ristorante è obbligatorio.
+    logo_upload_error: Errore durante il caricamento del logo.
+    saved: Impostazioni salvate correttamente.
+
+toast:
+    logo_removed: Logo rimosso al salvataggio
+    url_copied: 'URL copiato ✓'

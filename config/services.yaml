@@ -1,5 +1,6 @@
 parameters:
-    exchange_api_key: '%env(EXCHANGE_API_KEY)%'
+    exchange_api_key:  '%env(EXCHANGE_API_KEY)%'
+    gemini_api_key:    '%env(GEMINI_API_KEY)%'
 
 services:
 
@@ -13,3 +14,29 @@ services:
     App\Service\ExchangeRateUpdater:
         arguments:
             $exchangeApiKey: '%exchange_api_key%'
+
+    App\Service\DefaultTagSeeder:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\AdminLocaleResolver:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\MenuPreferencesResolver:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Command\SeedPresetTagsCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\GeminiTagTranslator:
+        arguments:
+            $geminiApiKey: '%gemini_api_key%'
+
+    App\Service\TagTranslatorInterface:
+        alias: App\Service\GeminiTagTranslator
+
+    App\Service\TagTranslationProviderInterface:
+        alias: App\Service\DatabaseTagTranslationProvider

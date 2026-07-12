@@ -1,0 +1,35 @@
+title:
+    default: Admin
+
+sidebar:
+    role: Admin panel
+
+action:
+    view_menu: View my menu
+
+nav:
+    section:
+        menu: Menu
+        restaurant: Restaurant
+    item:
+        menu: Menu
+        categories: Categories
+        tags: Tags
+        theme: Customize menu
+        qr: My QR
+        settings: Settings
+        logout: Log out
+
+theme:
+    dark_mode: Dark mode
+    light_mode: Light mode
+    toggle_title: Switch light / dark mode
+    toggle_aria: Switch theme
+
+bottom_nav:
+    aria_label: Navigation
+    menu: Menu
+    categories: 'Categ.'
+    tags: Tags
+    qr: QR
+    settings: Config

@@ -1,12 +1,12 @@
 {#/home/david/gitProjects/qr-menu/templates/admin/categories.html.twig#}
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Categorías{% endblock %}
-{% block page_title %}Categorías{% endblock %}
+{% block title %}{{ 'title'|trans({}, 'admin_categories') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_categories') }}{% endblock %}
 
 {% block header_actions %}
     <button class="btn btn-primary" onclick="UI.openNew()">
-        <i class="ti ti-plus" aria-hidden="true"></i> Nueva categoría
+        <i class="ti ti-plus" aria-hidden="true"></i> {{ 'action.new_category'|trans({}, 'admin_categories') }}
     </button>
 {% endblock %}
 
@@ -140,13 +140,12 @@
         {% if categories|length == 0 %}
             <div class="empty-state">
                 <span class="empty-icon">📂</span>
-                <div class="empty-title">Sin categorías</div>
+                <div class="empty-title">{{ 'empty_state.title'|trans({}, 'admin_categories') }}</div>
                 <div class="empty-sub">
-                    Las categorías organizan tu carta (Entrantes, Pizzas, Postres…).
-                    Crea la primera para empezar.
+                    {{ 'empty_state.subtitle'|trans({}, 'admin_categories') }}
                 </div>
                 <button class="btn btn-primary" onclick="UI.openNew()">
-                    <i class="ti ti-plus" aria-hidden="true"></i> Crear primera categoría
+                    <i class="ti ti-plus" aria-hidden="true"></i> {{ 'action.create_first_category'|trans({}, 'admin_categories') }}
                 </button>
             </div>
 
@@ -163,23 +162,23 @@
                             <div class="cat-info">
                                 <div class="cat-name">{{ catName }}</div>
                                 <div class="cat-meta">
-                                    {{ productCount }} {{ productCount == 1 ? 'plato' : 'platos' }}
-                                    · {{ category.isActive ? 'Visible' : 'Oculta' }}
+                                    {{ productCount }} {{ (productCount == 1 ? 'meta.dish_singular' : 'meta.dish_plural')|trans({}, 'admin_categories') }}
+                                    · {{ (category.isActive ? 'status.visible' : 'status.hidden')|trans({}, 'admin_categories') }}
                                 </div>
                             </div>
-                            <span class="cat-badge">{{ loop.index }}ª</span>
+                            <span class="cat-badge">{{ 'badge.position'|trans({'%position%': loop.index}, 'admin_categories') }}</span>
                             <button class="toggle {{ category.isActive ? 'on' : '' }}"
                                     onclick="toggleCat({{ category.id }}, this)"
-                                    title="{{ category.isActive ? 'Visible' : 'Oculta' }}"
-                                    aria-label="Activar/desactivar"></button>
+                                    title="{{ (category.isActive ? 'status.visible' : 'status.hidden')|trans({}, 'admin_categories') }}"
+                                    aria-label="{{ 'action.toggle_active'|trans({}, 'admin_categories') }}"></button>
                             <button class="icon-btn"
                                     onclick="UI.openEdit({{ category.id }}, '{{ catName|e('js') }}')"
-                                    title="Editar nombre" aria-label="Editar nombre">
+                                    title="{{ 'action.edit_name'|trans({}, 'admin_categories') }}" aria-label="{{ 'action.edit_name'|trans({}, 'admin_categories') }}">
                                 <i class="ti ti-edit" aria-hidden="true"></i>
                             </button>
                             <button class="icon-btn danger"
                                     onclick="deleteCat({{ category.id }}, '{{ catName|e('js') }}', {{ productCount }}, this)"
-                                    title="Eliminar" aria-label="Eliminar categoría">
+                                    title="{{ 'action.delete'|trans({}, 'admin_categories') }}" aria-label="{{ 'action.delete_category'|trans({}, 'admin_categories') }}">
                                 <i class="ti ti-trash" aria-hidden="true"></i>
                             </button>
                         </div>
@@ -189,7 +188,7 @@
 
             <p style="font-size:12px;color:var(--tx-7);margin-top:12px;text-align:center">
                 <i class="ti ti-grip-vertical" aria-hidden="true"></i>
-                Arrastra las categorías para cambiar el orden
+                {{ 'hint.drag_reorder'|trans({}, 'admin_categories') }}
             </p>
         {% endif %}
 
@@ -199,22 +198,22 @@
     <div class="modal-overlay" id="d-modal" onclick="if(event.target===this)UI.close()">
         <div class="modal">
             <div class="panel-header">
-                <div class="panel-title" id="d-modal-title">Nueva categoría</div>
-                <button class="panel-close" onclick="UI.close()" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+                <div class="panel-title" id="d-modal-title">{{ 'action.new_category'|trans({}, 'admin_categories') }}</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="{{ 'action.close'|trans({}, 'admin_categories') }}"><i class="ti ti-x"></i></button>
             </div>
             <div class="panel-body">
                 <div class="field">
-                    <label for="cat-name-d">Nombre <span style="color:var(--brand)">*</span></label>
+                    <label for="cat-name-d">{{ 'field.name'|trans({}, 'admin_categories') }} <span style="color:var(--brand)">*</span></label>
                     <input type="text" id="cat-name-d"
-                           placeholder="Ej: Entrantes, Pizzas, Postres…"
+                           placeholder="{{ 'field.name_placeholder'|trans({}, 'admin_categories') }}"
                            onkeydown="if(event.key==='Enter') UI.save()">
-                    <div class="field-error" id="cat-error-d">El nombre es obligatorio</div>
+                    <div class="field-error" id="cat-error-d">{{ 'field.name_required'|trans({}, 'admin_categories') }}</div>
                 </div>
             </div>
             <div class="panel-footer">
-                <button class="btn" onclick="UI.close()">Cancelar</button>
+                <button class="btn" onclick="UI.close()">{{ 'action.cancel'|trans({}, 'admin_categories') }}</button>
                 <button class="btn btn-primary" id="d-save-btn" onclick="UI.save()">
-                    <i class="ti ti-check" aria-hidden="true"></i> Guardar
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_categories') }}
                 </button>
             </div>
         </div>
@@ -225,22 +224,22 @@
         <div class="sheet">
             <div class="sheet-handle"></div>
             <div class="panel-header">
-                <div class="panel-title" id="m-sheet-title">Nueva categoría</div>
-                <button class="panel-close" onclick="UI.close()" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+                <div class="panel-title" id="m-sheet-title">{{ 'action.new_category'|trans({}, 'admin_categories') }}</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="{{ 'action.close'|trans({}, 'admin_categories') }}"><i class="ti ti-x"></i></button>
             </div>
             <div class="panel-body">
                 <div class="field">
-                    <label for="cat-name-m">Nombre <span style="color:var(--brand)">*</span></label>
+                    <label for="cat-name-m">{{ 'field.name'|trans({}, 'admin_categories') }} <span style="color:var(--brand)">*</span></label>
                     <input type="text" id="cat-name-m"
-                           placeholder="Ej: Entrantes, Pizzas, Postres…"
+                           placeholder="{{ 'field.name_placeholder'|trans({}, 'admin_categories') }}"
                            onkeydown="if(event.key==='Enter') UI.save()">
-                    <div class="field-error" id="cat-error-m">El nombre es obligatorio</div>
+                    <div class="field-error" id="cat-error-m">{{ 'field.name_required'|trans({}, 'admin_categories') }}</div>
                 </div>
             </div>
             <div class="panel-footer">
-                <button class="btn" onclick="UI.close()">Cancelar</button>
+                <button class="btn" onclick="UI.close()">{{ 'action.cancel'|trans({}, 'admin_categories') }}</button>
                 <button class="btn btn-primary" onclick="UI.save()">
-                    <i class="ti ti-check" aria-hidden="true"></i> Guardar
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_categories') }}
                 </button>
             </div>
         </div>
@@ -250,6 +249,18 @@
 
 {% block javascripts %}
     <script>
+        const MSG_NEW_CATEGORY    = "{{ 'action.new_category'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_EDIT_CATEGORY   = "{{ 'modal.edit_title'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_UPDATED         = "{{ 'toast.updated'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_CREATED         = "{{ 'toast.created'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_VISIBLE         = "{{ 'status.visible'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_HIDDEN          = "{{ 'status.hidden'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_TOAST_VISIBLE   = "{{ 'toast.visible'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_TOAST_HIDDEN    = "{{ 'toast.hidden'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_DELETED         = "{{ 'toast.deleted'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_CONFIRM_DELETE_WITH_PRODUCTS = "{{ 'confirm.delete_with_products'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_CONFIRM_DELETE_SIMPLE        = "{{ 'confirm.delete_simple'|trans({}, 'admin_categories')|e('js') }}";
+
         const isMobile = () => window.innerWidth < 768;
 
         let editingId = null;
@@ -257,8 +268,8 @@
         const UI = {
             openNew() {
                 editingId = null;
-                document.getElementById('d-modal-title').textContent = 'Nueva categoría';
-                document.getElementById('m-sheet-title').textContent = 'Nueva categoría';
+                document.getElementById('d-modal-title').textContent = MSG_NEW_CATEGORY;
+                document.getElementById('m-sheet-title').textContent = MSG_NEW_CATEGORY;
                 document.getElementById('cat-name-d').value = '';
                 document.getElementById('cat-name-m').value = '';
                 document.getElementById('cat-error-d').classList.remove('show');
@@ -273,8 +284,8 @@
             },
             openEdit(id, name) {
                 editingId = id;
-                document.getElementById('d-modal-title').textContent = 'Editar categoría';
-                document.getElementById('m-sheet-title').textContent = 'Editar categoría';
+                document.getElementById('d-modal-title').textContent = MSG_EDIT_CATEGORY;
+                document.getElementById('m-sheet-title').textContent = MSG_EDIT_CATEGORY;
                 document.getElementById('cat-name-d').value = name;
                 document.getElementById('cat-name-m').value = name;
                 document.getElementById('cat-error-d').classList.remove('show');
@@ -308,7 +319,7 @@
                 const data = await api(url, { name });
                 if (data.error) { showToast(data.error, 'error'); return; }
 
-                showToast(editingId ? 'Categoría actualizada ✓' : 'Categoría creada ✓', 'success');
+                showToast(editingId ? MSG_UPDATED : MSG_CREATED, 'success');
                 this.close();
                 setTimeout(() => location.reload(), 700);
             },
@@ -320,20 +331,20 @@
             btn.classList.toggle('on', data.active);
             const card = btn.closest('.cat-card');
             const meta = card.querySelector('.cat-meta');
-            if (meta) meta.innerHTML = meta.innerHTML.replace(/Visible|Oculta/, data.active ? 'Visible' : 'Oculta');
-            showToast(data.active ? 'Categoría visible' : 'Categoría oculta');
+            if (meta) meta.innerHTML = meta.innerHTML.replace(new RegExp(`${MSG_VISIBLE}|${MSG_HIDDEN}`), data.active ? MSG_VISIBLE : MSG_HIDDEN);
+            showToast(data.active ? MSG_TOAST_VISIBLE : MSG_TOAST_HIDDEN);
         }
 
         // ── Delete ──
         async function deleteCat(id, name, count, btn) {
             const msg = count > 0
-                ? `¿Eliminar "${name}" y sus ${count} platos? No se puede deshacer.`
-                : `¿Eliminar la categoría "${name}"?`;
+                ? MSG_CONFIRM_DELETE_WITH_PRODUCTS.replace('%name%', name).replace('%count%', count)
+                : MSG_CONFIRM_DELETE_SIMPLE.replace('%name%', name);
             if (!confirm(msg)) return;
             const data = await api(`/admin/categories/${id}/delete`);
             if (data.ok) {
                 btn.closest('.cat-card').remove();
-                showToast('Categoría eliminada', 'success');
+                showToast(MSG_DELETED, 'success');
                 if (!document.querySelector('.cat-card')) location.reload();
             }
         }

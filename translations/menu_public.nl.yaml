@@ -1,0 +1,5 @@
+dialog:
+    title: "Kies je taal en valuta"
+    language_label: "Taal"
+    currency_label: "Valuta"
+    confirm: "Doorgaan"

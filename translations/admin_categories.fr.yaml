@@ -1,0 +1,54 @@
+title: Catégories
+
+action:
+    new_category: Nouvelle catégorie
+    create_first_category: Créer la première catégorie
+    edit_name: Modifier le nom
+    delete: Supprimer
+    delete_category: Supprimer la catégorie
+    toggle_active: Activer/désactiver
+    cancel: Annuler
+    save: Enregistrer
+    close: Fermer
+
+empty_state:
+    title: Aucune catégorie
+    subtitle: "Les catégories organisent votre carte (Entrées, Pizzas, Desserts…). Créez la première pour commencer."
+
+modal:
+    edit_title: Modifier la catégorie
+
+field:
+    name: Nom
+    name_placeholder: "Ex. : Entrées, Pizzas, Desserts…"
+    name_required: Le nom est obligatoire
+    which_category: À quelle catégorie appartient-il ?
+
+meta:
+    dish_singular: plat
+    dish_plural: plats
+
+status:
+    visible: Visible
+    hidden: Masquée
+
+hint:
+    drag_reorder: Faites glisser les catégories pour changer leur ordre
+    ai_translations: Les traductions vers d'autres langues seront ajoutées automatiquement par IA.
+
+badge:
+    position: '%position%'
+
+toast:
+    updated: 'Catégorie mise à jour ✓'
+    created: 'Catégorie créée ✓'
+    visible: Catégorie visible
+    hidden: Catégorie masquée
+    deleted: Catégorie supprimée
+
+confirm:
+    delete_with_products: 'Supprimer "%name%" et ses %count% plats ? Action irréversible.'
+    delete_simple: 'Supprimer la catégorie "%name%" ?'
+
+error:
+    select_category_required: Sélectionnez une catégorie pour continuer.

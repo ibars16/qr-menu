@@ -37,6 +37,10 @@ class Restaurant
     #[ORM\Column(length: 5)]
     private string $defaultLanguage = 'en';
 
+    /** Language of the Admin Panel UI for this restaurant's staff. Independent from defaultLanguage (public menu). */
+    #[ORM\Column(length: 5)]
+    private string $adminLocale = 'es';
+
     /** Visual layout for the public menu: standard | compact | grid */
     #[ORM\Column(length: 20)]
     private string $layout = 'standard';
@@ -133,6 +137,16 @@ class Restaurant
     public function setDefaultLanguage(string $defaultLanguage): void
     {
         $this->defaultLanguage = $defaultLanguage;
+    }
+
+    public function getAdminLocale(): string
+    {
+        return $this->adminLocale;
+    }
+
+    public function setAdminLocale(string $adminLocale): void
+    {
+        $this->adminLocale = $adminLocale;
     }
 
     public function getLayout(): string

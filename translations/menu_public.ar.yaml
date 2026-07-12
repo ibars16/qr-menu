@@ -1,0 +1,5 @@
+dialog:
+    title: "اختر لغتك وعملتك"
+    language_label: "اللغة"
+    currency_label: "العملة"
+    confirm: "متابعة"

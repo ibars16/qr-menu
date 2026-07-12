@@ -1,0 +1,74 @@
+title: Personalizza il menu
+
+confirm:
+    default_title: Applica modifica
+    default_sub: La modifica sarà visibile immediatamente a tutti i visitatori del tuo menu.
+    cancel: Annulla
+    apply_now: Applica ora
+    applying: Applicazione in corso…
+    use_layout_title: 'Usare il layout "%name%"?'
+    use_layout_sub: Verrà applicato immediatamente e tutti i tuoi clienti vedranno il nuovo layout.
+    use_theme_title: 'Usare il tema "%name%"?'
+    use_theme_sub: Verrà applicato immediatamente e tutti i tuoi clienti vedranno il nuovo tema.
+    apply_preview_title: Applicare la combinazione visualizzata in anteprima?
+    apply_preview_sub: 'Verrà applicato: %combo%.'
+
+preview:
+    active_title: Anteprima attiva
+    active_sub: Solo tu vedi questa combinazione. I tuoi clienti continuano a vedere la configurazione attiva.
+    close: Chiudi
+    apply: Applica
+    title_with_names: 'Anteprima: %layout% · %theme%'
+    closed_toast: Anteprima chiusa
+
+section:
+    step1_eyebrow: Passo 1 · Struttura
+    layout_title: Layout del menu
+    layout_desc: Scegli come organizzare i piatti sullo schermo.
+    step2_eyebrow: Passo 2 · Aspetto
+    theme_title: Tema visivo
+    theme_desc: Colori, sfondi e stile. Funziona con tutti i layout.
+
+card:
+    preview_action: Anteprima
+    use_action: Usa
+    active_label: Attivo
+
+toast:
+    save_error: Errore durante il salvataggio
+    applied: '✓ Modifica applicata con successo'
+    connection_error: Errore di connessione
+
+layout:
+    standard:
+        name: Standard
+        desc: Schede con immagine sopra e nome sotto. Equilibrato ed efficace.
+    compact:
+        name: Lista compatta
+        desc: Righe numerate, veloci da scorrere. Ideale per menu lunghi.
+    grid:
+        name: Griglia
+        desc: Schede verticali con immagine grande. Molto visivo ed efficace.
+
+theme:
+    classic-dark:
+        name: Classico scuro
+        desc: Sfondo nero, accento del colore del tuo brand. Elegante e raffinato.
+    classic-warm:
+        name: Classico caldo
+        desc: Sfondo crema, toni caldi. Accogliente e familiare.
+    glass:
+        name: Glassmorphism
+        desc: Gradiente scuro con effetto vetro e accento viola. Moderno e premium.
+    ocean:
+        name: Oceano
+        desc: Azzurro chiaro, pulito e fresco. Ideale per cucina di mare.
+    noir:
+        name: Noir
+        desc: Nero profondo con dettagli dorati. Lusso e alta cucina.
+    forest:
+        name: Foresta
+        desc: Verde naturale e organico. Perfetto per cucina di mercato e prodotti locali.
+    terra:
+        name: Terra
+        desc: Terracotta mediterranea. Ideale per tapas, pintxos e cucina informale.

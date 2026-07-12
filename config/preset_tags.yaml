@@ -1,0 +1,209 @@
+preset_tags:
+
+  - code: vegetarian
+    icon: "🥬"
+    color: "#4CAF50"
+    position: 0
+    translations:
+      en: Vegetarian
+      es: Vegetariano
+      fr: Végétarien
+      de: Vegetarisch
+      it: Vegetariano
+      pt: Vegetariano
+      nl: Vegetarisch
+      ru: Вегетарианское
+      zh: 素食
+      ja: ベジタリアン
+      ko: 채식
+      th: มังสวิรัติ
+      ar: نباتي
+      hi: शाकाहारी
+      tr: Vejetaryen
+      vi: Chay
+      id: Vegetarian
+      pl: Wegetariańskie
+      sv: Vegetarisk
+      no: Vegetarisk
+
+  - code: vegan
+    icon: "🌱"
+    color: "#2E7D32"
+    position: 1
+    translations:
+      en: Vegan
+      es: Vegano
+      fr: Végétalien
+      de: Vegan
+      it: Vegano
+      pt: Vegano
+      nl: Veganistisch
+      ru: Веганское
+      zh: 纯素
+      ja: ヴィーガン
+      ko: 비건
+      th: วีแกน
+      ar: نباتي صرف
+      hi: वीगन
+      tr: Vegan
+      vi: Thuần chay
+      id: Vegan
+      pl: Wegańskie
+      sv: Vegansk
+      no: Vegansk
+
+  - code: spicy
+    icon: "🌶️"
+    color: "#F44336"
+    position: 2
+    translations:
+      en: Spicy
+      es: Picante
+      fr: Épicé
+      de: Scharf
+      it: Piccante
+      pt: Picante
+      nl: Pittig
+      ru: Острое
+      zh: 辣
+      ja: 辛口
+      ko: 매운
+      th: เผ็ด
+      ar: حار
+      hi: मसालेदार
+      tr: Acılı
+      vi: Cay
+      id: Pedas
+      pl: Pikantne
+      sv: Kryddigt
+      no: Krydret
+
+  - code: gluten-free
+    icon: "🌾"
+    color: "#FF9800"
+    position: 3
+    translations:
+      en: Gluten Free
+      es: Sin gluten
+      fr: Sans gluten
+      de: Glutenfrei
+      it: Senza glutine
+      pt: Sem glúten
+      nl: Glutenvrij
+      ru: Без глютена
+      zh: 无麸质
+      ja: グルテンフリー
+      ko: 글루텐 프리
+      th: ปราศจากกลูเตน
+      ar: خالٍ من الغلوتين
+      hi: ग्लूटेन मुक्त
+      tr: Glutensiz
+      vi: Không gluten
+      id: Bebas Gluten
+      pl: Bezglutenowe
+      sv: Glutenfritt
+      no: Glutenfritt
+
+  - code: contains-dairy
+    icon: "🥛"
+    color: "#90CAF9"
+    position: 4
+    translations:
+      en: Contains Dairy
+      es: Contiene lácteos
+      fr: Contient des produits laitiers
+      de: Enthält Milchprodukte
+      it: Contiene latticini
+      pt: Contém laticínios
+      nl: Bevat zuivel
+      ru: Содержит молочные продукты
+      zh: 含乳制品
+      ja: 乳製品含有
+      ko: 유제품 포함
+      th: มีผลิตภัณฑ์นม
+      ar: يحتوي على منتجات الألبان
+      hi: डेयरी उत्पाद शामिल
+      tr: Süt Ürünü İçerir
+      vi: Có sữa
+      id: Mengandung Susu
+      pl: Zawiera nabiał
+      sv: Innehåller mejeriprodukter
+      no: Inneholder meieri
+
+  - code: contains-nuts
+    icon: "🥜"
+    color: "#8D6E63"
+    position: 5
+    translations:
+      en: Contains Nuts
+      es: Contiene frutos secos
+      fr: Contient des noix
+      de: Enthält Nüsse
+      it: Contiene frutta secca
+      pt: Contém nozes
+      nl: Bevat noten
+      ru: Содержит орехи
+      zh: 含坚果
+      ja: ナッツ含有
+      ko: 견과류 포함
+      th: มีถั่ว
+      ar: يحتوي على مكسرات
+      hi: मेवे शामिल
+      tr: Fındık/Fıstık İçerir
+      vi: Có hạt
+      id: Mengandung Kacang
+      pl: Zawiera orzechy
+      sv: Innehåller nötter
+      no: Inneholder nøtter
+
+  - code: halal
+    icon: "☪️"
+    color: "#009688"
+    position: 6
+    translations:
+      en: Halal
+      es: Halal
+      fr: Halal
+      de: Halal
+      it: Halal
+      pt: Halal
+      nl: Halal
+      ru: Халяль
+      zh: 清真
+      ja: ハラール
+      ko: 할랄
+      th: ฮาลาล
+      ar: حلال
+      hi: हलाल
+      tr: Helal
+      vi: Halal
+      id: Halal
+      pl: Halal
+      sv: Halal
+      no: Halal
+
+  - code: contains-gluten
+    icon: "🌾"
+    color: "#A1887F"
+    position: 7
+    translations:
+      en: Contains Gluten
+      es: Contiene gluten
+      fr: Contient du gluten
+      de: Enthält Gluten
+      it: Contiene glutine
+      pt: Contém glúten
+      nl: Bevat gluten
+      ru: Содержит глютен
+      zh: 含麸质
+      ja: グルテン含有
+      ko: 글루텐 포함
+      th: มีกลูเตน
+      ar: يحتوي على الغلوتين
+      hi: ग्लूटेन शामिल
+      tr: Gluten İçerir
+      vi: Có gluten
+      id: Mengandung Gluten
+      pl: Zawiera gluten
+      sv: Innehåller gluten
+      no: Inneholder gluten

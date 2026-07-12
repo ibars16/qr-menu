@@ -1,0 +1,43 @@
+title: Tags
+
+action:
+    new_tag: Neuer Tag
+    create_first: Ersten Tag erstellen
+    edit_tag: Tag bearbeiten
+    delete_tag: Tag löschen
+    cancel: Abbrechen
+    save: Speichern
+
+info_banner: 'Tags erscheinen bei jedem Gericht und helfen Kunden beim Filtern (Vegan, Glutenfrei, Scharf…). Erstellen Sie die benötigten Tags und weisen Sie sie über die Speisekarte zu.'
+
+empty:
+    title: Noch keine Tags
+    subtitle: 'Erstellen Sie Tags, um Ihre Gerichte zu kategorisieren: Vegan, Glutenfrei, Beliebt, Scharf…'
+
+meta:
+    dish_singular: Gericht
+    dish_plural: Gerichte
+
+aria:
+    close: Schließen
+
+field:
+    name: Name
+    name_placeholder: 'Vegan, Glutenfrei, Beliebt…'
+    icon: Symbol
+    color: Farbe
+
+error:
+    name_required: Der Name ist erforderlich.
+
+hint:
+    icon: Geben Sie ein Emoji ein, das den Tag darstellt
+
+toast:
+    created: 'Tag erstellt ✓'
+    updated: 'Tag aktualisiert ✓'
+    deleted: Tag gelöscht
+
+confirm:
+    delete_simple: 'Tag "%name%" löschen?'
+    delete_with_products: 'Tag "%name%" löschen? Er wird von %count% Gerichten entfernt, die ihn verwenden.'

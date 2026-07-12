@@ -2,11 +2,11 @@
 
 {# Categoría — siempre visible y editable #}
 <div class="field">
-    <label class="field-label">Categoría <span class="req">*</span></label>
+    <label class="field-label">{{ 'field.category'|trans({}, 'admin_menu') }} <span class="req">*</span></label>
     <select id="p-category">
         {% for category in categories %}
             {% set catT = category.getTranslation(locale) %}
-            <option value="{{ category.id }}">{{ catT ? catT.name : '(sin nombre)' }}</option>
+            <option value="{{ category.id }}">{{ catT ? catT.name : 'common.unnamed'|trans({}, 'admin_menu') }}</option>
         {% endfor %}
     </select>
 </div>
@@ -14,40 +14,40 @@
 {# Nombre — obligatorio #}
 <div class="field">
     <label class="field-label">
-        Nombre del plato <span class="req">*</span>
+        {{ 'field.product_name'|trans({}, 'admin_menu') }} <span class="req">*</span>
     </label>
     <input type="text"
            id="p-name"
-           placeholder="Ej: Pizza Margherita">
-    <div class="field-error" id="p-name-error">El nombre es obligatorio</div>
+           placeholder="{{ 'field.product_name_placeholder'|trans({}, 'admin_menu') }}">
+    <div class="field-error" id="p-name-error">{{ 'field_error.name_required'|trans({}, 'admin_menu') }}</div>
 </div>
 
 {# Descripción — obligatoria #}
 <div class="field">
     <label class="field-label">
-        Descripción <span class="req">*</span>
+        {{ 'field.description'|trans({}, 'admin_menu') }} <span class="req">*</span>
     </label>
     <textarea id="p-desc"
-              placeholder="Describe brevemente el plato, ingredientes principales, forma de preparación…"></textarea>
-    <div class="field-error" id="p-desc-error">La descripción es obligatoria</div>
+              placeholder="{{ 'field.description_placeholder'|trans({}, 'admin_menu') }}"></textarea>
+    <div class="field-error" id="p-desc-error">{{ 'field_error.description_required'|trans({}, 'admin_menu') }}</div>
 </div>
 
 {# Precio + Calorías #}
 <div class="field-row">
     <div class="field">
         <label class="field-label">
-            Precio ({{ restaurant.currency }}) <span class="req">*</span>
+            {{ 'field.price'|trans({'%currency%': restaurant.currency}, 'admin_menu') }} <span class="req">*</span>
         </label>
         <input type="number"
                id="p-price"
                min="0" step="0.01"
                placeholder="0.00"
                inputmode="decimal">
-        <div class="field-error" id="p-price-error">El precio es obligatorio</div>
+        <div class="field-error" id="p-price-error">{{ 'field_error.price_required'|trans({}, 'admin_menu') }}</div>
     </div>
     <div class="field">
         <label class="field-label">
-            Calorías <span class="opt">(opcional)</span>
+            {{ 'field.calories'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
         </label>
         <input type="number"
                id="p-calories"
@@ -60,17 +60,17 @@
 {# Imagen — opcional #}
 <div class="field">
     <label class="field-label">
-        Foto del plato <span class="opt">(opcional)</span>
+        {{ 'field.photo'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
     </label>
     <div class="img-upload"
          id="img-upload-area"
          onclick="document.getElementById('p-img-input').click()"
          role="button"
          tabindex="0"
-         aria-label="Subir imagen del plato">
+         aria-label="{{ 'upload.aria'|trans({}, 'admin_menu') }}">
         <div class="img-upload-hint">
             <i class="ti ti-photo-up" style="font-size:20px" aria-hidden="true"></i>
-            Haz clic o arrastra una imagen aquí
+            {{ 'upload.hint'|trans({}, 'admin_menu') }}
         </div>
     </div>
     <input type="file"
@@ -83,7 +83,7 @@
 {# Picante — opcional #}
 <div class="field">
     <label class="field-label">
-        Nivel de picante <span class="opt">(opcional)</span>
+        {{ 'field.spicy_level'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
     </label>
     <div class="spicy-row">
         {% for i in 1..5 %}
@@ -92,9 +92,9 @@
                  onclick="setSpicy({{ i }})"
                  role="button"
                  tabindex="0"
-                 aria-label="Nivel de picante {{ i }}"><span class="chili">🌶</span></div>
+                 aria-label="{{ 'spicy.aria'|trans({'%level%': i}, 'admin_menu') }}"><span class="chili">🌶</span></div>
         {% endfor %}
-        <span class="spicy-text">Sin picante</span>
+        <span class="spicy-text">{{ 'spicy.none'|trans({}, 'admin_menu') }}</span>
     </div>
 </div>
 
@@ -102,7 +102,7 @@
 {% if restaurant.productTags|length > 0 %}
     <div class="field">
         <label class="field-label">
-            Etiquetas <span class="opt">(opcional)</span>
+            {{ 'field.tags'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
         </label>
         <div class="tag-pills">
             {% for tag in restaurant.productTags %}
@@ -124,21 +124,22 @@
     </div>
 {% else %}
     <div style="font-size:12px;color:var(--tx-6);padding:8px 12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--bd-1)">
-        Sin etiquetas configuradas —
-        <a href="{{ path('admin_tags') }}" style="color:var(--tx-3)">créalas en Etiquetas</a>
-        para poder marcar platos como Vegetariano, Sin gluten, etc.
+        {{ 'tags.none_configured'|trans({
+            '%link_start%': '<a href="' ~ path('admin_tags') ~ '" style="color:var(--tx-3)">',
+            '%link_end%': '</a>',
+        }, 'admin_menu')|raw }}
     </div>
 {% endif %}
 
 {# Ingredientes — opcional #}
 <div class="field">
     <label class="field-label">
-        Ingredientes <span class="opt">(opcional)</span>
+        {{ 'field.ingredients'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
     </label>
     <div class="ing-wrap">
         <input type="text"
                id="ing-input"
-               placeholder="Escribe un ingrediente y pulsa Enter…"
+               placeholder="{{ 'ingredients.placeholder'|trans({}, 'admin_menu') }}"
                autocomplete="off"
                oninput="searchIngredients(this.value)"
                onkeydown="ingKeydown(event)">
@@ -146,6 +147,6 @@
     </div>
     <div class="ing-tags" id="ing-tags"></div>
     <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
-        Los ingredientes nuevos se añaden automáticamente al banco del restaurante.
+        {{ 'ingredients.hint'|trans({}, 'admin_menu') }}
     </p>
 </div>

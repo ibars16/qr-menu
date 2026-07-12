@@ -1,0 +1,43 @@
+title: Etiquetas
+
+action:
+    new_tag: Nueva etiqueta
+    create_first: Crear primera etiqueta
+    edit_tag: Editar etiqueta
+    delete_tag: Eliminar etiqueta
+    cancel: Cancelar
+    save: Guardar
+
+info_banner: 'Las etiquetas aparecen en cada plato y ayudan a los clientes a filtrar (Vegano, Sin gluten, Picante…). Crea las que necesites y asígnalas desde la carta.'
+
+empty:
+    title: Sin etiquetas todavía
+    subtitle: 'Crea etiquetas para clasificar tus platos: Vegano, Sin gluten, Popular, Picante…'
+
+meta:
+    dish_singular: plato
+    dish_plural: platos
+
+aria:
+    close: Cerrar
+
+field:
+    name: Nombre
+    name_placeholder: 'Vegano, Sin gluten, Popular…'
+    icon: Icono
+    color: Color
+
+error:
+    name_required: El nombre es obligatorio.
+
+hint:
+    icon: Escribe un emoji que represente la etiqueta
+
+toast:
+    created: 'Etiqueta creada ✓'
+    updated: 'Etiqueta actualizada ✓'
+    deleted: Etiqueta eliminada
+
+confirm:
+    delete_simple: '¿Eliminar la etiqueta "%name%"?'
+    delete_with_products: '¿Eliminar la etiqueta "%name%"? Se quitará de los %count% platos que la usan.'

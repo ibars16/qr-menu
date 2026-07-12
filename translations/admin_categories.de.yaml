@@ -1,0 +1,54 @@
+title: Kategorien
+
+action:
+    new_category: Neue Kategorie
+    create_first_category: Erste Kategorie erstellen
+    edit_name: Namen bearbeiten
+    delete: Löschen
+    delete_category: Kategorie löschen
+    toggle_active: Aktiv umschalten
+    cancel: Abbrechen
+    save: Speichern
+    close: Schließen
+
+empty_state:
+    title: Keine Kategorien
+    subtitle: 'Kategorien strukturieren Ihre Speisekarte (Vorspeisen, Pizzen, Desserts…). Erstellen Sie die erste, um zu beginnen.'
+
+modal:
+    edit_title: Kategorie bearbeiten
+
+field:
+    name: Name
+    name_placeholder: 'Z. B.: Vorspeisen, Pizzen, Desserts…'
+    name_required: Der Name ist erforderlich
+    which_category: Zu welcher Kategorie gehört es?
+
+meta:
+    dish_singular: Gericht
+    dish_plural: Gerichte
+
+status:
+    visible: Sichtbar
+    hidden: Ausgeblendet
+
+hint:
+    drag_reorder: Kategorien ziehen, um die Reihenfolge zu ändern
+    ai_translations: Übersetzungen in andere Sprachen werden automatisch per KI hinzugefügt.
+
+badge:
+    position: '%position%'
+
+toast:
+    updated: 'Kategorie aktualisiert ✓'
+    created: 'Kategorie erstellt ✓'
+    visible: Kategorie sichtbar
+    hidden: Kategorie ausgeblendet
+    deleted: Kategorie gelöscht
+
+confirm:
+    delete_with_products: '"%name%" und die %count% zugehörigen Gerichte löschen? Dies kann nicht rückgängig gemacht werden.'
+    delete_simple: 'Kategorie "%name%" löschen?'
+
+error:
+    select_category_required: Bitte wählen Sie eine Kategorie aus, um fortzufahren.

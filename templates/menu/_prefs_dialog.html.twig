@@ -1,0 +1,93 @@
+{# Customer language/currency preference — asked once per browser (cookie-remembered), never touches restaurant/admin settings #}
+<style>
+    .mp-overlay { position: fixed; inset: 0; z-index: 10000; background: rgba(10,10,10,0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .mp-overlay.open { opacity: 1; pointer-events: auto; }
+    @media (min-width: 640px) { .mp-overlay { align-items: center; } }
+
+    .mp-card { width: 100%; max-width: 400px; background: #17171a; color: #f2f2f2; border-radius: 20px 20px 0 0; padding: 24px 22px 22px; transform: translateY(24px); transition: transform 0.25s; box-shadow: 0 -8px 40px rgba(0,0,0,0.4); }
+    .mp-overlay.open .mp-card { transform: translateY(0); }
+    @media (min-width: 640px) { .mp-card { border-radius: 20px; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.45); } }
+    @media (prefers-color-scheme: light) { .mp-card { background: #ffffff; color: #17171a; box-shadow: 0 -8px 40px rgba(0,0,0,0.18); } }
+
+    .mp-icon { font-size: 30px; margin-bottom: 10px; }
+    .mp-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 18px; }
+
+    .mp-field { margin-bottom: 14px; }
+    .mp-field label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.55; margin-bottom: 6px; }
+    .mp-field select { width: 100%; appearance: none; background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.12); color: inherit; font-size: 14px; font-weight: 500; padding: 12px 14px; border-radius: 12px; outline: none; cursor: pointer; }
+    @media (prefers-color-scheme: light) { .mp-field select { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); } }
+
+    .mp-confirm { width: 100%; margin-top: 8px; padding: 13px; border: none; border-radius: 12px; background: #C1440E; color: #fff; font-size: 15px; font-weight: 600; letter-spacing: -0.2px; cursor: pointer; }
+    .mp-confirm:active { opacity: 0.9; }
+</style>
+
+<div class="mp-overlay" id="mp-overlay" role="dialog" aria-modal="true" aria-labelledby="mp-title">
+    <div class="mp-card">
+        <div class="mp-icon">🌐</div>
+        <div class="mp-title" id="mp-title">{{ 'dialog.title'|trans({}, 'menu_public') }}</div>
+
+        <div class="mp-field">
+            <label for="mp-lang">{{ 'dialog.language_label'|trans({}, 'menu_public') }}</label>
+            <select id="mp-lang">
+                {% for code, lang in languages %}
+                    <option value="{{ code }}" {{ locale == code ? 'selected' : '' }}>{{ lang.flag }} {{ lang.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mp-field">
+            <label for="mp-currency">{{ 'dialog.currency_label'|trans({}, 'menu_public') }}</label>
+            <select id="mp-currency">
+                {% for code, curr in currencies %}
+                    <option value="{{ code }}" {{ currency == code ? 'selected' : '' }}>{{ curr.symbol }} {{ code }} — {{ curr.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="button" class="mp-confirm" id="mp-confirm">{{ 'dialog.confirm'|trans({}, 'menu_public') }}</button>
+    </div>
+</div>
+
+<script>
+(function () {
+    var COOKIE_NAME = {{ constant('App\\Service\\MenuPreferencesResolver::COOKIE_NAME')|json_encode|raw }};
+
+    function writePrefsCookie(lang, currency) {
+        var value   = encodeURIComponent(JSON.stringify({ lang: lang, currency: currency }));
+        var oneYear = 60 * 60 * 24 * 365;
+        document.cookie = COOKIE_NAME + '=' + value + '; path=/; max-age=' + oneYear + '; SameSite=Lax';
+    }
+
+    function applyPrefs(lang, currency) {
+        writePrefsCookie(lang, currency);
+        var u = new URL(window.location);
+        u.searchParams.set('lang', lang);
+        u.searchParams.set('currency', currency);
+        window.location.href = u.toString();
+    }
+
+    var body    = document.body;
+    var current = { lang: body.dataset.menuLang, currency: body.dataset.menuCurrency };
+
+    // Called by the language/currency <select> in every layout's header.
+    window.changeLanguage = function (lang) { applyPrefs(lang, current.currency); };
+    window.changeCurrency = function (currency) { applyPrefs(current.lang, currency); };
+
+    // Keep the cookie in sync whenever this page was reached with an
+    // explicit ?lang=/?currency= (own selector reload, or a shared link).
+    var params = new URLSearchParams(window.location.search);
+    if (params.has('lang') || params.has('currency')) {
+        writePrefsCookie(current.lang, current.currency);
+    }
+
+    if (body.dataset.menuShowPrefsDialog === '1') {
+        document.getElementById('mp-overlay').classList.add('open');
+    }
+
+    document.getElementById('mp-confirm').addEventListener('click', function () {
+        var lang     = document.getElementById('mp-lang').value;
+        var currency = document.getElementById('mp-currency').value;
+        applyPrefs(lang, currency);
+    });
+})();
+</script>

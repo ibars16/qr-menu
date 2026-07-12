@@ -1,0 +1,107 @@
+title: Speisekarte
+
+action:
+    import_ai: Mit KI importieren
+    cancel: Abbrechen
+    next: Weiter
+    back: Zurück
+    save: Speichern
+    save_product: Gericht speichern
+
+category:
+    delete_title: Kategorie löschen
+    edit_title: Kategoriename bearbeiten
+    toggle_aria: Kategoriesichtbarkeit umschalten
+    toggle_hide_title: 'Sichtbar · zum Ausblenden tippen'
+    toggle_show_title: 'Ausgeblendet · zum Anzeigen tippen'
+    toggle_visible: Kategorie sichtbar
+    toggle_hidden: Kategorie ausgeblendet
+
+common:
+    optional: optional
+    unnamed: (unbenannt)
+
+empty:
+    title: Deine Speisekarte ist leer
+    subtitle: 'Erstelle deine erste Kategorie (Vorspeisen, Pizzen, Desserts…) und füge dann deine Gerichte hinzu. Oder importiere die gesamte Speisekarte per Foto mit KI.'
+    import_ai: Speisekarte mit KI importieren
+    create_first_category: Erste Kategorie erstellen
+
+field:
+    calories: Kalorien
+    category: Kategorie
+    description: Beschreibung
+    description_placeholder: 'Beschreibe kurz das Gericht, die Hauptzutaten und die Zubereitungsart…'
+    ingredients: Zutaten
+    photo: Foto des Gerichts
+    price: 'Preis (%currency%)'
+    product_name: Name des Gerichts
+    product_name_placeholder: 'z. B. Pizza Margherita'
+    spicy_level: Schärfegrad
+    tags: Etiketten
+
+field_error:
+    name_required: Der Name ist erforderlich
+    description_required: Die Beschreibung ist erforderlich
+    price_required: Der Preis ist erforderlich
+
+ingredients:
+    hint: Neue Zutaten werden automatisch zur Zutatenliste des Restaurants hinzugefügt.
+    placeholder: 'Zutat eingeben und Enter drücken…'
+
+js:
+    ai_import_soon: 'KI-Import — demnächst verfügbar ✨'
+    category_created: 'Kategorie erstellt ✓'
+    category_deleted: Kategorie gelöscht
+    category_updated: 'Kategorie aktualisiert ✓'
+    confirm_delete_category: 'Kategorie „%name%" löschen?'
+    confirm_delete_category_with_products: '„%name%" und die dazugehörigen %count% Gerichte löschen? Dies kann nicht rückgängig gemacht werden.'
+    confirm_delete_product: '„%name%" löschen? Dies kann nicht rückgängig gemacht werden.'
+    default_product_name: dieses Gericht
+    error_loading_product: Fehler beim Laden des Gerichts
+    fill_required_fields: Bitte fülle die Pflichtfelder aus
+    new_ingredient_label: '· Neu erstellen'
+    product_created: 'Gericht erstellt ✓'
+    product_deleted: Gericht gelöscht
+    product_saved: 'Gericht gespeichert ✓'
+    remove_ingredient_aria: '%name% entfernen'
+
+modal:
+    category:
+        edit_title: Kategorie bearbeiten
+        new_title: Neue Kategorie
+    product:
+        edit_title: Gericht bearbeiten
+        new_title: Neues Gericht
+    close_aria: Schließen
+
+product:
+    add_to_category: 'Gericht zu %category% hinzufügen'
+    hidden: Ausgeblendet
+    toggle_aria: Gerichtsichtbarkeit umschalten
+    visible: Sichtbar
+
+spicy:
+    aria: 'Schärfegrad %level%'
+    none: Nicht scharf
+    mild: 'Mild 🌶'
+    medium: 'Mittel 🌶🌶'
+    hot: 'Scharf 🌶🌶🌶'
+    very_hot: 'Sehr scharf 🌶🌶🌶🌶'
+    extreme: 'Extrem scharf 🌶🌶🌶🌶🌶'
+
+step:
+    category: Kategorie
+    info: Details
+
+tags:
+    none_configured: 'Noch keine Etiketten konfiguriert — %link_start%erstelle welche unter Etiketten%link_end%, um Gerichte als Vegetarisch, Glutenfrei usw. zu kennzeichnen.'
+
+upload:
+    aria: Foto des Gerichts hochladen
+    hint: Klicke oder ziehe ein Bild hierher
+
+error:
+    category_name_required: Der Name ist erforderlich.
+    product_not_found: Gericht nicht gefunden.
+    category_not_found: Kategorie nicht gefunden.

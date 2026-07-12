@@ -1,7 +1,7 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Configuración{% endblock %}
-{% block page_title %}Configuración{% endblock %}
+{% block title %}{{ 'title'|trans({}, 'admin_settings') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_settings') }}{% endblock %}
 
 {% block stylesheets %}
     <style>
@@ -143,25 +143,25 @@
 
             {# ── Información del restaurante ── #}
             <div class="settings-section">
-                <div class="settings-section-title">Información del restaurante</div>
+                <div class="settings-section-title">{{ 'section.restaurant_info'|trans({}, 'admin_settings') }}</div>
                 <div class="settings-body">
 
                     <div class="field">
-                        <label for="name">Nombre <span class="req">*</span></label>
+                        <label for="name">{{ 'field.name'|trans({}, 'admin_settings') }} <span class="req">*</span></label>
                         <input type="text"
                                id="name" name="name"
                                value="{{ restaurant.name }}"
-                               placeholder="Nombre de tu restaurante"
+                               placeholder="{{ 'field.name_placeholder'|trans({}, 'admin_settings') }}"
                                required>
                     </div>
 
                     {# URL pública de la carta #}
                     <div class="field">
-                        <label>URL de tu carta digital</label>
+                        <label>{{ 'field.menu_url'|trans({}, 'admin_settings') }}</label>
                         <div class="qr-info">
                             <span class="qr-url" id="menu-url">{{ app.request.schemeAndHttpHost ~ path('menu_show', {slug: restaurant.slug}) }}</span>
                             <button type="button" class="copy-btn" onclick="copyUrl()">
-                                <i class="ti ti-copy" aria-hidden="true"></i> Copiar
+                                <i class="ti ti-copy" aria-hidden="true"></i> {{ 'action.copy'|trans({}, 'admin_settings') }}
                             </button>
                         </div>
                     </div>
@@ -171,12 +171,12 @@
 
             {# ── Apariencia ── #}
             <div class="settings-section">
-                <div class="settings-section-title">Apariencia</div>
+                <div class="settings-section-title">{{ 'section.appearance'|trans({}, 'admin_settings') }}</div>
                 <div class="settings-body">
 
                     {# Logo #}
                     <div class="field">
-                        <label>Logo del restaurante</label>
+                        <label>{{ 'field.logo'|trans({}, 'admin_settings') }}</label>
                         <div class="logo-area">
                             <div class="logo-preview" id="logo-preview">
                                 {% if restaurant.logo %}
@@ -189,25 +189,25 @@
                             <div class="logo-actions">
                                 <label class="upload-btn" for="logo-input">
                                     <i class="ti ti-upload" aria-hidden="true"></i>
-                                    {{ restaurant.logo ? 'Cambiar logo' : 'Subir logo' }}
+                                    {{ restaurant.logo ? 'action.change_logo'|trans({}, 'admin_settings') : 'action.upload_logo'|trans({}, 'admin_settings') }}
                                 </label>
                                 <input type="file" id="logo-input" name="logo"
                                        accept="image/*" style="display:none"
                                        onchange="previewLogo(this)">
                                 {% if restaurant.logo %}
                                     <button type="button" class="remove-logo-btn" onclick="removeLogo()">
-                                        <i class="ti ti-trash" aria-hidden="true"></i> Eliminar logo
+                                        <i class="ti ti-trash" aria-hidden="true"></i> {{ 'action.remove_logo'|trans({}, 'admin_settings') }}
                                     </button>
                                     <input type="hidden" name="removeLogo" id="remove-logo-input" value="0">
                                 {% endif %}
-                                <span class="field-hint">PNG o JPG, máx. 2 MB</span>
+                                <span class="field-hint">{{ 'hint.logo_format'|trans({}, 'admin_settings') }}</span>
                             </div>
                         </div>
                     </div>
 
                     {# Color principal #}
                     <div class="field">
-                        <label>Color principal</label>
+                        <label>{{ 'field.primary_color'|trans({}, 'admin_settings') }}</label>
                         <div class="color-wrap">
                             <div class="color-preview" style="background:{{ restaurant.primaryColor }}">
                                 <input type="color"
@@ -223,7 +223,7 @@
                                    maxlength="7"
                                    placeholder="#C1440E"
                                    oninput="syncColorFromHex(this.value)">
-                            <span class="field-hint">Se usará en toda la carta digital</span>
+                            <span class="field-hint">{{ 'hint.primary_color'|trans({}, 'admin_settings') }}</span>
                         </div>
                     </div>
 
@@ -232,11 +232,11 @@
 
             {# ── Idioma y moneda ── #}
             <div class="settings-section">
-                <div class="settings-section-title">Idioma y moneda</div>
+                <div class="settings-section-title">{{ 'section.language_currency'|trans({}, 'admin_settings') }}</div>
                 <div class="settings-body">
 
                     <div class="field">
-                        <label for="defaultLanguage">Idioma principal del menú</label>
+                        <label for="defaultLanguage">{{ 'field.menu_language'|trans({}, 'admin_settings') }}</label>
                         <select id="defaultLanguage" name="defaultLanguage">
                             {% for code, lang in languages %}
                                 <option value="{{ code }}"
@@ -246,12 +246,27 @@
                             {% endfor %}
                         </select>
                         <span class="field-hint">
-                    El idioma en que introduces los nombres y descripciones de los platos.
+                    {{ 'hint.menu_language'|trans({}, 'admin_settings') }}
                 </span>
                     </div>
 
                     <div class="field">
-                        <label for="currency">Moneda base</label>
+                        <label for="adminLocale">{{ 'field.admin_language'|trans({}, 'admin_settings') }}</label>
+                        <select id="adminLocale" name="adminLocale">
+                            {% for code, lang in adminLocales %}
+                                <option value="{{ code }}"
+                                    {{ restaurant.adminLocale == code ? 'selected' : '' }}>
+                                    {{ lang.flag }} {{ lang.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <span class="field-hint">
+                    {{ 'hint.admin_language'|trans({}, 'admin_settings') }}
+                </span>
+                    </div>
+
+                    <div class="field">
+                        <label for="currency">{{ 'field.currency'|trans({}, 'admin_settings') }}</label>
                         <select id="currency" name="currency">
                             {% for code, curr in currencies %}
                                 <option value="{{ code }}"
@@ -261,7 +276,7 @@
                             {% endfor %}
                         </select>
                         <span class="field-hint">
-                    Los precios se guardan en esta moneda. Los clientes pueden ver la conversión en tiempo real.
+                    {{ 'hint.currency'|trans({}, 'admin_settings') }}
                 </span>
                     </div>
 
@@ -270,7 +285,7 @@
 
             <div class="settings-footer">
                 <button type="submit" class="save-btn">
-                    <i class="ti ti-check" aria-hidden="true"></i> Guardar cambios
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_settings') }}
                 </button>
             </div>
 
@@ -281,6 +296,9 @@
 
 {% block javascripts %}
     <script>
+        const MSG_LOGO_REMOVED = "{{ 'toast.logo_removed'|trans({}, 'admin_settings')|e('js') }}";
+        const MSG_URL_COPIED   = "{{ 'toast.url_copied'|trans({}, 'admin_settings')|e('js') }}";
+
         // ── Color sync ──
         function syncColor(val) {
             document.getElementById('color-hex').value = val;
@@ -316,14 +334,14 @@
             if (input) input.value = '1';
             if (img)   img.remove();
             if (letter) letter.style.display = '';
-            showToast('Logo eliminado al guardar', 'info');
+            showToast(MSG_LOGO_REMOVED, 'info');
         }
 
         // ── Copy URL ──
         function copyUrl() {
             const url = document.getElementById('menu-url')?.textContent?.trim();
             if (!url) return;
-            navigator.clipboard.writeText(url).then(() => showToast('URL copiada ✓', 'success'));
+            navigator.clipboard.writeText(url).then(() => showToast(MSG_URL_COPIED, 'success'));
         }
     </script>
 {% endblock %}

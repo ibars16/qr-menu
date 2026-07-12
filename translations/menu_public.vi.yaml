@@ -1,0 +1,5 @@
+dialog:
+    title: "Chọn ngôn ngữ và tiền tệ của bạn"
+    language_label: "Ngôn ngữ"
+    currency_label: "Tiền tệ"
+    confirm: "Tiếp tục"

@@ -1,0 +1,54 @@
+title: Categorie
+
+action:
+    new_category: Nuova categoria
+    create_first_category: Crea la prima categoria
+    edit_name: Modifica nome
+    delete: Elimina
+    delete_category: Elimina categoria
+    toggle_active: Attiva/disattiva
+    cancel: Annulla
+    save: Salva
+    close: Chiudi
+
+empty_state:
+    title: Nessuna categoria
+    subtitle: 'Le categorie organizzano il tuo menu (Antipasti, Pizze, Dolci…). Crea la prima per iniziare.'
+
+modal:
+    edit_title: Modifica categoria
+
+field:
+    name: Nome
+    name_placeholder: 'Es.: Antipasti, Pizze, Dolci…'
+    name_required: Il nome è obbligatorio
+    which_category: A quale categoria appartiene?
+
+meta:
+    dish_singular: piatto
+    dish_plural: piatti
+
+status:
+    visible: Visibile
+    hidden: Nascosta
+
+hint:
+    drag_reorder: Trascina le categorie per cambiarne l'ordine
+    ai_translations: Le traduzioni in altre lingue verranno aggiunte automaticamente con l'IA.
+
+badge:
+    position: '%position%'
+
+toast:
+    updated: 'Categoria aggiornata ✓'
+    created: 'Categoria creata ✓'
+    visible: Categoria visibile
+    hidden: Categoria nascosta
+    deleted: Categoria eliminata
+
+confirm:
+    delete_with_products: 'Eliminare "%name%" e i suoi %count% piatti? Azione irreversibile.'
+    delete_simple: 'Eliminare la categoria "%name%"?'
+
+error:
+    select_category_required: Seleziona una categoria per continuare.

@@ -1,0 +1,17 @@
+title: Mi QR
+
+section:
+    qr_code: Código QR de tu carta
+    menu_url: URL de tu carta digital
+
+action:
+    download: Descargar QR
+    copy: Copiar
+
+hint:
+    print_instructions: Imprime este código QR y colócalo en tus mesas o en la entrada. Los clientes lo escanean para ver tu carta digital al instante.
+
+toast:
+    qr_unavailable: QR no disponible
+    qr_downloaded: 'QR descargado ✓'
+    url_copied: 'URL copiada ✓'

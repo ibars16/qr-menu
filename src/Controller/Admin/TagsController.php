@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin', name: 'admin_')]
 #[IsGranted('ROLE_USER')]
@@ -38,14 +39,14 @@ class TagsController extends AbstractController
     }
 
     #[Route('/tags/create', name: 'tag_create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em): JsonResponse
+    public function create(Request $request, EntityManagerInterface $em, TranslatorInterface $translator): JsonResponse
     {
         $restaurant = $this->restaurant();
         $data       = json_decode($request->getContent(), true);
         $name       = trim($data['name'] ?? '');
 
         if (!$name) {
-            return $this->json(['error' => 'El nombre es obligatorio.'], 400);
+            return $this->json(['error' => $translator->trans('error.name_required', domain: 'admin_tags')], 400);
         }
 
         $tag = new ProductTag();
@@ -64,6 +65,9 @@ class TagsController extends AbstractController
         $em->persist($t);
         $em->flush();
 
+        // Translations into other locales are generated lazily on first customer
+        // request via TagTranslationService — no upfront AI cost needed here.
+
         return $this->json([
             'id'       => $tag->getId(),
             'name'     => $name,
@@ -74,7 +78,7 @@ class TagsController extends AbstractController
     }
 
     #[Route('/tags/{id}/edit', name: 'tag_edit', methods: ['POST'])]
-    public function edit(ProductTag $tag, Request $request, EntityManagerInterface $em): JsonResponse
+    public function edit(ProductTag $tag, Request $request, EntityManagerInterface $em, TranslatorInterface $translator): JsonResponse
     {
         if ($tag->getRestaurant() !== $this->restaurant()) {
             return $this->json(['error' => 'Forbidden'], 403);
@@ -84,7 +88,7 @@ class TagsController extends AbstractController
         $name  = trim($data['name'] ?? '');
 
         if (!$name) {
-            return $this->json(['error' => 'El nombre es obligatorio.'], 400);
+            return $this->json(['error' => $translator->trans('error.name_required', domain: 'admin_tags')], 400);
         }
 
         $tag->setIcon(trim($data['icon'] ?? $tag->getIcon()) ?: $tag->getIcon());

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ app.request.locale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>{% block title %}Admin{% endblock %} — QR Menu</title>
+    <title>{% block title %}{{ 'title.default'|trans({}, 'admin_base') }}{% endblock %} — QR Menu</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
     <script>(function(){try{if(localStorage.getItem('admin-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
     <style>
@@ -220,7 +220,7 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-restaurant">{{ app.user.restaurant ? app.user.restaurant.name : 'QR Menu' }}</div>
-            <div class="sidebar-role">Panel de administración</div>
+            <div class="sidebar-role">{{ 'sidebar.role'|trans({}, 'admin_base') }}</div>
         </div>
 
         {# VER CARTA — destacado arriba #}
@@ -229,36 +229,36 @@
                target="_blank"
                class="ver-carta-btn">
                 <i class="ti ti-external-link" aria-hidden="true"></i>
-                Ver mi carta
+                {{ 'action.view_menu'|trans({}, 'admin_base') }}
             </a>
         {% endif %}
 
-        <div class="nav-section">Menú</div>
+        <div class="nav-section">{{ 'nav.section.menu'|trans({}, 'admin_base') }}</div>
         <a href="{{ path('admin_menu') }}"
            class="nav-item {{ app.request.attributes.get('_route') == 'admin_menu' ? 'active' : '' }}">
-            <i class="ti ti-layout-list" aria-hidden="true"></i> Carta
+            <i class="ti ti-layout-list" aria-hidden="true"></i> {{ 'nav.item.menu'|trans({}, 'admin_base') }}
         </a>
         <a href="{{ path('admin_categories') }}"
            class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_categor' ? 'active' : '' }}">
-            <i class="ti ti-category" aria-hidden="true"></i> Categorías
+            <i class="ti ti-category" aria-hidden="true"></i> {{ 'nav.item.categories'|trans({}, 'admin_base') }}
         </a>
         <a href="{{ path('admin_tags') }}"
            class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_tag' ? 'active' : '' }}">
-            <i class="ti ti-tag" aria-hidden="true"></i> Etiquetas
+            <i class="ti ti-tag" aria-hidden="true"></i> {{ 'nav.item.tags'|trans({}, 'admin_base') }}
         </a>
         <a href="{{ path('admin_theme') }}"
            class="nav-item {{ app.request.attributes.get('_route') == 'admin_theme' ? 'active' : '' }}">
-            <i class="ti ti-palette" aria-hidden="true"></i> Personalizar carta
+            <i class="ti ti-palette" aria-hidden="true"></i> {{ 'nav.item.theme'|trans({}, 'admin_base') }}
         </a>
 
-        <div class="nav-section">Restaurante</div>
+        <div class="nav-section">{{ 'nav.section.restaurant'|trans({}, 'admin_base') }}</div>
         <a href="{{ path('admin_qr') }}"
            class="nav-item {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">
-            <i class="ti ti-qrcode" aria-hidden="true"></i> Mi QR
+            <i class="ti ti-qrcode" aria-hidden="true"></i> {{ 'nav.item.qr'|trans({}, 'admin_base') }}
         </a>
         <a href="{{ path('admin_settings') }}"
            class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
-            <i class="ti ti-settings" aria-hidden="true"></i> Configuración
+            <i class="ti ti-settings" aria-hidden="true"></i> {{ 'nav.item.settings'|trans({}, 'admin_base') }}
         </a>
 
         <div class="sidebar-footer">
@@ -267,19 +267,19 @@
                     <i class="ti ti-moon theme-icon-dark" aria-hidden="true"></i>
                     <i class="ti ti-sun theme-icon-light" aria-hidden="true"></i>
                     <span>
-                        <span class="theme-label-dark">Modo oscuro</span>
-                        <span class="theme-label-light">Modo claro</span>
+                        <span class="theme-label-dark">{{ 'theme.dark_mode'|trans({}, 'admin_base') }}</span>
+                        <span class="theme-label-light">{{ 'theme.light_mode'|trans({}, 'admin_base') }}</span>
                     </span>
                 </div>
                 <button class="sidebar-theme-switch"
                         onclick="toggleAdminTheme()"
-                        title="Cambiar modo claro / oscuro"
-                        aria-label="Cambiar tema">
+                        title="{{ 'theme.toggle_title'|trans({}, 'admin_base') }}"
+                        aria-label="{{ 'theme.toggle_aria'|trans({}, 'admin_base') }}">
                     <span class="sidebar-theme-knob"></span>
                 </button>
             </div>
             <a href="{{ path('admin_logout') }}" class="nav-item">
-                <i class="ti ti-logout" aria-hidden="true"></i> Cerrar sesión
+                <i class="ti ti-logout" aria-hidden="true"></i> {{ 'nav.item.logout'|trans({}, 'admin_base') }}
             </a>
         </div>
     </aside>
@@ -291,8 +291,8 @@
                 <div class="main-header-actions">{% block header_actions %}{% endblock %}</div>
                 <button class="theme-toggle-btn"
                         onclick="toggleAdminTheme()"
-                        title="Cambiar modo claro / oscuro"
-                        aria-label="Cambiar tema">
+                        title="{{ 'theme.toggle_title'|trans({}, 'admin_base') }}"
+                        aria-label="{{ 'theme.toggle_aria'|trans({}, 'admin_base') }}">
                     <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
                     <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
                 </button>
@@ -311,26 +311,26 @@
 </div>
 
 {# Mobile bottom nav #}
-<nav class="bottom-nav" aria-label="Navegación">
+<nav class="bottom-nav" aria-label="{{ 'bottom_nav.aria_label'|trans({}, 'admin_base') }}">
     <a href="{{ path('admin_menu') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_menu' ? 'active' : '' }}">
-        <i class="ti ti-layout-list" aria-hidden="true"></i> Carta
+        <i class="ti ti-layout-list" aria-hidden="true"></i> {{ 'bottom_nav.menu'|trans({}, 'admin_base') }}
     </a>
     <a href="{{ path('admin_categories') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_categor' ? 'active' : '' }}">
-        <i class="ti ti-category" aria-hidden="true"></i> Categ.
+        <i class="ti ti-category" aria-hidden="true"></i> {{ 'bottom_nav.categories'|trans({}, 'admin_base') }}
     </a>
     <a href="{{ path('admin_tags') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_tag' ? 'active' : '' }}">
-        <i class="ti ti-tag" aria-hidden="true"></i> Etiq.
+        <i class="ti ti-tag" aria-hidden="true"></i> {{ 'bottom_nav.tags'|trans({}, 'admin_base') }}
     </a>
     <a href="{{ path('admin_qr') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">
-        <i class="ti ti-qrcode" aria-hidden="true"></i> QR
+        <i class="ti ti-qrcode" aria-hidden="true"></i> {{ 'bottom_nav.qr'|trans({}, 'admin_base') }}
     </a>
     <a href="{{ path('admin_settings') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
-        <i class="ti ti-settings" aria-hidden="true"></i> Config
+        <i class="ti ti-settings" aria-hidden="true"></i> {{ 'bottom_nav.settings'|trans({}, 'admin_base') }}
     </a>
 </nav>
 

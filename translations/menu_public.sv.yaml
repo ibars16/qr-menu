@@ -1,0 +1,5 @@
+dialog:
+    title: "Välj språk och valuta"
+    language_label: "Språk"
+    currency_label: "Valuta"
+    confirm: "Fortsätt"

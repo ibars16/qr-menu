@@ -1,0 +1,74 @@
+title: Personalizar carta
+
+confirm:
+    default_title: Aplicar cambio
+    default_sub: El cambio será visible de inmediato para todos los visitantes de tu menú.
+    cancel: Cancelar
+    apply_now: Aplicar ahora
+    applying: Aplicando…
+    use_layout_title: '¿Usar layout "%name%"?'
+    use_layout_sub: Se aplicará de inmediato y todos tus clientes verán el nuevo layout.
+    use_theme_title: '¿Usar tema "%name%"?'
+    use_theme_sub: Se aplicará de inmediato y todos tus clientes verán el nuevo tema.
+    apply_preview_title: '¿Aplicar combinación previsualizada?'
+    apply_preview_sub: 'Se aplicará: %combo%.'
+
+preview:
+    active_title: Vista previa activa
+    active_sub: Solo tú ves esta combinación. Tus clientes siguen viendo la configuración activa.
+    close: Cerrar
+    apply: Aplicar
+    title_with_names: 'Vista previa: %layout% · %theme%'
+    closed_toast: Vista previa cerrada
+
+section:
+    step1_eyebrow: Paso 1 · Estructura
+    layout_title: Layout del menú
+    layout_desc: Elige cómo se organizan los platos en la pantalla.
+    step2_eyebrow: Paso 2 · Apariencia
+    theme_title: Tema visual
+    theme_desc: Colores, fondos y estilo. Funciona con todos los layouts.
+
+card:
+    preview_action: Vista previa
+    use_action: Usar
+    active_label: Activo
+
+toast:
+    save_error: Error al guardar
+    applied: '✓ Cambio aplicado correctamente'
+    connection_error: Error de conexión
+
+layout:
+    standard:
+        name: Estándar
+        desc: Tarjetas con imagen arriba y nombre abajo. Equilibrado e impactante.
+    compact:
+        name: Lista compacta
+        desc: Filas numeradas, rápidas de escanear. Ideal para cartas extensas.
+    grid:
+        name: Cuadrícula
+        desc: Tarjetas verticales con imagen grande. Muy visual e impactante.
+
+theme:
+    classic-dark:
+        name: Clásico oscuro
+        desc: Fondo negro, acento del color de tu marca. Elegante y sofisticado.
+    classic-warm:
+        name: Clásico cálido
+        desc: Fondo crema, tonos cálidos. Acogedor y cercano.
+    glass:
+        name: Glassmorphism
+        desc: Degradado oscuro con efecto cristal y acento morado. Moderno y premium.
+    ocean:
+        name: Océano
+        desc: Azul claro, limpio y fresco. Ideal para cocina del mar.
+    noir:
+        name: Noir
+        desc: Negro profundo con detalles dorados. Lujo y alta gastronomía.
+    forest:
+        name: Bosque
+        desc: Verde natural y orgánico. Perfecto para cocina de mercado y productos locales.
+    terra:
+        name: Terra
+        desc: Terracota mediterránea. Ideal para tapas, pintxos y cocina informal.

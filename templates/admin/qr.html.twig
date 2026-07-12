@@ -1,7 +1,7 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Mi QR{% endblock %}
-{% block page_title %}Mi QR{% endblock %}
+{% block title %}{{ 'title'|trans({}, 'admin_qr') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_qr') }}{% endblock %}
 
 {% block stylesheets %}
     <style>
@@ -74,30 +74,30 @@
 
         <div class="hint">
             <i class="ti ti-info-circle" aria-hidden="true"></i>
-            Imprime este código QR y colócalo en tus mesas o en la entrada. Los clientes lo escanean para ver tu carta digital al instante.
+            {{ 'hint.print_instructions'|trans({}, 'admin_qr') }}
         </div>
 
         <div class="qr-section" style="margin-top:16px">
-            <div class="qr-section-title">Código QR de tu carta</div>
+            <div class="qr-section-title">{{ 'section.qr_code'|trans({}, 'admin_qr') }}</div>
             <div class="qr-section-body">
                 <div class="qr-center">
                     <div class="qr-canvas-wrap" id="qr-wrap">
                         {# Rendered by JS #}
                     </div>
                     <button class="qr-download-btn" onclick="downloadQr()">
-                        <i class="ti ti-download" aria-hidden="true"></i> Descargar QR
+                        <i class="ti ti-download" aria-hidden="true"></i> {{ 'action.download'|trans({}, 'admin_qr') }}
                     </button>
                 </div>
             </div>
         </div>
 
         <div class="qr-section">
-            <div class="qr-section-title">URL de tu carta digital</div>
+            <div class="qr-section-title">{{ 'section.menu_url'|trans({}, 'admin_qr') }}</div>
             <div class="qr-section-body">
                 <div class="url-row">
                     <span class="url-text" id="menu-url">{{ menuUrl }}</span>
                     <button class="copy-btn" onclick="copyUrl()">
-                        <i class="ti ti-copy" aria-hidden="true"></i> Copiar
+                        <i class="ti ti-copy" aria-hidden="true"></i> {{ 'action.copy'|trans({}, 'admin_qr') }}
                     </button>
                 </div>
             </div>
@@ -110,6 +110,9 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script>
         const MENU_URL = {{ menuUrl|json_encode }};
+        const MSG_QR_UNAVAILABLE = "{{ 'toast.qr_unavailable'|trans({}, 'admin_qr')|e('js') }}";
+        const MSG_QR_DOWNLOADED  = "{{ 'toast.qr_downloaded'|trans({}, 'admin_qr')|e('js') }}";
+        const MSG_URL_COPIED     = "{{ 'toast.url_copied'|trans({}, 'admin_qr')|e('js') }}";
 
         // Generate QR on load
         QRCode.toCanvas(MENU_URL, { width: 220, margin: 0, color: { dark: '#000', light: '#fff' } }, (err, canvas) => {
@@ -118,7 +121,7 @@
 
         function downloadQr() {
             const src = document.querySelector('#qr-wrap canvas');
-            if (!src) { showToast('QR no disponible', 'error'); return; }
+            if (!src) { showToast(MSG_QR_UNAVAILABLE, 'error'); return; }
 
             const size = 1024;
             const out  = document.createElement('canvas');
@@ -133,13 +136,13 @@
             a.download   = '{{ restaurant.slug }}-qr.png';
             a.href       = out.toDataURL('image/png');
             a.click();
-            showToast('QR descargado ✓', 'success');
+            showToast(MSG_QR_DOWNLOADED, 'success');
         }
 
         function copyUrl() {
             const url = document.getElementById('menu-url')?.textContent?.trim();
             if (!url) return;
-            navigator.clipboard.writeText(url).then(() => showToast('URL copiada ✓', 'success'));
+            navigator.clipboard.writeText(url).then(() => showToast(MSG_URL_COPIED, 'success'));
         }
     </script>
 {% endblock %}

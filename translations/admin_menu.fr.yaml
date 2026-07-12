@@ -1,0 +1,107 @@
+title: Carte
+
+action:
+    import_ai: Importer avec l'IA
+    cancel: Annuler
+    next: Suivant
+    back: Retour
+    save: Enregistrer
+    save_product: Enregistrer le plat
+
+category:
+    delete_title: Supprimer la catégorie
+    edit_title: Modifier le nom de la catégorie
+    toggle_aria: Activer/désactiver la catégorie
+    toggle_hide_title: 'Visible · appuyez pour masquer'
+    toggle_show_title: 'Masquée · appuyez pour afficher'
+    toggle_visible: Catégorie visible
+    toggle_hidden: Catégorie masquée
+
+common:
+    optional: facultatif
+    unnamed: (sans nom)
+
+empty:
+    title: Votre carte est vide
+    subtitle: 'Créez votre première catégorie (Entrées, Pizzas, Desserts…) puis ajoutez vos plats. Ou importez toute la carte à partir d''une photo avec l''IA.'
+    import_ai: Importer la carte avec l'IA
+    create_first_category: Créer la première catégorie
+
+field:
+    calories: Calories
+    category: Catégorie
+    description: Description
+    description_placeholder: 'Décrivez brièvement le plat, les ingrédients principaux, le mode de préparation…'
+    ingredients: Ingrédients
+    photo: Photo du plat
+    price: 'Prix (%currency%)'
+    product_name: Nom du plat
+    product_name_placeholder: 'Ex : Pizza Margherita'
+    spicy_level: Niveau de piquant
+    tags: Étiquettes
+
+field_error:
+    name_required: Le nom est obligatoire
+    description_required: La description est obligatoire
+    price_required: Le prix est obligatoire
+
+ingredients:
+    hint: Les nouveaux ingrédients sont automatiquement ajoutés à la banque d'ingrédients du restaurant.
+    placeholder: 'Saisissez un ingrédient et appuyez sur Entrée…'
+
+js:
+    ai_import_soon: 'Import avec IA — bientôt disponible ✨'
+    category_created: 'Catégorie créée ✓'
+    category_deleted: Catégorie supprimée
+    category_updated: 'Catégorie mise à jour ✓'
+    confirm_delete_category: 'Supprimer la catégorie "%name%" ?'
+    confirm_delete_category_with_products: 'Supprimer "%name%" et ses %count% plats ? Cette action est irréversible.'
+    confirm_delete_product: 'Supprimer "%name%" ? Cette action est irréversible.'
+    default_product_name: ce plat
+    error_loading_product: Erreur lors du chargement du plat
+    fill_required_fields: Veuillez remplir les champs obligatoires
+    new_ingredient_label: '· Créer un nouveau'
+    product_created: 'Plat créé ✓'
+    product_deleted: Plat supprimé
+    product_saved: 'Plat enregistré ✓'
+    remove_ingredient_aria: 'Retirer %name%'
+
+modal:
+    category:
+        edit_title: Modifier la catégorie
+        new_title: Nouvelle catégorie
+    product:
+        edit_title: Modifier le plat
+        new_title: Nouveau plat
+    close_aria: Fermer
+
+product:
+    add_to_category: 'Ajouter un plat à %category%'
+    hidden: Masqué
+    toggle_aria: Activer/désactiver le plat
+    visible: Visible
+
+spicy:
+    aria: 'Niveau de piquant %level%'
+    none: Pas épicé
+    mild: 'Doux 🌶'
+    medium: 'Moyen 🌶🌶'
+    hot: 'Épicé 🌶🌶🌶'
+    very_hot: 'Très épicé 🌶🌶🌶🌶'
+    extreme: 'Extrême 🌶🌶🌶🌶🌶'
+
+step:
+    category: Catégorie
+    info: Informations
+
+tags:
+    none_configured: 'Aucune étiquette configurée — %link_start%créez-en dans Étiquettes%link_end% pour marquer vos plats comme Végétarien, Sans gluten, etc.'
+
+upload:
+    aria: Ajouter une photo du plat
+    hint: Cliquez ou glissez une image ici
+
+error:
+    category_name_required: Le nom est obligatoire.
+    product_not_found: Plat introuvable.
+    category_not_found: Catégorie introuvable.

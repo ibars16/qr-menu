@@ -1,0 +1,17 @@
+title: Mon QR
+
+section:
+    qr_code: Code QR de votre carte
+    menu_url: URL de votre carte numérique
+
+action:
+    download: Télécharger le QR
+    copy: Copier
+
+hint:
+    print_instructions: "Imprimez ce code QR et placez-le sur vos tables ou à l'entrée. Les clients le scannent pour voir votre carte numérique instantanément."
+
+toast:
+    qr_unavailable: QR non disponible
+    qr_downloaded: 'QR téléchargé ✓'
+    url_copied: 'URL copiée ✓'

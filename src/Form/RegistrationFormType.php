@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Service\AdminLocaleResolver;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -16,8 +17,17 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class RegistrationFormType extends AbstractType
 {
+    public function __construct(private readonly AdminLocaleResolver $adminLocaleResolver)
+    {
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $adminLocaleChoices = [];
+        foreach ($this->adminLocaleResolver->getLocales() as $code => $meta) {
+            $adminLocaleChoices[$meta['flag'] . ' ' . $meta['name']] = $code;
+        }
+
         $builder
             ->add('restaurantName', TextType::class, [
                 'label'       => 'Nombre del restaurante',
@@ -65,13 +75,21 @@ class RegistrationFormType extends AbstractType
                     '日本語'    => 'ja',
                 ],
             ])
+            ->add('adminLocale', ChoiceType::class, [
+                'label'   => 'Idioma del Panel de Administración',
+                'help'    => 'Solo afecta a tu panel de gestión, no a la carta de tus clientes.',
+                'choices' => $adminLocaleChoices,
+                'data'    => $options['detected_admin_locale'],
+            ])
         ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => null,
+            'data_class'             => null,
+            'detected_admin_locale'  => $this->adminLocaleResolver->getDefaultLocale(),
         ]);
+        $resolver->setAllowedTypes('detected_admin_locale', 'string');
     }
 }

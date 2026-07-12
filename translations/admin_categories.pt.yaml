@@ -1,0 +1,54 @@
+title: Categorias
+
+action:
+    new_category: Nova categoria
+    create_first_category: Criar primeira categoria
+    edit_name: Editar nome
+    delete: Eliminar
+    delete_category: Eliminar categoria
+    toggle_active: Ativar/desativar
+    cancel: Cancelar
+    save: Guardar
+    close: Fechar
+
+empty_state:
+    title: Sem categorias
+    subtitle: 'As categorias organizam o seu cardápio (Entradas, Pizzas, Sobremesas…). Crie a primeira para começar.'
+
+modal:
+    edit_title: Editar categoria
+
+field:
+    name: Nome
+    name_placeholder: 'Ex.: Entradas, Pizzas, Sobremesas…'
+    name_required: O nome é obrigatório
+    which_category: A que categoria pertence?
+
+meta:
+    dish_singular: prato
+    dish_plural: pratos
+
+status:
+    visible: Visível
+    hidden: Oculta
+
+hint:
+    drag_reorder: Arraste as categorias para alterar a ordem
+    ai_translations: As traduções para outros idiomas serão adicionadas automaticamente com IA.
+
+badge:
+    position: '%position%'
+
+toast:
+    updated: 'Categoria atualizada ✓'
+    created: 'Categoria criada ✓'
+    visible: Categoria visível
+    hidden: Categoria oculta
+    deleted: Categoria eliminada
+
+confirm:
+    delete_with_products: 'Eliminar "%name%" e os seus %count% pratos? Não é possível desfazer.'
+    delete_simple: 'Eliminar a categoria "%name%"?'
+
+error:
+    select_category_required: Selecione uma categoria para continuar.

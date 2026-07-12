@@ -30,6 +30,9 @@ class ProductTag
     #[ORM\Column]
     private int $position = 0;
 
+    #[ORM\Column]
+    private bool $isPreset = false;
+
     #[ORM\ManyToMany(
         targetEntity: Product::class,
         mappedBy: 'tags'
@@ -108,6 +111,16 @@ class ProductTag
     public function setPosition(int $position): void
     {
         $this->position = $position;
+    }
+
+    public function isPreset(): bool
+    {
+        return $this->isPreset;
+    }
+
+    public function setIsPreset(bool $isPreset): void
+    {
+        $this->isPreset = $isPreset;
     }
 
     public function getProducts(): Collection

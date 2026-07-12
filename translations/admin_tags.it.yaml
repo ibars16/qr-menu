@@ -1,0 +1,43 @@
+title: Etichette
+
+action:
+    new_tag: Nuova etichetta
+    create_first: Crea la prima etichetta
+    edit_tag: Modifica etichetta
+    delete_tag: Elimina etichetta
+    cancel: Annulla
+    save: Salva
+
+info_banner: 'Le etichette compaiono su ogni piatto e aiutano i clienti a filtrare (Vegano, Senza glutine, Piccante…). Crea quelle che ti servono e assegnale dal menu.'
+
+empty:
+    title: Ancora nessuna etichetta
+    subtitle: 'Crea etichette per classificare i tuoi piatti: Vegano, Senza glutine, Popolare, Piccante…'
+
+meta:
+    dish_singular: piatto
+    dish_plural: piatti
+
+aria:
+    close: Chiudi
+
+field:
+    name: Nome
+    name_placeholder: 'Vegano, Senza glutine, Popolare…'
+    icon: Icona
+    color: Colore
+
+error:
+    name_required: Il nome è obbligatorio.
+
+hint:
+    icon: Scrivi un'emoji che rappresenti l'etichetta
+
+toast:
+    created: 'Etichetta creata ✓'
+    updated: 'Etichetta aggiornata ✓'
+    deleted: Etichetta eliminata
+
+confirm:
+    delete_simple: 'Eliminare l''etichetta "%name%"?'
+    delete_with_products: 'Eliminare l''etichetta "%name%"? Verrà rimossa dai %count% piatti che la usano.'

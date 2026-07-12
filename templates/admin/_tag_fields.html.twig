@@ -1,21 +1,21 @@
 {# Shared tag form fields — used in both desktop modal and mobile sheet #}
 
 <div class="field">
-    <div class="field-label">Nombre <span class="req">*</span></div>
-    <input type="text" id="tag-name" placeholder="Vegano, Sin gluten, Popular…"
+    <div class="field-label">{{ 'field.name'|trans({}, 'admin_tags') }} <span class="req">*</span></div>
+    <input type="text" id="tag-name" placeholder="{{ 'field.name_placeholder'|trans({}, 'admin_tags') }}"
            oninput="this.classList.remove('error'); document.getElementById('tag-name-error').classList.remove('show')">
-    <div class="field-error" id="tag-name-error">El nombre es obligatorio.</div>
+    <div class="field-error" id="tag-name-error">{{ 'error.name_required'|trans({}, 'admin_tags') }}</div>
 </div>
 
 <div class="field">
-    <div class="field-label">Icono</div>
+    <div class="field-label">{{ 'field.icon'|trans({}, 'admin_tags') }}</div>
     <input type="text" id="tag-icon" placeholder="🌿" maxlength="10"
            style="font-size:22px; text-align:center; letter-spacing:4px">
-    <div class="field-hint">Escribe un emoji que represente la etiqueta</div>
+    <div class="field-hint">{{ 'hint.icon'|trans({}, 'admin_tags') }}</div>
 </div>
 
 <div class="field">
-    <div class="field-label">Color</div>
+    <div class="field-label">{{ 'field.color'|trans({}, 'admin_tags') }}</div>
     <div class="color-row">
         <div class="color-swatch" style="background:#666666">
             <input type="color" id="tag-color-picker" value="#666666"

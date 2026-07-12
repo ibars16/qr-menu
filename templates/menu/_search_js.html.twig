@@ -1,6 +1,7 @@
 <script>
-function changeLanguage(lang) { const u = new URL(window.location); u.searchParams.set('lang', lang); window.location.href = u.toString(); }
-function changeCurrency(c)    { const u = new URL(window.location); u.searchParams.set('currency', c); window.location.href = u.toString(); }
+// changeLanguage / changeCurrency are defined in menu/_prefs_dialog.html.twig,
+// included once from menu/show.html.twig — they also persist the choice to
+// the customer's preference cookie before reloading.
 function flipCard(wrap)        { wrap.querySelector('.card').classList.toggle('flipped'); }
 function unflipCard(e, btn)    { e.stopPropagation(); btn.closest('.card').classList.remove('flipped'); }
 

@@ -1,0 +1,35 @@
+title:
+    default: Admin
+
+sidebar:
+    role: Painel de administração
+
+action:
+    view_menu: Ver o meu cardápio
+
+nav:
+    section:
+        menu: Cardápio
+        restaurant: Restaurante
+    item:
+        menu: Cardápio
+        categories: Categorias
+        tags: Etiquetas
+        theme: Personalizar cardápio
+        qr: Meu QR
+        settings: Configurações
+        logout: Sair
+
+theme:
+    dark_mode: Modo escuro
+    light_mode: Modo claro
+    toggle_title: Alternar modo claro / escuro
+    toggle_aria: Alternar tema
+
+bottom_nav:
+    aria_label: Navegação
+    menu: Cardápio
+    categories: Categ.
+    tags: Etiq.
+    qr: QR
+    settings: Config

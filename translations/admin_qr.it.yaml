@@ -1,0 +1,17 @@
+title: Il mio QR
+
+section:
+    qr_code: Codice QR del tuo menu
+    menu_url: URL del tuo menu digitale
+
+action:
+    download: Scarica QR
+    copy: Copia
+
+hint:
+    print_instructions: Stampa questo codice QR e posizionalo sui tavoli o all'ingresso. I clienti lo scansionano per vedere subito il tuo menu digitale.
+
+toast:
+    qr_unavailable: QR non disponibile
+    qr_downloaded: 'QR scaricato ✓'
+    url_copied: 'URL copiato ✓'

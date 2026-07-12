@@ -1,0 +1,17 @@
+title: Meu QR
+
+section:
+    qr_code: Código QR do seu cardápio
+    menu_url: URL do seu cardápio digital
+
+action:
+    download: Baixar QR
+    copy: Copiar
+
+hint:
+    print_instructions: Imprima este código QR e coloque-o nas suas mesas ou na entrada. Os clientes o escaneiam para ver o seu cardápio digital instantaneamente.
+
+toast:
+    qr_unavailable: QR não disponível
+    qr_downloaded: 'QR baixado ✓'
+    url_copied: 'URL copiado ✓'

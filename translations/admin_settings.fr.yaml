@@ -1,0 +1,39 @@
+title: Paramètres
+
+section:
+    restaurant_info: Informations sur le restaurant
+    appearance: Apparence
+    language_currency: Langue et devise
+
+field:
+    name: Nom
+    name_placeholder: Nom de votre restaurant
+    menu_url: URL de votre carte numérique
+    logo: Logo du restaurant
+    primary_color: Couleur principale
+    menu_language: Langue principale de la carte
+    admin_language: "Langue du panneau d'administration"
+    currency: Devise de base
+
+action:
+    copy: Copier
+    change_logo: Changer le logo
+    upload_logo: Ajouter un logo
+    remove_logo: Supprimer le logo
+    save: Enregistrer les modifications
+
+hint:
+    logo_format: 'PNG ou JPG, 2 Mo max.'
+    primary_color: Utilisée dans toute la carte numérique
+    menu_language: La langue dans laquelle vous saisissez les noms et descriptions des plats.
+    admin_language: "La langue de ce panneau de gestion. Elle n'affecte pas la carte vue par vos clients."
+    currency: Les prix sont enregistrés dans cette devise. Les clients peuvent voir la conversion en temps réel.
+
+flash:
+    name_required: Le nom du restaurant est obligatoire.
+    logo_upload_error: Erreur lors du téléchargement du logo.
+    saved: Paramètres enregistrés avec succès.
+
+toast:
+    logo_removed: "Logo supprimé à l'enregistrement"
+    url_copied: 'URL copiée ✓'

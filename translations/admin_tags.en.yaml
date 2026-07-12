@@ -1,0 +1,43 @@
+title: Tags
+
+action:
+    new_tag: New tag
+    create_first: Create first tag
+    edit_tag: Edit tag
+    delete_tag: Delete tag
+    cancel: Cancel
+    save: Save
+
+info_banner: 'Tags appear on every dish and help customers filter (Vegan, Gluten-free, Spicy…). Create the ones you need and assign them from the menu.'
+
+empty:
+    title: No tags yet
+    subtitle: 'Create tags to classify your dishes: Vegan, Gluten-free, Popular, Spicy…'
+
+meta:
+    dish_singular: dish
+    dish_plural: dishes
+
+aria:
+    close: Close
+
+field:
+    name: Name
+    name_placeholder: 'Vegan, Gluten-free, Popular…'
+    icon: Icon
+    color: Color
+
+error:
+    name_required: The name is required.
+
+hint:
+    icon: Type an emoji that represents the tag
+
+toast:
+    created: 'Tag created ✓'
+    updated: 'Tag updated ✓'
+    deleted: Tag deleted
+
+confirm:
+    delete_simple: 'Delete the tag "%name%"?'
+    delete_with_products: 'Delete the tag "%name%"? It will be removed from the %count% dishes using it.'

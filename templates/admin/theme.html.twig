@@ -1,7 +1,7 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Personalizar carta{% endblock %}
-{% block page_title %}Personalizar carta{% endblock %}
+{% block title %}{{ 'title'|trans({}, 'admin_theme') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_theme') }}{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -162,11 +162,11 @@
     {# ── Confirmation modal ── #}
     <div class="confirm-backdrop" id="confirm-backdrop">
         <div class="confirm-modal">
-            <div class="confirm-title" id="confirm-title">Aplicar cambio</div>
-            <div class="confirm-sub" id="confirm-sub">El cambio será visible de inmediato para todos los visitantes de tu menú.</div>
+            <div class="confirm-title" id="confirm-title">{{ 'confirm.default_title'|trans({}, 'admin_theme') }}</div>
+            <div class="confirm-sub" id="confirm-sub">{{ 'confirm.default_sub'|trans({}, 'admin_theme') }}</div>
             <div class="confirm-btns">
-                <button class="confirm-cancel" onclick="closeConfirm()">Cancelar</button>
-                <button class="confirm-apply" id="confirm-apply-btn" onclick="doConfirm()">Aplicar ahora</button>
+                <button class="confirm-cancel" onclick="closeConfirm()">{{ 'confirm.cancel'|trans({}, 'admin_theme') }}</button>
+                <button class="confirm-apply" id="confirm-apply-btn" onclick="doConfirm()">{{ 'confirm.apply_now'|trans({}, 'admin_theme') }}</button>
             </div>
         </div>
     </div>
@@ -175,20 +175,20 @@
     <div class="preview-bar" id="preview-bar">
         <div class="preview-dot"></div>
         <div class="preview-bar-text">
-            <div class="preview-bar-title" id="preview-bar-title">Vista previa activa</div>
-            <div class="preview-bar-sub">Solo tú ves esta combinación. Tus clientes siguen viendo la configuración activa.</div>
+            <div class="preview-bar-title" id="preview-bar-title">{{ 'preview.active_title'|trans({}, 'admin_theme') }}</div>
+            <div class="preview-bar-sub">{{ 'preview.active_sub'|trans({}, 'admin_theme') }}</div>
         </div>
         <div class="preview-bar-btns">
-            <button class="btn btn-sm btn-secondary" onclick="cancelPreview()">Cerrar</button>
-            <button class="btn btn-sm btn-primary" onclick="applyFromBar()">Aplicar</button>
+            <button class="btn btn-sm btn-secondary" onclick="cancelPreview()">{{ 'preview.close'|trans({}, 'admin_theme') }}</button>
+            <button class="btn btn-sm btn-primary" onclick="applyFromBar()">{{ 'preview.apply'|trans({}, 'admin_theme') }}</button>
         </div>
     </div>
 
     {# ── Layouts ── #}
     <div class="sec-hdr">
-        <div class="sec-eyebrow">Paso 1 · Estructura</div>
-        <div class="sec-title">Layout del menú</div>
-        <div class="sec-desc">Elige cómo se organizan los platos en la pantalla.</div>
+        <div class="sec-eyebrow">{{ 'section.step1_eyebrow'|trans({}, 'admin_theme') }}</div>
+        <div class="sec-title">{{ 'section.layout_title'|trans({}, 'admin_theme') }}</div>
+        <div class="sec-desc">{{ 'section.layout_desc'|trans({}, 'admin_theme') }}</div>
     </div>
 
     <div class="layouts-grid">
@@ -230,15 +230,15 @@
                     {% endif %}
                 </div>
                 <div class="card-footer">
-                    <div class="card-label">{{ layout.icon }} {{ layout.name }}</div>
-                    <div class="card-desc">{{ layout.desc }}</div>
-                    {% if restaurant.layout == key %}<div class="active-chip">✓ Activo</div>{% endif %}
+                    <div class="card-label">{{ layout.icon }} {{ ('layout.' ~ key ~ '.name')|trans({}, 'admin_theme') }}</div>
+                    <div class="card-desc">{{ ('layout.' ~ key ~ '.desc')|trans({}, 'admin_theme') }}</div>
+                    {% if restaurant.layout == key %}<div class="active-chip">✓ {{ 'card.active_label'|trans({}, 'admin_theme') }}</div>{% endif %}
                     <div class="card-actions">
                         <button class="btn-eye" id="lprev-{{ key }}" onclick="previewLayout('{{ key }}')">
-                            <i class="ti ti-eye"></i> Vista previa
+                            <i class="ti ti-eye"></i> {{ 'card.preview_action'|trans({}, 'admin_theme') }}
                         </button>
                         <button class="btn-use {{ restaurant.layout == key ? 'is-current' : '' }}" onclick="selectLayout('{{ key }}')">
-                            {{ restaurant.layout == key ? '✓ Activo' : 'Usar' }}
+                            {{ restaurant.layout == key ? '✓ ' ~ 'card.active_label'|trans({}, 'admin_theme') : 'card.use_action'|trans({}, 'admin_theme') }}
                         </button>
                     </div>
                 </div>
@@ -250,9 +250,9 @@
 
     {# ── Themes ── #}
     <div class="sec-hdr">
-        <div class="sec-eyebrow">Paso 2 · Apariencia</div>
-        <div class="sec-title">Tema visual</div>
-        <div class="sec-desc">Colores, fondos y estilo. Funciona con todos los layouts.</div>
+        <div class="sec-eyebrow">{{ 'section.step2_eyebrow'|trans({}, 'admin_theme') }}</div>
+        <div class="sec-title">{{ 'section.theme_title'|trans({}, 'admin_theme') }}</div>
+        <div class="sec-desc">{{ 'section.theme_desc'|trans({}, 'admin_theme') }}</div>
     </div>
 
     <div class="themes-grid">
@@ -299,15 +299,15 @@
                 </div>
 
                 <div class="card-footer">
-                    <div class="card-label">{{ thm.icon }} {{ thm.name }}</div>
-                    <div class="card-desc">{{ thm.desc }}</div>
-                    {% if restaurant.theme == key %}<div class="active-chip">✓ Activo</div>{% endif %}
+                    <div class="card-label">{{ thm.icon }} {{ ('theme.' ~ key ~ '.name')|trans({}, 'admin_theme') }}</div>
+                    <div class="card-desc">{{ ('theme.' ~ key ~ '.desc')|trans({}, 'admin_theme') }}</div>
+                    {% if restaurant.theme == key %}<div class="active-chip">✓ {{ 'card.active_label'|trans({}, 'admin_theme') }}</div>{% endif %}
                     <div class="card-actions">
                         <button class="btn-eye" id="tprev-{{ key }}" onclick="previewTheme('{{ key }}')">
-                            <i class="ti ti-eye"></i> Vista previa
+                            <i class="ti ti-eye"></i> {{ 'card.preview_action'|trans({}, 'admin_theme') }}
                         </button>
                         <button class="btn-use {{ restaurant.theme == key ? 'is-current' : '' }}" onclick="selectTheme('{{ key }}')">
-                            {{ restaurant.theme == key ? '✓ Activo' : 'Usar' }}
+                            {{ restaurant.theme == key ? '✓ ' ~ 'card.active_label'|trans({}, 'admin_theme') : 'card.use_action'|trans({}, 'admin_theme') }}
                         </button>
                     </div>
                 </div>
@@ -323,8 +323,22 @@
 const PREVIEW_BASE   = '{{ previewBase|default('') }}';
 const CURRENT_LAYOUT = '{{ restaurant.layout }}';
 const CURRENT_THEME  = '{{ restaurant.theme }}';
-const LAYOUT_NAMES   = { {% for k, l in layouts %}'{{ k }}': '{{ l.name }}',{% endfor %} };
-const THEME_NAMES    = { {% for k, t in themes %}'{{ k }}': '{{ t.name }}',{% endfor %} };
+const LAYOUT_NAMES   = { {% for k in layouts|keys %}'{{ k }}': "{{ ('layout.' ~ k ~ '.name')|trans({}, 'admin_theme')|e('js') }}",{% endfor %} };
+const THEME_NAMES    = { {% for k in themes|keys %}'{{ k }}': "{{ ('theme.' ~ k ~ '.name')|trans({}, 'admin_theme')|e('js') }}",{% endfor %} };
+
+const MSG_APPLY_NOW           = "{{ 'confirm.apply_now'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_APPLYING            = "{{ 'confirm.applying'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_USE_LAYOUT_TITLE    = "{{ 'confirm.use_layout_title'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_USE_LAYOUT_SUB      = "{{ 'confirm.use_layout_sub'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_USE_THEME_TITLE     = "{{ 'confirm.use_theme_title'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_USE_THEME_SUB       = "{{ 'confirm.use_theme_sub'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_APPLY_PREVIEW_TITLE = "{{ 'confirm.apply_preview_title'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_APPLY_PREVIEW_SUB   = "{{ 'confirm.apply_preview_sub'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_PREVIEW_TITLE       = "{{ 'preview.title_with_names'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_PREVIEW_CLOSED      = "{{ 'preview.closed_toast'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_SAVE_ERROR          = "{{ 'toast.save_error'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_APPLIED             = "{{ 'toast.applied'|trans({}, 'admin_theme')|e('js') }}";
+const MSG_CONNECTION_ERROR    = "{{ 'toast.connection_error'|trans({}, 'admin_theme')|e('js') }}";
 
 let curPrevLayout  = CURRENT_LAYOUT;
 let curPrevTheme   = CURRENT_THEME;
@@ -337,7 +351,7 @@ function openConfirm(title, sub, action) {
     document.getElementById('confirm-sub').textContent      = sub;
     const btn = document.getElementById('confirm-apply-btn');
     btn.disabled    = false;
-    btn.textContent = 'Aplicar ahora';
+    btn.textContent = MSG_APPLY_NOW;
     confirmAction   = action;
     document.getElementById('confirm-backdrop').classList.add('show');
 }
@@ -348,7 +362,7 @@ function closeConfirm() {
 function doConfirm() {
     const btn = document.getElementById('confirm-apply-btn');
     btn.disabled    = true;
-    btn.textContent = 'Aplicando…';
+    btn.textContent = MSG_APPLYING;
     if (confirmAction) confirmAction();
 }
 document.getElementById('confirm-backdrop').addEventListener('click', function(e) {
@@ -359,8 +373,8 @@ document.getElementById('confirm-backdrop').addEventListener('click', function(e
 function selectLayout(key) {
     if (key === CURRENT_LAYOUT) return;
     openConfirm(
-        '¿Usar layout "' + LAYOUT_NAMES[key] + '"?',
-        'Se aplicará de inmediato y todos tus clientes verán el nuevo layout.',
+        MSG_USE_LAYOUT_TITLE.replace('%name%', LAYOUT_NAMES[key]),
+        MSG_USE_LAYOUT_SUB,
         () => applyNow({ layout: key })
     );
 }
@@ -380,8 +394,8 @@ function previewLayout(key) {
 function selectTheme(key) {
     if (key === CURRENT_THEME) return;
     openConfirm(
-        '¿Usar tema "' + THEME_NAMES[key] + '"?',
-        'Se aplicará de inmediato y todos tus clientes verán el nuevo tema.',
+        MSG_USE_THEME_TITLE.replace('%name%', THEME_NAMES[key]),
+        MSG_USE_THEME_SUB,
         () => applyNow({ theme: key })
     );
 }
@@ -410,7 +424,8 @@ function openPreviewTab() {
 function showPreviewBar() {
     const ln = LAYOUT_NAMES[curPrevLayout] ?? curPrevLayout;
     const tn = THEME_NAMES[curPrevTheme]   ?? curPrevTheme;
-    document.getElementById('preview-bar-title').textContent = 'Vista previa: ' + ln + ' · ' + tn;
+    document.getElementById('preview-bar-title').textContent =
+        MSG_PREVIEW_TITLE.replace('%layout%', ln).replace('%theme%', tn);
     document.getElementById('preview-bar').classList.add('show');
 }
 function cancelPreview() {
@@ -420,7 +435,7 @@ function cancelPreview() {
     document.querySelectorAll('[id^="lcard-"],[id^="tcard-"]').forEach(c => c.classList.remove('is-preview'));
     document.querySelectorAll('[id^="lprev-"],[id^="tprev-"]').forEach(b => b.classList.remove('active'));
     document.getElementById('preview-bar').classList.remove('show');
-    showToast('Vista previa cerrada');
+    showToast(MSG_PREVIEW_CLOSED);
 }
 function applyFromBar() {
     const chLayout = curPrevLayout !== CURRENT_LAYOUT ? curPrevLayout : null;
@@ -430,8 +445,8 @@ function applyFromBar() {
     if (chLayout) parts.push('"' + LAYOUT_NAMES[chLayout] + '"');
     if (chTheme)  parts.push('"' + THEME_NAMES[chTheme]   + '"');
     openConfirm(
-        '¿Aplicar combinación previsualizada?',
-        'Se aplicará: ' + parts.join(' + ') + '.',
+        MSG_APPLY_PREVIEW_TITLE,
+        MSG_APPLY_PREVIEW_SUB.replace('%combo%', parts.join(' + ')),
         () => {
             const body = {};
             if (chLayout) body.layout = chLayout;
@@ -450,11 +465,11 @@ async function applyNow(body) {
             body: JSON.stringify(body)
         });
         const data = await res.json();
-        if (!data.ok) { showToast('Error al guardar', 'error'); closeConfirm(); return; }
-        showToast('✓ Cambio aplicado correctamente');
+        if (!data.ok) { showToast(MSG_SAVE_ERROR, 'error'); closeConfirm(); return; }
+        showToast(MSG_APPLIED);
         setTimeout(() => location.reload(), 700);
     } catch(e) {
-        showToast('Error de conexión', 'error');
+        showToast(MSG_CONNECTION_ERROR, 'error');
         closeConfirm();
     }
 }

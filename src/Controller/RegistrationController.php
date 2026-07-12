@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
+use App\Service\AdminLocaleResolver;
+use App\Service\DefaultTagSeeder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -23,12 +25,16 @@ class RegistrationController extends AbstractController
         EntityManagerInterface $em,
         Security $security,
         SluggerInterface $slugger,
+        DefaultTagSeeder $tagSeeder,
+        AdminLocaleResolver $adminLocaleResolver,
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_menu');
         }
 
-        $form = $this->createForm(RegistrationFormType::class);
+        $form = $this->createForm(RegistrationFormType::class, options: [
+            'detected_admin_locale' => $adminLocaleResolver->resolveFromRequest($request),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -47,6 +53,7 @@ class RegistrationController extends AbstractController
             $restaurant->setSlug($slug);
             $restaurant->setCurrency($data['currency']);
             $restaurant->setDefaultLanguage($data['language']);
+            $restaurant->setAdminLocale($adminLocaleResolver->resolve($data['adminLocale']));
             $restaurant->setPrimaryColor('#C1440E');
 
             $em->persist($restaurant);
@@ -61,7 +68,11 @@ class RegistrationController extends AbstractController
             $em->persist($user);
             $em->flush();
 
-            // 3. Log in automatically
+            // 3. Seed preset dietary tags for the new restaurant
+            $tagSeeder->seedForRestaurant($restaurant);
+            $em->flush();
+
+            // 4. Log in automatically
             return $security->login($user, 'form_login', 'main');
         }
 

@@ -1,0 +1,35 @@
+title:
+    default: Admin
+
+sidebar:
+    role: "Panneau d'administration"
+
+action:
+    view_menu: Voir ma carte
+
+nav:
+    section:
+        menu: Menu
+        restaurant: Restaurant
+    item:
+        menu: Carte
+        categories: Catégories
+        tags: Étiquettes
+        theme: Personnaliser la carte
+        qr: Mon QR
+        settings: Paramètres
+        logout: Déconnexion
+
+theme:
+    dark_mode: Mode sombre
+    light_mode: Mode clair
+    toggle_title: Basculer mode clair / sombre
+    toggle_aria: Changer de thème
+
+bottom_nav:
+    aria_label: Navigation
+    menu: Carte
+    categories: 'Catég.'
+    tags: 'Étiq.'
+    qr: QR
+    settings: Config
