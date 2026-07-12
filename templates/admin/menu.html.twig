@@ -304,35 +304,39 @@
             .tag-pill { font-size:13px; min-height:38px; padding:6px 14px; }
         }
 
-        /* Ingredients */
-        .ing-wrap { position:relative; }
-        .ing-suggestions {
-            position:absolute; top:100%; left:0; right:0; background:var(--bg-deep);
-            border:1px solid var(--bd-2); border-radius:9px; margin-top:4px;
-            z-index:10; overflow:hidden; display:none;
+        /* Ingredients — Tom Select (base structure from tom-select.default.min.css, reskinned here) */
+        .ts-wrapper.multi .ts-control {
+            background:var(--bg-input); border:1px solid var(--bd-2); border-radius:10px;
+            padding:6px 8px; gap:5px;
         }
-        .ing-suggestions.open { display:block; }
-        .ing-option {
-            padding:10px 13px; font-size:13px; color:var(--tx-2); cursor:pointer;
-            transition:background 0.1s; display:flex; align-items:center; gap:8px;
-        }
-        .ing-option:hover { background:var(--bg-hover); }
-        .ing-option .new-label { font-size:11px; color:var(--tx-5); }
-        .ing-tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
-        .ing-tag  {
+        .ts-wrapper.multi.focus .ts-control { border-color:var(--tx-6); box-shadow:none; }
+        .ts-control input { color:var(--tx-2); font-size:13px; }
+        .ts-control input::placeholder { color:var(--tx-6); }
+        .ts-wrapper.multi .ts-control > .item {
             display:flex; align-items:center; gap:5px; font-size:12px;
             padding:4px 10px; border-radius:20px; background:var(--bg-deep);
             border:1px solid var(--bd-2); color:var(--tx-3);
         }
-        .ing-tag button {
-            background:none; border:none; color:var(--tx-6); cursor:pointer;
-            font-size:13px; padding:0; line-height:1; display:flex; align-items:center;
+        .ts-wrapper.multi .ts-control > .item.active { background:var(--bg-hover); border-color:var(--bd-2); }
+        .plugin-remove_button .item .remove {
+            border-left:none; color:var(--tx-6); padding:0 0 0 2px; font-size:13px;
         }
-        .ing-tag button:hover { color:#F0997B; }
+        .plugin-remove_button .item .remove:hover { background:none; color:#F0997B; }
+        .ts-dropdown {
+            background:var(--bg-deep); border:1px solid var(--bd-2); border-radius:9px;
+            margin-top:4px; overflow:hidden; box-shadow:none;
+        }
+        .ts-dropdown .option, .ts-dropdown .create {
+            padding:10px 13px; font-size:13px; color:var(--tx-2);
+        }
+        .ts-dropdown .option.active { background:var(--bg-hover); color:var(--tx-2); }
+        .ts-dropdown .create { color:var(--tx-5); cursor:pointer; }
+        .ts-dropdown .create strong { color:var(--tx-2); font-weight:600; }
+        .ts-dropdown .no-results { padding:10px 13px; font-size:13px; color:var(--tx-6); }
 
         @media (max-width: 767px) {
-            .ing-option { padding:13px; font-size:14px; }
-            .ing-tag    { font-size:13px; padding:5px 12px; }
+            .ts-dropdown .option, .ts-dropdown .create { padding:13px; font-size:14px; }
+            .ts-wrapper.multi .ts-control > .item { font-size:13px; padding:5px 12px; }
         }
 
         /* En móvil NUNCA se muestran los modales de desktop */
@@ -623,15 +627,14 @@
         const MSG_CONFIRM_DELETE_PRODUCT = "{{ 'js.confirm_delete_product'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_DEFAULT_PRODUCT_NAME = "{{ 'js.default_product_name'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_NEW_INGREDIENT_LABEL = "{{ 'js.new_ingredient_label'|trans({}, 'admin_menu')|e('js') }}";
-        const MSG_REMOVE_INGREDIENT = "{{ 'js.remove_ingredient_aria'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_NO_INGREDIENTS_FOUND = "{{ 'ingredients.no_results'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_INGREDIENTS_PLACEHOLDER = "{{ 'ingredients.placeholder'|trans({}, 'admin_menu')|e('js') }}";
 
         const S = {
             productId:   null,
             categoryId:  null,
             editingCatId:null,
             spicy:       0,
-            ingredients: [],
-            allIngredients: [],
         };
 
         // ── Responsive helpers ────────────────────────────────────────────────────
@@ -708,8 +711,7 @@
                     document.querySelectorAll('.tag-pill').forEach(p =>
                         p.classList.toggle('on', data.tags.includes(parseInt(p.dataset.tagId)))
                     );
-                    S.ingredients = data.ingredientsList ?? [];
-                    renderIngTags();
+                    await setIngredientItems(data.ingredientsList ?? []);
                 } catch(e) { showToast(MSG_ERROR_LOADING_PRODUCT, 'error'); }
             },
             _openProduct() {
@@ -757,7 +759,7 @@
                 ['d-step2-body','m-step2-body'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display=''; });
                 ['d-step-2','m-step-2'].forEach(id => document.getElementById(id)?.classList.add('active'));
                 ['d-step-1','m-step-1'].forEach(id => document.getElementById(id)?.classList.remove('active'));
-                loadIngredients();
+                initIngredientSelects();
                 setTimeout(() => panelEl('p-name')?.focus(), 80);
             },
 
@@ -833,7 +835,7 @@
                 active:      true,
                 translations,
                 tags,
-                ingredients: S.ingredients,
+                ingredients: collectIngredients(),
             };
 
             const data = await apiFetch('/admin/products/save', payload);
@@ -884,72 +886,93 @@
             );
         }
 
-        // ── Ingredients ────────────────────────────────────────────────────────────
-        async function loadIngredients() {
-            if (S.allIngredients.length) return;
-            try { S.allIngredients = await apiFetch('/admin/ingredients/list', null, 'GET'); } catch(e) {}
-        }
-
-        function searchIngredients(query) {
-            const box = panelEl('ing-suggestions');
-            if (!query.trim()) { box.classList.remove('open'); return; }
-            const lower    = query.toLowerCase();
-            const existing = S.ingredients.map(i => i.name.toLowerCase());
-            const matches  = S.allIngredients.filter(i =>
-                i.name.toLowerCase().includes(lower) && !existing.includes(i.name.toLowerCase())
-            ).slice(0, 6);
-            const exact     = S.allIngredients.some(i => i.name.toLowerCase() === lower);
-            const alreadyIn = existing.includes(lower);
-
-            let html = matches.map(i =>
-                `<div class="ing-option" onclick="addIng(${i.id},'${i.name.replace(/'/g,"\\'")}')">
-            <i class="ti ti-leaf" style="font-size:14px;color:#555" aria-hidden="true"></i> ${i.name}
-        </div>`
-            ).join('');
-            if (!exact && !alreadyIn) html +=
-                `<div class="ing-option" onclick="addIng(null,'${query.trim().replace(/'/g,"\\'")}')">
-            <i class="ti ti-plus" style="font-size:14px;color:#555" aria-hidden="true"></i>
-            <strong>${query.trim()}</strong> <span class="new-label">${MSG_NEW_INGREDIENT_LABEL}</span>
-        </div>`;
-
-            box.innerHTML = html;
-            box.classList.toggle('open', !!html);
-        }
-
-        function ingKeydown(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const q = e.target.value.trim();
-                if (!q) return;
-                const exact = S.allIngredients.find(i => i.name.toLowerCase() === q.toLowerCase());
-                addIng(exact?.id ?? null, exact?.name ?? q);
+        // ── Ingredients (Tom Select, server-searched) ───────────────────────────────
+        // The product-fields partial is included twice (desktop modal + mobile
+        // sheet), so there are two <select id="ing-select"> elements in the DOM —
+        // one Tom Select instance is created per copy, mirroring how the rest of
+        // this file keeps duplicate-id panels in sync (see panelEl()/setVal()).
+        let _tomSelectCtor = null;
+        async function ensureTomSelect() {
+            if (!_tomSelectCtor) {
+                _tomSelectCtor = (await import('tom-select')).default;
+                import('tom-select/dist/css/tom-select.default.min.css');
             }
-            if (e.key === 'Escape') panelEl('ing-suggestions').classList.remove('open');
+            return _tomSelectCtor;
         }
 
-        function addIng(id, name) {
-            if (S.ingredients.some(i => i.name.toLowerCase() === name.toLowerCase())) return;
-            S.ingredients.push({ id, name });
-            renderIngTags();
-            panelEl('ing-input').value = '';
-            panelEl('ing-suggestions').classList.remove('open');
+        function ingSelects() {
+            return Array.from(document.querySelectorAll('[id="ing-select"]'))
+                .map(el => el.tomselect)
+                .filter(Boolean);
         }
 
-        function removeIng(name) {
-            S.ingredients = S.ingredients.filter(i => i.name !== name);
-            renderIngTags();
+        async function initIngredientSelects() {
+            const TomSelect = await ensureTomSelect();
+            document.querySelectorAll('[id="ing-select"]').forEach(el => {
+                if (el.tomselect) return;
+                new TomSelect(el, {
+                    plugins: ['remove_button'],
+                    valueField: 'id',
+                    labelField: 'name',
+                    searchField: [],
+                    options: [],
+                    persist: false,
+                    maxOptions: 20,
+                    closeAfterSelect: true,
+                    placeholder: MSG_INGREDIENTS_PLACEHOLDER,
+                    create(input) {
+                        return { id: 'new:' + input.trim(), name: input.trim() };
+                    },
+                    createFilter(input) {
+                        const q = input.trim().toLowerCase();
+                        if (!q) return false;
+                        return !Object.values(this.options).some(o => o.name.toLowerCase() === q);
+                    },
+                    load(query, callback) {
+                        if (query.trim().length < 2) { callback(); return; }
+                        apiFetch('/admin/ingredients/search?q=' + encodeURIComponent(query.trim()), null, 'GET')
+                            .then(results => callback(results))
+                            .catch(() => callback());
+                    },
+                    render: {
+                        option_create(data, escape) {
+                            return `<div class="create"><i class="ti ti-plus" style="font-size:14px" aria-hidden="true"></i> ${escape(data.input.trim())} <span>${MSG_NEW_INGREDIENT_LABEL}</span></div>`;
+                        },
+                        no_results() {
+                            return `<div class="no-results">${MSG_NO_INGREDIENTS_FOUND}</div>`;
+                        },
+                    },
+                });
+            });
         }
 
-        function renderIngTags() {
-            const html = S.ingredients.map(i =>
-                `<div class="ing-tag">${i.name}
-            <button onclick="removeIng('${i.name.replace(/'/g,"\\'")}')
-" aria-label="${MSG_REMOVE_INGREDIENT.replace('%name%', i.name)}">
-                <i class="ti ti-x" aria-hidden="true"></i>
-            </button>
-        </div>`
-            ).join('');
-            document.querySelectorAll('[id="ing-tags"]').forEach(el => { el.innerHTML = html; });
+        // Replaces every panel's current selection with `list` ([{id, name}]).
+        async function setIngredientItems(list) {
+            await initIngredientSelects();
+            ingSelects().forEach(ts => {
+                ts.clear(true);
+                ts.clearOptions();
+                (list || []).forEach(item => {
+                    const value = item.id != null ? String(item.id) : ('new:' + item.name);
+                    ts.addOption({ id: value, name: item.name });
+                    ts.addItem(value, true);
+                });
+            });
+        }
+
+        // Reads the currently-visible panel's selection back into [{id, name}],
+        // translating the "new:" placeholder ids created client-side back to null
+        // so the backend knows to create them.
+        function collectIngredients() {
+            const ts = panelEl('ing-select')?.tomselect;
+            if (!ts) return [];
+            return ts.items.map(value => {
+                const opt = ts.options[value];
+                return {
+                    id:   value.startsWith('new:') ? null : parseInt(value, 10),
+                    name: opt?.name ?? value,
+                };
+            });
         }
 
         // ── Image preview ──────────────────────────────────────────────────────────
@@ -965,7 +988,7 @@
 
         // ── Reset ──────────────────────────────────────────────────────────────────
         function resetProduct() {
-            ['p-name','p-desc','p-price','p-calories','ing-input'].forEach(id =>
+            ['p-name','p-desc','p-price','p-calories'].forEach(id =>
                 document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value=''; el.classList.remove('error'); })
             );
             ['p-name-error','p-desc-error','p-price-error'].forEach(id =>
@@ -974,15 +997,14 @@
             document.querySelectorAll('[id="p-category"]').forEach(el => { el.selectedIndex = 0; });
             document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('on'));
             document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
-            document.querySelectorAll('[id="ing-tags"]').forEach(el => { el.innerHTML = ''; });
-            document.querySelectorAll('[id="ing-suggestions"]').forEach(el => el.classList.remove('open'));
+            setIngredientItems([]);
             document.getElementById('cat-select-error').style.display = 'none';
             document.querySelectorAll('[id="img-upload-area"]').forEach(area => {
                 area.querySelector('img')?.remove();
                 const hint = area.querySelector('.img-upload-hint');
                 if (hint) hint.style.display = '';
             });
-            S.productId=null; S.categoryId=null; S.spicy=0; S.ingredients=[];
+            S.productId=null; S.categoryId=null; S.spicy=0;
             // Reset steps visibility
             ['product-modal-steps','product-sheet-steps'].forEach(id => {
                 const el=document.getElementById(id); if(el) el.style.display='';
@@ -1015,11 +1037,5 @@
             return res.json();
         }
 
-        // Close suggestions on outside click
-        document.addEventListener('click', e => {
-            if (!e.target.closest('.ing-wrap')) {
-                document.querySelectorAll('[id="ing-suggestions"]').forEach(el => el.classList.remove('open'));
-            }
-        });
     </script>
 {% endblock %}

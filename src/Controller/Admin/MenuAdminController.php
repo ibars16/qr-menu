@@ -139,7 +139,7 @@ class MenuAdminController extends AbstractController
     // ── Products ─────────────────────────────────────────────────────────────
 
     #[Route('/products/{id}', name: 'product_get', methods: ['GET'])]
-    public function getProduct(Product $product): JsonResponse
+    public function getProduct(Product $product, Request $request): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
 
@@ -156,10 +156,15 @@ class MenuAdminController extends AbstractController
             $tags[] = $tag->getId();
         }
 
-        $locale = $product->getCategory()->getRestaurant()->getDefaultLanguage();
+        // Show already-attached ingredients in the current Admin Panel
+        // language, same as the autocomplete — falling back to the
+        // restaurant's own content language, then the raw code, only if this
+        // particular ingredient was never translated into the admin locale.
+        $adminLocale     = $request->getLocale();
+        $contentLocale   = $product->getCategory()->getRestaurant()->getDefaultLanguage();
         $ingredientsList = [];
         foreach ($product->getIngredients() as $ing) {
-            $t = $ing->getTranslation($locale);
+            $t = $ing->getTranslation($adminLocale) ?? $ing->getTranslation($contentLocale);
             $ingredientsList[] = [
                 'id'   => $ing->getId(),
                 'name' => $t?->getName() ?? $ing->getCode(),
@@ -251,26 +256,41 @@ class MenuAdminController extends AbstractController
             foreach ($product->getIngredients() as $ing) {
                 $product->removeIngredient($ing);
             }
+
+            $adminLocale       = $request->getLocale();
+            $ingredientRepo    = $em->getRepository(Ingredient::class);
+
             foreach ($data['ingredients'] as $ingData) {
                 $id   = $ingData['id'] ?? null;
                 $name = trim($ingData['name'] ?? '');
                 if (!$name) continue;
 
                 if ($id) {
-                    $ingredient = $em->getRepository(Ingredient::class)->find($id);
+                    $ingredient = $ingredientRepo->find($id);
                 } else {
-                    // Create new ingredient
-                    $ingredient = new Ingredient();
-                    $ingredient->setCode(strtolower(str_replace(' ', '-', $name)));
-                    $ingredient->setRestaurant($restaurant);
+                    // The autocomplete only ever shows/matches names in the
+                    // current admin locale, but the same ingredient concept
+                    // may already exist under a different locale (e.g. the
+                    // admin previously typed it while the panel was in
+                    // Spanish, and is now typing it again in French). Reuse
+                    // that Ingredient instead of creating a duplicate.
+                    $ingredient = $ingredientRepo->findExistingByNameAnyLocale($restaurant, $name);
 
-                    $ingT = new IngredientTranslation();
-                    $ingT->setIngredient($ingredient);
-                    $ingT->setLocale($restaurant->getDefaultLanguage());
-                    $ingT->setName($name);
+                    if (!$ingredient) {
+                        $ingredient = new Ingredient();
+                        $ingredient->setCode(strtolower(str_replace(' ', '-', $name)));
+                        $ingredient->setRestaurant($restaurant);
+                        $em->persist($ingredient);
+                    }
 
-                    $em->persist($ingredient);
-                    $em->persist($ingT);
+                    if (!$ingredient->getTranslation($adminLocale)) {
+                        $ingT = new IngredientTranslation();
+                        $ingT->setIngredient($ingredient);
+                        $ingT->setLocale($adminLocale);
+                        $ingT->setName($name);
+                        $ingredient->addTranslation($ingT);
+                        $em->persist($ingT);
+                    }
                 }
 
                 if ($ingredient && $ingredient->getRestaurant() === $restaurant) {
@@ -310,28 +330,29 @@ class MenuAdminController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
-    // ── Ingredients list (for autocomplete) ──────────────────────────────────
+    // ── Ingredients search (for autocomplete) ────────────────────────────────
 
-    #[Route('/ingredients/list', name: 'ingredients_list', methods: ['GET'])]
-    public function listIngredients(EntityManagerInterface $em): JsonResponse
+    #[Route('/ingredients/search', name: 'ingredients_search', methods: ['GET'])]
+    public function searchIngredients(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $restaurant = $this->restaurant();
-        $locale     = $restaurant->getDefaultLanguage();
+        $query      = trim($request->query->get('q', ''));
 
-        $ingredients = $em->getRepository(Ingredient::class)->findBy(
-            ['restaurant' => $restaurant]
-        );
-
-        $result = [];
-        foreach ($ingredients as $ing) {
-            $t = $ing->getTranslation($locale);
-            $result[] = [
-                'id'   => $ing->getId(),
-                'name' => $t?->getName() ?? $ing->getCode(),
-            ];
+        if (mb_strlen($query) < 2) {
+            return $this->json([]);
         }
 
-        return $this->json($result);
+        // Only ever matches/returns names in the current Admin Panel
+        // language — an ingredient translated in another locale must never
+        // appear in these results, even if it exists for this restaurant.
+        $results = $em->getRepository(Ingredient::class)->searchByLocale(
+            $restaurant,
+            $request->getLocale(),
+            $query,
+            20
+        );
+
+        return $this->json($results);
     }
 
     // ── Reorder ───────────────────────────────────────────────────────────────

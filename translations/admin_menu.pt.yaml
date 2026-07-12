@@ -48,6 +48,7 @@ field_error:
 ingredients:
     hint: Os novos ingredientes são adicionados automaticamente ao banco de ingredientes do restaurante.
     placeholder: 'Escreva um ingrediente e pressione Enter…'
+    no_results: Nenhum ingrediente encontrado
 
 js:
     ai_import_soon: 'Importação com IA — brevemente ✨'

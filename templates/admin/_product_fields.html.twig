@@ -133,19 +133,10 @@
 
 {# Ingredientes — opcional #}
 <div class="field">
-    <label class="field-label">
+    <label class="field-label" for="ing-select">
         {{ 'field.ingredients'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
     </label>
-    <div class="ing-wrap">
-        <input type="text"
-               id="ing-input"
-               placeholder="{{ 'ingredients.placeholder'|trans({}, 'admin_menu') }}"
-               autocomplete="off"
-               oninput="searchIngredients(this.value)"
-               onkeydown="ingKeydown(event)">
-        <div class="ing-suggestions" id="ing-suggestions"></div>
-    </div>
-    <div class="ing-tags" id="ing-tags"></div>
+    <select id="ing-select" multiple placeholder="{{ 'ingredients.placeholder'|trans({}, 'admin_menu') }}"></select>
     <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
         {{ 'ingredients.hint'|trans({}, 'admin_menu') }}
     </p>
