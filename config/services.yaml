@@ -64,3 +64,14 @@ services:
     App\Service\GlobalIngredientAllergenSeeder:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Service\Classification\GeminiClassifierProvider:
+        arguments:
+            $geminiApiKey: '%gemini_api_key%'
+
+    App\Service\Classification\AiClassifierProviderInterface:
+        alias: App\Service\Classification\GeminiClassifierProvider
+
+    App\Command\ClassifyExportCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
