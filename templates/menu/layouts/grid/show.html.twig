@@ -37,6 +37,52 @@
     .diet-filter.active { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); box-shadow: var(--tab-act-shadow); }
     .sep { height: 1px; margin: 14px 0 0; background: var(--sep-bg); }
 
+    /* Allergen filter — a single button so it's easy to find without
+       crowding the search bar; opens a checklist of only the allergens
+       actually present on this menu (see MenuController::$menuAllergens). */
+    .allergen-filter-wrap { position: relative; padding-top: 12px; }
+    .allergen-filter-btn {
+        display: inline-flex; align-items: center; gap: 7px; font-family: inherit;
+        background: var(--tab-bg); border: 1.5px solid var(--tab-border); color: var(--tab-text);
+        border-radius: var(--tab-radius, 24px); padding: 7px 16px; cursor: pointer;
+        font-size: 12px; font-weight: 600; letter-spacing: 0.01em;
+        transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s; user-select: none;
+    }
+    .allergen-filter-btn:hover { background: var(--tab-hbg); color: var(--tab-htext); transform: translateY(-1px); }
+    .allergen-filter-btn[aria-expanded="true"], .allergen-filter-btn.has-selection {
+        background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text);
+    }
+    .allergen-filter-badge {
+        display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px;
+        padding: 0 4px; border-radius: 999px; background: #d64545; color: #fff; font-size: 10px; font-weight: 700;
+    }
+    .allergen-filter-panel {
+        position: absolute; top: calc(100% + 8px); left: 0; z-index: 60; width: min(300px, 86vw);
+        background: var(--cb-bg); border: 1px solid var(--bdiv); border-radius: 14px; padding: 14px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.28);
+    }
+    .allergen-filter-panel[hidden] { display: none; }
+    .allergen-filter-panel-title { font-size: 11px; font-weight: 700; color: var(--btt); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+    .allergen-filter-options { display: flex; flex-direction: column; gap: 1px; max-height: 260px; overflow-y: auto; }
+    .allergen-filter-option { display: flex; align-items: center; gap: 9px; padding: 8px 7px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--bn); user-select: none; }
+    .allergen-filter-option:hover { background: var(--in-bg); }
+    .allergen-filter-option input { width: 16px; height: 16px; accent-color: #d64545; cursor: pointer; flex-shrink: 0; }
+    .allergen-filter-clear {
+        display: block; width: 100%; margin-top: 10px; padding-top: 10px; border: none; border-top: 1px solid var(--bdiv);
+        font-family: inherit; background: none; color: var(--fg-3); font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .allergen-filter-clear:hover { color: var(--bn); }
+
+    /* Cross-contamination / exception note on an allergen chip */
+    .alg-note-btn { display: inline-flex; align-items: center; margin-left: 3px; cursor: pointer; opacity: 0.8; border: none; background: none; padding: 0; color: inherit; }
+    .alg-note-btn:hover { opacity: 1; }
+    .alg-note-btn i { font-size: 12px; }
+    .alg-note-popover {
+        position: fixed; max-width: 240px; background: var(--cb-bg); border: 1px solid var(--bdiv);
+        border-radius: 10px; padding: 10px 12px; font-size: 12px; line-height: 1.5; color: var(--bn);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.3); z-index: 90;
+    }
+
     .cat-tabs { display: flex; gap: 6px; padding-top: 14px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
     .cat-tabs::-webkit-scrollbar { display: none; }
     .cat-tab { font-size: 13px; font-weight: 600; padding: 8px 18px; border-radius: var(--tab-radius, 24px); border: 1.5px solid var(--tab-border); background: var(--tab-bg); color: var(--tab-text); white-space: nowrap; flex-shrink: 0; cursor: pointer; line-height: 1; transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s; user-select: none; }
@@ -151,6 +197,27 @@
 <div class="ui-wrap">
     <div class="search-wrap"><i class="ti ti-search search-icon"></i><input type="text" class="search-input" id="menu-search" placeholder="Buscar platos…" autocomplete="off"></div>
     {% if tags|length > 0 %}<div class="diet-filters"><button class="diet-filter active" data-tag="all">Todo</button>{% for tag in tags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}</div><div class="sep"></div>{% endif %}
+    {% if menuAllergens|length > 0 %}
+        <div class="allergen-filter-wrap">
+            <button type="button" class="allergen-filter-btn" id="allergen-filter-btn" onclick="toggleAllergenFilterPanel()" aria-expanded="false" aria-haspopup="true">
+                <i class="ti ti-shield-check" style="font-size:14px" aria-hidden="true"></i>
+                <span>Evitar alérgenos</span>
+                <span class="allergen-filter-badge" id="allergen-filter-badge" style="display:none">0</span>
+            </button>
+            <div class="allergen-filter-panel" id="allergen-filter-panel" hidden>
+                <div class="allergen-filter-panel-title">Ocultar platos que contengan…</div>
+                <div class="allergen-filter-options">
+                    {% for a in menuAllergens %}
+                        <label class="allergen-filter-option">
+                            <input type="checkbox" value="{{ a.code }}" onchange="onAllergenFilterChange()">
+                            <span>{{ a.icon }} {{ a.name }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                <button type="button" class="allergen-filter-clear" onclick="clearAllergenFilters()">Borrar selección</button>
+            </div>
+        </div>
+    {% endif %}
     <div class="allergen-disclaimer"><i class="ti ti-info-circle" style="font-size:12px"></i> La información de alérgenos es orientativa. Consulta con el personal antes de pedir si tienes alguna alergia.</div>
     <div class="cat-tabs" id="cat-tabs"><span class="cat-tab active" data-cat="all">Todo</span>{% for category in categories %}{% set t = category.getTranslation(locale) %}{% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if not t %}{% set t = category.translations.first %}{% endif %}{% if t %}<span class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</span>{% endif %}{% endfor %}</div>
 </div>
@@ -197,7 +264,7 @@
                                                 {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
                                                 {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">Picante</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}Suave{% elseif product.spicyLevel == 2 %}Medio{% elseif product.spicyLevel == 3 %}Picante{% elseif product.spicyLevel == 4 %}Muy picante{% else %}Extremo{% endif %}</span></div></div>{% endif %}
                                                 {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">Etiquetas</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
-                                                {% if productAllergens[product.id]|default([])|length > 0 %}<div class="bsec"><div class="bsec-title">Alérgenos</div><div class="lbl-list">{% for a in productAllergens[product.id] %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ Sin {{ a.name }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · trazas</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
+                                                {% if productAllergens[product.id]|default([])|length > 0 %}<div class="bsec"><div class="bsec-title">Alérgenos</div><div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="Más información" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ Sin {{ a.name }}{{ noteBtn|raw }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · trazas{{ noteBtn|raw }}</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}{{ noteBtn|raw }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
                                                 {% if product.ingredients|length > 0 %}<div class="bsec"><div class="bsec-title">Ingredientes</div><div class="ing-list">{% for ingredient in product.ingredients %}{% set iT = ingredient.getTranslation(locale) %}{% if not iT %}{% set iT = ingredient.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if iT %}<div class="ing">{{ iT.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
                                                 {% if product.calories %}<div class="bsec"><div class="bsec-title">Calorías</div><div class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
                                             </div>

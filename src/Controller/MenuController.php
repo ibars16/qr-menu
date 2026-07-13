@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Enum\AllergenPresence;
 use App\Repository\RestaurantRepository;
 use App\Service\CurrencyConverter;
 use App\Service\MenuPreferencesResolver;
@@ -109,23 +110,48 @@ class MenuController extends AbstractController
         // Allergens — computed once for the whole menu (see
         // ProductAllergenResolver), then serialized per product in the
         // customer's current locale for the template to render as chips.
-        $productAllergens = [];
+        // Also collects the distinct set of allergens actually present
+        // anywhere on the menu (excluding FREE_FROM, which isn't something
+        // a customer would ever want to "avoid") to drive the customer
+        // allergen filter — a restaurant with no allergen data configured
+        // simply gets no filter button at all, rather than an empty one.
+        $resolveAllergenName = static function ($allergen) use ($locale, $restaurant) {
+            $t = $allergen->getTranslation($locale)
+                ?? $allergen->getTranslation($restaurant->getDefaultLanguage())
+                ?? $allergen->getTranslation('en');
+
+            return $t?->getName() ?? $allergen->getCode();
+        };
+
+        $productAllergens   = [];
+        $menuAllergensByCode = [];
         foreach ($allergenResolver->resolveForRestaurant($restaurant) as $productId => $entries) {
-            $productAllergens[$productId] = array_map(
-                static function (array $entry) use ($locale, $restaurant) {
-                    $t = $entry['allergen']->getTranslation($locale)
-                        ?? $entry['allergen']->getTranslation($restaurant->getDefaultLanguage())
-                        ?? $entry['allergen']->getTranslation('en');
-                    return [
-                        'code'     => $entry['allergen']->getCode(),
-                        'icon'     => $entry['allergen']->getIcon(),
-                        'name'     => $t?->getName() ?? $entry['allergen']->getCode(),
-                        'presence' => $entry['presence']->value,
-                    ];
-                },
-                $entries
-            );
+            $serialized = [];
+            foreach ($entries as $entry) {
+                $allergen = $entry['allergen'];
+                $serialized[] = [
+                    'code'     => $allergen->getCode(),
+                    'icon'     => $allergen->getIcon(),
+                    'name'     => $resolveAllergenName($allergen),
+                    'presence' => $entry['presence']->value,
+                    'note'     => $entry['note'],
+                ];
+                if ($entry['presence'] !== AllergenPresence::FREE_FROM) {
+                    $menuAllergensByCode[$allergen->getCode()] = $allergen;
+                }
+            }
+            $productAllergens[$productId] = $serialized;
         }
+
+        uasort($menuAllergensByCode, static fn ($a, $b) => $a->getPosition() <=> $b->getPosition());
+        $menuAllergens = array_map(
+            static fn ($allergen) => [
+                'code' => $allergen->getCode(),
+                'icon' => $allergen->getIcon(),
+                'name' => $resolveAllergenName($allergen),
+            ],
+            array_values($menuAllergensByCode)
+        );
 
         // Layout + theme (with preview support)
         $layout        = $restaurant->getLayout();
@@ -161,6 +187,7 @@ class MenuController extends AbstractController
             'tags'          => $tags,
             'tagNames'      => $tagNames,
             'productAllergens' => $productAllergens,
+            'menuAllergens' => $menuAllergens,
             'layout'        => $layout,
             'theme'         => $theme,
             'isPreview'     => $isPreview,

@@ -12,6 +12,16 @@ const catTabs     = document.querySelectorAll('.cat-tab');
 const dietFilters = document.querySelectorAll('.diet-filter');
 let activeTag = 'all';
 
+// Allergens a customer wants to avoid — multi-select, unlike the single-select
+// diet filter above, since someone can have more than one allergy. A dish is
+// hidden if it carries ANY selected allergen (data-allergens is "code:presence
+// code:presence …", already on every card — see MenuController::$menuAllergens
+// for where the checklist itself comes from).
+const allergenFilterBtn   = document.getElementById('allergen-filter-btn');
+const allergenFilterPanel = document.getElementById('allergen-filter-panel');
+const allergenFilterBadge = document.getElementById('allergen-filter-badge');
+let activeAllergens = new Set();
+
 function applyFilters() {
     const q      = searchInput.value.toLowerCase().trim();
     const active = document.querySelector('.cat-tab.active');
@@ -24,11 +34,13 @@ function applyFilters() {
         const rows = sec.querySelectorAll('.card-wrap, .product-row');
         let secVisible = false;
         rows.forEach(row => {
-            const name     = row.querySelector('.front-name, .product-name')?.textContent.toLowerCase() ?? '';
-            const tags     = (row.dataset.tags ?? '').trim().split(/\s+/).filter(Boolean);
-            const search   = !q || name.includes(q);
-            const tagMatch = activeTag === 'all' || tags.includes(activeTag);
-            const show     = search && tagMatch;
+            const name      = row.querySelector('.front-name, .product-name')?.textContent.toLowerCase() ?? '';
+            const tags      = (row.dataset.tags ?? '').trim().split(/\s+/).filter(Boolean);
+            const allergens = (row.dataset.allergens ?? '').trim().split(/\s+/).filter(Boolean).map(a => a.split(':')[0]);
+            const search        = !q || name.includes(q);
+            const tagMatch      = activeTag === 'all' || tags.includes(activeTag);
+            const allergenMatch = activeAllergens.size === 0 || ![...activeAllergens].some(a => allergens.includes(a));
+            const show     = search && tagMatch && allergenMatch;
             row.style.display = show ? '' : 'none';
             if (show) secVisible = true;
         });
@@ -37,6 +49,77 @@ function applyFilters() {
     });
     if (noResults) noResults.style.display = anyVisible ? 'none' : 'block';
 }
+
+function toggleAllergenFilterPanel() {
+    if (!allergenFilterPanel) return;
+    const open = !allergenFilterPanel.hidden;
+    allergenFilterPanel.hidden = open;
+    allergenFilterBtn?.setAttribute('aria-expanded', open ? 'false' : 'true');
+}
+
+function onAllergenFilterChange() {
+    activeAllergens = new Set(
+        Array.from(document.querySelectorAll('.allergen-filter-option input:checked')).map(el => el.value)
+    );
+    if (allergenFilterBadge) {
+        allergenFilterBadge.textContent = String(activeAllergens.size);
+        allergenFilterBadge.style.display = activeAllergens.size > 0 ? '' : 'none';
+    }
+    allergenFilterBtn?.classList.toggle('has-selection', activeAllergens.size > 0);
+    applyFilters();
+}
+
+function clearAllergenFilters() {
+    document.querySelectorAll('.allergen-filter-option input:checked').forEach(el => { el.checked = false; });
+    onAllergenFilterChange();
+}
+
+document.addEventListener('click', e => {
+    if (!allergenFilterPanel || allergenFilterPanel.hidden) return;
+    if (allergenFilterPanel.contains(e.target) || allergenFilterBtn?.contains(e.target)) return;
+    allergenFilterPanel.hidden = true;
+    allergenFilterBtn?.setAttribute('aria-expanded', 'false');
+});
+
+// Cross-contamination / exception notes on allergen chips — click-to-open,
+// closes on outside click or Escape. Same interaction as the "?" help icons
+// in the Admin Panel, kept intentionally simple: no hover-only behavior, so
+// it works identically on touch and desktop.
+function toggleAllergenNote(event, btnEl) {
+    event.stopPropagation();
+    const wasOpen = btnEl.classList.contains('note-open');
+    closeAllergenNotes();
+    if (wasOpen) return;
+
+    const pop = document.createElement('div');
+    pop.className = 'alg-note-popover';
+    pop.textContent = btnEl.dataset.note;
+    document.body.appendChild(pop);
+
+    const rect = btnEl.getBoundingClientRect();
+    const popRect = pop.getBoundingClientRect();
+    let left = rect.left + rect.width / 2 - popRect.width / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - popRect.width - 8));
+    let top = rect.bottom + 8;
+    if (top + popRect.height > window.innerHeight - 8) top = rect.top - popRect.height - 8;
+
+    pop.style.left = left + 'px';
+    pop.style.top = top + 'px';
+    btnEl.classList.add('note-open');
+}
+function closeAllergenNotes() {
+    document.querySelectorAll('.alg-note-popover').forEach(p => p.remove());
+    document.querySelectorAll('.alg-note-btn.note-open').forEach(el => el.classList.remove('note-open'));
+}
+document.addEventListener('click', closeAllergenNotes);
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    closeAllergenNotes();
+    if (allergenFilterPanel && !allergenFilterPanel.hidden) {
+        allergenFilterPanel.hidden = true;
+        allergenFilterBtn?.setAttribute('aria-expanded', 'false');
+    }
+});
 
 searchInput?.addEventListener('input', applyFilters);
 
