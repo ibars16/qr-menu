@@ -20,6 +20,7 @@ category:
 common:
     optional: opcional
     unnamed: (sem nome)
+    help: Ajuda
 
 empty:
     title: O seu cardápio está vazio
@@ -70,6 +71,14 @@ allergens:
     note_placeholder: 'Nota (obrigatória para "sem este alergénio")'
     remove: Remover
     source_computed_label: com base nos ingredientes
+    advanced_title: Casos especiais de alergénios
+    advanced_hint: Usa esta secção apenas se os alergénios detetados automaticamente não forem suficientes — por exemplo, devido a contaminação cruzada ou porque este prato usa um ingrediente alternativo certificado sem esse alergénio.
+    help_computed: Estes alergénios são detetados automaticamente a partir dos ingredientes deste prato. Na maioria dos casos não precisas de alterar nada.
+    help_contains: O alergénio está presente intencionalmente porque um ou mais ingredientes o contêm.
+    help_may_contain: Usa esta opção quando existir risco de contaminação cruzada — por exemplo, porque a mesma fritadeira, forno ou zona de preparação é partilhada com alimentos que contêm este alergénio.
+    help_free_from: Só deves usar isto se tiveres a certeza de que este prato está genuinamente livre deste alergénio (por exemplo, porque usas um substituto certificado). Deve ser usado apenas em casos excecionais.
+    help_product_exception: Substitui os alergénios calculados automaticamente apenas para este prato.
+    help_cross_contamination: A contaminação cruzada acontece quando um alergénio acaba num prato através de equipamento, óleo de cozinha ou superfícies partilhadas — mesmo que nenhum ingrediente do prato o contenha.
 
 js:
     ai_import_soon: 'Importação com IA — brevemente ✨'

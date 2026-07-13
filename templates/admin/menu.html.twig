@@ -347,9 +347,55 @@
         }
         .allergen-add-btn:hover { border-color:var(--bd-3); color:var(--tx-1); }
 
+        .allergen-block-label { font-size:11px; font-weight:600; color:var(--tx-4); display:flex; align-items:center; gap:5px; }
+
+        .allergen-presence-legend {
+            display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; padding-top:10px;
+            border-top:1px solid var(--bd-1);
+        }
+        .allergen-presence-legend span {
+            display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--tx-6);
+        }
+
+        /* Advanced allergen accordion — collapsed by default; see
+           toggleAllergenAdvanced() and resetProduct(). */
+        .allergen-accordion { border:1px solid var(--bd-1); border-radius:10px; margin-top:14px; overflow:hidden; }
+        .allergen-accordion-toggle {
+            display:flex; align-items:flex-start; gap:9px; padding:11px 13px; cursor:pointer;
+            user-select:none; background:var(--bg-card); transition:background 0.15s;
+        }
+        .allergen-accordion-toggle:hover { background:var(--bg-hover); }
+        .allergen-accordion-chevron { font-size:14px; color:var(--tx-6); margin-top:2px; flex-shrink:0; transition:transform 0.18s; }
+        .allergen-accordion-toggle[aria-expanded="true"] .allergen-accordion-chevron { transform:rotate(90deg); }
+        .allergen-accordion-toggle-text { display:flex; flex-direction:column; gap:3px; min-width:0; }
+        .allergen-accordion-title { font-size:12px; font-weight:600; color:var(--tx-3); }
+        .allergen-accordion-badge {
+            display:inline-flex; align-items:center; justify-content:center; min-width:16px; height:16px;
+            padding:0 4px; border-radius:999px; background:var(--tx-6); color:var(--bg-card);
+            font-size:10px; font-weight:700; margin-left:3px; vertical-align:middle;
+        }
+        .allergen-accordion-subtitle { font-size:11px; font-weight:400; color:var(--tx-7); line-height:1.5; }
+        .allergen-accordion-body { display:none; padding:13px; border-top:1px solid var(--bd-1); }
+        .allergen-accordion-body.open { display:block; }
+
+        /* Contextual help icons — click/tap to open a small popover; see toggleHelp(). */
+        .help-icon {
+            display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+            width:15px; height:15px; border-radius:50%; background:var(--bg-input); border:1px solid var(--bd-2);
+            color:var(--tx-6); font-size:10px; font-weight:700; line-height:1; cursor:pointer;
+            user-select:none; transition:border-color 0.15s, color 0.15s;
+        }
+        .help-icon:hover, .help-icon.help-open { border-color:var(--tx-6); color:var(--tx-2); }
+        .help-popover {
+            position:fixed; max-width:240px; background:var(--bg-card); border:1px solid var(--bd-2);
+            border-radius:9px; padding:10px 12px; font-size:12px; font-weight:400; line-height:1.55;
+            color:var(--tx-2); box-shadow:0 10px 28px rgba(0,0,0,0.32); z-index:600;
+        }
+
         @media (max-width: 767px) {
             .allergen-override-adder select, .allergen-override-adder input { font-size:14px; padding:9px 10px; }
             .allergen-pill { font-size:12px; padding:6px 11px; }
+            .help-icon { width:18px; height:18px; font-size:11px; }
         }
 
         /* Ingredients — Tom Select (base structure from tom-select.default.min.css, reskinned here) */
@@ -1112,6 +1158,14 @@
                 return a ? allergenChipHtml(a, o.presence, true) : '';
             }).join('');
             document.querySelectorAll('[id="p-allergen-overrides"]').forEach(el => el.innerHTML = html);
+
+            // Collapsed by default even when editing a dish that already has
+            // exceptions — but a badge keeps them from being silently hidden.
+            const count = S.allergenOverrides.length;
+            document.querySelectorAll('.allergen-accordion-badge').forEach(badge => {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? '' : 'none';
+            });
         }
 
         function addAllergenOverride() {
@@ -1214,6 +1268,44 @@
             renderPrivateIngredientAllergens();
         }
 
+        // ── Advanced allergen accordion (collapsed by default) ──────────────────────
+        function toggleAllergenAdvanced(toggleEl) {
+            const body = toggleEl.nextElementSibling;
+            const open = toggleEl.getAttribute('aria-expanded') === 'true';
+            toggleEl.setAttribute('aria-expanded', open ? 'false' : 'true');
+            body.classList.toggle('open', !open);
+        }
+
+        // ── Contextual help icons (click/tap to open, click elsewhere to close) ─────
+        function toggleHelp(event, iconEl) {
+            event.stopPropagation();
+            const wasOpen = iconEl.classList.contains('help-open');
+            closeAllHelp();
+            if (wasOpen) return;
+
+            const pop = document.createElement('div');
+            pop.className = 'help-popover';
+            pop.textContent = iconEl.dataset.helpText;
+            document.body.appendChild(pop);
+
+            const iconRect = iconEl.getBoundingClientRect();
+            const popRect = pop.getBoundingClientRect();
+            let left = iconRect.left + iconRect.width / 2 - popRect.width / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - popRect.width - 8));
+            let top = iconRect.top - popRect.height - 8;
+            if (top < 8) top = iconRect.bottom + 8;
+
+            pop.style.left = left + 'px';
+            pop.style.top = top + 'px';
+            iconEl.classList.add('help-open');
+        }
+        function closeAllHelp() {
+            document.querySelectorAll('.help-popover').forEach(p => p.remove());
+            document.querySelectorAll('.help-icon.help-open').forEach(el => el.classList.remove('help-open'));
+        }
+        document.addEventListener('click', closeAllHelp);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllHelp(); });
+
         // ── Image preview ──────────────────────────────────────────────────────────
         function previewImage(input) {
             if (!input.files?.length) return;
@@ -1242,6 +1334,9 @@
             renderAllergenComputed([]);
             renderAllergenOverrides();
             document.querySelectorAll('[id="p-private-ingredient-allergens-wrap"]').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.allergen-accordion-toggle').forEach(el => el.setAttribute('aria-expanded', 'false'));
+            document.querySelectorAll('.allergen-accordion-body').forEach(el => el.classList.remove('open'));
+            closeAllHelp();
             document.getElementById('cat-select-error').style.display = 'none';
             document.querySelectorAll('[id="img-upload-area"]').forEach(area => {
                 area.querySelector('img')?.remove();

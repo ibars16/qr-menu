@@ -20,6 +20,7 @@ category:
 common:
     optional: optional
     unnamed: (unnamed)
+    help: Help
 
 empty:
     title: Your menu is empty
@@ -70,6 +71,14 @@ allergens:
     note_placeholder: 'Note (required for "free from")'
     remove: Remove
     source_computed_label: from ingredients
+    advanced_title: Special Allergen Cases
+    advanced_hint: Use this section only if the automatically detected allergens are not sufficient — for example due to cross-contamination, or because this dish uses a certified allergen-free alternative ingredient.
+    help_computed: These allergens are detected automatically from the ingredients used in this dish. In most cases you do not need to change anything.
+    help_contains: The allergen is intentionally present because one or more ingredients contain it.
+    help_may_contain: Use this when there is a risk of cross-contamination — for example because the same fryer, oven, or preparation area is shared with foods containing this allergen.
+    help_free_from: Only use this if you are certain this dish is genuinely free from this allergen (for example because you use a certified allergen-free substitute). This should only be used in exceptional cases.
+    help_product_exception: Overrides the automatically calculated allergens only for this specific dish.
+    help_cross_contamination: Cross-contamination happens when an allergen accidentally ends up in a dish through shared equipment, cooking oil, or surfaces — even if none of the dish's own ingredients contain it.
 
 js:
     allergen_override_added: 'Exception added'

@@ -20,6 +20,7 @@ category:
 common:
     optional: facoltativo
     unnamed: (senza nome)
+    help: Aiuto
 
 empty:
     title: Il tuo menu è vuoto
@@ -70,6 +71,14 @@ allergens:
     note_placeholder: 'Nota (obbligatoria per "assente")'
     remove: Rimuovi
     source_computed_label: dagli ingredienti
+    advanced_title: Casi speciali di allergeni
+    advanced_hint: Usa questa sezione solo se gli allergeni rilevati automaticamente non sono sufficienti — ad esempio per contaminazione crociata o perché questo piatto utilizza un ingrediente alternativo certificato senza quell'allergene.
+    help_computed: Questi allergeni vengono rilevati automaticamente in base agli ingredienti di questo piatto. Nella maggior parte dei casi non è necessario modificare nulla.
+    help_contains: L'allergene è presente intenzionalmente perché uno o più ingredienti lo contengono.
+    help_may_contain: Usalo quando c'è rischio di contaminazione crociata — ad esempio perché la stessa friggitrice, forno o area di preparazione è condivisa con alimenti che contengono questo allergene.
+    help_free_from: Usa questa opzione solo se sei certo che questo piatto sia realmente privo di questo allergene (ad esempio perché usi un sostituto certificato). Va usata solo in casi eccezionali.
+    help_product_exception: Sostituisce gli allergeni calcolati automaticamente solo per questo piatto.
+    help_cross_contamination: La contaminazione crociata si verifica quando un allergene finisce accidentalmente in un piatto a causa di attrezzature, olio di cottura o superfici condivise, anche se nessun ingrediente del piatto lo contiene.
 
 js:
     ai_import_soon: 'Importazione con IA — prossimamente ✨'

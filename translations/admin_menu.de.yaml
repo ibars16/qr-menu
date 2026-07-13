@@ -20,6 +20,7 @@ category:
 common:
     optional: optional
     unnamed: (unbenannt)
+    help: Hilfe
 
 empty:
     title: Deine Speisekarte ist leer
@@ -70,6 +71,14 @@ allergens:
     note_placeholder: 'Notiz (erforderlich bei "frei von")'
     remove: Entfernen
     source_computed_label: aus Zutaten
+    advanced_title: Besondere Allergenfälle
+    advanced_hint: Nutze diesen Bereich nur, wenn die automatisch erkannten Allergene nicht ausreichen — zum Beispiel bei Kreuzkontamination oder wenn dieses Gericht eine zertifizierte allergenfreie Alternativzutat verwendet.
+    help_computed: Diese Allergene werden automatisch anhand der Zutaten dieses Gerichts erkannt. In den meisten Fällen musst du nichts ändern.
+    help_contains: Das Allergen ist absichtlich enthalten, weil eine oder mehrere Zutaten es enthalten.
+    help_may_contain: Verwende dies bei einem Risiko der Kreuzkontamination — zum Beispiel weil dieselbe Fritteuse, derselbe Ofen oder derselbe Zubereitungsbereich mit allergenhaltigen Speisen geteilt wird.
+    help_free_from: Verwende dies nur, wenn du sicher bist, dass dieses Gericht tatsächlich frei von diesem Allergen ist (zum Beispiel weil du einen zertifizierten allergenfreien Ersatz verwendest). Dies sollte nur in Ausnahmefällen verwendet werden.
+    help_product_exception: Überschreibt die automatisch berechneten Allergene nur für dieses Gericht.
+    help_cross_contamination: Kreuzkontamination entsteht, wenn ein Allergen durch gemeinsam genutzte Geräte, Kochöl oder Oberflächen versehentlich in ein Gericht gelangt — selbst wenn keine der Zutaten des Gerichts es enthält.
 
 js:
     ai_import_soon: 'KI-Import — demnächst verfügbar ✨'

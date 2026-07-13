@@ -20,6 +20,7 @@ category:
 common:
     optional: facultatif
     unnamed: (sans nom)
+    help: Aide
 
 empty:
     title: Votre carte est vide
@@ -70,6 +71,14 @@ allergens:
     note_placeholder: 'Note (obligatoire pour "sans cet allergène")'
     remove: Retirer
     source_computed_label: d'après les ingrédients
+    advanced_title: Cas particuliers d'allergènes
+    advanced_hint: Utilisez cette section uniquement si les allergènes détectés automatiquement ne suffisent pas — par exemple en cas de contamination croisée, ou si ce plat utilise un ingrédient de substitution certifié sans cet allergène.
+    help_computed: Ces allergènes sont détectés automatiquement à partir des ingrédients de ce plat. Dans la plupart des cas, vous n'avez rien à modifier.
+    help_contains: L'allergène est intentionnellement présent car un ou plusieurs ingrédients en contiennent.
+    help_may_contain: À utiliser en cas de risque de contamination croisée — par exemple parce que la même friteuse, le même four ou la même zone de préparation est partagée avec des aliments contenant cet allergène.
+    help_free_from: À utiliser uniquement si vous êtes certain que ce plat est réellement exempt de cet allergène (par exemple parce que vous utilisez un substitut certifié). Cela ne doit être utilisé que dans des cas exceptionnels.
+    help_product_exception: Remplace les allergènes calculés automatiquement uniquement pour ce plat.
+    help_cross_contamination: La contamination croisée se produit lorsqu'un allergène se retrouve accidentellement dans un plat à cause d'équipements, d'huile de cuisson ou de surfaces partagés — même si aucun ingrédient du plat n'en contient.
 
 js:
     ai_import_soon: 'Import avec IA — bientôt disponible ✨'
