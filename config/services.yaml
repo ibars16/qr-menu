@@ -56,3 +56,11 @@ services:
 
     App\Service\TagTranslationProviderInterface:
         alias: App\Service\DatabaseTagTranslationProvider
+
+    App\Service\AllergenSeeder:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\GlobalIngredientAllergenSeeder:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

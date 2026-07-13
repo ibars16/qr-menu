@@ -1,0 +1,175 @@
+# Starter Global Ingredient → Allergen mapping.
+#
+# NOT a comprehensive dataset — deliberately so. Every row here was verified
+# by hand against config/global_ingredients.csv (a name unambiguous enough
+# to tag with confidence: "butter", not "peanut butter"; "milk", but never
+# "coconut milk"/"oat milk"/"soy milk", which are plant-based and must not
+# carry the Milk allergen). Covering the full ~4,700-ingredient library
+# properly needs a real, licensed ingredient/allergen reference dataset —
+# the same "import from a reliable source, never invent it" principle this
+# app's ingredient importer already follows. Re-run
+# `app:allergens:seed-global-ingredient-links` any time this file grows.
+links:
+
+  # Milk
+  - ingredient: butter
+    allergen: milk
+    presence: contains
+  - ingredient: milk
+    allergen: milk
+    presence: contains
+  - ingredient: whole-milk
+    allergen: milk
+    presence: contains
+  - ingredient: skimmed-milk
+    allergen: milk
+    presence: contains
+  - ingredient: cheese
+    allergen: milk
+    presence: contains
+  - ingredient: cream
+    allergen: milk
+    presence: contains
+  - ingredient: yogurt
+    allergen: milk
+    presence: contains
+
+  # Eggs
+  - ingredient: egg
+    allergen: eggs
+    presence: contains
+  - ingredient: mayonnaise
+    allergen: eggs
+    presence: contains
+
+  # Fish
+  - ingredient: salmon
+    allergen: fish
+    presence: contains
+  - ingredient: tuna
+    allergen: fish
+    presence: contains
+  - ingredient: cod
+    allergen: fish
+    presence: contains
+  - ingredient: anchovy
+    allergen: fish
+    presence: contains
+  - ingredient: fish-sauce
+    allergen: fish
+    presence: contains
+
+  # Crustaceans
+  - ingredient: shrimp
+    allergen: crustaceans
+    presence: contains
+  - ingredient: crab
+    allergen: crustaceans
+    presence: contains
+  - ingredient: lobster
+    allergen: crustaceans
+    presence: contains
+
+  # Molluscs
+  - ingredient: oyster
+    allergen: molluscs
+    presence: contains
+  - ingredient: mussel
+    allergen: molluscs
+    presence: contains
+  - ingredient: clam
+    allergen: molluscs
+    presence: contains
+  - ingredient: squid
+    allergen: molluscs
+    presence: contains
+  - ingredient: octopus
+    allergen: molluscs
+    presence: contains
+  - ingredient: scallop
+    allergen: molluscs
+    presence: contains
+
+  # Tree nuts
+  - ingredient: almond
+    allergen: nuts
+    presence: contains
+  - ingredient: walnut
+    allergen: nuts
+    presence: contains
+  - ingredient: hazelnut
+    allergen: nuts
+    presence: contains
+  - ingredient: cashew-nuts
+    allergen: nuts
+    presence: contains
+  - ingredient: brazil-nut
+    allergen: nuts
+    presence: contains
+  - ingredient: macadamia-nut
+    allergen: nuts
+    presence: contains
+  - ingredient: pecan-nut
+    allergen: nuts
+    presence: contains
+  - ingredient: pistachio-nuts
+    allergen: nuts
+    presence: contains
+
+  # Peanuts
+  - ingredient: peanut
+    allergen: peanuts
+    presence: contains
+  - ingredient: peanut-butter
+    allergen: peanuts
+    presence: contains
+
+  # Soybeans
+  - ingredient: soy-sauce
+    allergen: soybeans
+    presence: contains
+  - ingredient: tofu
+    allergen: soybeans
+    presence: contains
+  - ingredient: soy-milk
+    allergen: soybeans
+    presence: contains
+
+  # Gluten (cereals containing gluten)
+  - ingredient: wheat
+    allergen: gluten
+    presence: contains
+  - ingredient: wheat-flour
+    allergen: gluten
+    presence: contains
+
+  # Sesame
+  - ingredient: sesame-oil
+    allergen: sesame
+    presence: contains
+  - ingredient: sesame-seeds
+    allergen: sesame
+    presence: contains
+
+  # Mustard
+  - ingredient: mustard
+    allergen: mustard
+    presence: contains
+
+  # Celery
+  - ingredient: celery
+    allergen: celery
+    presence: contains
+
+  # Sulphites
+  - ingredient: sulfite
+    allergen: sulphites
+    presence: contains
+  - ingredient: wine
+    allergen: sulphites
+    presence: may_contain
+
+  # Lupin
+  - ingredient: lupin-flour
+    allergen: lupin
+    presence: contains

@@ -1,0 +1,379 @@
+allergens:
+
+  - code: gluten
+    icon: "🌾"
+    color: "#C9A227"
+    position: 0
+    schemes: [eu]
+    translations:
+      en: Gluten
+      es: Gluten
+      fr: Gluten
+      de: Gluten
+      it: Glutine
+      pt: Glúten
+      nl: Gluten
+      ru: Глютен
+      zh: 麸质
+      ja: グルテン
+      ko: 글루텐
+      th: กลูเตน
+      ar: الغلوتين
+      hi: ग्लूटेन
+      tr: Gluten
+      vi: Gluten
+      id: Gluten
+      pl: Gluten
+      sv: Gluten
+      no: Gluten
+
+  - code: crustaceans
+    icon: "🦐"
+    color: "#E2725B"
+    position: 1
+    schemes: [eu]
+    translations:
+      en: Crustaceans
+      es: Crustáceos
+      fr: Crustacés
+      de: Krebstiere
+      it: Crostacei
+      pt: Crustáceos
+      nl: Schaaldieren
+      ru: Ракообразные
+      zh: 甲壳类
+      ja: 甲殻類
+      ko: 갑각류
+      th: สัตว์น้ำมีเปลือกแข็ง
+      ar: القشريات
+      hi: क्रस्टेशियन
+      tr: Kabuklu Deniz Ürünleri
+      vi: Động vật giáp xác
+      id: Krustasea
+      pl: Skorupiaki
+      sv: Kräftdjur
+      no: Krepsdyr
+
+  - code: eggs
+    icon: "🥚"
+    color: "#F2C14E"
+    position: 2
+    schemes: [eu]
+    translations:
+      en: Eggs
+      es: Huevos
+      fr: "Œufs"
+      de: Eier
+      it: Uova
+      pt: Ovos
+      nl: Eieren
+      ru: Яйца
+      zh: 蛋类
+      ja: 卵
+      ko: 계란
+      th: ไข่
+      ar: البيض
+      hi: अंडे
+      tr: Yumurta
+      vi: Trứng
+      id: Telur
+      pl: Jaja
+      sv: "Ägg"
+      no: Egg
+
+  - code: fish
+    icon: "🐟"
+    color: "#4A90D9"
+    position: 3
+    schemes: [eu]
+    translations:
+      en: Fish
+      es: Pescado
+      fr: Poisson
+      de: Fisch
+      it: Pesce
+      pt: Peixe
+      nl: Vis
+      ru: Рыба
+      zh: 鱼类
+      ja: 魚
+      ko: 생선
+      th: ปลา
+      ar: السمك
+      hi: मछली
+      tr: "Balık"
+      vi: "Cá"
+      id: Ikan
+      pl: Ryby
+      sv: Fisk
+      no: Fisk
+
+  - code: peanuts
+    icon: "🥜"
+    color: "#B5651D"
+    position: 4
+    schemes: [eu]
+    translations:
+      en: Peanuts
+      es: Cacahuetes
+      fr: Arachides
+      de: "Erdnüsse"
+      it: Arachidi
+      pt: Amendoim
+      nl: "Pinda's"
+      ru: "Арахис"
+      zh: 花生
+      ja: "ピーナッツ"
+      ko: 땅콩
+      th: "ถั่วลิสง"
+      ar: "الفول السوداني"
+      hi: "मूंगफली"
+      tr: "Yer Fıstığı"
+      vi: "Đậu phộng"
+      id: Kacang Tanah
+      pl: Orzeszki ziemne
+      sv: "Jordnötter"
+      no: "Peanøtter"
+
+  - code: soybeans
+    icon: "🫘"
+    color: "#6B8E23"
+    position: 5
+    schemes: [eu]
+    translations:
+      en: Soybeans
+      es: Soja
+      fr: Soja
+      de: Soja
+      it: Soia
+      pt: Soja
+      nl: Soja
+      ru: "Соя"
+      zh: 大豆
+      ja: 大豆
+      ko: "대두"
+      th: "ถั่วเหลือง"
+      ar: "فول الصويا"
+      hi: "सोयाबीन"
+      tr: Soya
+      vi: "Đậu nành"
+      id: Kedelai
+      pl: Soja
+      sv: "Sojabönor"
+      no: Soya
+
+  - code: milk
+    icon: "🥛"
+    color: "#90CAF9"
+    position: 6
+    schemes: [eu]
+    translations:
+      en: Milk
+      es: Leche
+      fr: Lait
+      de: Milch
+      it: Latte
+      pt: Leite
+      nl: Melk
+      ru: "Молоко"
+      zh: 牛奶
+      ja: 乳
+      ko: "우유"
+      th: นม
+      ar: "الحليب"
+      hi: "दूध"
+      tr: "Süt"
+      vi: "Sữa"
+      id: Susu
+      pl: Mleko
+      sv: "Mjölk"
+      no: Melk
+
+  - code: nuts
+    icon: "🌰"
+    color: "#8D6E63"
+    position: 7
+    schemes: [eu]
+    translations:
+      en: Tree Nuts
+      es: Frutos secos
+      fr: "Fruits à coque"
+      de: "Schalenfrüchte (Nüsse)"
+      it: Frutta a guscio
+      pt: Frutos de casca rija
+      nl: Noten
+      ru: "Орехи"
+      zh: 坚果
+      ja: "ナッツ類"
+      ko: "견과류"
+      th: "ถั่วเปลือกแข็ง"
+      ar: "المكسرات"
+      hi: "मेवे"
+      tr: "Sert Kabuklu Yemişler"
+      vi: "Các loại hạt cây"
+      id: Kacang Pohon
+      pl: Orzechy
+      sv: "Nötter"
+      no: "Nøtter"
+
+  - code: celery
+    icon: "🥬"
+    color: "#7CB342"
+    position: 8
+    schemes: [eu]
+    translations:
+      en: Celery
+      es: Apio
+      fr: "Céleri"
+      de: Sellerie
+      it: Sedano
+      pt: Aipo
+      nl: Selderij
+      ru: "Сельдерей"
+      zh: 芹菜
+      ja: "セロリ"
+      ko: "셀러리"
+      th: "คื่นฉ่าย"
+      ar: "الكرفس"
+      hi: "अजवाइन (सेलेरी)"
+      tr: Kereviz
+      vi: "Cần tây"
+      id: Seledri
+      pl: Seler
+      sv: Selleri
+      no: Selleri
+
+  - code: mustard
+    icon: "🌼"
+    color: "#D4AC0D"
+    position: 9
+    schemes: [eu]
+    translations:
+      en: Mustard
+      es: Mostaza
+      fr: Moutarde
+      de: Senf
+      it: Senape
+      pt: Mostarda
+      nl: Mosterd
+      ru: "Горчица"
+      zh: 芥末
+      ja: "マスタード"
+      ko: 겨자
+      th: "มัสตาร์ด"
+      ar: "الخردل"
+      hi: "सरसों"
+      tr: Hardal
+      vi: "Mù tạt"
+      id: Mustar
+      pl: Gorczyca
+      sv: Senap
+      no: Sennep
+
+  - code: sesame
+    icon: "🟤"
+    color: "#A47551"
+    position: 10
+    schemes: [eu]
+    translations:
+      en: Sesame
+      es: "Sésamo"
+      fr: "Sésame"
+      de: Sesam
+      it: Sesamo
+      pt: "Sésamo"
+      nl: Sesam
+      ru: "Кунжут"
+      zh: 芝麻
+      ja: ごま
+      ko: "참깨"
+      th: งา
+      ar: "السمسم"
+      hi: "तिल"
+      tr: Susam
+      vi: "Mè (vừng)"
+      id: Wijen
+      pl: Sezam
+      sv: Sesam
+      no: Sesam
+
+  - code: sulphites
+    icon: "🍷"
+    color: "#7B3F61"
+    position: 11
+    schemes: [eu]
+    translations:
+      en: Sulphites
+      es: Sulfitos
+      fr: Sulfites
+      de: Sulfite
+      it: Solfiti
+      pt: Sulfitos
+      nl: Sulfiet
+      ru: "Сульфиты"
+      zh: 亚硫酸盐
+      ja: "亜硫酸塩"
+      ko: "아황산염"
+      th: "ซัลไฟต์"
+      ar: "الكبريتيت"
+      hi: "सल्फाइट्स"
+      tr: "Sülfitler"
+      vi: Sulfit
+      id: Sulfit
+      pl: Siarczyny
+      sv: Sulfiter
+      no: Sulfitter
+
+  - code: lupin
+    icon: "🌸"
+    color: "#B983C4"
+    position: 12
+    schemes: [eu]
+    translations:
+      en: Lupin
+      es: Altramuces
+      fr: Lupin
+      de: Lupinen
+      it: Lupini
+      pt: "Tremoço"
+      nl: Lupine
+      ru: "Люпин"
+      zh: 羽扇豆
+      ja: "ルピナス"
+      ko: "루핀"
+      th: "ลูปิน"
+      ar: "الترمس"
+      hi: "ल्यूपिन"
+      tr: "Acı Bakla (Lupin)"
+      vi: "Đậu lupin"
+      id: Lupin
+      pl: "Łubin"
+      sv: Lupin
+      no: Lupin
+
+  - code: molluscs
+    icon: "🐚"
+    color: "#5C7A89"
+    position: 13
+    schemes: [eu]
+    translations:
+      en: Molluscs
+      es: Moluscos
+      fr: Mollusques
+      de: Weichtiere
+      it: Molluschi
+      pt: Moluscos
+      nl: Weekdieren
+      ru: "Моллюски"
+      zh: 软体动物
+      ja: "軟体動物"
+      ko: "연체동물"
+      th: หอย
+      ar: "الرخويات"
+      hi: "मोलस्क"
+      tr: "Yumuşakçalar"
+      vi: "Động vật thân mềm"
+      id: Moluska
+      pl: "Mięczaki"
+      sv: "Blötdjur"
+      no: "Bløtdyr"

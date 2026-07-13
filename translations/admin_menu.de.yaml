@@ -39,6 +39,7 @@ field:
     product_name_placeholder: 'z. B. Pizza Margherita'
     spicy_level: Schärfegrad
     tags: Etiketten
+    allergens: Allergene
 
 field_error:
     name_required: Der Name ist erforderlich
@@ -51,6 +52,24 @@ ingredients:
     no_results: Keine Zutaten gefunden
     source_global: Global
     source_restaurant: Restaurant
+
+allergens:
+    computed_title: Aus deinen Zutaten
+    computed_hint: Wird automatisch aus den untenstehenden Zutaten berechnet — bearbeite die Allergene einer Zutat oder füge bei Bedarf eine gerichtsspezifische Ausnahme hinzu.
+    computed_empty: In den aktuellen Zutaten wurden keine Allergene erkannt.
+    your_ingredients_title: Allergene deiner Zutaten
+    your_ingredients_hint: Wird mit jedem anderen Gericht geteilt, das dieselbe Zutat verwendet.
+    new_ingredient_hint: Speichere das Gericht zuerst, um Allergene für neu hinzugefügte Zutaten zu markieren.
+    overrides_title: Gerichtsspezifische Ausnahmen
+    overrides_hint: Nützlich bei Kreuzkontaminationsrisiko oder um ein automatisch berechnetes Allergen zu korrigieren.
+    add_exception: Ausnahme hinzufügen
+    select_allergen: Allergen auswählen…
+    presence_contains: Enthält
+    presence_may_contain: Kann Spuren enthalten
+    presence_free_from: Bestätigt frei von
+    note_placeholder: 'Notiz (erforderlich bei "frei von")'
+    remove: Entfernen
+    source_computed_label: aus Zutaten
 
 js:
     ai_import_soon: 'KI-Import — demnächst verfügbar ✨'
@@ -68,6 +87,9 @@ js:
     product_deleted: Gericht gelöscht
     product_saved: 'Gericht gespeichert ✓'
     remove_ingredient_aria: '%name% entfernen'
+    allergen_override_added: 'Ausnahme hinzugefügt'
+    allergen_note_required: 'Bitte füge eine Notiz hinzu, warum dies als "frei von" markiert ist'
+    ingredient_allergens_saved: 'Allergene gespeichert ✓'
 
 modal:
     category:
@@ -108,3 +130,4 @@ error:
     category_name_required: Der Name ist erforderlich.
     product_not_found: Gericht nicht gefunden.
     category_not_found: Kategorie nicht gefunden.
+    allergen_free_from_note_required: Bitte füge eine kurze Notiz hinzu, warum dieses Allergen als "frei von" markiert ist.

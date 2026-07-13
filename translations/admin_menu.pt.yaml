@@ -39,6 +39,7 @@ field:
     product_name_placeholder: 'Ex: Pizza Margherita'
     spicy_level: Nível de picante
     tags: Etiquetas
+    allergens: Alergénios
 
 field_error:
     name_required: O nome é obrigatório
@@ -51,6 +52,24 @@ ingredients:
     no_results: Nenhum ingrediente encontrado
     source_global: Global
     source_restaurant: Restaurante
+
+allergens:
+    computed_title: A partir dos teus ingredientes
+    computed_hint: Calculado automaticamente com base nos ingredientes abaixo — edita os alergénios de um ingrediente ou adiciona uma exceção específica para este prato, se necessário.
+    computed_empty: Nenhum alergénio detetado nos ingredientes atuais.
+    your_ingredients_title: Alergénios dos teus ingredientes
+    your_ingredients_hint: Partilhado com qualquer outro prato que use o mesmo ingrediente.
+    new_ingredient_hint: Guarda primeiro o prato para poderes marcar os alergénios de ingredientes recém-adicionados.
+    overrides_title: Exceções deste prato
+    overrides_hint: Útil para risco de contaminação cruzada, ou para corrigir um alergénio calculado automaticamente.
+    add_exception: Adicionar exceção
+    select_allergen: Seleciona um alergénio…
+    presence_contains: Contém
+    presence_may_contain: Pode conter vestígios
+    presence_free_from: Confirmado sem este alergénio
+    note_placeholder: 'Nota (obrigatória para "sem este alergénio")'
+    remove: Remover
+    source_computed_label: com base nos ingredientes
 
 js:
     ai_import_soon: 'Importação com IA — brevemente ✨'
@@ -68,6 +87,9 @@ js:
     product_deleted: Prato eliminado
     product_saved: 'Prato guardado ✓'
     remove_ingredient_aria: 'Remover %name%'
+    allergen_override_added: 'Exceção adicionada'
+    allergen_note_required: 'Adiciona uma nota a explicar por que está marcado como "sem este alergénio"'
+    ingredient_allergens_saved: 'Alergénios guardados ✓'
 
 modal:
     category:
@@ -108,3 +130,4 @@ error:
     category_name_required: O nome é obrigatório.
     product_not_found: Prato não encontrado.
     category_not_found: Categoria não encontrada.
+    allergen_free_from_note_required: Adicione uma breve nota explicando por que este alergénio está marcado como ausente.

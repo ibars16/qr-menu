@@ -39,6 +39,7 @@ field:
     product_name_placeholder: 'Ej: Pizza Margherita'
     spicy_level: Nivel de picante
     tags: Etiquetas
+    allergens: Alérgenos
 
 field_error:
     name_required: El nombre es obligatorio
@@ -51,6 +52,24 @@ ingredients:
     no_results: No se encontraron ingredientes
     source_global: Global
     source_restaurant: Del restaurante
+
+allergens:
+    computed_title: Según tus ingredientes
+    computed_hint: Se calcula automáticamente según los ingredientes de abajo — edita los alérgenos de un ingrediente, o añade una excepción específica para este plato si hace falta.
+    computed_empty: No se detectaron alérgenos en los ingredientes actuales.
+    your_ingredients_title: Alérgenos de tus ingredientes
+    your_ingredients_hint: Se comparte con cualquier otro plato que use el mismo ingrediente.
+    new_ingredient_hint: Guarda el plato primero para poder etiquetar los alérgenos de los ingredientes recién añadidos.
+    overrides_title: Excepciones de este plato
+    overrides_hint: Útil para riesgo de contaminación cruzada, o para corregir un alérgeno calculado automáticamente.
+    add_exception: Añadir excepción
+    select_allergen: Selecciona un alérgeno…
+    presence_contains: Contiene
+    presence_may_contain: Puede contener trazas
+    presence_free_from: Confirmado sin este alérgeno
+    note_placeholder: 'Nota (obligatoria para "sin este alérgeno")'
+    remove: Quitar
+    source_computed_label: según ingredientes
 
 js:
     ai_import_soon: 'Importación con IA — próximamente ✨'
@@ -68,6 +87,9 @@ js:
     product_deleted: Plato eliminado
     product_saved: 'Plato guardado ✓'
     remove_ingredient_aria: 'Quitar %name%'
+    allergen_override_added: 'Excepción añadida'
+    allergen_note_required: 'Añade una nota explicando por qué se marca como "sin este alérgeno"'
+    ingredient_allergens_saved: 'Alérgenos guardados ✓'
 
 modal:
     category:
@@ -108,3 +130,4 @@ error:
     category_name_required: El nombre es obligatorio.
     product_not_found: Plato no encontrado.
     category_not_found: Categoría no encontrada.
+    allergen_free_from_note_required: Añade una breve nota explicando por qué se marca como "sin este alérgeno".

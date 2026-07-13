@@ -39,6 +39,7 @@ field:
     product_name_placeholder: 'e.g. Margherita Pizza'
     spicy_level: Spice level
     tags: Tags
+    allergens: Allergens
 
 field_error:
     name_required: Name is required
@@ -52,7 +53,28 @@ ingredients:
     source_global: Global
     source_restaurant: Restaurant
 
+allergens:
+    computed_title: From your ingredients
+    computed_hint: Automatically calculated from the ingredients below — edit an ingredient's allergens, or add a dish-specific exception if needed.
+    computed_empty: No allergens detected from the current ingredients.
+    your_ingredients_title: Your ingredients' allergens
+    your_ingredients_hint: Shared with every other dish that uses the same ingredient.
+    new_ingredient_hint: Save the dish first to tag allergens on newly added ingredients.
+    overrides_title: Dish-specific exceptions
+    overrides_hint: Use this for cross-contamination risk, or to correct an automatically calculated allergen.
+    add_exception: Add exception
+    select_allergen: Select an allergen…
+    presence_contains: Contains
+    presence_may_contain: May contain traces
+    presence_free_from: Confirmed free from
+    note_placeholder: 'Note (required for "free from")'
+    remove: Remove
+    source_computed_label: from ingredients
+
 js:
+    allergen_override_added: 'Exception added'
+    allergen_note_required: 'Please add a note explaining why this is marked "free from"'
+    ingredient_allergens_saved: 'Allergens saved ✓'
     ai_import_soon: 'AI import — coming soon ✨'
     category_created: 'Category created ✓'
     category_deleted: Category deleted
@@ -108,3 +130,4 @@ error:
     category_name_required: Name is required.
     product_not_found: Dish not found.
     category_not_found: Category not found.
+    allergen_free_from_note_required: Please add a short note explaining why this allergen is marked as free from.

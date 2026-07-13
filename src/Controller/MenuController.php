@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\RestaurantRepository;
 use App\Service\CurrencyConverter;
 use App\Service\MenuPreferencesResolver;
+use App\Service\ProductAllergenResolver;
 use App\Service\TagTranslationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,13 +23,14 @@ class MenuController extends AbstractController
         Request $request,
         TagTranslationService $tagTranslationService,
         MenuPreferencesResolver $menuPreferencesResolver,
+        ProductAllergenResolver $allergenResolver,
     ): Response {
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
             throw $this->createNotFoundException('Restaurante no encontrado.');
         }
 
-        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $menuPreferencesResolver);
+        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $menuPreferencesResolver, $allergenResolver);
     }
 
     // Backwards-compat redirect for QR codes already printed with the old table URL.
@@ -44,6 +46,7 @@ class MenuController extends AbstractController
         EntityManagerInterface $em,
         TagTranslationService $tagTranslationService,
         MenuPreferencesResolver $menuPreferencesResolver,
+        ProductAllergenResolver $allergenResolver,
     ): Response {
         $languages  = $menuPreferencesResolver->getLanguages();
         $currencies = $menuPreferencesResolver->getCurrencies();
@@ -103,6 +106,27 @@ class MenuController extends AbstractController
         usort($tags, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
         $tagNames = $tagTranslationService->resolveForMenu($restaurant, $locale);
 
+        // Allergens — computed once for the whole menu (see
+        // ProductAllergenResolver), then serialized per product in the
+        // customer's current locale for the template to render as chips.
+        $productAllergens = [];
+        foreach ($allergenResolver->resolveForRestaurant($restaurant) as $productId => $entries) {
+            $productAllergens[$productId] = array_map(
+                static function (array $entry) use ($locale, $restaurant) {
+                    $t = $entry['allergen']->getTranslation($locale)
+                        ?? $entry['allergen']->getTranslation($restaurant->getDefaultLanguage())
+                        ?? $entry['allergen']->getTranslation('en');
+                    return [
+                        'code'     => $entry['allergen']->getCode(),
+                        'icon'     => $entry['allergen']->getIcon(),
+                        'name'     => $t?->getName() ?? $entry['allergen']->getCode(),
+                        'presence' => $entry['presence']->value,
+                    ];
+                },
+                $entries
+            );
+        }
+
         // Layout + theme (with preview support)
         $layout        = $restaurant->getLayout();
         $theme         = $restaurant->getTheme();
@@ -136,6 +160,7 @@ class MenuController extends AbstractController
             'currencies'    => $currencies,
             'tags'          => $tags,
             'tagNames'      => $tagNames,
+            'productAllergens' => $productAllergens,
             'layout'        => $layout,
             'theme'         => $theme,
             'isPreview'     => $isPreview,

@@ -39,6 +39,7 @@ field:
     product_name_placeholder: 'Ex : Pizza Margherita'
     spicy_level: Niveau de piquant
     tags: Étiquettes
+    allergens: Allergènes
 
 field_error:
     name_required: Le nom est obligatoire
@@ -51,6 +52,24 @@ ingredients:
     no_results: Aucun ingrédient trouvé
     source_global: Global
     source_restaurant: Restaurant
+
+allergens:
+    computed_title: D'après vos ingrédients
+    computed_hint: Calculé automatiquement à partir des ingrédients ci-dessous — modifiez les allergènes d'un ingrédient, ou ajoutez une exception propre à ce plat si nécessaire.
+    computed_empty: Aucun allergène détecté dans les ingrédients actuels.
+    your_ingredients_title: Allergènes de vos ingrédients
+    your_ingredients_hint: Partagé avec tout autre plat utilisant le même ingrédient.
+    new_ingredient_hint: Enregistrez d'abord le plat pour pouvoir renseigner les allergènes des ingrédients nouvellement ajoutés.
+    overrides_title: Exceptions propres à ce plat
+    overrides_hint: À utiliser en cas de risque de contamination croisée, ou pour corriger un allergène calculé automatiquement.
+    add_exception: Ajouter une exception
+    select_allergen: Choisir un allergène…
+    presence_contains: Contient
+    presence_may_contain: Peut contenir des traces
+    presence_free_from: Confirmé sans cet allergène
+    note_placeholder: 'Note (obligatoire pour "sans cet allergène")'
+    remove: Retirer
+    source_computed_label: d'après les ingrédients
 
 js:
     ai_import_soon: 'Import avec IA — bientôt disponible ✨'
@@ -68,6 +87,9 @@ js:
     product_deleted: Plat supprimé
     product_saved: 'Plat enregistré ✓'
     remove_ingredient_aria: 'Retirer %name%'
+    allergen_override_added: 'Exception ajoutée'
+    allergen_note_required: 'Ajoutez une note expliquant pourquoi ceci est marqué "sans cet allergène"'
+    ingredient_allergens_saved: 'Allergènes enregistrés ✓'
 
 modal:
     category:
@@ -108,3 +130,4 @@ error:
     category_name_required: Le nom est obligatoire.
     product_not_found: Plat introuvable.
     category_not_found: Catégorie introuvable.
+    allergen_free_from_note_required: Ajoutez une brève note expliquant pourquoi cet allergène est marqué comme absent.

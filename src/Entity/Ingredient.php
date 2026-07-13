@@ -41,10 +41,19 @@ class Ingredient
     #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'ingredients')]
     private Collection $products;
 
+    /**
+     * The allergens this private ingredient carries — set by hand by the
+     * restaurant owner (there is no taxonomy to derive it from, unlike
+     * GlobalIngredient). Source of truth for ProductAllergenResolver.
+     */
+    #[ORM\OneToMany(mappedBy: 'ingredient', targetEntity: IngredientAllergen::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $allergenLinks;
+
     public function __construct()
     {
         $this->translations = new ArrayCollection();
         $this->products = new ArrayCollection();
+        $this->allergenLinks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -104,5 +113,34 @@ class Ingredient
     public function getProducts(): Collection
     {
         return $this->products;
+    }
+
+    public function getAllergenLinks(): Collection
+    {
+        return $this->allergenLinks;
+    }
+
+    public function addAllergenLink(IngredientAllergen $link): void
+    {
+        if (!$this->allergenLinks->contains($link)) {
+            $this->allergenLinks->add($link);
+            $link->setIngredient($this);
+        }
+    }
+
+    public function removeAllergenLink(IngredientAllergen $link): void
+    {
+        $this->allergenLinks->removeElement($link);
+    }
+
+    public function getAllergenLink(Allergen $allergen): ?IngredientAllergen
+    {
+        foreach ($this->allergenLinks as $link) {
+            if ($link->getAllergen() === $allergen) {
+                return $link;
+            }
+        }
+
+        return null;
     }
 }

@@ -304,6 +304,54 @@
             .tag-pill { font-size:13px; min-height:38px; padding:6px 14px; }
         }
 
+        /* Allergens */
+        .allergen-block { margin-top:14px; }
+        .allergen-block:first-child { margin-top:0; }
+        .allergen-subtitle { font-size:11px; font-weight:600; color:var(--tx-4); margin-bottom:4px; }
+        .allergen-hint { font-size:11px; color:var(--tx-7); line-height:1.5; margin-top:5px; }
+        .allergen-chip-row { display:flex; flex-wrap:wrap; gap:6px; min-height:0; }
+        .allergen-empty { font-size:12px; color:var(--tx-7); }
+
+        .achip {
+            font-size:12px; padding:5px 10px; border-radius:20px; border:1px solid var(--bd-2);
+            display:inline-flex; align-items:center; gap:5px; min-height:30px; background:var(--bg-input); color:var(--tx-5);
+        }
+        .achip-contains    { background:rgba(220,38,38,0.12); color:#e0684a; border-color:rgba(220,38,38,0.28); }
+        .achip-may_contain { background:transparent; color:#c78a3d; border:1px dashed rgba(199,138,61,0.55); }
+        .achip-free_from   { background:var(--bg-card); color:var(--tx-6); border-color:var(--bd-2); }
+        .achip-remove { cursor:pointer; opacity:0.55; display:flex; align-items:center; }
+        .achip-remove:hover { opacity:1; }
+
+        .allergen-ing-card { background:var(--bg-card); border:1px solid var(--bd-1); border-radius:9px; padding:10px 12px; margin-bottom:8px; }
+        .allergen-ing-card:last-child { margin-bottom:0; }
+        .allergen-ing-name { font-size:12px; font-weight:600; color:var(--tx-3); margin-bottom:7px; }
+        .allergen-pill-grid { display:flex; flex-wrap:wrap; gap:5px; }
+        .allergen-pill {
+            font-size:11px; padding:4px 9px; border-radius:16px; border:1px solid var(--bd-2);
+            background:var(--bg-input); color:var(--tx-6); cursor:pointer; user-select:none; transition:all 0.1s;
+        }
+        .allergen-pill[data-state="contains"]    { background:rgba(220,38,38,0.12); color:#e0684a; border-color:rgba(220,38,38,0.28); }
+        .allergen-pill[data-state="may_contain"] { background:transparent; color:#c78a3d; border:1px dashed rgba(199,138,61,0.55); }
+        .allergen-pill:hover { border-color:var(--bd-3); }
+
+        .allergen-override-adder { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+        .allergen-override-adder select, .allergen-override-adder input {
+            background:var(--bg-input); border:1px solid var(--bd-2); color:var(--tx-1);
+            font-size:12px; padding:7px 9px; border-radius:8px; outline:none; font-family:inherit; min-height:0;
+        }
+        .allergen-override-adder input { flex:1; min-width:130px; }
+        .allergen-add-btn {
+            display:flex; align-items:center; gap:5px; padding:7px 13px; border-radius:8px;
+            background:var(--bg-card); border:1px solid var(--bd-2); color:var(--tx-3); font-size:12px;
+            cursor:pointer; transition:all 0.1s; user-select:none; white-space:nowrap;
+        }
+        .allergen-add-btn:hover { border-color:var(--bd-3); color:var(--tx-1); }
+
+        @media (max-width: 767px) {
+            .allergen-override-adder select, .allergen-override-adder input { font-size:14px; padding:9px 10px; }
+            .allergen-pill { font-size:12px; padding:6px 11px; }
+        }
+
         /* Ingredients — Tom Select (base structure from tom-select.default.min.css, reskinned here) */
         .ts-wrapper.multi .ts-control {
             background:var(--bg-input); border:1px solid var(--bd-2); border-radius:10px;
@@ -638,12 +686,37 @@
         const MSG_INGREDIENTS_PLACEHOLDER = "{{ 'ingredients.placeholder'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_GLOBAL_INGREDIENT_LABEL = "{{ 'ingredients.source_global'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_RESTAURANT_INGREDIENT_LABEL = "{{ 'ingredients.source_restaurant'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_ALLERGEN_PRESENCE_CONTAINS    = "{{ 'allergens.presence_contains'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_ALLERGEN_PRESENCE_MAY_CONTAIN = "{{ 'allergens.presence_may_contain'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_ALLERGEN_PRESENCE_FREE_FROM   = "{{ 'allergens.presence_free_from'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_ALLERGEN_COMPUTED_EMPTY  = "{{ 'allergens.computed_empty'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_ALLERGEN_NEW_INGREDIENT_HINT = "{{ 'allergens.new_ingredient_hint'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_ALLERGEN_NOTE_REQUIRED   = "{{ 'js.allergen_note_required'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_ALLERGEN_OVERRIDE_ADDED  = "{{ 'js.allergen_override_added'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_INGREDIENT_ALLERGENS_SAVED = "{{ 'js.ingredient_allergens_saved'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_ALLERGEN_REMOVE = "{{ 'allergens.remove'|trans({}, 'admin_menu')|e('js') }}";
+
+        // Full allergen taxonomy, translated in the Admin Panel's content
+        // language — small, fixed reference data (14 rows), so it's cheap to
+        // send once rather than fetched per panel-open.
+        const ALLERGENS = [
+            {% for allergen in allergens %}
+                {% set aT = allergen.getTranslation(locale) %}
+                {% if not aT %}{% set aT = allergen.getTranslation('en') %}{% endif %}
+                {% if aT %}
+                { id: {{ allergen.id }}, code: "{{ allergen.code }}", icon: "{{ allergen.icon }}", name: "{{ aT.name|e('js') }}" },
+                {% endif %}
+            {% endfor %}
+        ];
+        function allergenById(id) { return ALLERGENS.find(a => a.id === parseInt(id)); }
 
         const S = {
             productId:   null,
             categoryId:  null,
             editingCatId:null,
             spicy:       0,
+            allergenOverrides: [],
+            ingredientAllergenCache: {},
         };
 
         // ── Responsive helpers ────────────────────────────────────────────────────
@@ -721,6 +794,20 @@
                         p.classList.toggle('on', data.tags.includes(parseInt(p.dataset.tagId)))
                     );
                     await setIngredientItems(data.ingredientsList ?? []);
+
+                    // Seed the ingredient-allergen cache from what getProduct
+                    // already loaded, so the private-ingredients panel below
+                    // doesn't need a second round trip for ingredients that
+                    // were already on this dish.
+                    (data.ingredientsList ?? []).forEach(item => {
+                        if (item.source === 'restaurant') {
+                            S.ingredientAllergenCache[parseInt(item.value.slice(2))] = item.allergens ?? [];
+                        }
+                    });
+                    renderAllergenComputed(data.allergensComputed ?? []);
+                    S.allergenOverrides = (data.allergenOverrides ?? []).map(o => ({ allergenId: o.id, presence: o.presence, note: o.note ?? '' }));
+                    renderAllergenOverrides();
+                    renderPrivateIngredientAllergens();
                 } catch(e) { showToast(MSG_ERROR_LOADING_PRODUCT, 'error'); }
             },
             _openProduct() {
@@ -845,6 +932,7 @@
                 translations,
                 tags,
                 ingredients: collectIngredients(),
+                allergenOverrides: S.allergenOverrides,
             };
 
             const data = await apiFetch('/admin/products/save', payload);
@@ -963,6 +1051,8 @@
                             return `<div class="no-results">${MSG_NO_INGREDIENTS_FOUND}</div>`;
                         },
                     },
+                    onItemAdd() { refreshPrivateIngredientAllergens(); },
+                    onItemRemove() { refreshPrivateIngredientAllergens(); },
                 });
             });
         }
@@ -991,6 +1081,139 @@
             });
         }
 
+        // ── Allergens ────────────────────────────────────────────────────────────
+        // Three independent pieces, matching the architecture: a read-only
+        // computed list (derived from ingredients, refreshed only from saved
+        // state — see openEditProduct), an editor for the *ingredients'* own
+        // allergens (auto-saved per ingredient, shared everywhere that
+        // ingredient is used), and this product's own override list (batched
+        // into the main saveProduct() payload like tags/ingredients are).
+
+        function allergenChipHtml(a, presence, removable) {
+            const label = presence === 'contains' ? MSG_ALLERGEN_PRESENCE_CONTAINS
+                : presence === 'may_contain' ? MSG_ALLERGEN_PRESENCE_MAY_CONTAIN
+                : MSG_ALLERGEN_PRESENCE_FREE_FROM;
+            const remove = removable
+                ? `<span class="achip-remove" onclick="removeAllergenOverride(${a.id})" role="button" tabindex="0" aria-label="${MSG_ALLERGEN_REMOVE}"><i class="ti ti-x" style="font-size:11px"></i></span>`
+                : '';
+            return `<span class="achip achip-${presence}">${a.icon} ${a.name} · ${label}${remove}</span>`;
+        }
+
+        function renderAllergenComputed(list) {
+            const html = (list && list.length)
+                ? list.map(e => allergenChipHtml({ icon: e.icon, name: e.name, id: e.id }, e.presence, false)).join('')
+                : `<span class="allergen-empty">${MSG_ALLERGEN_COMPUTED_EMPTY}</span>`;
+            document.querySelectorAll('[id="p-allergen-computed"]').forEach(el => el.innerHTML = html);
+        }
+
+        function renderAllergenOverrides() {
+            const html = S.allergenOverrides.map(o => {
+                const a = allergenById(o.allergenId);
+                return a ? allergenChipHtml(a, o.presence, true) : '';
+            }).join('');
+            document.querySelectorAll('[id="p-allergen-overrides"]').forEach(el => el.innerHTML = html);
+        }
+
+        function addAllergenOverride() {
+            const select   = panelEl('p-allergen-add-select');
+            const presence = panelEl('p-allergen-add-presence')?.value || 'contains';
+            const noteEl   = panelEl('p-allergen-add-note');
+            const note     = (noteEl?.value || '').trim();
+            const allergenId = parseInt(select?.value);
+
+            if (!allergenId) return;
+            if (presence === 'free_from' && !note) {
+                showToast(MSG_ALLERGEN_NOTE_REQUIRED, 'error');
+                return;
+            }
+
+            S.allergenOverrides = S.allergenOverrides.filter(o => o.allergenId !== allergenId);
+            S.allergenOverrides.push({ allergenId, presence, note });
+            renderAllergenOverrides();
+            showToast(MSG_ALLERGEN_OVERRIDE_ADDED, 'success');
+
+            document.querySelectorAll('[id="p-allergen-add-select"]').forEach(el => el.selectedIndex = 0);
+            document.querySelectorAll('[id="p-allergen-add-note"]').forEach(el => el.value = '');
+        }
+
+        function removeAllergenOverride(allergenId) {
+            S.allergenOverrides = S.allergenOverrides.filter(o => o.allergenId !== allergenId);
+            renderAllergenOverrides();
+        }
+
+        // Ingredient-level allergens — auto-saves per ingredient (a "pill grid"
+        // rather than the product override's select, since only CONTAINS /
+        // MAY_CONTAIN apply here: an ingredient either carries an allergen or
+        // it doesn't, there's no "confirmed free from" at this level).
+        function ingredientAllergenPillGrid(ingredientId, current) {
+            const stateByAllergen = {};
+            (current || []).forEach(c => { stateByAllergen[c.allergenId] = c.presence; });
+
+            return ALLERGENS.map(a => {
+                const state = stateByAllergen[a.id] || '';
+                return `<span class="allergen-pill" data-state="${state}" data-allergen-id="${a.id}"
+                    onclick="cycleIngredientAllergen(${ingredientId}, ${a.id}, this)">${a.icon} ${a.name}</span>`;
+            }).join('');
+        }
+
+        // Cycles a single ingredient's allergen state: none → contains → may
+        // contain → none, saving immediately (same instant-apply convention
+        // as the category/product visibility toggles elsewhere in this file).
+        async function cycleIngredientAllergen(ingredientId, allergenId, pillEl) {
+            const next = { '': 'contains', 'contains': 'may_contain', 'may_contain': '' };
+            const newState = next[pillEl.dataset.state] ?? 'contains';
+            pillEl.dataset.state = newState;
+
+            const card = pillEl.closest('.allergen-ing-card');
+            const allergens = Array.from(card.querySelectorAll('.allergen-pill'))
+                .filter(p => p.dataset.state)
+                .map(p => ({ allergenId: parseInt(p.dataset.allergenId), presence: p.dataset.state }));
+
+            S.ingredientAllergenCache[ingredientId] = allergens;
+
+            const data = await apiFetch(`/admin/ingredients/${ingredientId}/allergens`, { allergens });
+            if (!data.error) showToast(MSG_INGREDIENT_ALLERGENS_SAVED, 'success');
+        }
+
+        function renderPrivateIngredientAllergens() {
+            const restaurantItems = collectIngredients().filter(i => i.value.startsWith('r:') || i.value.startsWith('new:'));
+            const wrap = () => document.querySelectorAll('[id="p-private-ingredient-allergens-wrap"]');
+
+            if (!restaurantItems.length) {
+                wrap().forEach(el => el.style.display = 'none');
+                return;
+            }
+            wrap().forEach(el => el.style.display = '');
+
+            const html = restaurantItems.map(item => {
+                if (item.value.startsWith('new:')) {
+                    return `<div class="allergen-ing-card"><div class="allergen-ing-name">${item.name}</div><p class="allergen-hint" style="margin-top:0">${MSG_ALLERGEN_NEW_INGREDIENT_HINT}</p></div>`;
+                }
+                const id = parseInt(item.value.slice(2));
+                const grid = ingredientAllergenPillGrid(id, S.ingredientAllergenCache[id]);
+                return `<div class="allergen-ing-card"><div class="allergen-ing-name">${item.name}</div><div class="allergen-pill-grid">${grid}</div></div>`;
+            }).join('');
+
+            document.querySelectorAll('[id="p-private-ingredient-allergens"]').forEach(el => el.innerHTML = html);
+        }
+
+        // Fetches allergen data for any selected private ingredient this
+        // panel hasn't already cached (e.g. one just added via search — a
+        // freshly-created "new:" one has nothing to fetch yet), then renders.
+        async function refreshPrivateIngredientAllergens() {
+            const restaurantIds = collectIngredients()
+                .filter(i => i.value.startsWith('r:'))
+                .map(i => parseInt(i.value.slice(2)));
+
+            const missing = restaurantIds.filter(id => !(id in S.ingredientAllergenCache));
+            if (missing.length) {
+                const fetched = await apiFetch('/admin/ingredients/allergens?ids=' + missing.join(','), null, 'GET');
+                Object.assign(S.ingredientAllergenCache, fetched);
+            }
+
+            renderPrivateIngredientAllergens();
+        }
+
         // ── Image preview ──────────────────────────────────────────────────────────
         function previewImage(input) {
             if (!input.files?.length) return;
@@ -1014,6 +1237,11 @@
             document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('on'));
             document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
             setIngredientItems([]);
+            S.allergenOverrides = [];
+            S.ingredientAllergenCache = {};
+            renderAllergenComputed([]);
+            renderAllergenOverrides();
+            document.querySelectorAll('[id="p-private-ingredient-allergens-wrap"]').forEach(el => el.style.display = 'none');
             document.getElementById('cat-select-error').style.display = 'none';
             document.querySelectorAll('[id="img-upload-area"]').forEach(area => {
                 area.querySelector('img')?.remove();

@@ -39,6 +39,7 @@ field:
     product_name_placeholder: 'Es: Pizza Margherita'
     spicy_level: Livello di piccantezza
     tags: Etichette
+    allergens: Allergeni
 
 field_error:
     name_required: Il nome è obbligatorio
@@ -51,6 +52,24 @@ ingredients:
     no_results: Nessun ingrediente trovato
     source_global: Globale
     source_restaurant: Ristorante
+
+allergens:
+    computed_title: Dai tuoi ingredienti
+    computed_hint: Calcolato automaticamente in base agli ingredienti qui sotto — modifica gli allergeni di un ingrediente, oppure aggiungi un'eccezione specifica per questo piatto se necessario.
+    computed_empty: Nessun allergene rilevato negli ingredienti attuali.
+    your_ingredients_title: Allergeni dei tuoi ingredienti
+    your_ingredients_hint: Condiviso con ogni altro piatto che usa lo stesso ingrediente.
+    new_ingredient_hint: Salva prima il piatto per poter etichettare gli allergeni degli ingredienti appena aggiunti.
+    overrides_title: Eccezioni specifiche del piatto
+    overrides_hint: Utile per rischio di contaminazione crociata, o per correggere un allergene calcolato automaticamente.
+    add_exception: Aggiungi eccezione
+    select_allergen: Seleziona un allergene…
+    presence_contains: Contiene
+    presence_may_contain: Può contenere tracce
+    presence_free_from: Confermato assente
+    note_placeholder: 'Nota (obbligatoria per "assente")'
+    remove: Rimuovi
+    source_computed_label: dagli ingredienti
 
 js:
     ai_import_soon: 'Importazione con IA — prossimamente ✨'
@@ -68,6 +87,9 @@ js:
     product_deleted: Piatto eliminato
     product_saved: 'Piatto salvato ✓'
     remove_ingredient_aria: 'Rimuovi %name%'
+    allergen_override_added: 'Eccezione aggiunta'
+    allergen_note_required: 'Aggiungi una nota che spieghi perché è contrassegnato come "assente"'
+    ingredient_allergens_saved: 'Allergeni salvati ✓'
 
 modal:
     category:
@@ -108,3 +130,4 @@ error:
     category_name_required: Il nome è obbligatorio.
     product_not_found: Piatto non trovato.
     category_not_found: Categoria non trovata.
+    allergen_free_from_note_required: Aggiungi una breve nota che spieghi perché questo allergene è contrassegnato come assente.

@@ -36,9 +36,18 @@ class GlobalIngredient
     #[ORM\OneToMany(mappedBy: 'globalIngredient', targetEntity: GlobalIngredientTranslation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $translations;
 
+    /**
+     * The allergens this ingredient carries — app-managed, sourced from a
+     * reliable reference mapping at import time, never invented. Source of
+     * truth for ProductAllergenResolver.
+     */
+    #[ORM\OneToMany(mappedBy: 'globalIngredient', targetEntity: GlobalIngredientAllergen::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $allergenLinks;
+
     public function __construct()
     {
         $this->translations = new ArrayCollection();
+        $this->allergenLinks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -79,6 +88,35 @@ class GlobalIngredient
         foreach ($this->translations as $translation) {
             if ($translation->getLocale() === $locale) {
                 return $translation;
+            }
+        }
+
+        return null;
+    }
+
+    public function getAllergenLinks(): Collection
+    {
+        return $this->allergenLinks;
+    }
+
+    public function addAllergenLink(GlobalIngredientAllergen $link): void
+    {
+        if (!$this->allergenLinks->contains($link)) {
+            $this->allergenLinks->add($link);
+            $link->setGlobalIngredient($this);
+        }
+    }
+
+    public function removeAllergenLink(GlobalIngredientAllergen $link): void
+    {
+        $this->allergenLinks->removeElement($link);
+    }
+
+    public function getAllergenLink(Allergen $allergen): ?GlobalIngredientAllergen
+    {
+        foreach ($this->allergenLinks as $link) {
+            if ($link->getAllergen() === $allergen) {
+                return $link;
             }
         }
 

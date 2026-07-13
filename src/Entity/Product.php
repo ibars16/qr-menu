@@ -78,6 +78,16 @@ class Product
     private Collection $globalIngredients;
 
     /**
+     * Deliberate, human-set exceptions to this product's computed allergen
+     * list — see ProductAllergenOverride. Empty for the large majority of
+     * products; the effective allergen set is computed from $ingredients
+     * and $globalIngredients by ProductAllergenResolver, with these layered
+     * on top.
+     */
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductAllergenOverride::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $allergenOverrides;
+
+    /**
      * Temporary price after currency conversion.
      * NOT mapped to database — calculated at runtime in MenuController.
      */
@@ -89,6 +99,7 @@ class Product
         $this->ingredients       = new ArrayCollection();
         $this->globalIngredients = new ArrayCollection();
         $this->tags = new ArrayCollection();
+        $this->allergenOverrides = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -264,5 +275,34 @@ class Product
     public function removeTag(ProductTag $tag): void
     {
         $this->tags->removeElement($tag);
+    }
+
+    public function getAllergenOverrides(): Collection
+    {
+        return $this->allergenOverrides;
+    }
+
+    public function addAllergenOverride(ProductAllergenOverride $override): void
+    {
+        if (!$this->allergenOverrides->contains($override)) {
+            $this->allergenOverrides->add($override);
+            $override->setProduct($this);
+        }
+    }
+
+    public function removeAllergenOverride(ProductAllergenOverride $override): void
+    {
+        $this->allergenOverrides->removeElement($override);
+    }
+
+    public function getAllergenOverride(Allergen $allergen): ?ProductAllergenOverride
+    {
+        foreach ($this->allergenOverrides as $override) {
+            if ($override->getAllergen() === $allergen) {
+                return $override;
+            }
+        }
+
+        return null;
     }
 }

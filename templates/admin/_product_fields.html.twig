@@ -141,3 +141,47 @@
         {{ 'ingredients.hint'|trans({}, 'admin_menu') }}
     </p>
 </div>
+
+{# Alérgenos — opcional, calculado desde los ingredientes + excepciones manuales #}
+<div class="field">
+    <label class="field-label">
+        {{ 'field.allergens'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
+    </label>
+
+    <div class="allergen-block">
+        <div class="allergen-subtitle">{{ 'allergens.computed_title'|trans({}, 'admin_menu') }}</div>
+        <div class="allergen-chip-row" id="p-allergen-computed"></div>
+        <p class="allergen-hint">{{ 'allergens.computed_hint'|trans({}, 'admin_menu') }}</p>
+    </div>
+
+    <div class="allergen-block" id="p-private-ingredient-allergens-wrap" style="display:none">
+        <div class="allergen-subtitle">{{ 'allergens.your_ingredients_title'|trans({}, 'admin_menu') }}</div>
+        <p class="allergen-hint">{{ 'allergens.your_ingredients_hint'|trans({}, 'admin_menu') }}</p>
+        <div id="p-private-ingredient-allergens"></div>
+    </div>
+
+    <div class="allergen-block">
+        <div class="allergen-subtitle">{{ 'allergens.overrides_title'|trans({}, 'admin_menu') }}</div>
+        <p class="allergen-hint">{{ 'allergens.overrides_hint'|trans({}, 'admin_menu') }}</p>
+        <div class="allergen-chip-row" id="p-allergen-overrides"></div>
+        <div class="allergen-override-adder">
+            <select id="p-allergen-add-select">
+                <option value="">{{ 'allergens.select_allergen'|trans({}, 'admin_menu') }}</option>
+                {% for allergen in allergens %}
+                    {% set aT = allergen.getTranslation(locale) %}
+                    {% if not aT %}{% set aT = allergen.getTranslation('en') %}{% endif %}
+                    {% if aT %}<option value="{{ allergen.id }}">{{ allergen.icon }} {{ aT.name }}</option>{% endif %}
+                {% endfor %}
+            </select>
+            <select id="p-allergen-add-presence">
+                <option value="contains">{{ 'allergens.presence_contains'|trans({}, 'admin_menu') }}</option>
+                <option value="may_contain">{{ 'allergens.presence_may_contain'|trans({}, 'admin_menu') }}</option>
+                <option value="free_from">{{ 'allergens.presence_free_from'|trans({}, 'admin_menu') }}</option>
+            </select>
+            <input type="text" id="p-allergen-add-note" placeholder="{{ 'allergens.note_placeholder'|trans({}, 'admin_menu') }}">
+            <div class="allergen-add-btn" onclick="addAllergenOverride()" role="button" tabindex="0">
+                <i class="ti ti-plus" style="font-size:13px" aria-hidden="true"></i> {{ 'allergens.add_exception'|trans({}, 'admin_menu') }}
+            </div>
+        </div>
+    </div>
+</div>

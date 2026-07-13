@@ -2,13 +2,19 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\Allergen;
 use App\Entity\Category;
 use App\Entity\CategoryTranslation;
 use App\Entity\GlobalIngredient;
 use App\Entity\Ingredient;
+use App\Entity\IngredientAllergen;
 use App\Entity\IngredientTranslation;
 use App\Entity\Product;
+use App\Entity\ProductAllergenOverride;
 use App\Entity\ProductTranslation;
+use App\Enum\AllergenPresence;
+use App\Repository\AllergenRepository;
+use App\Service\ProductAllergenResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,8 +28,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_USER')]
 class MenuAdminController extends AbstractController
 {
-    public function __construct(private readonly TranslatorInterface $translator)
-    {
+    public function __construct(
+        private readonly TranslatorInterface $translator,
+        private readonly AllergenRepository $allergenRepository,
+        private readonly ProductAllergenResolver $allergenResolver,
+    ) {
     }
 
     private function restaurant(): \App\Entity\Restaurant
@@ -65,6 +74,26 @@ class MenuAdminController extends AbstractController
         return ['type' => 'unknown', 'id' => null, 'name' => null];
     }
 
+    /**
+     * Same locale-fallback chain used everywhere else in this controller for
+     * reference data: requested locale → restaurant's content language →
+     * English (the one language the taxonomy always has) → raw code.
+     */
+    private function serializeAllergen(Allergen $allergen, string $locale, string $contentLocale): array
+    {
+        $t = $allergen->getTranslation($locale)
+            ?? $allergen->getTranslation($contentLocale)
+            ?? $allergen->getTranslation('en');
+
+        return [
+            'id'    => $allergen->getId(),
+            'code'  => $allergen->getCode(),
+            'icon'  => $allergen->getIcon(),
+            'color' => $allergen->getColor(),
+            'name'  => $t?->getName() ?? $allergen->getCode(),
+        ];
+    }
+
     // ── Main view ────────────────────────────────────────────────────────────
 
     #[Route('/menu', name: 'menu')]
@@ -81,6 +110,7 @@ class MenuAdminController extends AbstractController
             'categories' => $categories,
             'languages'  => $languages,
             'locale'     => $restaurant->getDefaultLanguage(),
+            'allergens'  => $this->allergenRepository->findAllOrdered(),
         ]);
     }
 
@@ -190,10 +220,21 @@ class MenuAdminController extends AbstractController
         $ingredientsList = [];
         foreach ($product->getIngredients() as $ing) {
             $t = $ing->getTranslation($adminLocale) ?? $ing->getTranslation($contentLocale);
+
+            // Its own allergen tags too — lets the product panel offer an
+            // inline editor for this private ingredient without a second
+            // request (see the ingredients/allergens endpoints for when one
+            // gets added to the selection afterwards instead).
+            $ingAllergens = [];
+            foreach ($ing->getAllergenLinks() as $link) {
+                $ingAllergens[] = ['allergenId' => $link->getAllergen()->getId(), 'presence' => $link->getPresence()->value];
+            }
+
             $ingredientsList[] = [
-                'value'  => 'r:' . $ing->getId(),
-                'name'   => $t?->getName() ?? $ing->getCode(),
-                'source' => 'restaurant',
+                'value'     => 'r:' . $ing->getId(),
+                'name'      => $t?->getName() ?? $ing->getCode(),
+                'source'    => 'restaurant',
+                'allergens' => $ingAllergens,
             ];
         }
         foreach ($product->getGlobalIngredients() as $gIng) {
@@ -205,17 +246,37 @@ class MenuAdminController extends AbstractController
             ];
         }
 
+        // Allergens — computed from the ingredients above, with any
+        // product-specific exception layered on top. Kept as two separate
+        // lists in the response (rather than one merged one) so the admin
+        // UI can show "from your ingredients" and "exceptions you set"
+        // as clearly distinct — see ProductAllergenResolver.
+        $allergensComputed = [];
+        $allergenOverrides = [];
+        foreach ($this->allergenResolver->resolveForProduct($product) as $entry) {
+            $row = $this->serializeAllergen($entry['allergen'], $adminLocale, $contentLocale);
+            $row['presence'] = $entry['presence']->value;
+            if ($entry['source'] === 'override') {
+                $row['note'] = $entry['note'];
+                $allergenOverrides[] = $row;
+            } else {
+                $allergensComputed[] = $row;
+            }
+        }
+
         return $this->json([
-            'id'              => $product->getId(),
-            'categoryId'      => $product->getCategory()->getId(),
-            'image'           => $product->getImage(),
-            'basePrice'       => $product->getBasePrice(),
-            'calories'        => $product->getCalories(),
-            'spicyLevel'      => $product->getSpicyLevel(),
-            'active'          => $product->isActive(),
-            'translations'    => $translations,
-            'tags'            => $tags,
-            'ingredientsList' => $ingredientsList,
+            'id'                => $product->getId(),
+            'categoryId'        => $product->getCategory()->getId(),
+            'image'             => $product->getImage(),
+            'basePrice'         => $product->getBasePrice(),
+            'calories'          => $product->getCalories(),
+            'spicyLevel'        => $product->getSpicyLevel(),
+            'active'            => $product->isActive(),
+            'translations'      => $translations,
+            'tags'              => $tags,
+            'ingredientsList'   => $ingredientsList,
+            'allergensComputed' => $allergensComputed,
+            'allergenOverrides' => $allergenOverrides,
         ]);
     }
 
@@ -367,6 +428,39 @@ class MenuAdminController extends AbstractController
             }
         }
 
+        // Allergen overrides — the rare, deliberate exceptions to the
+        // computed list (correction, or kitchen-level cross-contamination
+        // that no ingredient could ever capture). FREE_FROM must always
+        // carry a reason: suppressing a computed allergen is the one action
+        // here with real downside if done carelessly.
+        if (isset($data['allergenOverrides'])) {
+            foreach ($product->getAllergenOverrides()->toArray() as $existing) {
+                $product->removeAllergenOverride($existing);
+                $em->remove($existing);
+            }
+
+            foreach ($data['allergenOverrides'] as $ovData) {
+                $allergen = $em->getRepository(Allergen::class)->find($ovData['allergenId'] ?? 0);
+                $presence = AllergenPresence::tryFrom($ovData['presence'] ?? '');
+                if (!$allergen || !$presence) {
+                    continue;
+                }
+
+                $note = trim($ovData['note'] ?? '');
+                if ($presence === AllergenPresence::FREE_FROM && $note === '') {
+                    return $this->json(['error' => $this->translator->trans('error.allergen_free_from_note_required', domain: 'admin_menu')], 400);
+                }
+
+                $override = new ProductAllergenOverride();
+                $override->setAllergen($allergen);
+                $override->setPresence($presence);
+                $override->setNote($note !== '' ? $note : null);
+                $override->setSetBy($this->getUser());
+                $product->addAllergenOverride($override);
+                $em->persist($override);
+            }
+        }
+
         $em->persist($product);
         $em->flush();
 
@@ -436,6 +530,64 @@ class MenuAdminController extends AbstractController
         }
 
         return $this->json($results);
+    }
+
+    // ── Ingredient allergens (restaurant-private ingredients only — the
+    //    Global Library is app-managed and never editable here) ────────────────
+
+    #[Route('/ingredients/allergens', name: 'ingredients_allergens_batch', methods: ['GET'])]
+    public function batchIngredientAllergens(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $restaurant = $this->restaurant();
+        $ids        = array_filter(array_map('intval', explode(',', $request->query->get('ids', ''))));
+
+        $result = [];
+        foreach ($ids as $id) {
+            $ingredient = $em->getRepository(Ingredient::class)->find($id);
+            if (!$ingredient || $ingredient->getRestaurant() !== $restaurant) {
+                continue;
+            }
+            $result[$id] = array_map(
+                static fn (IngredientAllergen $link) => ['allergenId' => $link->getAllergen()->getId(), 'presence' => $link->getPresence()->value],
+                $ingredient->getAllergenLinks()->toArray()
+            );
+        }
+
+        return $this->json($result);
+    }
+
+    #[Route('/ingredients/{id}/allergens', name: 'ingredients_allergens_save', methods: ['POST'])]
+    public function saveIngredientAllergens(Ingredient $ingredient, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $this->assertOwner($ingredient->getRestaurant());
+
+        $data = json_decode($request->getContent(), true);
+
+        foreach ($ingredient->getAllergenLinks()->toArray() as $existing) {
+            $ingredient->removeAllergenLink($existing);
+            $em->remove($existing);
+        }
+
+        foreach ($data['allergens'] ?? [] as $row) {
+            $allergen = $this->allergenRepository->find($row['allergenId'] ?? 0);
+            // FREE_FROM only ever belongs on a product-level override — an
+            // ingredient carries an allergen or it doesn't, there is no
+            // "explicitly free from" state to record at this level.
+            $presence = AllergenPresence::tryFrom($row['presence'] ?? '');
+            if (!$allergen || !in_array($presence, [AllergenPresence::CONTAINS, AllergenPresence::MAY_CONTAIN], true)) {
+                continue;
+            }
+
+            $link = new IngredientAllergen();
+            $link->setAllergen($allergen);
+            $link->setPresence($presence);
+            $ingredient->addAllergenLink($link);
+            $em->persist($link);
+        }
+
+        $em->flush();
+
+        return $this->json(['ok' => true]);
     }
 
     // ── Reorder ───────────────────────────────────────────────────────────────

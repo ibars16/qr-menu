@@ -121,6 +121,11 @@
     .lbl { font-size: 11px; padding: 3px 9px; border-radius: var(--badge-radius, 8px); white-space: nowrap; }
     .lbl-g { background: var(--lg-bg); color: var(--lg); border: 1px solid var(--lg-b); }
     .lbl-o { background: var(--lo-bg); color: var(--lo); border: 1px solid var(--lo-b); }
+    .alg { font-size: 11px; padding: 3px 9px; border-radius: var(--badge-radius, 8px); border: 1px solid transparent; white-space: nowrap; }
+    .alg-contains { background: rgba(220,38,38,0.12); color: #d64545; border-color: rgba(220,38,38,0.28); }
+    .alg-may_contain { background: transparent; color: #c78a3d; border: 1px dashed rgba(199,138,61,0.55); }
+    .alg-free_from { background: rgba(127,127,127,0.08); color: var(--btt); border-color: var(--bdiv); }
+    .allergen-disclaimer { font-size: 11px; color: var(--fg-3); padding-top: 10px; line-height: 1.5; }
     .nut-row { display: flex; align-items: baseline; gap: 4px; }
     .nut-v { font-size: 20px; font-weight: 700; color: var(--nut-v); font-variant-numeric: tabular-nums; }
     .nut-u { font-size: 11px; color: var(--nut-u); }
@@ -153,6 +158,7 @@
 <div class="ui-wrap">
     <div class="search-wrap"><i class="ti ti-search search-icon"></i><input type="text" class="search-input" id="menu-search" placeholder="Buscar platos…" autocomplete="off"></div>
     {% if tags|length > 0 %}<div class="diet-filters"><button class="diet-filter active" data-tag="all">Todo</button>{% for tag in tags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}</div><div class="sep"></div>{% endif %}
+    <div class="allergen-disclaimer"><i class="ti ti-info-circle" style="font-size:12px"></i> La información de alérgenos es orientativa. Consulta con el personal antes de pedir si tienes alguna alergia.</div>
     <div class="cat-tabs" id="cat-tabs"><span class="cat-tab active" data-cat="all">Todo</span>{% for category in categories %}{% set t = category.getTranslation(locale) %}{% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if not t %}{% set t = category.translations.first %}{% endif %}{% if t %}<span class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</span>{% endif %}{% endfor %}</div>
 </div>
 
@@ -171,7 +177,7 @@
                         {% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}
                         {% if not pT %}{% set pT = product.translations.first %}{% endif %}
                         {% if pT %}
-                            <div class="card-wrap" onclick="flipCard(this)" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}">
+                            <div class="card-wrap" onclick="flipCard(this)" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}" data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
                                 <div class="card">
                                     <div class="card-front">
                                         <div class="row-num">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</div>
@@ -195,6 +201,7 @@
                                                 {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
                                                 {% if product.ingredients|length > 0 %}<div class="bsec"><div class="bsec-title">Ingredientes</div><div class="ing-list">{% for ingredient in product.ingredients %}{% set iT = ingredient.getTranslation(locale) %}{% if not iT %}{% set iT = ingredient.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if iT %}<div class="ing">{{ iT.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
                                                 {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">Etiquetas</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
+                                                {% if productAllergens[product.id]|default([])|length > 0 %}<div class="bsec"><div class="bsec-title">Alérgenos</div><div class="lbl-list">{% for a in productAllergens[product.id] %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ Sin {{ a.name }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · trazas</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
                                                 {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">Picante</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}Suave{% elseif product.spicyLevel == 2 %}Medio{% elseif product.spicyLevel == 3 %}Picante{% elseif product.spicyLevel == 4 %}Muy picante{% else %}Extremo{% endif %}</span></div></div>{% endif %}
                                                 {% if product.calories %}<div class="bsec"><div class="bsec-title">Calorías</div><div class="nut-row"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
                                             </div>
