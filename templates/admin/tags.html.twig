@@ -51,8 +51,9 @@
         }
 
         .tag-info { flex:1; min-width:0; }
-        .tag-name { font-size:14px; font-weight:500; color:var(--tx-1); }
+        .tag-name { font-size:14px; font-weight:500; color:var(--tx-1); display:flex; align-items:center; gap:6px; }
         .tag-meta { font-size:11px; color:var(--tx-6); margin-top:2px; }
+        .system-badge { display:inline-flex; align-items:center; color:var(--tx-7); font-size:12px; }
 
         .tag-actions { display:flex; gap:4px; }
 
@@ -219,22 +220,27 @@
                             {{ tag.icon }}
                         </div>
                         <div class="tag-info">
-                            <div class="tag-name">{{ tName }}</div>
+                            <div class="tag-name">
+                                {{ tName }}
+                                {% if tag.isSystem %}<span class="system-badge" title="{{ 'label.system_tag'|trans({}, 'admin_tags') }}"><i class="ti ti-lock" aria-hidden="true"></i></span>{% endif %}
+                            </div>
                             <div class="tag-meta">
                                 {{ tag.products|length }} {{ tag.products|length == 1 ? 'meta.dish_singular'|trans({}, 'admin_tags') : 'meta.dish_plural'|trans({}, 'admin_tags') }}
                             </div>
                         </div>
                         <div class="tag-actions">
                             <button class="icon-btn"
-                                    onclick="UI.openEdit({{ tag.id }}, '{{ tName|e('js') }}', '{{ tag.icon|e('js') }}', '{{ tag.color|e('js') }}')"
+                                    onclick="UI.openEdit({{ tag.id }}, '{{ tName|e('js') }}', '{{ tag.icon|e('js') }}', '{{ tag.color|e('js') }}', {{ tag.isSystem ? 'true' : 'false' }})"
                                     title="{{ 'action.edit_tag'|trans({}, 'admin_tags') }}">
                                 <i class="ti ti-edit" aria-hidden="true"></i>
                             </button>
-                            <button class="icon-btn danger"
-                                    onclick="deleteTag({{ tag.id }}, '{{ tName|e('js') }}', {{ tag.products|length }})"
-                                    title="{{ 'action.delete_tag'|trans({}, 'admin_tags') }}">
-                                <i class="ti ti-trash" aria-hidden="true"></i>
-                            </button>
+                            {% if not tag.isSystem %}
+                                <button class="icon-btn danger"
+                                        onclick="deleteTag({{ tag.id }}, '{{ tName|e('js') }}', {{ tag.products|length }})"
+                                        title="{{ 'action.delete_tag'|trans({}, 'admin_tags') }}">
+                                    <i class="ti ti-trash" aria-hidden="true"></i>
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
@@ -333,14 +339,16 @@
                 editingId = null;
                 this._setTitle(MSG_NEW_TAG);
                 this._showDelete(false);
+                this._showSystemHint(false);
                 this._reset();
                 this._open();
                 setTimeout(() => activePanel()?.querySelector('[id="tag-name"]')?.focus(), 80);
             },
-            openEdit(id, name, icon, color) {
+            openEdit(id, name, icon, color, isSystem) {
                 editingId = id;
                 this._setTitle(MSG_EDIT_TAG);
-                this._showDelete(true);
+                this._showDelete(!isSystem);
+                this._showSystemHint(isSystem);
                 this._reset();
                 setFieldVal('tag-name', name);
                 setFieldVal('tag-icon', icon);
@@ -370,6 +378,9 @@
             _showDelete(show) {
                 document.getElementById('d-delete-btn').style.display = show ? '' : 'none';
                 document.getElementById('m-delete-btn').style.display = show ? '' : 'none';
+            },
+            _showSystemHint(show) {
+                document.querySelectorAll('[id="system-tag-hint"]').forEach(el => el.style.display = show ? '' : 'none');
             },
             _reset() {
                 setFieldVal('tag-name', '');
@@ -414,6 +425,8 @@
                 document.querySelector(`.tag-row[data-id="${id}"]`)?.remove();
                 showToast(MSG_TAG_DELETED, 'success');
                 if (!document.querySelector('.tag-row')) location.reload();
+            } else if (result.error) {
+                showToast(result.error, 'error');
             }
         }
 

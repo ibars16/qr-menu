@@ -29,9 +29,14 @@ field:
 
 error:
     name_required: Il nome è obbligatorio.
+    system_tag_cannot_delete: "Le etichette di sistema non possono essere eliminate. Puoi comunque personalizzarla o semplicemente non assegnarla a nessun piatto."
+
+label:
+    system_tag: Etichetta di sistema
 
 hint:
     icon: Scrivi un'emoji che rappresenti l'etichetta
+    system_tag_edit: "Questa è un'etichetta di sistema: puoi cambiarne nome, icona e colore e scegliere a quali piatti è assegnata, ma non può essere eliminata."
 
 toast:
     created: 'Etichetta creata ✓'

@@ -1,5 +1,10 @@
 {# Shared tag form fields — used in both desktop modal and mobile sheet #}
 
+<div class="info-banner" id="system-tag-hint" style="display:none">
+    <i class="ti ti-lock" aria-hidden="true"></i>
+    {{ 'hint.system_tag_edit'|trans({}, 'admin_tags') }}
+</div>
+
 <div class="field">
     <div class="field-label">{{ 'field.name'|trans({}, 'admin_tags') }} <span class="req">*</span></div>
     <input type="text" id="tag-name" placeholder="{{ 'field.name_placeholder'|trans({}, 'admin_tags') }}"

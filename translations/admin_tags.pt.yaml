@@ -29,9 +29,14 @@ field:
 
 error:
     name_required: O nome é obrigatório.
+    system_tag_cannot_delete: 'As etiquetas do sistema não podem ser eliminadas. Ainda podes personalizá-la ou simplesmente não a atribuir a nenhum prato.'
+
+label:
+    system_tag: Etiqueta do sistema
 
 hint:
     icon: Escreva um emoji que represente a etiqueta
+    system_tag_edit: 'Esta é uma etiqueta do sistema — podes alterar o nome, ícone e cor, e escolher a que pratos é atribuída, mas não pode ser eliminada.'
 
 toast:
     created: 'Etiqueta criada ✓'

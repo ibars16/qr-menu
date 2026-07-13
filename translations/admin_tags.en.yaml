@@ -29,9 +29,14 @@ field:
 
 error:
     name_required: The name is required.
+    system_tag_cannot_delete: "System tags can't be deleted. You can still customize this tag or simply not assign it to any dishes."
+
+label:
+    system_tag: System tag
 
 hint:
     icon: Type an emoji that represents the tag
+    system_tag_edit: "This is a system tag — you can change its name, icon, and color, and choose which dishes it's assigned to, but it can't be deleted."
 
 toast:
     created: 'Tag created ✓'

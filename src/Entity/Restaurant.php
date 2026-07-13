@@ -215,11 +215,11 @@ class Restaurant
         return $this->productTags;
     }
 
+    /** $tag's restaurant is fixed at construction (see ProductTag) and must already be $this. */
     public function addProductTag(ProductTag $tag): void
     {
         if (!$this->productTags->contains($tag)) {
             $this->productTags->add($tag);
-            $tag->setRestaurant($this);
         }
     }
 

@@ -207,3 +207,37 @@ preset_tags:
       pl: Zawiera gluten
       sv: Innehåller gluten
       no: Inneholder gluten
+
+  # Editorial highlight, not a sales/popularity metric the platform doesn't
+  # have — the wording is deliberately framed as the owner's own
+  # recommendation rather than an implied "most ordered" claim. This is the
+  # single signal the future Smart Waiter is allowed to use when a customer
+  # asks what's popular, recommended, or the best seller: it must look for
+  # products carrying a ProductTag with code "recommended" and cite only
+  # those — and say plainly that nothing has been marked yet if this tag
+  # hasn't been assigned to any product, rather than guessing.
+  - code: recommended
+    icon: "⭐"
+    color: "#D4AF37"
+    position: 8
+    translations:
+      en: Chef's Recommendation
+      es: Recomendación del chef
+      fr: Recommandation du chef
+      de: Empfehlung des Kochs
+      it: Consiglio dello chef
+      pt: Recomendação do chef
+      nl: Aanbeveling van de chef
+      ru: Рекомендация шеф-повара
+      zh: 主厨推荐
+      ja: シェフのおすすめ
+      ko: 셰프 추천
+      th: แนะนำโดยเชฟ
+      ar: توصية الشيف
+      hi: शेफ की सिफारिश
+      tr: Şefin Önerisi
+      vi: Đề xuất của đầu bếp
+      id: Rekomendasi Chef
+      pl: Polecane przez szefa kuchni
+      sv: Kockens rekommendation
+      no: Kokkens anbefaling

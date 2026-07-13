@@ -9,7 +9,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Seeds the 8 predefined dietary tags for a newly registered restaurant.
+ * Seeds the predefined system tags for a newly registered restaurant — see
+ * the class-level docblock on ProductTag for what "system tag" guarantees.
  *
  * Tag definitions (icons, colours, all translations) come from
  * config/preset_tags.yaml so they can be maintained without touching PHP code.
@@ -25,7 +26,7 @@ final class DefaultTagSeeder
 
     /**
      * @param string[]|null $onlyCodes  If provided, only seed presets whose code is in this list.
-     *                                   Pass null (default) to seed all 8 presets.
+     *                                   Pass null (default) to seed every preset in config/preset_tags.yaml.
      */
     public function seedForRestaurant(Restaurant $restaurant, ?array $onlyCodes = null): void
     {
@@ -36,13 +37,10 @@ final class DefaultTagSeeder
                 continue;
             }
 
-            $tag = new ProductTag();
-            $tag->setRestaurant($restaurant);
-            $tag->setCode($preset['code']);
+            $tag = new ProductTag($restaurant, $preset['code'], isSystem: true);
             $tag->setIcon($preset['icon']);
             $tag->setColor($preset['color']);
             $tag->setPosition($preset['position']);
-            $tag->setIsPreset(true);
 
             $this->em->persist($tag);
 

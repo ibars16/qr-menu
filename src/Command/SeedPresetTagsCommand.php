@@ -16,7 +16,7 @@ use Symfony\Component\Yaml\Yaml;
 
 #[AsCommand(
     name: 'app:seed-preset-tags',
-    description: 'Seeds the 8 default dietary tags for all restaurants that are missing them.',
+    description: 'Seeds the default system tags for all restaurants that are missing them.',
 )]
 final class SeedPresetTagsCommand extends Command
 {
@@ -68,30 +68,64 @@ final class SeedPresetTagsCommand extends Command
     {
         $io->section(sprintf('[%d] %s', $restaurant->getId(), $restaurant->getName()));
 
-        // Collect the codes that already exist for this restaurant.
-        $existingCodes = [];
+        // A preset only counts as "already there" if the restaurant's own
+        // tag for that code is actually the real system tag — never a
+        // restaurant-created custom tag that merely happens to share the
+        // same code (e.g. a manually-made "Vegetarian" tag created before
+        // this restaurant ever got the real preset seeded). Treating any
+        // code match as "already seeded" was the bug that let this happen
+        // in the first place.
+        $existingSystemCodes = [];
+        $collisions = []; // code => non-system ProductTag already occupying it
         foreach ($restaurant->getProductTags() as $tag) {
-            $existingCodes[] = $tag->getCode();
+            if ($tag->isSystem()) {
+                $existingSystemCodes[] = $tag->getCode();
+            } elseif (in_array($tag->getCode(), $presetCodes, true)) {
+                $collisions[$tag->getCode()] = $tag;
+            }
         }
 
-        // Find which preset codes are completely missing.
-        $missingCodes = array_diff($presetCodes, $existingCodes);
+        $missingCodes = array_diff($presetCodes, $existingSystemCodes);
 
         if (empty($missingCodes)) {
-            $io->writeln('  All preset tags already exist — skipping.');
+            $io->writeln('  All system tags already exist — skipping.');
+            return;
+        }
+
+        // A system tag's code is immutable by design (see ProductTag), so a
+        // collision can't be resolved automatically by renaming the
+        // existing custom tag out of the way — and it shouldn't be resolved
+        // by silently creating a duplicate-looking tag either. Report it
+        // plainly and let a human decide (rename or remove the custom tag
+        // via the Tags screen, then re-run this command) rather than either
+        // failing loudly or skipping silently.
+        $blocked = array_intersect($missingCodes, array_keys($collisions));
+        foreach ($blocked as $code) {
+            $tag = $collisions[$code];
+            $io->writeln(sprintf(
+                '  <error>Cannot seed system tag "%s" — a restaurant-created tag (#%d, %d dish(es)) already uses that code. Rename or remove it from the Tags screen, then re-run this command.</error>',
+                $code,
+                $tag->getId(),
+                $tag->getProducts()->count()
+            ));
+        }
+
+        $toSeed = array_diff($missingCodes, $blocked);
+        if (empty($toSeed)) {
             return;
         }
 
         $io->writeln(sprintf(
-            '  Missing preset codes: <comment>%s</comment>',
-            implode(', ', $missingCodes)
+            '  Missing system tags: <comment>%s</comment>',
+            implode(', ', $toSeed)
         ));
 
-        // Use the same seeder logic but only for missing codes.
-        $this->seeder->seedForRestaurant($restaurant, $missingCodes);
+        // Use the same seeder logic but only for the codes that are both
+        // missing and actually safe to create.
+        $this->seeder->seedForRestaurant($restaurant, $toSeed);
         $this->em->flush();
 
-        $io->writeln(sprintf('  <info>Created %d missing preset tag(s) with all translations.</info>', count($missingCodes)));
+        $io->writeln(sprintf('  <info>Created %d missing system tag(s) with all translations.</info>', count($toSeed)));
     }
 
     private function loadPresetCodes(): array

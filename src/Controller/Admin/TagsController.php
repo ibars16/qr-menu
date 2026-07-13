@@ -24,6 +24,32 @@ class TagsController extends AbstractController
         return $r;
     }
 
+    /**
+     * Disambiguates a freshly-slugified code against every code this
+     * restaurant already uses — system tag or custom — so two tags can
+     * never silently share a code (also enforced at the DB level by a
+     * unique constraint on (restaurant_id, code); this just avoids ever
+     * hitting it). Without this, an owner naming their own tag "Recommended"
+     * would collide with the system tag of the same code, and code that
+     * trusts "code = 'recommended'" to mean the real system tag would have
+     * no way to tell them apart.
+     */
+    private function uniqueCodeFor(\App\Entity\Restaurant $restaurant, string $baseCode): string
+    {
+        $existing = array_map(fn ($tag) => $tag->getCode(), $restaurant->getProductTags()->toArray());
+
+        if (!in_array($baseCode, $existing, true)) {
+            return $baseCode;
+        }
+
+        for ($suffix = 2; ; $suffix++) {
+            $candidate = $baseCode . '-' . $suffix;
+            if (!in_array($candidate, $existing, true)) {
+                return $candidate;
+            }
+        }
+    }
+
     #[Route('/tags', name: 'tags')]
     public function index(): Response
     {
@@ -49,9 +75,9 @@ class TagsController extends AbstractController
             return $this->json(['error' => $translator->trans('error.name_required', domain: 'admin_tags')], 400);
         }
 
-        $tag = new ProductTag();
-        $tag->setRestaurant($restaurant);
-        $tag->setCode(strtolower(preg_replace('/[^a-z0-9]+/', '-', mb_strtolower($name))));
+        $code = $this->uniqueCodeFor($restaurant, strtolower(preg_replace('/[^a-z0-9]+/', '-', mb_strtolower($name))));
+
+        $tag = new ProductTag($restaurant, $code);
         $tag->setIcon(trim($data['icon'] ?? '🏷️') ?: '🏷️');
         $tag->setColor($data['color'] ?? '#666666');
         $tag->setPosition($restaurant->getProductTags()->count());
@@ -115,10 +141,14 @@ class TagsController extends AbstractController
     }
 
     #[Route('/tags/{id}/delete', name: 'tag_delete', methods: ['POST'])]
-    public function delete(ProductTag $tag, EntityManagerInterface $em): JsonResponse
+    public function delete(ProductTag $tag, EntityManagerInterface $em, TranslatorInterface $translator): JsonResponse
     {
         if ($tag->getRestaurant() !== $this->restaurant()) {
             return $this->json(['error' => 'Forbidden'], 403);
+        }
+
+        if ($tag->isSystem()) {
+            return $this->json(['error' => $translator->trans('error.system_tag_cannot_delete', domain: 'admin_tags')], 403);
         }
 
         $em->remove($tag);

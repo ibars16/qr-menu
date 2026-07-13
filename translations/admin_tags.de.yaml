@@ -29,9 +29,14 @@ field:
 
 error:
     name_required: Der Name ist erforderlich.
+    system_tag_cannot_delete: 'System-Tags können nicht gelöscht werden. Du kannst diesen Tag weiterhin anpassen oder ihn einfach keinem Gericht zuweisen.'
+
+label:
+    system_tag: System-Tag
 
 hint:
     icon: Geben Sie ein Emoji ein, das den Tag darstellt
+    system_tag_edit: 'Dies ist ein System-Tag — du kannst Name, Symbol und Farbe ändern und festlegen, welchen Gerichten er zugewiesen wird, aber er kann nicht gelöscht werden.'
 
 toast:
     created: 'Tag erstellt ✓'
