@@ -98,14 +98,26 @@
     </div>
 </div>
 
-{# Etiquetas — opcional #}
-{% if restaurant.productTags|length > 0 %}
+{# Etiquetas — opcional. "recommended" (Smart Waiter) is deliberately excluded
+   from this generic list — it has its own dedicated section below so it's
+   never duplicated between the two controls. #}
+{% set recommendedTag = null %}
+{% set genericTags = [] %}
+{% for tag in restaurant.productTags %}
+    {% if tag.isSystem and tag.code == 'recommended' %}
+        {% set recommendedTag = tag %}
+    {% else %}
+        {% set genericTags = genericTags|merge([tag]) %}
+    {% endif %}
+{% endfor %}
+
+{% if genericTags|length > 0 %}
     <div class="field">
         <label class="field-label">
             {{ 'field.tags'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
         </label>
         <div class="tag-pills">
-            {% for tag in restaurant.productTags %}
+            {% for tag in genericTags %}
                 {% set tagT = null %}
                 {% for tr in tag.translations %}
                     {% if tr.locale == locale %}{% set tagT = tr %}{% endif %}
@@ -128,6 +140,24 @@
             '%link_start%': '<a href="' ~ path('admin_tags') ~ '" style="color:var(--tx-3)">',
             '%link_end%': '</a>',
         }, 'admin_menu')|raw }}
+    </div>
+{% endif %}
+
+{# Smart Waiter — the one signal the AI assistant is allowed to cite when a
+   customer asks what the restaurant recommends (see MenuContextBuilder /
+   SmartWaiterPromptBuilder). This checkbox only adds or removes the existing
+   "recommended" System Tag — same product_save "tags" payload as the pills
+   above, no new field or logic. #}
+{% if recommendedTag %}
+    <div class="field">
+        <label class="field-label">{{ recommendedTag.icon }} {{ 'smart_waiter.section_title'|trans({}, 'admin_menu') }}</label>
+        <label class="sw-recommend-box">
+            <input type="checkbox" id="p-recommended" data-tag-id="{{ recommendedTag.id }}">
+            <span class="sw-recommend-text">
+                <span class="sw-recommend-label">{{ 'smart_waiter.recommended_label'|trans({}, 'admin_menu') }}</span>
+                <span class="sw-recommend-hint">{{ 'smart_waiter.recommended_hint'|trans({}, 'admin_menu') }}</span>
+            </span>
+        </label>
     </div>
 {% endif %}
 

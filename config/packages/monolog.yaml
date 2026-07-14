@@ -1,6 +1,7 @@
 monolog:
     channels:
         - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
+        - smart_waiter # AI provider failures/fallbacks — see AIModelRouter
 
 when@dev:
     monolog:

@@ -7,14 +7,17 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /**
  * Translates Global Ingredient Library names via Google Gemini.
  *
- * Uses gemini-2.0-flash-lite — the most cost-effective Gemini model — and
- * sends a batch of names for a given locale in a single API call to
- * minimise cost. Only ever invoked from GlobalIngredientTranslationBackfiller
- * during import — never on a request path.
+ * Uses gemini-flash-lite-latest — Google's floating alias for its current
+ * lightweight free-tier model — and sends a batch of names for a given
+ * locale in a single API call to minimise cost. Only ever invoked from
+ * GlobalIngredientTranslationBackfiller during import — never on a request
+ * path. A dated snapshot (gemini-2.0-flash-lite) was used here previously;
+ * Google zeroed that generation's free-tier quota on this project, so this
+ * now tracks the same self-updating alias config/ai_providers.yaml uses.
  */
 final class GeminiIngredientTranslator implements IngredientTranslatorInterface
 {
-    private const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent';
+    private const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent';
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,

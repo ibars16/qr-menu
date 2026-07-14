@@ -1,0 +1,99 @@
+# Every AI provider Smart Waiter can use. To add a new one — another
+# OpenAI-compatible host, or a second Gemini model — add an entry here and
+# set its api_key_env in .env. Nothing else needs to change: AIProviderFactory
+# reads this file at runtime (same pattern as config/preset_tags.yaml) and
+# AIModelRouter only ever sees the resulting AIProviderInterface list.
+#
+# tier: "fast"     — tried first for simple lookups (ingredients, dietary
+#                     filters, single-fact questions). Always free/cheap models.
+#         "capable" — tried first for layered requests (multiple constraints,
+#                     comparisons, open-ended "what should I get"). The router
+#                     always falls through to the other tier rather than
+#                     giving up, so a capable-tier outage still gets answered
+#                     by a fast model instead of failing outright.
+#
+# priority: lower tries first within its own tier.
+#
+# cost_per_1m_input / cost_per_1m_output: USD per 1M tokens, for analytics
+# only. Leave null (not 0) for a free provider — SmartWaiterExchangeLog
+# stores estimated_cost as null rather than guessing when this is unset.
+
+providers:
+  # Gemini is priority 1 deliberately — it's the platform's primary
+  # provider today. Router fallback is driven purely by this number, so
+  # adding a real key for groq-llama or openrouter-free later does NOT bump
+  # them ahead of Gemini; they only ever step in if Gemini itself fails.
+  #
+  # model is a floating alias ("-latest"), not a dated snapshot, on purpose:
+  # gemini-2.0-flash-lite (the original pin here) had its free-tier quota
+  # silently zeroed by Google after this project's free tier had already
+  # rolled onto newer generations — a real incident, not a hypothetical.
+  # gemini-flash-lite-latest is what Google itself points new free-tier
+  # traffic at, so it self-heals against that exact failure recurring,
+  # at the cost of the underlying model Google resolves it to changing
+  # without a code change here. Confirmed working with a real API call
+  # against this project (currently resolves to gemini-3.1-flash-lite).
+  - id: gemini-flash-lite
+    adapter: gemini
+    enabled: true
+    tier: fast
+    priority: 1
+    model: gemini-flash-lite-latest
+    api_key_env: GEMINI_API_KEY
+    cost_per_1m_input: null
+    cost_per_1m_output: null
+
+  - id: groq-llama
+    adapter: openai_compatible
+    enabled: true
+    tier: fast
+    priority: 2
+    base_url: https://api.groq.com/openai/v1
+    model: llama-3.3-70b-versatile
+    api_key_env: GROQ_API_KEY
+    cost_per_1m_input: null
+    cost_per_1m_output: null
+
+  - id: openrouter-free
+    adapter: openai_compatible
+    enabled: true
+    tier: fast
+    priority: 3
+    base_url: https://openrouter.ai/api/v1
+    model: 'meta-llama/llama-3.3-8b-instruct:free'
+    api_key_env: OPENROUTER_API_KEY
+    cost_per_1m_input: null
+    cost_per_1m_output: null
+
+  - id: openai-mini
+    adapter: openai_compatible
+    enabled: true
+    tier: capable
+    priority: 1
+    base_url: https://api.openai.com/v1
+    model: gpt-4o-mini
+    api_key_env: OPENAI_API_KEY
+    cost_per_1m_input: 0.15
+    cost_per_1m_output: 0.60
+
+  - id: mistral-large
+    adapter: openai_compatible
+    enabled: true
+    tier: capable
+    priority: 2
+    base_url: https://api.mistral.ai/v1
+    model: mistral-large-latest
+    api_key_env: MISTRAL_API_KEY
+    cost_per_1m_input: 2.0
+    cost_per_1m_output: 6.0
+
+  - id: deepseek-chat
+    adapter: openai_compatible
+    enabled: true
+    tier: capable
+    priority: 3
+    base_url: https://api.deepseek.com/v1
+    model: deepseek-chat
+    api_key_env: DEEPSEEK_API_KEY
+    cost_per_1m_input: 0.27
+    cost_per_1m_output: 1.10

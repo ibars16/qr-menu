@@ -131,6 +131,11 @@ step:
 tags:
     none_configured: 'Nessuna etichetta configurata — %link_start%creale in Etichette%link_end% per contrassegnare i piatti come Vegetariano, Senza glutine, ecc.'
 
+smart_waiter:
+    section_title: Consigliato
+    recommended_label: Contrassegna come consigliato
+    recommended_hint: Questo piatto apparirà come consiglio per i clienti.
+
 upload:
     aria: Carica foto del piatto
     hint: Clicca o trascina un'immagine qui

@@ -131,6 +131,11 @@ step:
 tags:
     none_configured: 'Noch keine Etiketten konfiguriert — %link_start%erstelle welche unter Etiketten%link_end%, um Gerichte als Vegetarisch, Glutenfrei usw. zu kennzeichnen.'
 
+smart_waiter:
+    section_title: Empfohlen
+    recommended_label: Als empfohlen markieren
+    recommended_hint: Dieses Gericht wird den Kunden als Empfehlung angezeigt.
+
 upload:
     aria: Foto des Gerichts hochladen
     hint: Klicke oder ziehe ein Bild hierher

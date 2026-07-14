@@ -131,6 +131,11 @@ step:
 tags:
     none_configured: 'No tags configured yet — %link_start%create some in Tags%link_end% so you can mark dishes as Vegetarian, Gluten-free, etc.'
 
+smart_waiter:
+    section_title: Recommended
+    recommended_label: Mark as recommended
+    recommended_hint: This dish will appear as a recommendation for customers.
+
 upload:
     aria: Upload dish photo
     hint: Click or drag an image here

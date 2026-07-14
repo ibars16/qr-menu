@@ -131,6 +131,11 @@ step:
 tags:
     none_configured: 'Aucune étiquette configurée — %link_start%créez-en dans Étiquettes%link_end% pour marquer vos plats comme Végétarien, Sans gluten, etc.'
 
+smart_waiter:
+    section_title: Recommandé
+    recommended_label: Marquer comme recommandé
+    recommended_hint: Ce plat apparaîtra comme une recommandation pour les clients.
+
 upload:
     aria: Ajouter une photo du plat
     hint: Cliquez ou glissez une image ici

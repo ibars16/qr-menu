@@ -75,3 +75,14 @@ services:
     App\Command\ClassifyExportCommand:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Service\AI\AIProviderFactory:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\AI\AIModelRouter:
+        arguments:
+            $logger: '@monolog.logger.smart_waiter'
+
+    App\Service\AI\ChatComplexityClassifierInterface:
+        alias: App\Service\AI\HeuristicChatComplexityClassifier

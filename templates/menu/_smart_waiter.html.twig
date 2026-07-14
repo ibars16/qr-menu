@@ -1,0 +1,209 @@
+{# Smart Waiter — floating chat widget. Included once from menu/show.html.twig
+   (not per-layout) since everything it needs — --accent, --surface, --cb-bg,
+   --bdiv, --btt, --bn, --in-bg/--in-border/--in-text/--in-ph — is already a
+   global :root custom property from menu/themes/{theme}/vars.html.twig,
+   regardless of which of the 3 layouts is active. #}
+
+{% set swStringsByLocale = {
+    en: {bubble: 'Ask about the menu', title: 'Menu Assistant', greeting: 'Hi! Ask me anything about the menu — recommendations, ingredients, allergies, or anything else.', placeholder: 'Type your question…', send: 'Send', disclaimer: 'AI-generated answers. Please confirm with staff if you have a severe allergy.', errorFallback: "Sorry, I'm having trouble answering right now — please ask a member of staff."},
+    es: {bubble: 'Pregunta sobre el menú', title: 'Asistente del menú', greeting: '¡Hola! Pregúntame lo que quieras sobre el menú: recomendaciones, ingredientes, alergias o cualquier otra cosa.', placeholder: 'Escribe tu pregunta…', send: 'Enviar', disclaimer: 'Respuestas generadas por IA. Si tienes una alergia grave, confírmalo con el personal.', errorFallback: 'Lo sentimos, ahora mismo no podemos responder — pregunta a nuestro personal.'},
+    fr: {bubble: 'Question sur le menu', title: 'Assistant du menu', greeting: 'Bonjour ! Posez-moi une question sur le menu : recommandations, ingrédients, allergies, ou autre chose.', placeholder: 'Écrivez votre question…', send: 'Envoyer', disclaimer: "Réponses générées par IA. En cas d'allergie sévère, veuillez vérifier auprès du personnel.", errorFallback: 'Désolé, impossible de répondre pour le moment — merci de demander au personnel.'},
+    de: {bubble: 'Frage zur Speisekarte', title: 'Menü-Assistent', greeting: 'Hallo! Frag mich alles zur Speisekarte — Empfehlungen, Zutaten, Allergien oder etwas anderes.', placeholder: 'Frage eingeben…', send: 'Senden', disclaimer: 'KI-generierte Antworten. Bei schweren Allergien bitte beim Personal nachfragen.', errorFallback: 'Entschuldigung, im Moment keine Antwort möglich — bitte fragen Sie unser Personal.'},
+    it: {bubble: 'Chiedi sul menù', title: 'Assistente del menù', greeting: 'Ciao! Chiedimi qualsiasi cosa sul menù: consigli, ingredienti, allergie o altro.', placeholder: 'Scrivi la tua domanda…', send: 'Invia', disclaimer: "Risposte generate dall'IA. In caso di allergie gravi, verifica con il personale.", errorFallback: 'Spiacenti, al momento non riesco a rispondere — chiedi al personale.'},
+    pt: {bubble: 'Pergunte sobre o menu', title: 'Assistente do menu', greeting: 'Olá! Pergunte-me qualquer coisa sobre o menu: recomendações, ingredientes, alergias ou outra coisa.', placeholder: 'Escreva a sua pergunta…', send: 'Enviar', disclaimer: 'Respostas geradas por IA. Em caso de alergia grave, confirme com a equipa.', errorFallback: 'Desculpe, não consigo responder agora — pergunte à nossa equipa.'},
+} %}
+{% set swStrings = swStringsByLocale[locale] ?? swStringsByLocale['en'] %}
+
+<style>
+    .sw-widget { position: fixed; right: 18px; bottom: 18px; z-index: 2000; }
+
+    .sw-bubble {
+        width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer;
+        background: var(--accent); color: #fff; font-size: 24px;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+        transition: transform 0.15s ease;
+    }
+    .sw-bubble:hover { transform: scale(1.06); }
+    .sw-bubble.has-badge::after {
+        content: ''; position: absolute; top: 2px; right: 2px; width: 12px; height: 12px;
+        border-radius: 50%; background: var(--accent); border: 2px solid var(--bg, #111);
+        animation: sw-pulse 2s ease-in-out infinite;
+    }
+    @keyframes sw-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+    @media (prefers-reduced-motion: reduce) { .sw-bubble.has-badge::after { animation: none; } }
+
+    .sw-panel {
+        position: fixed; right: 18px; bottom: 86px; width: 360px; max-width: calc(100vw - 36px);
+        height: 520px; max-height: calc(100vh - 120px);
+        background: var(--cb-bg, var(--surface)); border: 1px solid var(--bdiv, var(--b1));
+        border-radius: var(--card-radius, 16px); box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+        display: flex; flex-direction: column; overflow: hidden;
+    }
+    .sw-panel[hidden] { display: none; }
+
+    .sw-header {
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        padding: 14px 16px; border-bottom: 1px solid var(--bdiv, var(--b1)); flex-shrink: 0;
+        background: var(--hdr-bg, transparent);
+    }
+    .sw-header-title { font-size: 14px; font-weight: 700; color: var(--bn, var(--fg)); }
+    .sw-close {
+        background: none; border: none; cursor: pointer; color: var(--btt, var(--fg-2));
+        font-size: 16px; line-height: 1; padding: 4px;
+    }
+    .sw-close:hover { color: var(--bn, var(--fg)); }
+
+    .sw-messages { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .sw-msg { max-width: 84%; padding: 9px 12px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; white-space: pre-wrap; }
+    .sw-msg.assistant { align-self: flex-start; background: var(--surface-2, rgba(127,127,127,0.1)); color: var(--bn, var(--fg)); border-bottom-left-radius: 4px; }
+    .sw-msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+
+    .sw-typing { align-self: flex-start; display: flex; gap: 4px; padding: 9px 12px; }
+    .sw-typing[hidden] { display: none; }
+    .sw-typing span {
+        width: 6px; height: 6px; border-radius: 50%; background: var(--btt, var(--fg-2));
+        animation: sw-bounce 1.2s ease-in-out infinite;
+    }
+    .sw-typing span:nth-child(2) { animation-delay: 0.15s; }
+    .sw-typing span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes sw-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-4px); opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .sw-typing span { animation: none; } }
+
+    .sw-form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--bdiv, var(--b1)); flex-shrink: 0; }
+    .sw-input {
+        flex: 1; min-width: 0; background: var(--in-bg, transparent); border: 1px solid var(--in-border, var(--b1));
+        color: var(--in-text, var(--fg)); border-radius: 999px; padding: 9px 14px; font-size: 13.5px; outline: none;
+    }
+    .sw-input::placeholder { color: var(--in-ph, var(--fg-2)); }
+    .sw-input:focus { border-color: var(--in-focus-border, var(--accent)); }
+    .sw-send {
+        width: 38px; height: 38px; border-radius: 50%; border: none; background: var(--accent); color: #fff;
+        cursor: pointer; flex-shrink: 0; font-size: 15px; display: flex; align-items: center; justify-content: center;
+    }
+    .sw-send:disabled { opacity: 0.5; cursor: default; }
+
+    .sw-disclaimer { padding: 0 16px 12px; font-size: 10.5px; color: var(--btt, var(--fg-2)); line-height: 1.4; flex-shrink: 0; }
+
+    @media (max-width: 480px) {
+        .sw-panel {
+            right: 10px; left: 10px; bottom: 10px; width: auto; max-width: none;
+            height: auto; top: 10px; max-height: none;
+        }
+    }
+</style>
+
+<div class="sw-widget" id="sw-widget" data-slug="{{ restaurant.slug }}" data-locale="{{ locale }}">
+    <button type="button" class="sw-bubble has-badge" id="sw-bubble" aria-label="{{ swStrings.bubble }}" aria-expanded="false" onclick="swToggle()">💬</button>
+
+    <div class="sw-panel" id="sw-panel" hidden>
+        <div class="sw-header">
+            <span class="sw-header-title">{{ swStrings.title }}</span>
+            <button type="button" class="sw-close" aria-label="Close" onclick="swToggle()">
+                <i class="ti ti-x" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="sw-messages" id="sw-messages"></div>
+        <div class="sw-typing" id="sw-typing" hidden><span></span><span></span><span></span></div>
+        <form class="sw-form" id="sw-form" onsubmit="swSend(event)">
+            <input type="text" class="sw-input" id="sw-input" placeholder="{{ swStrings.placeholder }}" maxlength="800" autocomplete="off">
+            <button type="submit" class="sw-send" id="sw-send-btn" aria-label="{{ swStrings.send }}">
+                <i class="ti ti-send-2" aria-hidden="true"></i>
+            </button>
+        </form>
+        <div class="sw-disclaimer">{{ swStrings.disclaimer }}</div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const SW_STRINGS = {{ swStrings|json_encode|raw }};
+    const widget = document.getElementById('sw-widget');
+    const slug = widget.dataset.slug;
+    const locale = widget.dataset.locale;
+
+    const bubble = document.getElementById('sw-bubble');
+    const panel = document.getElementById('sw-panel');
+    const messagesEl = document.getElementById('sw-messages');
+    const typingEl = document.getElementById('sw-typing');
+    const input = document.getElementById('sw-input');
+    const sendBtn = document.getElementById('sw-send-btn');
+
+    let opened = false;
+    let sending = false;
+
+    function getConversationId() {
+        return sessionStorage.getItem('sw_conv_' + slug);
+    }
+    function setConversationId(id) {
+        sessionStorage.setItem('sw_conv_' + slug, id);
+    }
+
+    function appendMessage(role, text) {
+        const div = document.createElement('div');
+        div.className = 'sw-msg ' + role;
+        div.textContent = text;
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    window.swToggle = function () {
+        opened = !opened;
+        panel.hidden = !opened;
+        bubble.setAttribute('aria-expanded', opened ? 'true' : 'false');
+        bubble.classList.remove('has-badge');
+        if (opened) {
+            if (!messagesEl.dataset.greeted) {
+                appendMessage('assistant', SW_STRINGS.greeting);
+                messagesEl.dataset.greeted = '1';
+            }
+            input.focus();
+        }
+    };
+
+    window.swSend = function (e) {
+        e.preventDefault();
+        if (sending) return;
+        const text = input.value.trim();
+        if (!text) return;
+
+        appendMessage('user', text);
+        input.value = '';
+        sending = true;
+        sendBtn.disabled = true;
+        typingEl.hidden = false;
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+
+        fetch('/r/' + encodeURIComponent(slug) + '/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: text,
+                conversationId: getConversationId(),
+                locale: locale,
+            }),
+        })
+            .then(res => res.ok ? res.json() : Promise.reject(new Error('http_' + res.status)))
+            .then(data => {
+                if (data.conversationId) setConversationId(data.conversationId);
+                if (data.error || !data.reply) {
+                    appendMessage('assistant', SW_STRINGS.errorFallback);
+                } else {
+                    appendMessage('assistant', data.reply);
+                }
+            })
+            .catch(() => {
+                appendMessage('assistant', SW_STRINGS.errorFallback);
+            })
+            .finally(() => {
+                sending = false;
+                sendBtn.disabled = false;
+                typingEl.hidden = true;
+            });
+    };
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && opened) window.swToggle();
+    });
+})();
+</script>

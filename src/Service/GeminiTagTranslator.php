@@ -7,12 +7,16 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /**
  * Translates dietary tag labels via Google Gemini.
  *
- * Uses gemini-2.0-flash-lite — the most cost-effective Gemini model —
- * and sends all labels for a given locale in a single API call to minimise cost.
+ * Uses gemini-flash-lite-latest — Google's floating alias for its current
+ * lightweight free-tier model — and sends all labels for a given locale in
+ * a single API call to minimise cost. A dated snapshot (gemini-2.0-flash-lite)
+ * was used here previously; Google zeroed that generation's free-tier quota
+ * on this project, so this now tracks the same self-updating alias
+ * config/ai_providers.yaml uses for Smart Waiter, for the same reason.
  */
 final class GeminiTagTranslator implements TagTranslatorInterface
 {
-    private const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent';
+    private const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent';
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,

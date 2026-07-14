@@ -304,6 +304,21 @@
             .tag-pill { font-size:13px; min-height:38px; padding:6px 14px; }
         }
 
+        /* Recommended-dish toggle */
+        .sw-recommend-box {
+            display:flex; align-items:flex-start; gap:10px;
+            padding:12px 14px; background:var(--bg-card);
+            border:1px solid var(--bd-2); border-radius:10px; cursor:pointer;
+        }
+        .sw-recommend-box input[type="checkbox"] {
+            width:18px; height:18px; margin-top:1px; flex-shrink:0;
+            accent-color:#D4AF37; cursor:pointer;
+        }
+        .sw-recommend-text { display:flex; flex-direction:column; gap:2px; }
+        .sw-recommend-label { font-size:13px; font-weight:600; color:var(--tx-1); }
+        .sw-recommend-hint { font-size:11.5px; color:var(--tx-6); line-height:1.5; }
+        .sw-recommend-box input:checked ~ .sw-recommend-text .sw-recommend-label { color:#D4AF37; }
+
         /* Allergens */
         .allergen-block { margin-top:14px; }
         .allergen-block:first-child { margin-top:0; }
@@ -839,6 +854,9 @@
                     document.querySelectorAll('.tag-pill').forEach(p =>
                         p.classList.toggle('on', data.tags.includes(parseInt(p.dataset.tagId)))
                     );
+                    document.querySelectorAll('[id="p-recommended"]').forEach(cb =>
+                        cb.checked = data.tags.includes(parseInt(cb.dataset.tagId))
+                    );
                     await setIngredientItems(data.ingredientsList ?? []);
 
                     // Seed the ingredient-allergen cache from what getProduct
@@ -967,6 +985,7 @@
             if (name) translations[LOCALE] = { name, description: desc || null };
 
             const tags = [...document.querySelectorAll('.tag-pill.on')].map(t => parseInt(t.dataset.tagId));
+            document.querySelectorAll('[id="p-recommended"]:checked').forEach(cb => tags.push(parseInt(cb.dataset.tagId)));
 
             const payload = {
                 id:          S.productId,
@@ -1327,6 +1346,7 @@
             );
             document.querySelectorAll('[id="p-category"]').forEach(el => { el.selectedIndex = 0; });
             document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('on'));
+            document.querySelectorAll('[id="p-recommended"]').forEach(cb => cb.checked = false);
             document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
             setIngredientItems([]);
             S.allergenOverrides = [];

@@ -131,6 +131,11 @@ step:
 tags:
     none_configured: 'Sem etiquetas configuradas — %link_start%crie-as em Etiquetas%link_end% para poder marcar pratos como Vegetariano, Sem glúten, etc.'
 
+smart_waiter:
+    section_title: Recomendado
+    recommended_label: Marcar como recomendado
+    recommended_hint: Este prato aparecerá como uma recomendação para os clientes.
+
 upload:
     aria: Enviar foto do prato
     hint: Clique ou arraste uma imagem aqui
