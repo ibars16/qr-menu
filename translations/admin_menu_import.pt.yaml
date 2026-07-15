@@ -1,0 +1,26 @@
+title: Importar menu
+
+action:
+    back_to_menu: Voltar ao menu
+
+upload:
+    intro: 'Carregue fotos do seu menu impresso e nós as lemos por si — uma foto por página está bem.'
+    drop_text: Arraste as fotos do seu menu para aqui, ou toque para escolher ficheiros
+    drop_hint: Adicione quantas precisar
+    submit: Começar a ler o meu menu
+    error:
+        no_files: Escolha pelo menos uma foto.
+        too_many_files: 'Carregue no máximo %max% fotos de cada vez.'
+        invalid_file: '"%name%" não pôde ser carregada — tente novamente.'
+        unsupported_type: '"%name%" não é um tipo de foto suportado. Use JPEG, PNG ou WebP.'
+        storage_failed: '"%name%" não pôde ser guardada — tente novamente.'
+
+status:
+    title: 'Fotos carregadas (%count%)'
+    subtitle: As suas fotos foram guardadas. Serão lidas automaticamente numa etapa futura.
+    page_label: 'Página %position%'
+    page_status:
+        pending: Carregada
+        analyzing: A analisar…
+        extracted: Lida
+        failed: Falhou

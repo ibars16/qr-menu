@@ -1,0 +1,53 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ 'title'|trans({}, 'admin_menu_import') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_menu_import') }}{% endblock %}
+
+{% block header_actions %}
+    <a href="{{ path('admin_menu') }}" class="btn">
+        <i class="ti ti-arrow-left" aria-hidden="true"></i>
+        <span class="hide-mobile">{{ 'action.back_to_menu'|trans({}, 'admin_menu_import') }}</span>
+    </a>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .import-status-card {
+            max-width: 640px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--bd-1);
+            border-radius: 14px; padding: 28px;
+        }
+        .import-status-title { font-size: 18px; font-weight: 600; color: var(--tx-hi); margin-bottom: 6px; }
+        .import-status-sub { font-size: 13px; color: var(--tx-6); margin-bottom: 20px; line-height: 1.6; }
+        .import-page-list { display: flex; flex-direction: column; gap: 8px; }
+        .import-page-row {
+            display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--bg-input);
+            border: 1px solid var(--bd-1); border-radius: 10px;
+        }
+        .import-page-thumb {
+            width: 44px; height: 44px; border-radius: 7px; object-fit: cover; background: var(--bg-hover);
+            flex-shrink: 0; border: 1px solid var(--bd-1);
+        }
+        .import-page-name { flex: 1; min-width: 0; font-size: 13px; color: var(--tx-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .import-page-status {
+            font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap;
+            background: var(--bg-hover); color: var(--tx-6);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="import-status-card">
+        <div class="import-status-title">{{ 'status.title'|trans({'%count%': batch.pages|length}, 'admin_menu_import') }}</div>
+        <div class="import-status-sub">{{ 'status.subtitle'|trans({}, 'admin_menu_import') }}</div>
+
+        <div class="import-page-list">
+            {% for page in batch.pages %}
+                <div class="import-page-row">
+                    <img class="import-page-thumb" src="{{ asset(page.imagePath) }}" alt="">
+                    <span class="import-page-name">{{ 'status.page_label'|trans({'%position%': page.position + 1}, 'admin_menu_import') }}</span>
+                    <span class="import-page-status">{{ ('status.page_status.' ~ page.status.value)|trans({}, 'admin_menu_import') }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

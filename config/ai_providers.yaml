@@ -17,6 +17,15 @@
 # cost_per_1m_input / cost_per_1m_output: USD per 1M tokens, for analytics
 # only. Leave null (not 0) for a free provider — SmartWaiterExchangeLog
 # stores estimated_cost as null rather than guessing when this is unset.
+#
+# supports_vision: true marks a provider AIProviderFactory::
+# getAvailableVisionProviders() will include for menu-photo extraction
+# (see MenuVisionAnalyzer). Not a separate model or endpoint — Gemini's
+# generateContent already accepts image input on the same model used for
+# chat, this just says which configured providers are allowed to be asked.
+# Omitted (or false) elsewhere on purpose: Groq/OpenRouter's free-tier
+# llama models aren't vision-capable, and OpenAI-compatible vision support
+# isn't built yet even though gpt-4o-mini itself could do it.
 
 providers:
   # Gemini is priority 1 deliberately — it's the platform's primary
@@ -42,6 +51,7 @@ providers:
     api_key_env: GEMINI_API_KEY
     cost_per_1m_input: null
     cost_per_1m_output: null
+    supports_vision: true
 
   - id: groq-llama
     adapter: openai_compatible

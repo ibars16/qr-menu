@@ -81,7 +81,6 @@ allergens:
     help_cross_contamination: La contaminazione crociata si verifica quando un allergene finisce accidentalmente in un piatto a causa di attrezzature, olio di cottura o superfici condivise, anche se nessun ingrediente del piatto lo contiene.
 
 js:
-    ai_import_soon: 'Importazione con IA — prossimamente ✨'
     category_created: 'Categoria creata ✓'
     category_deleted: Categoria eliminata
     category_updated: 'Categoria aggiornata ✓'

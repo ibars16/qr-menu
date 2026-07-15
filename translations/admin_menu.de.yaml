@@ -81,7 +81,6 @@ allergens:
     help_cross_contamination: Kreuzkontamination entsteht, wenn ein Allergen durch gemeinsam genutzte Geräte, Kochöl oder Oberflächen versehentlich in ein Gericht gelangt — selbst wenn keine der Zutaten des Gerichts es enthält.
 
 js:
-    ai_import_soon: 'KI-Import — demnächst verfügbar ✨'
     category_created: 'Kategorie erstellt ✓'
     category_deleted: Kategorie gelöscht
     category_updated: 'Kategorie aktualisiert ✓'

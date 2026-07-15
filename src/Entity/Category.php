@@ -28,6 +28,17 @@ class Category
     #[ORM\Column]
     private bool $active = true;
 
+    /** See Product::$importBatch for the identical rationale, including why this is SET NULL rather than CASCADE. */
+    #[ORM\ManyToOne(targetEntity: MenuImportBatch::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?MenuImportBatch $importBatch = null;
+
+    #[ORM\Column]
+    private bool $needsReview = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $aiConfidence = null;
+
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: CategoryTranslation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $translations;
 
@@ -74,6 +85,36 @@ class Category
     public function setActive(bool $active): void
     {
         $this->active = $active;
+    }
+
+    public function getImportBatch(): ?MenuImportBatch
+    {
+        return $this->importBatch;
+    }
+
+    public function setImportBatch(?MenuImportBatch $importBatch): void
+    {
+        $this->importBatch = $importBatch;
+    }
+
+    public function isNeedsReview(): bool
+    {
+        return $this->needsReview;
+    }
+
+    public function setNeedsReview(bool $needsReview): void
+    {
+        $this->needsReview = $needsReview;
+    }
+
+    public function getAiConfidence(): ?float
+    {
+        return $this->aiConfidence;
+    }
+
+    public function setAiConfidence(?float $aiConfidence): void
+    {
+        $this->aiConfidence = $aiConfidence;
     }
 
     public function getTranslations(): Collection

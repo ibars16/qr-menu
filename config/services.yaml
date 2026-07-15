@@ -86,3 +86,7 @@ services:
 
     App\Service\AI\ChatComplexityClassifierInterface:
         alias: App\Service\AI\HeuristicChatComplexityClassifier
+
+    App\Service\MenuImportExtractionService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'

@@ -81,7 +81,6 @@ allergens:
     help_cross_contamination: La contamination croisée se produit lorsqu'un allergène se retrouve accidentellement dans un plat à cause d'équipements, d'huile de cuisson ou de surfaces partagés — même si aucun ingrédient du plat n'en contient.
 
 js:
-    ai_import_soon: 'Import avec IA — bientôt disponible ✨'
     category_created: 'Catégorie créée ✓'
     category_deleted: Catégorie supprimée
     category_updated: 'Catégorie mise à jour ✓'

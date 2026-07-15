@@ -81,7 +81,6 @@ allergens:
     help_cross_contamination: La contaminación cruzada ocurre cuando un alérgeno acaba en un plato por equipos, aceite de cocina o superficies compartidas, aunque ninguno de los ingredientes del plato lo contenga.
 
 js:
-    ai_import_soon: 'Importación con IA — próximamente ✨'
     category_created: 'Categoría creada ✓'
     category_deleted: Categoría eliminada
     category_updated: 'Categoría actualizada ✓'

@@ -1,0 +1,26 @@
+title: Importar menú
+
+action:
+    back_to_menu: Volver al menú
+
+upload:
+    intro: 'Sube fotos de tu carta impresa y las leeremos por ti — una foto por página está bien.'
+    drop_text: Arrastra aquí las fotos de tu menú, o toca para elegir archivos
+    drop_hint: Añade tantas como necesites
+    submit: Empezar a leer mi menú
+    error:
+        no_files: Por favor, elige al menos una foto.
+        too_many_files: 'Por favor, sube %max% fotos o menos a la vez.'
+        invalid_file: '"%name%" no se pudo subir — inténtalo de nuevo.'
+        unsupported_type: '"%name%" no es un tipo de foto compatible. Usa JPEG, PNG o WebP.'
+        storage_failed: '"%name%" no se pudo guardar — inténtalo de nuevo.'
+
+status:
+    title: 'Fotos subidas (%count%)'
+    subtitle: Tus fotos se han guardado. Se leerán automáticamente en un paso futuro.
+    page_label: 'Página %position%'
+    page_status:
+        pending: Subida
+        analyzing: Analizando…
+        extracted: Leída
+        failed: Fallida

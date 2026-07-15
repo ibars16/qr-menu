@@ -724,7 +724,7 @@
         const MSG_NEW_PRODUCT        = "{{ 'modal.product.new_title'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_EDIT_PRODUCT       = "{{ 'modal.product.edit_title'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_ERROR_LOADING_PRODUCT = "{{ 'js.error_loading_product'|trans({}, 'admin_menu')|e('js') }}";
-        const MSG_AI_IMPORT_SOON     = "{{ 'js.ai_import_soon'|trans({}, 'admin_menu')|e('js') }}";
+        const MENU_IMPORT_URL        = "{{ path('admin_menu_import_new') }}";
         const MSG_CATEGORY_UPDATED   = "{{ 'js.category_updated'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_CATEGORY_CREATED   = "{{ 'js.category_created'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_CATEGORY_VISIBLE   = "{{ 'category.toggle_visible'|trans({}, 'admin_menu')|e('js') }}";
@@ -923,7 +923,7 @@
                 setTimeout(() => panelEl('p-name')?.focus(), 80);
             },
 
-            openAiImport() { showToast(MSG_AI_IMPORT_SOON); },
+            openAiImport() { window.location.href = MENU_IMPORT_URL; },
         };
 
         // ── Category CRUD ──────────────────────────────────────────────────────────

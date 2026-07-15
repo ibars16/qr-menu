@@ -1,0 +1,26 @@
+title: Import Menu
+
+action:
+    back_to_menu: Back to menu
+
+upload:
+    intro: 'Upload photos of your printed menu and we''ll read them for you — one photo per page is fine.'
+    drop_text: Drag your menu photos here, or tap to choose files
+    drop_hint: Add as many as you need
+    submit: Start reading my menu
+    error:
+        no_files: Please choose at least one photo.
+        too_many_files: 'Please upload %max% photos or fewer at a time.'
+        invalid_file: '"%name%" couldn''t be uploaded — please try again.'
+        unsupported_type: '"%name%" isn''t a supported photo type. Please use JPEG, PNG, or WebP.'
+        storage_failed: '"%name%" couldn''t be saved — please try again.'
+
+status:
+    title: 'Photos uploaded (%count%)'
+    subtitle: Your photos have been saved. They'll be read automatically in a future step.
+    page_label: 'Page %position%'
+    page_status:
+        pending: Uploaded
+        analyzing: Analyzing…
+        extracted: Read
+        failed: Failed

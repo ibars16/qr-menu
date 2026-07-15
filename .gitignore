@@ -20,3 +20,8 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+# Restaurant-uploaded content (logos, menu-import photos) — never app assets,
+# never belongs in version control. A logo was already committed before this
+# rule existed; this only prevents it from recurring going forward.
+/public/uploads/

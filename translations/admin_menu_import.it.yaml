@@ -1,0 +1,26 @@
+title: Importa menù
+
+action:
+    back_to_menu: Torna al menù
+
+upload:
+    intro: 'Carica le foto del tuo menù stampato e le leggeremo per te — va bene una foto per pagina.'
+    drop_text: Trascina qui le foto del tuo menù, oppure tocca per scegliere i file
+    drop_hint: Aggiungine quante ne servono
+    submit: Inizia a leggere il mio menù
+    error:
+        no_files: Scegli almeno una foto.
+        too_many_files: 'Carica al massimo %max% foto alla volta.'
+        invalid_file: '"%name%" non è stato caricato — riprova.'
+        unsupported_type: '"%name%" non è un tipo di foto supportato. Usa JPEG, PNG o WebP.'
+        storage_failed: '"%name%" non è stato salvato — riprova.'
+
+status:
+    title: 'Foto caricate (%count%)'
+    subtitle: Le tue foto sono state salvate. Verranno lette automaticamente in un passaggio futuro.
+    page_label: 'Pagina %position%'
+    page_status:
+        pending: Caricata
+        analyzing: Analisi in corso…
+        extracted: Letta
+        failed: Non riuscita

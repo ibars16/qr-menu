@@ -1,0 +1,26 @@
+title: Speisekarte importieren
+
+action:
+    back_to_menu: Zurück zur Speisekarte
+
+upload:
+    intro: 'Lade Fotos deiner gedruckten Speisekarte hoch — wir lesen sie für dich ein. Ein Foto pro Seite reicht.'
+    drop_text: Ziehe deine Menüfotos hierher oder tippe, um Dateien auszuwählen
+    drop_hint: Füge so viele hinzu, wie du brauchst
+    submit: Speisekarte jetzt einlesen
+    error:
+        no_files: Bitte wähle mindestens ein Foto aus.
+        too_many_files: 'Bitte lade höchstens %max% Fotos gleichzeitig hoch.'
+        invalid_file: '„%name%" konnte nicht hochgeladen werden — bitte versuche es erneut.'
+        unsupported_type: '„%name%" ist kein unterstützter Bildtyp. Bitte verwende JPEG, PNG oder WebP.'
+        storage_failed: '„%name%" konnte nicht gespeichert werden — bitte versuche es erneut.'
+
+status:
+    title: 'Hochgeladene Fotos (%count%)'
+    subtitle: Deine Fotos wurden gespeichert. Sie werden in einem zukünftigen Schritt automatisch eingelesen.
+    page_label: 'Seite %position%'
+    page_status:
+        pending: Hochgeladen
+        analyzing: Wird analysiert…
+        extracted: Eingelesen
+        failed: Fehlgeschlagen

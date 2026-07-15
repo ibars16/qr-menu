@@ -81,7 +81,6 @@ allergens:
     help_cross_contamination: A contaminação cruzada acontece quando um alergénio acaba num prato através de equipamento, óleo de cozinha ou superfícies partilhadas — mesmo que nenhum ingrediente do prato o contenha.
 
 js:
-    ai_import_soon: 'Importação com IA — brevemente ✨'
     category_created: 'Categoria criada ✓'
     category_deleted: Categoria eliminada
     category_updated: 'Categoria atualizada ✓'

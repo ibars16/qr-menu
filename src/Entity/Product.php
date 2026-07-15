@@ -56,6 +56,27 @@ class Product
     #[ORM\Column]
     private int $position = 0;
 
+    // --- AI menu import provenance ---
+
+    /**
+     * Which import created this row, if any — null for anything manually
+     * entered, always. ON DELETE SET NULL rather than CASCADE: a product
+     * the owner already confirmed (needsReview = false, active = true) must
+     * never be deleted just because a "discard the rest of this batch"
+     * action removes the batch it happened to come from.
+     */
+    #[ORM\ManyToOne(targetEntity: MenuImportBatch::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?MenuImportBatch $importBatch = null;
+
+    /** True only while this row is AI-extracted and not yet confirmed by the owner. Never true for a manually-created product. */
+    #[ORM\Column]
+    private bool $needsReview = false;
+
+    /** The model's own confidence for this row while needsReview is true — meaningless once confirmed. */
+    #[ORM\Column(nullable: true)]
+    private ?float $aiConfidence = null;
+
     // --- Relations ---
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductTranslation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -195,6 +216,36 @@ class Product
     public function setPosition(int $position): void
     {
         $this->position = $position;
+    }
+
+    public function getImportBatch(): ?MenuImportBatch
+    {
+        return $this->importBatch;
+    }
+
+    public function setImportBatch(?MenuImportBatch $importBatch): void
+    {
+        $this->importBatch = $importBatch;
+    }
+
+    public function isNeedsReview(): bool
+    {
+        return $this->needsReview;
+    }
+
+    public function setNeedsReview(bool $needsReview): void
+    {
+        $this->needsReview = $needsReview;
+    }
+
+    public function getAiConfidence(): ?float
+    {
+        return $this->aiConfidence;
+    }
+
+    public function setAiConfidence(?float $aiConfidence): void
+    {
+        $this->aiConfidence = $aiConfidence;
     }
 
     public function getTranslations(): Collection

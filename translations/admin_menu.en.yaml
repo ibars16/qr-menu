@@ -84,7 +84,6 @@ js:
     allergen_override_added: 'Exception added'
     allergen_note_required: 'Please add a note explaining why this is marked "free from"'
     ingredient_allergens_saved: 'Allergens saved ✓'
-    ai_import_soon: 'AI import — coming soon ✨'
     category_created: 'Category created ✓'
     category_deleted: Category deleted
     category_updated: 'Category updated ✓'
