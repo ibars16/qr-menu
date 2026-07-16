@@ -27,6 +27,24 @@ links:
   - ingredient: cheese
     allergen: milk
     presence: contains
+  - ingredient: parmigiano-reggiano
+    allergen: milk
+    presence: contains
+  - ingredient: provolone
+    allergen: milk
+    presence: contains
+  - ingredient: emmental
+    allergen: milk
+    presence: contains
+  - ingredient: emmental-from-france
+    allergen: milk
+    presence: contains
+  - ingredient: grated-emmental-cheese
+    allergen: milk
+    presence: contains
+  - ingredient: melted-emmental-cheese
+    allergen: milk
+    presence: contains
   - ingredient: cream
     allergen: milk
     presence: contains

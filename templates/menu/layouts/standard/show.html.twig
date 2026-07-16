@@ -150,6 +150,7 @@
     .back-header { padding: 14px 52px 13px 17px; border-bottom: 1px solid var(--bdiv); flex-shrink: 0; }
     .back-name { font-size: 15px; font-weight: 700; color: var(--bn); letter-spacing: -0.4px; line-height: 1.23; }
     .back-price { font-size: 14px; color: var(--bp); font-weight: 700; margin-top: 3px; font-variant-numeric: tabular-nums; }
+    .supplement-badge { font-size: 0.75em; font-weight: 700; color: var(--cp); white-space: nowrap; }
 
     /* ── Scroll area with gradient fade ── */
     .back-scroll { position: relative; flex: 1; min-height: 0; overflow: hidden; }
@@ -286,7 +287,7 @@
                                                 <div class="front-badges">
                                                     {% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="fbadge">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}
                                                 </div>
-                                                <div class="front-name">{{ pT.name }}</div>
+                                                <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div>
                                             </div>
                                             <div class="front-bottom">
                                                 <div class="front-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div>
@@ -297,7 +298,7 @@
                                     <div class="card-back">
                                         <button class="back-close" onclick="unflipCard(event,this)" aria-label="Cerrar"><i class="ti ti-x"></i></button>
                                         <div class="back-header">
-                                            <div class="back-name">{{ pT.name }}</div>
+                                            <div class="back-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div>
                                             <div class="back-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div>
                                         </div>
                                         <div class="back-scroll">

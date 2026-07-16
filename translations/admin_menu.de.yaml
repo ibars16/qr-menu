@@ -39,6 +39,7 @@ field:
     product_name: Name des Gerichts
     product_name_placeholder: 'z. B. Pizza Margherita'
     spicy_level: Schärfegrad
+    supplement_price: 'Zuschlag (%currency%)'
     tags: Etiketten
     allergens: Allergene
 

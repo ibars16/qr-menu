@@ -39,7 +39,7 @@ final class MenuImportExtractionService
 
         $imageBytes = file_get_contents($absolutePath);
         $mimeType = (new MimeTypes())->guessMimeType($absolutePath) ?? 'image/jpeg';
-        $instructions = $this->promptBuilder->build();
+        $instructions = $this->promptBuilder->build($page->getBatch()->getRestaurant()->getDefaultLanguage());
 
         $page->setStatus(MenuImportPageStatus::ANALYZING);
         $this->em->flush();

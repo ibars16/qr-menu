@@ -138,6 +138,7 @@
     .back-header { padding: 12px 38px 11px 13px; border-bottom: 1px solid var(--bdiv); flex-shrink: 0; }
     .back-name { font-size: 13px; font-weight: 700; color: var(--bn); letter-spacing: -0.25px; line-height: 1.22; }
     .back-price { font-size: 13px; color: var(--bp); margin-top: 2px; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .supplement-badge { font-size: 0.75em; font-weight: 700; color: var(--cp); white-space: nowrap; }
 
     .back-scroll { position: relative; flex: 1; min-height: 0; overflow: hidden; }
     .back-scroll::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 36px; background: linear-gradient(transparent, var(--fade)); pointer-events: none; transition: opacity 0.22s; opacity: 0; }
@@ -248,7 +249,7 @@
                                         <div class="front-body">
                                             <div>
                                                 <div class="front-badges">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="fbadge">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div>
-                                                <div class="front-name">{{ pT.name }}</div>
+                                                <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div>
                                             </div>
                                             <div class="front-bottom">
                                                 <div class="front-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div>
@@ -258,7 +259,7 @@
                                     </div>
                                     <div class="card-back">
                                         <button class="back-close" onclick="unflipCard(event,this)" aria-label="Cerrar"><i class="ti ti-x"></i></button>
-                                        <div class="back-header"><div class="back-name">{{ pT.name }}</div><div class="back-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div></div>
+                                        <div class="back-header"><div class="back-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div><div class="back-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div></div>
                                         <div class="back-scroll">
                                             <div class="back-body">
                                                 {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}

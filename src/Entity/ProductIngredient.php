@@ -35,6 +35,17 @@ class ProductIngredient
     #[ORM\Column]
     private int $position = 0;
 
+    /**
+     * True when this ingredient wasn't in an explicit printed list, but named
+     * literally in the dish's own commercial name (e.g. "Provolone tibio" ->
+     * provolone) — see MenuVisionPromptBuilder. Never true for a manually
+     * typed ingredient. Lets the admin ingredient panel flag it as
+     * AI-suggested for the owner to confirm or reject, rather than treating
+     * it the same as an ingredient the menu actually listed.
+     */
+    #[ORM\Column]
+    private bool $aiSuggested = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -68,5 +79,15 @@ class ProductIngredient
     public function setPosition(int $position): void
     {
         $this->position = $position;
+    }
+
+    public function isAiSuggested(): bool
+    {
+        return $this->aiSuggested;
+    }
+
+    public function setAiSuggested(bool $aiSuggested): void
+    {
+        $this->aiSuggested = $aiSuggested;
     }
 }

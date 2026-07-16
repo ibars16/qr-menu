@@ -39,6 +39,7 @@ field:
     product_name: Dish name
     product_name_placeholder: 'e.g. Margherita Pizza'
     spicy_level: Spice level
+    supplement_price: 'Supplement (%currency%)'
     tags: Tags
     allergens: Allergens
 

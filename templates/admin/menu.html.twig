@@ -850,6 +850,7 @@
                     setVal('p-name',     t.name ?? '');
                     setVal('p-desc',     t.description ?? '');
                     setVal('p-price',    (data.basePrice / 100).toFixed(2));
+                    setVal('p-supplement-price', data.supplementPrice != null ? (data.supplementPrice / 100).toFixed(2) : '');
                     setVal('p-calories', data.calories ?? '');
 
                     document.querySelectorAll('.tag-pill').forEach(p =>
@@ -992,6 +993,7 @@
                 id:          S.productId,
                 categoryId:  parseInt(getVal('p-category')) || S.categoryId,
                 basePrice:   parseFloat(getVal('p-price')) || 0,
+                supplementPrice: getVal('p-supplement-price') ? parseFloat(getVal('p-supplement-price')) : null,
                 calories:    parseInt(getVal('p-calories')) || null,
                 spicyLevel:  S.spicy || null,
                 active:      true,
@@ -1339,7 +1341,7 @@
 
         // ── Reset ──────────────────────────────────────────────────────────────────
         function resetProduct() {
-            ['p-name','p-desc','p-price','p-calories'].forEach(id =>
+            ['p-name','p-desc','p-price','p-supplement-price','p-calories'].forEach(id =>
                 document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value=''; el.classList.remove('error'); })
             );
             ['p-name-error','p-desc-error','p-price-error'].forEach(id =>

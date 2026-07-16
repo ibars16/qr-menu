@@ -39,6 +39,7 @@ field:
     product_name: Nom du plat
     product_name_placeholder: 'Ex : Pizza Margherita'
     spicy_level: Niveau de piquant
+    supplement_price: 'Supplément (%currency%)'
     tags: Étiquettes
     allergens: Allergènes
 

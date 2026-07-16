@@ -32,6 +32,15 @@ class Product
     #[ORM\Column]
     private int $basePrice;
 
+    /**
+     * Extra charge on top of a fixed-price menu ("menú del día"), in cents —
+     * e.g. "suplemento 1.50€". Null for a normally-priced dish. Kept
+     * completely separate from $basePrice: see MenuVisionPromptBuilder for
+     * how this gets extracted and why it's never folded into the base price.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?int $supplementPrice = null;
+
     #[ORM\Column(nullable: true)]
     private ?int $calories = null;
 
@@ -170,6 +179,22 @@ class Product
     public function getBasePriceDecimal(): float
     {
         return $this->basePrice / 100;
+    }
+
+    public function getSupplementPrice(): ?int
+    {
+        return $this->supplementPrice;
+    }
+
+    public function setSupplementPrice(?int $supplementPrice): void
+    {
+        $this->supplementPrice = $supplementPrice;
+    }
+
+    /** Returns the supplement price as a decimal, or null if this dish carries none. Example: 150 → 1.50 */
+    public function getSupplementPriceDecimal(): ?float
+    {
+        return $this->supplementPrice !== null ? $this->supplementPrice / 100 : null;
     }
 
     /**

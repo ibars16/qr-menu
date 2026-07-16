@@ -33,6 +33,10 @@ class ProductGlobalIngredient
     #[ORM\Column]
     private int $position = 0;
 
+    /** True when named literally in the dish's own name rather than an explicit printed list — see ProductIngredient::$aiSuggested. */
+    #[ORM\Column]
+    private bool $aiSuggested = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -66,5 +70,15 @@ class ProductGlobalIngredient
     public function setPosition(int $position): void
     {
         $this->position = $position;
+    }
+
+    public function isAiSuggested(): bool
+    {
+        return $this->aiSuggested;
+    }
+
+    public function setAiSuggested(bool $aiSuggested): void
+    {
+        $this->aiSuggested = $aiSuggested;
     }
 }

@@ -67,7 +67,16 @@ final class MenuImportAssembler
             $anyPageExtracted = true;
 
             $data = $page->getExtractedData();
-            $locale = $page->getDetectedLocale() ?? 'en';
+            // Every extracted name is tagged under the restaurant's own
+            // configured content language, not the page's raw detected
+            // script — MenuVisionPromptBuilder already instructs the model
+            // to prefer that same language whenever a menu prints something
+            // bilingually (see its rule 1c), and the admin panel only ever
+            // looks a category/product's name up by this locale (see
+            // MenuAdminController::menu()). Tagging translations any other
+            // way would make them invisible there even though real data
+            // exists — see Restaurant::$defaultLanguage.
+            $locale = $restaurant->getDefaultLanguage();
             $categories = is_array($data['categories'] ?? null) ? $data['categories'] : [];
 
             foreach ($categories as $categoryData) {
@@ -168,9 +177,13 @@ final class MenuImportAssembler
         $price = $productData['price'] ?? null;
         $priceCents = is_numeric($price) ? (int) round(((float) $price) * 100) : 0; // 0 is a placeholder, not a claim — see MenuImportAssembler's class docblock: this product is needsReview=true and active=false regardless
 
+        $supplementPrice = $productData['supplement_price'] ?? null;
+        $supplementPriceCents = is_numeric($supplementPrice) ? (int) round(((float) $supplementPrice) * 100) : null;
+
         $product = new Product();
         $product->setCategory($category);
         $product->setBasePrice($priceCents);
+        $product->setSupplementPrice($supplementPriceCents);
         $product->setPosition($category->getProducts()->count());
         $product->setActive(false);
         $product->setNeedsReview(true);
@@ -200,16 +213,23 @@ final class MenuImportAssembler
             if ($ingredientName === '') {
                 continue;
             }
-            $this->linkIngredient($product, $ingredientName, $restaurant, $locale, $position);
+            $aiSuggested = ($ingredientData['from_name'] ?? false) === true;
+            $this->linkIngredient($product, $ingredientName, $restaurant, $locale, $position, $aiSuggested);
             $position++;
             $ingredientsLinked++;
         }
 
+        // Built only from *this* $productData slice — never from another
+        // dish's markers — so tags can never leak across products in the
+        // same batch/page.
         foreach ((is_array($productData['dietary_markers'] ?? null) ? $productData['dietary_markers'] : []) as $markerData) {
             if (($markerData['uncertain'] ?? false) === true) {
                 continue;
             }
-            $code = trim((string) ($markerData['code'] ?? ''));
+            // Defensive normalization only — the model is restricted to a
+            // small fixed vocabulary (see MenuVisionPromptBuilder), so this
+            // just guards against stray casing/whitespace, never fuzzy-matches.
+            $code = mb_strtolower(trim((string) ($markerData['code'] ?? '')));
             if ($code === '' || in_array($code, MenuContextBuilder::KNOWN_HIGHLIGHT_CODES, true)) {
                 continue; // hard guard: a Smart Waiter highlight code (e.g. "recommended") is never assignable this way, regardless of what the model output
             }
@@ -227,11 +247,28 @@ final class MenuImportAssembler
             $tagsAssigned++;
         }
 
+        // "recommended" is deliberately never reachable through the generic
+        // dietary_markers loop above (see the hard guard there) — this is
+        // the one narrow, explicit-only path for it, driven only by this
+        // dish's own "recommended" flag (default false — see
+        // MenuVisionPromptBuilder rule 10), never inferred.
+        if (($productData['recommended'] ?? false) === true) {
+            $recommendedTag = $this->em->getRepository(ProductTag::class)->findOneBy([
+                'restaurant' => $restaurant,
+                'code' => 'recommended',
+                'isSystem' => true,
+            ]);
+            if ($recommendedTag !== null) {
+                $product->addTag($recommendedTag);
+                $tagsAssigned++;
+            }
+        }
+
         return $product;
     }
 
     /** Exactly MenuAdminController::saveProduct()'s 3-tier resolution for a typed ingredient name, reused rather than reimplemented — plus the position this call's ingredient occupies in the printed/entered order. */
-    private function linkIngredient(Product $product, string $name, Restaurant $restaurant, string $locale, int $position): void
+    private function linkIngredient(Product $product, string $name, Restaurant $restaurant, string $locale, int $position, bool $aiSuggested = false): void
     {
         $ingredient = $this->ingredientRepository->findExistingByNameAnyLocale($restaurant, $name);
         if ($ingredient) {
@@ -243,13 +280,13 @@ final class MenuImportAssembler
                 $ingredient->addTranslation($ingT);
                 $this->em->persist($ingT);
             }
-            $this->attachIngredient($product, $ingredient, $position);
+            $this->attachIngredient($product, $ingredient, $position, $aiSuggested);
             return;
         }
 
         $globalIngredient = $this->globalIngredientRepository->findExistingByNameAnyLocale($name);
         if ($globalIngredient) {
-            $this->attachGlobalIngredient($product, $globalIngredient, $position);
+            $this->attachGlobalIngredient($product, $globalIngredient, $position, $aiSuggested);
             return;
         }
 
@@ -265,21 +302,23 @@ final class MenuImportAssembler
         $ingredient->addTranslation($ingT);
         $this->em->persist($ingT);
 
-        $this->attachIngredient($product, $ingredient, $position);
+        $this->attachIngredient($product, $ingredient, $position, $aiSuggested);
     }
 
-    private function attachIngredient(Product $product, Ingredient $ingredient, int $position): void
+    private function attachIngredient(Product $product, Ingredient $ingredient, int $position, bool $aiSuggested = false): void
     {
         $link = new ProductIngredient();
+        $link->setAiSuggested($aiSuggested);
         $link->setIngredient($ingredient);
         $link->setPosition($position);
         $product->addIngredientLink($link);
         $this->em->persist($link);
     }
 
-    private function attachGlobalIngredient(Product $product, GlobalIngredient $globalIngredient, int $position): void
+    private function attachGlobalIngredient(Product $product, GlobalIngredient $globalIngredient, int $position, bool $aiSuggested = false): void
     {
         $link = new ProductGlobalIngredient();
+        $link->setAiSuggested($aiSuggested);
         $link->setGlobalIngredient($globalIngredient);
         $link->setPosition($position);
         $product->addGlobalIngredientLink($link);

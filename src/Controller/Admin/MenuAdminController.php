@@ -261,21 +261,23 @@ class MenuAdminController extends AbstractController
             }
 
             $ingredientEntries[] = [
-                'position'  => $link->getPosition(),
-                'value'     => 'r:' . $ing->getId(),
-                'name'      => $t?->getName() ?? $ing->getCode(),
-                'source'    => 'restaurant',
-                'allergens' => $ingAllergens,
+                'position'    => $link->getPosition(),
+                'value'       => 'r:' . $ing->getId(),
+                'name'        => $t?->getName() ?? $ing->getCode(),
+                'source'      => 'restaurant',
+                'allergens'   => $ingAllergens,
+                'aiSuggested' => $link->isAiSuggested(),
             ];
         }
         foreach ($product->getGlobalIngredientLinks() as $link) {
             $gIng = $link->getGlobalIngredient();
             $t = $gIng->getTranslation($adminLocale) ?? $gIng->getTranslation($contentLocale) ?? $gIng->getTranslation('en');
             $ingredientEntries[] = [
-                'position' => $link->getPosition(),
-                'value'    => 'g:' . $gIng->getId(),
-                'name'     => $t?->getName() ?? $gIng->getCode(),
-                'source'   => 'global',
+                'position'    => $link->getPosition(),
+                'value'       => 'g:' . $gIng->getId(),
+                'name'        => $t?->getName() ?? $gIng->getCode(),
+                'source'      => 'global',
+                'aiSuggested' => $link->isAiSuggested(),
             ];
         }
         usort($ingredientEntries, static fn (array $a, array $b) => $a['position'] <=> $b['position']);
@@ -307,6 +309,7 @@ class MenuAdminController extends AbstractController
             'categoryId'        => $product->getCategory()->getId(),
             'image'             => $product->getImage(),
             'basePrice'         => $product->getBasePrice(),
+            'supplementPrice'   => $product->getSupplementPrice(),
             'calories'          => $product->getCalories(),
             'spicyLevel'        => $product->getSpicyLevel(),
             'active'            => $product->isActive(),
@@ -352,6 +355,11 @@ class MenuAdminController extends AbstractController
         // Scalar fields
         if (isset($data['basePrice'])) {
             $product->setBasePrice((int) round((float)$data['basePrice'] * 100));
+        }
+        if (array_key_exists('supplementPrice', $data)) {
+            $product->setSupplementPrice($data['supplementPrice'] !== null && $data['supplementPrice'] !== ''
+                ? (int) round((float) $data['supplementPrice'] * 100)
+                : null);
         }
         if (array_key_exists('calories',   $data)) $product->setCalories($data['calories'] ?: null);
         if (array_key_exists('spicyLevel', $data)) $product->setSpicyLevel($data['spicyLevel'] ?: null);
