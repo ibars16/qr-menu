@@ -724,6 +724,7 @@
         const MSG_NEW_PRODUCT        = "{{ 'modal.product.new_title'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_EDIT_PRODUCT       = "{{ 'modal.product.edit_title'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_ERROR_LOADING_PRODUCT = "{{ 'js.error_loading_product'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_UNEXPECTED_ERROR   = "{{ 'error.unexpected'|trans({}, 'admin_menu')|e('js') }}";
         const MENU_IMPORT_URL        = "{{ path('admin_menu_import_new') }}";
         const MSG_CATEGORY_UPDATED   = "{{ 'js.category_updated'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_CATEGORY_CREATED   = "{{ 'js.category_created'|trans({}, 'admin_menu')|e('js') }}";
@@ -839,7 +840,7 @@
                 this._openProduct();
 
                 try {
-                    const data = await apiFetch(`/admin/products/${id}`);
+                    const data = await apiFetch(`/admin/products/${id}`, null, 'GET');
                     S.categoryId = data.categoryId;
                     document.querySelectorAll('[id="p-category"]').forEach(el => { el.value = data.categoryId; });
                     S.spicy      = data.spicyLevel ?? 0;
@@ -1389,11 +1390,33 @@
         const setVal = (id, v) => document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value = v ?? ''; });
 
         async function apiFetch(url, body=null, method=null) {
-            const m = method ?? (body !== null ? 'POST' : 'GET');
+            // Method must always be explicit (or default to POST, which is
+            // what every mutating route here expects) — it must never be
+            // inferred from whether a body was passed. A GET-only route
+            // (like product_get) that received a request with no body used
+            // to silently fall back to GET seeming to work, but a POST-only
+            // route (toggle/delete) receiving no body was silently sent as
+            // GET too, which Symfony rejects with a 405 the caller never saw
+            // coming since it always assumed method === 'POST' had been sent.
+            const m = method ?? 'POST';
             const opts = { method: m, headers: body ? {'Content-Type':'application/json'} : {} };
             if (body) opts.body = JSON.stringify(body);
-            const res = await fetch(url, opts);
-            return res.json();
+
+            let res, data;
+            try {
+                res = await fetch(url, opts);
+                data = await res.json();
+            } catch (e) {
+                data = null;
+            }
+
+            if (!res || !res.ok || data === null) {
+                const message = (data && data.error) ? data.error : MSG_UNEXPECTED_ERROR;
+                showToast(message, 'error');
+                return { error: message };
+            }
+
+            return data;
         }
 
     </script>

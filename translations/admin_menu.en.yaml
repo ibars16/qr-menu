@@ -144,3 +144,4 @@ error:
     product_not_found: Dish not found.
     category_not_found: Category not found.
     allergen_free_from_note_required: Please add a short note explaining why this allergen is marked as free from.
+    unexpected: Something went wrong. Please try again.

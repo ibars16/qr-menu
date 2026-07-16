@@ -144,3 +144,4 @@ error:
     product_not_found: Plato no encontrado.
     category_not_found: Categoría no encontrada.
     allergen_free_from_note_required: Añade una breve nota explicando por qué se marca como "sin este alérgeno".
+    unexpected: Algo salió mal. Inténtalo de nuevo.

@@ -260,6 +260,7 @@
         const MSG_DELETED         = "{{ 'toast.deleted'|trans({}, 'admin_categories')|e('js') }}";
         const MSG_CONFIRM_DELETE_WITH_PRODUCTS = "{{ 'confirm.delete_with_products'|trans({}, 'admin_categories')|e('js') }}";
         const MSG_CONFIRM_DELETE_SIMPLE        = "{{ 'confirm.delete_simple'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_UNEXPECTED_ERROR             = "{{ 'error.unexpected'|trans({}, 'admin_categories')|e('js') }}";
 
         const isMobile = () => window.innerWidth < 768;
 
@@ -353,8 +354,22 @@
         async function api(url, body = null) {
             const opts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
             opts.body  = JSON.stringify(body ?? {});
-            const res  = await fetch(url, opts);
-            return res.json();
+
+            let res, data;
+            try {
+                res = await fetch(url, opts);
+                data = await res.json();
+            } catch (e) {
+                data = null;
+            }
+
+            if (!res || !res.ok || data === null) {
+                const message = (data && data.error) ? data.error : MSG_UNEXPECTED_ERROR;
+                showToast(message, 'error');
+                return { error: message };
+            }
+
+            return data;
         }
 
         function showToast(msg, type = 'info') { window.showToast?.(msg, type); }

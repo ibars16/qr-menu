@@ -144,3 +144,4 @@ error:
     product_not_found: Prato não encontrado.
     category_not_found: Categoria não encontrada.
     allergen_free_from_note_required: Adicione uma breve nota explicando por que este alergénio está marcado como ausente.
+    unexpected: Ocorreu um erro. Tente novamente.

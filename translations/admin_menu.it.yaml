@@ -144,3 +144,4 @@ error:
     product_not_found: Piatto non trovato.
     category_not_found: Categoria non trovata.
     allergen_free_from_note_required: Aggiungi una breve nota che spieghi perché questo allergene è contrassegnato come assente.
+    unexpected: Qualcosa è andato storto. Riprova.

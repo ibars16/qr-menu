@@ -52,3 +52,4 @@ confirm:
 
 error:
     select_category_required: Sélectionnez une catégorie pour continuer.
+    unexpected: Une erreur est survenue. Veuillez réessayer.

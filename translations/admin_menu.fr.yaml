@@ -144,3 +144,4 @@ error:
     product_not_found: Plat introuvable.
     category_not_found: Catégorie introuvable.
     allergen_free_from_note_required: Ajoutez une brève note expliquant pourquoi cet allergène est marqué comme absent.
+    unexpected: Une erreur est survenue. Veuillez réessayer.

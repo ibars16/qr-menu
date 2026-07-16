@@ -144,3 +144,4 @@ error:
     product_not_found: Gericht nicht gefunden.
     category_not_found: Kategorie nicht gefunden.
     allergen_free_from_note_required: Bitte füge eine kurze Notiz hinzu, warum dieses Allergen als "frei von" markiert ist.
+    unexpected: Etwas ist schiefgelaufen. Bitte versuche es erneut.
