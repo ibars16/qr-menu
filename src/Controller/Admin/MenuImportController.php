@@ -5,10 +5,13 @@ namespace App\Controller\Admin;
 use App\Entity\MenuImportBatch;
 use App\Entity\MenuImportPage;
 use App\Entity\Restaurant;
+use App\Enum\MenuImportBatchStatus;
+use App\Service\BatchProcessingTriggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -17,10 +20,12 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * Phase 1 only: upload photos, store them, create the MenuImportBatch/
- * MenuImportPage rows that later phases build on. No AI call happens here —
- * see MenuImportPageStatus's docblock for why status never leaves PENDING
- * in this controller.
+ * Upload photos, store them, and kick off the full pipeline automatically —
+ * see BatchProcessingTriggerInterface for how "automatically" is implemented
+ * today (a spawned background process, since no Messenger worker exists in
+ * this deployment yet). The status page (show()) polls statusJson() while
+ * processing runs, then the browser is sent to complete() once the batch
+ * reaches a terminal state.
  */
 #[Route('/admin/menu/import', name: 'admin_menu_import_')]
 #[IsGranted('ROLE_USER')]
@@ -31,6 +36,7 @@ class MenuImportController extends AbstractController
 
     public function __construct(
         private readonly TranslatorInterface $translator,
+        private readonly BatchProcessingTriggerInterface $processingTrigger,
     ) {}
 
     private function restaurant(): Restaurant
@@ -110,18 +116,83 @@ class MenuImportController extends AbstractController
 
         $em->flush();
 
+        $this->processingTrigger->trigger($batch);
+
         return $this->redirectToRoute('admin_menu_import_show', ['id' => $batch->getId()]);
     }
 
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(MenuImportBatch $batch): Response
     {
-        if ($batch->getRestaurant() !== $this->restaurant()) {
-            throw $this->createAccessDeniedException();
+        $this->assertOwner($batch);
+
+        if ($this->isTerminal($batch)) {
+            return $this->redirectToRoute('admin_menu_import_complete', ['id' => $batch->getId()]);
         }
 
         return $this->render('admin/menu_import_status.html.twig', [
             'batch' => $batch,
         ]);
+    }
+
+    #[Route('/{id}/status', name: 'status', methods: ['GET'])]
+    public function statusJson(MenuImportBatch $batch): JsonResponse
+    {
+        $this->assertOwner($batch);
+
+        return $this->json([
+            'batchStatus' => $batch->getStatus()->value,
+            'terminal' => $this->isTerminal($batch),
+            'pages' => array_map(
+                static fn (MenuImportPage $page) => [
+                    'position' => $page->getPosition(),
+                    'status' => $page->getStatus()->value,
+                ],
+                $batch->getPages()->toArray()
+            ),
+        ]);
+    }
+
+    #[Route('/{id}/complete', name: 'complete', methods: ['GET'])]
+    public function complete(MenuImportBatch $batch, EntityManagerInterface $em): Response
+    {
+        $this->assertOwner($batch);
+
+        $categoriesCreated = (int) $em->getConnection()->fetchOne(
+            'SELECT COUNT(*) FROM category WHERE import_batch_id = ?',
+            [$batch->getId()]
+        );
+        $productsCreated = (int) $em->getConnection()->fetchOne(
+            'SELECT COUNT(*) FROM product WHERE import_batch_id = ?',
+            [$batch->getId()]
+        );
+        $failedPages = array_filter(
+            $batch->getPages()->toArray(),
+            static fn (MenuImportPage $p) => $p->getStatus()->value === 'failed'
+        );
+
+        return $this->render('admin/menu_import_complete.html.twig', [
+            'batch' => $batch,
+            'categoriesCreated' => $categoriesCreated,
+            'productsCreated' => $productsCreated,
+            'failedPageCount' => count($failedPages),
+            'totalPageCount' => $batch->getPages()->count(),
+        ]);
+    }
+
+    private function assertOwner(MenuImportBatch $batch): void
+    {
+        if ($batch->getRestaurant() !== $this->restaurant()) {
+            throw $this->createAccessDeniedException();
+        }
+    }
+
+    private function isTerminal(MenuImportBatch $batch): bool
+    {
+        return in_array($batch->getStatus(), [
+            MenuImportBatchStatus::READY_FOR_REVIEW,
+            MenuImportBatchStatus::COMPLETED,
+            MenuImportBatchStatus::FAILED,
+        ], true);
     }
 }

@@ -17,10 +17,21 @@ upload:
 
 status:
     title: 'Photos téléversées (%count%)'
-    subtitle: Vos photos ont été enregistrées. Elles seront lues automatiquement lors d'une prochaine étape.
+    subtitle: Nous lisons votre menu maintenant — cette page se mettra à jour automatiquement.
     page_label: 'Page %position%'
     page_status:
         pending: Téléversée
         analyzing: Analyse en cours…
         extracted: Lue
         failed: Échec
+
+complete:
+    title_success: Votre menu est prêt à être vérifié
+    subtitle_success: Nous avons ajouté vos plats au menu, masqués aux clients jusqu'à ce que vous les vérifiiez.
+    subtitle_partial_failure: ' Nous n''avons pas pu lire %failed% de vos %total% photos — vous pouvez essayer de les téléverser à nouveau séparément.'
+    stat_categories: Catégories
+    stat_products: Plats
+    button_continue: Voir mon menu
+    title_failed: Nous n'avons pas pu lire votre menu
+    subtitle_failed: Aucune de vos photos n'a pu être traitée. Vérifiez qu'il s'agit de photos claires et bien éclairées d'un menu, puis réessayez.
+    button_retry: Réessayer

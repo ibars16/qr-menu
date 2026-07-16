@@ -17,10 +17,21 @@ upload:
 
 status:
     title: 'Fotos carregadas (%count%)'
-    subtitle: As suas fotos foram guardadas. Serão lidas automaticamente numa etapa futura.
+    subtitle: Estamos a ler o seu menu agora — esta página vai atualizar-se automaticamente.
     page_label: 'Página %position%'
     page_status:
         pending: Carregada
         analyzing: A analisar…
         extracted: Lida
         failed: Falhou
+
+complete:
+    title_success: O seu menu está pronto para revisão
+    subtitle_success: Adicionámos os seus pratos ao menu, ocultos dos clientes até os rever.
+    subtitle_partial_failure: ' Não conseguimos ler %failed% das suas %total% fotos — pode tentar carregá-las novamente em separado.'
+    stat_categories: Categorias
+    stat_products: Pratos
+    button_continue: Ver o meu menu
+    title_failed: Não conseguimos ler o seu menu
+    subtitle_failed: Nenhuma das suas fotos pôde ser processada. Verifique se são fotos nítidas e bem iluminadas de um menu, e tente novamente.
+    button_retry: Tentar novamente

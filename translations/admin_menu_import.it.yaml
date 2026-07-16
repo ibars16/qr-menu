@@ -17,10 +17,21 @@ upload:
 
 status:
     title: 'Foto caricate (%count%)'
-    subtitle: Le tue foto sono state salvate. Verranno lette automaticamente in un passaggio futuro.
+    subtitle: Stiamo leggendo il tuo menù adesso — questa pagina si aggiornerà da sola.
     page_label: 'Pagina %position%'
     page_status:
         pending: Caricata
         analyzing: Analisi in corso…
         extracted: Letta
         failed: Non riuscita
+
+complete:
+    title_success: Il tuo menù è pronto per la revisione
+    subtitle_success: Abbiamo aggiunto i tuoi piatti al menù, nascosti ai clienti finché non li rivedi.
+    subtitle_partial_failure: ' Non siamo riusciti a leggere %failed% delle tue %total% foto — puoi provare a ricaricarle separatamente.'
+    stat_categories: Categorie
+    stat_products: Piatti
+    button_continue: Vedi il mio menù
+    title_failed: Non siamo riusciti a leggere il tuo menù
+    subtitle_failed: Nessuna delle tue foto è stata elaborata. Controlla che siano foto chiare e ben illuminate di un menù, poi riprova.
+    button_retry: Riprova

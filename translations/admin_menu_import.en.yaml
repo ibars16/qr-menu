@@ -17,10 +17,21 @@ upload:
 
 status:
     title: 'Photos uploaded (%count%)'
-    subtitle: Your photos have been saved. They'll be read automatically in a future step.
+    subtitle: We're reading your menu now — this page will update automatically.
     page_label: 'Page %position%'
     page_status:
         pending: Uploaded
         analyzing: Analyzing…
         extracted: Read
         failed: Failed
+
+complete:
+    title_success: Your menu is ready to review
+    subtitle_success: We've added your dishes to the menu, hidden from customers until you review them.
+    subtitle_partial_failure: ' We couldn''t read %failed% of your %total% photos — you can try uploading those again separately.'
+    stat_categories: Categories
+    stat_products: Dishes
+    button_continue: View my menu
+    title_failed: We couldn't read your menu
+    subtitle_failed: None of your photos could be processed. Please check they're clear, well-lit photos of a menu and try again.
+    button_retry: Try again

@@ -32,22 +32,63 @@
             font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap;
             background: var(--bg-hover); color: var(--tx-6);
         }
+        .import-page-status.analyzing { background: rgba(99,153,34,0.1); color: #7aad40; animation: import-pulse 1.5s ease-in-out infinite; }
+        .import-page-status.extracted { background: rgba(99,153,34,0.15); color: #7aad40; }
+        .import-page-status.failed { background: rgba(240,153,123,0.15); color: #F0997B; }
+        @keyframes import-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @media (prefers-reduced-motion: reduce) { .import-page-status.analyzing { animation: none; } }
     </style>
 {% endblock %}
 
 {% block body %}
     <div class="import-status-card">
         <div class="import-status-title">{{ 'status.title'|trans({'%count%': batch.pages|length}, 'admin_menu_import') }}</div>
-        <div class="import-status-sub">{{ 'status.subtitle'|trans({}, 'admin_menu_import') }}</div>
+        <div class="import-status-sub" id="import-status-sub">{{ 'status.subtitle'|trans({}, 'admin_menu_import') }}</div>
 
-        <div class="import-page-list">
+        <div class="import-page-list" id="import-page-list">
             {% for page in batch.pages %}
-                <div class="import-page-row">
+                <div class="import-page-row" data-position="{{ page.position }}">
                     <img class="import-page-thumb" src="{{ asset(page.imagePath) }}" alt="">
                     <span class="import-page-name">{{ 'status.page_label'|trans({'%position%': page.position + 1}, 'admin_menu_import') }}</span>
-                    <span class="import-page-status">{{ ('status.page_status.' ~ page.status.value)|trans({}, 'admin_menu_import') }}</span>
+                    <span class="import-page-status {{ page.status.value }}" data-status-label>{{ ('status.page_status.' ~ page.status.value)|trans({}, 'admin_menu_import') }}</span>
                 </div>
             {% endfor %}
         </div>
     </div>
+
+    <script>
+        (function () {
+            const statusUrl = {{ path('admin_menu_import_status', {id: batch.id})|json_encode|raw }};
+            const completeUrl = {{ path('admin_menu_import_complete', {id: batch.id})|json_encode|raw }};
+            const labels = {{ {
+                'pending': 'status.page_status.pending'|trans({}, 'admin_menu_import'),
+                'analyzing': 'status.page_status.analyzing'|trans({}, 'admin_menu_import'),
+                'extracted': 'status.page_status.extracted'|trans({}, 'admin_menu_import'),
+                'failed': 'status.page_status.failed'|trans({}, 'admin_menu_import'),
+            }|json_encode|raw }};
+
+            function poll() {
+                fetch(statusUrl, { headers: { 'Accept': 'application/json' } })
+                    .then(r => r.json())
+                    .then(data => {
+                        data.pages.forEach(p => {
+                            const row = document.querySelector('.import-page-row[data-position="' + p.position + '"]');
+                            if (!row) return;
+                            const label = row.querySelector('[data-status-label]');
+                            label.textContent = labels[p.status] || p.status;
+                            label.className = 'import-page-status ' + p.status;
+                        });
+
+                        if (data.terminal) {
+                            window.location.href = completeUrl;
+                        } else {
+                            setTimeout(poll, 2500);
+                        }
+                    })
+                    .catch(() => setTimeout(poll, 4000));
+            }
+
+            poll();
+        })();
+    </script>
 {% endblock %}

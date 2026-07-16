@@ -17,10 +17,21 @@ upload:
 
 status:
     title: 'Fotos subidas (%count%)'
-    subtitle: Tus fotos se han guardado. Se leerán automáticamente en un paso futuro.
+    subtitle: Estamos leyendo tu menú ahora mismo — esta página se actualizará sola.
     page_label: 'Página %position%'
     page_status:
         pending: Subida
         analyzing: Analizando…
         extracted: Leída
         failed: Fallida
+
+complete:
+    title_success: Tu menú está listo para revisar
+    subtitle_success: Hemos añadido tus platos al menú, ocultos para los clientes hasta que los revises.
+    subtitle_partial_failure: ' No pudimos leer %failed% de tus %total% fotos — puedes volver a subirlas por separado.'
+    stat_categories: Categorías
+    stat_products: Platos
+    button_continue: Ver mi menú
+    title_failed: No pudimos leer tu menú
+    subtitle_failed: No se pudo procesar ninguna de tus fotos. Comprueba que sean fotos claras y bien iluminadas de un menú, e inténtalo de nuevo.
+    button_retry: Intentar de nuevo

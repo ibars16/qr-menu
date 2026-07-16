@@ -90,3 +90,16 @@ services:
     App\Service\MenuImportExtractionService:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Service\MenuImportPipeline:
+        arguments:
+            $logger: '@monolog.logger.menu_import'
+
+    App\Service\ProcessSpawningBatchProcessingTrigger:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $kernelEnvironment: '%kernel.environment%'
+            $logger: '@monolog.logger.menu_import'
+
+    App\Service\BatchProcessingTriggerInterface:
+        alias: App\Service\ProcessSpawningBatchProcessingTrigger

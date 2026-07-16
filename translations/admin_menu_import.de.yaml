@@ -17,10 +17,21 @@ upload:
 
 status:
     title: 'Hochgeladene Fotos (%count%)'
-    subtitle: Deine Fotos wurden gespeichert. Sie werden in einem zukünftigen Schritt automatisch eingelesen.
+    subtitle: Wir lesen deine Speisekarte jetzt ein — diese Seite aktualisiert sich automatisch.
     page_label: 'Seite %position%'
     page_status:
         pending: Hochgeladen
         analyzing: Wird analysiert…
         extracted: Eingelesen
         failed: Fehlgeschlagen
+
+complete:
+    title_success: Deine Speisekarte ist bereit zur Überprüfung
+    subtitle_success: Wir haben deine Gerichte zur Speisekarte hinzugefügt — für Kunden unsichtbar, bis du sie überprüfst.
+    subtitle_partial_failure: ' Wir konnten %failed% von %total% Fotos nicht lesen — du kannst diese separat erneut hochladen.'
+    stat_categories: Kategorien
+    stat_products: Gerichte
+    button_continue: Speisekarte ansehen
+    title_failed: Wir konnten deine Speisekarte nicht lesen
+    subtitle_failed: Keines deiner Fotos konnte verarbeitet werden. Bitte prüfe, ob es sich um klare, gut beleuchtete Fotos einer Speisekarte handelt, und versuche es erneut.
+    button_retry: Erneut versuchen

@@ -1,0 +1,55 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ 'title'|trans({}, 'admin_menu_import') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_menu_import') }}{% endblock %}
+
+{% block header_actions %}
+    <a href="{{ path('admin_menu') }}" class="btn">
+        <i class="ti ti-arrow-left" aria-hidden="true"></i>
+        <span class="hide-mobile">{{ 'action.back_to_menu'|trans({}, 'admin_menu_import') }}</span>
+    </a>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .import-complete-card {
+            max-width: 560px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--bd-1);
+            border-radius: 14px; padding: 32px; text-align: center;
+        }
+        .import-complete-icon { font-size: 40px; margin-bottom: 12px; }
+        .import-complete-title { font-size: 20px; font-weight: 600; color: var(--tx-hi); margin-bottom: 8px; }
+        .import-complete-sub { font-size: 14px; color: var(--tx-6); line-height: 1.6; margin-bottom: 24px; max-width: 34rem; margin-left: auto; margin-right: auto; }
+        .import-complete-stats { display: flex; justify-content: center; gap: 24px; margin-bottom: 26px; }
+        .import-complete-stat .n { display: block; font-size: 26px; font-weight: 600; color: var(--tx-hi); }
+        .import-complete-stat .l { font-size: 11px; color: var(--tx-7); text-transform: uppercase; letter-spacing: 0.05em; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="import-complete-card">
+        {% if batch.status.value == 'ready_for_review' %}
+            <div class="import-complete-icon">✅</div>
+            <div class="import-complete-title">{{ 'complete.title_success'|trans({}, 'admin_menu_import') }}</div>
+            <div class="import-complete-sub">
+                {{ 'complete.subtitle_success'|trans({}, 'admin_menu_import') }}
+                {% if failedPageCount > 0 %}
+                    {{ 'complete.subtitle_partial_failure'|trans({'%failed%': failedPageCount, '%total%': totalPageCount}, 'admin_menu_import') }}
+                {% endif %}
+            </div>
+            <div class="import-complete-stats">
+                <div class="import-complete-stat"><span class="n">{{ categoriesCreated }}</span><span class="l">{{ 'complete.stat_categories'|trans({}, 'admin_menu_import') }}</span></div>
+                <div class="import-complete-stat"><span class="n">{{ productsCreated }}</span><span class="l">{{ 'complete.stat_products'|trans({}, 'admin_menu_import') }}</span></div>
+            </div>
+            <a href="{{ path('admin_menu') }}" class="btn btn-primary">
+                <i class="ti ti-eye" aria-hidden="true"></i> {{ 'complete.button_continue'|trans({}, 'admin_menu_import') }}
+            </a>
+        {% else %}
+            <div class="import-complete-icon">⚠️</div>
+            <div class="import-complete-title">{{ 'complete.title_failed'|trans({}, 'admin_menu_import') }}</div>
+            <div class="import-complete-sub">{{ 'complete.subtitle_failed'|trans({}, 'admin_menu_import') }}</div>
+            <a href="{{ path('admin_menu_import_new') }}" class="btn btn-primary">
+                {{ 'complete.button_retry'|trans({}, 'admin_menu_import') }}
+            </a>
+        {% endif %}
+    </div>
+{% endblock %}
