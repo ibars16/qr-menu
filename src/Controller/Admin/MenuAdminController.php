@@ -11,6 +11,8 @@ use App\Entity\IngredientAllergen;
 use App\Entity\IngredientTranslation;
 use App\Entity\Product;
 use App\Entity\ProductAllergenOverride;
+use App\Entity\ProductGlobalIngredient;
+use App\Entity\ProductIngredient;
 use App\Entity\ProductTranslation;
 use App\Enum\AllergenPresence;
 use App\Repository\AllergenRepository;
@@ -72,6 +74,24 @@ class MenuAdminController extends AbstractController
         }
 
         return ['type' => 'unknown', 'id' => null, 'name' => null];
+    }
+
+    private function attachIngredient(EntityManagerInterface $em, Product $product, Ingredient $ingredient, int $position): void
+    {
+        $link = new ProductIngredient();
+        $link->setIngredient($ingredient);
+        $link->setPosition($position);
+        $product->addIngredientLink($link);
+        $em->persist($link);
+    }
+
+    private function attachGlobalIngredient(EntityManagerInterface $em, Product $product, GlobalIngredient $globalIngredient, int $position): void
+    {
+        $link = new ProductGlobalIngredient();
+        $link->setGlobalIngredient($globalIngredient);
+        $link->setPosition($position);
+        $product->addGlobalIngredientLink($link);
+        $em->persist($link);
     }
 
     /**
@@ -215,10 +235,20 @@ class MenuAdminController extends AbstractController
         // language, same as the autocomplete — falling back to the
         // restaurant's own content language, then English (the one language
         // the global library always has), then the raw code.
-        $adminLocale     = $request->getLocale();
-        $contentLocale   = $product->getCategory()->getRestaurant()->getDefaultLanguage();
-        $ingredientsList = [];
-        foreach ($product->getIngredients() as $ing) {
+        //
+        // Merged by position rather than two source-grouped loops: the two
+        // sources are stored as separate join entities (see
+        // Product::$ingredientLinks / $globalIngredientLinks), but a single
+        // dish's ingredients can legitimately span both, and the printed
+        // menu order must be respected across the combined list, not just
+        // within each source — this is exactly the bug that was traced and
+        // fixed (see ProductIngredient's class docblock).
+        $adminLocale   = $request->getLocale();
+        $contentLocale = $product->getCategory()->getRestaurant()->getDefaultLanguage();
+
+        $ingredientEntries = [];
+        foreach ($product->getIngredientLinks() as $link) {
+            $ing = $link->getIngredient();
             $t = $ing->getTranslation($adminLocale) ?? $ing->getTranslation($contentLocale);
 
             // Its own allergen tags too — lets the product panel offer an
@@ -226,25 +256,33 @@ class MenuAdminController extends AbstractController
             // request (see the ingredients/allergens endpoints for when one
             // gets added to the selection afterwards instead).
             $ingAllergens = [];
-            foreach ($ing->getAllergenLinks() as $link) {
-                $ingAllergens[] = ['allergenId' => $link->getAllergen()->getId(), 'presence' => $link->getPresence()->value];
+            foreach ($ing->getAllergenLinks() as $al) {
+                $ingAllergens[] = ['allergenId' => $al->getAllergen()->getId(), 'presence' => $al->getPresence()->value];
             }
 
-            $ingredientsList[] = [
+            $ingredientEntries[] = [
+                'position'  => $link->getPosition(),
                 'value'     => 'r:' . $ing->getId(),
                 'name'      => $t?->getName() ?? $ing->getCode(),
                 'source'    => 'restaurant',
                 'allergens' => $ingAllergens,
             ];
         }
-        foreach ($product->getGlobalIngredients() as $gIng) {
+        foreach ($product->getGlobalIngredientLinks() as $link) {
+            $gIng = $link->getGlobalIngredient();
             $t = $gIng->getTranslation($adminLocale) ?? $gIng->getTranslation($contentLocale) ?? $gIng->getTranslation('en');
-            $ingredientsList[] = [
-                'value'  => 'g:' . $gIng->getId(),
-                'name'   => $t?->getName() ?? $gIng->getCode(),
-                'source' => 'global',
+            $ingredientEntries[] = [
+                'position' => $link->getPosition(),
+                'value'    => 'g:' . $gIng->getId(),
+                'name'     => $t?->getName() ?? $gIng->getCode(),
+                'source'   => 'global',
             ];
         }
+        usort($ingredientEntries, static fn (array $a, array $b) => $a['position'] <=> $b['position']);
+        $ingredientsList = array_map(static function (array $entry): array {
+            unset($entry['position']);
+            return $entry;
+        }, $ingredientEntries);
 
         // Allergens — computed from the ingredients above, with any
         // product-specific exception layered on top. Kept as two separate
@@ -348,17 +386,32 @@ class MenuAdminController extends AbstractController
 
         // Ingredients — from the restaurant's own list, the Global
         // Ingredient Library, or newly typed (see parseIngredientValue()).
+        // The order the admin left them in the form IS the position saved —
+        // editing an imported product must never destroy the order it was
+        // extracted in, and reordering the picker is how an admin corrects
+        // or sets that order by hand.
         if (isset($data['ingredients'])) {
-            foreach ($product->getIngredients() as $ing) {
-                $product->removeIngredient($ing);
+            foreach ($product->getIngredientLinks()->toArray() as $link) {
+                $product->removeIngredientLink($link);
+                $em->remove($link);
             }
-            foreach ($product->getGlobalIngredients() as $gIng) {
-                $product->removeGlobalIngredient($gIng);
+            foreach ($product->getGlobalIngredientLinks()->toArray() as $link) {
+                $product->removeGlobalIngredientLink($link);
+                $em->remove($link);
             }
+            // Flush the removals before adding anything back: Doctrine's
+            // UnitOfWork always executes insertions before deletions within
+            // a single flush, regardless of code order, so a re-save that
+            // keeps the same ingredient (same product_id + ingredient_id)
+            // just reordered would otherwise try to INSERT its new link row
+            // before the DELETE of the old one runs, violating
+            // unique_product_ingredient / unique_product_global_ingredient.
+            $em->flush();
 
             $adminLocale          = $request->getLocale();
             $ingredientRepo       = $em->getRepository(Ingredient::class);
             $globalIngredientRepo = $em->getRepository(GlobalIngredient::class);
+            $position             = 0;
 
             foreach ($data['ingredients'] as $ingData) {
                 $parsed = $this->parseIngredientValue(trim($ingData['value'] ?? ''));
@@ -366,7 +419,7 @@ class MenuAdminController extends AbstractController
                 if ($parsed['type'] === 'restaurant') {
                     $ingredient = $ingredientRepo->find($parsed['id']);
                     if ($ingredient && $ingredient->getRestaurant() === $restaurant) {
-                        $product->addIngredient($ingredient);
+                        $this->attachIngredient($em, $product, $ingredient, $position++);
                     }
                     continue;
                 }
@@ -374,7 +427,7 @@ class MenuAdminController extends AbstractController
                 if ($parsed['type'] === 'global') {
                     $globalIngredient = $globalIngredientRepo->find($parsed['id']);
                     if ($globalIngredient) {
-                        $product->addGlobalIngredient($globalIngredient);
+                        $this->attachGlobalIngredient($em, $product, $globalIngredient, $position++);
                     }
                     continue;
                 }
@@ -396,7 +449,7 @@ class MenuAdminController extends AbstractController
                             $ingredient->addTranslation($ingT);
                             $em->persist($ingT);
                         }
-                        $product->addIngredient($ingredient);
+                        $this->attachIngredient($em, $product, $ingredient, $position++);
                         continue;
                     }
 
@@ -406,7 +459,7 @@ class MenuAdminController extends AbstractController
                     //    ever read the global library, never write to it.
                     $globalIngredient = $globalIngredientRepo->findExistingByNameAnyLocale($name);
                     if ($globalIngredient) {
-                        $product->addGlobalIngredient($globalIngredient);
+                        $this->attachGlobalIngredient($em, $product, $globalIngredient, $position++);
                         continue;
                     }
 
@@ -423,7 +476,7 @@ class MenuAdminController extends AbstractController
                     $ingredient->addTranslation($ingT);
                     $em->persist($ingT);
 
-                    $product->addIngredient($ingredient);
+                    $this->attachIngredient($em, $product, $ingredient, $position++);
                 }
             }
         }

@@ -82,21 +82,29 @@ class Product
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductTranslation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $translations;
 
-    #[ORM\ManyToMany(targetEntity: Ingredient::class, inversedBy: 'products')]
-    #[ORM\JoinTable(name: 'product_ingredient')]
-    private Collection $ingredients;
+    /**
+     * Ordered links to the restaurant's own private Ingredients — see
+     * ProductIngredient's class docblock for why this is a join entity
+     * carrying an explicit position rather than a bare ManyToMany (a plain
+     * join table has no ordering guarantee at all, and the printed menu
+     * order is meaningful). Always read through getIngredients(), which
+     * returns the Ingredients themselves in position order.
+     */
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductIngredient::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $ingredientLinks;
 
     /**
-     * Ingredients from the shared, application-managed Global Ingredient
-     * Library (see GlobalIngredient). Deliberately a separate join table and
-     * a separate collection from $ingredients (the restaurant's own private
-     * ingredients) — the two sources must never be conflated. Unidirectional:
-     * GlobalIngredient has no inverse side, to avoid ever hydrating its
-     * (potentially huge) list of products.
+     * Ordered links to entries in the shared, application-managed Global
+     * Ingredient Library (see GlobalIngredient) — deliberately a separate
+     * collection from $ingredientLinks, the restaurant's own private
+     * ingredients: the two sources must never be conflated. Always read
+     * through getGlobalIngredients(), which returns the GlobalIngredients
+     * themselves in position order.
      */
-    #[ORM\ManyToMany(targetEntity: GlobalIngredient::class)]
-    #[ORM\JoinTable(name: 'product_global_ingredient')]
-    private Collection $globalIngredients;
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductGlobalIngredient::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $globalIngredientLinks;
 
     /**
      * Deliberate, human-set exceptions to this product's computed allergen
@@ -116,11 +124,11 @@ class Product
 
     public function __construct()
     {
-        $this->translations      = new ArrayCollection();
-        $this->ingredients       = new ArrayCollection();
-        $this->globalIngredients = new ArrayCollection();
-        $this->tags = new ArrayCollection();
-        $this->allergenOverrides = new ArrayCollection();
+        $this->translations           = new ArrayCollection();
+        $this->ingredientLinks        = new ArrayCollection();
+        $this->globalIngredientLinks  = new ArrayCollection();
+        $this->tags                   = new ArrayCollection();
+        $this->allergenOverrides      = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -277,38 +285,52 @@ class Product
         return null;
     }
 
-    public function getIngredients(): Collection
+    public function getIngredientLinks(): Collection
     {
-        return $this->ingredients;
+        return $this->ingredientLinks;
     }
 
-    public function addIngredient(Ingredient $ingredient): void
+    public function addIngredientLink(ProductIngredient $link): void
     {
-        if (!$this->ingredients->contains($ingredient)) {
-            $this->ingredients->add($ingredient);
+        if (!$this->ingredientLinks->contains($link)) {
+            $this->ingredientLinks->add($link);
+            $link->setProduct($this);
         }
     }
 
-    public function removeIngredient(Ingredient $ingredient): void
+    public function removeIngredientLink(ProductIngredient $link): void
     {
-        $this->ingredients->removeElement($ingredient);
+        $this->ingredientLinks->removeElement($link);
     }
 
-    public function getGlobalIngredients(): Collection
+    /** @return Ingredient[] the restaurant's own private ingredients, in printed/entered order */
+    public function getIngredients(): array
     {
-        return $this->globalIngredients;
+        return array_map(static fn (ProductIngredient $link) => $link->getIngredient(), $this->ingredientLinks->toArray());
     }
 
-    public function addGlobalIngredient(GlobalIngredient $ingredient): void
+    public function getGlobalIngredientLinks(): Collection
     {
-        if (!$this->globalIngredients->contains($ingredient)) {
-            $this->globalIngredients->add($ingredient);
+        return $this->globalIngredientLinks;
+    }
+
+    public function addGlobalIngredientLink(ProductGlobalIngredient $link): void
+    {
+        if (!$this->globalIngredientLinks->contains($link)) {
+            $this->globalIngredientLinks->add($link);
+            $link->setProduct($this);
         }
     }
 
-    public function removeGlobalIngredient(GlobalIngredient $ingredient): void
+    public function removeGlobalIngredientLink(ProductGlobalIngredient $link): void
     {
-        $this->globalIngredients->removeElement($ingredient);
+        $this->globalIngredientLinks->removeElement($link);
+    }
+
+    /** @return GlobalIngredient[] the shared-library ingredients, in printed/entered order */
+    public function getGlobalIngredients(): array
+    {
+        return array_map(static fn (ProductGlobalIngredient $link) => $link->getGlobalIngredient(), $this->globalIngredientLinks->toArray());
     }
 
     public function getTags(): Collection

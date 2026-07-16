@@ -34,10 +34,20 @@ final class MenuVisionPromptBuilder
 
             STRICT RULES:
             1. Only include a category or dish that is actually printed on this page. If the page is blank, unreadable, or isn't a menu at all, return an empty "categories" array — do not invent content to fill it.
-            2. The "name" field must contain ONLY the dish name exactly as printed — never append ingredients, side dishes, garnishes, sauces, allergens, preparation notes, or a description to it. If ingredients are printed next to or below the dish name, they belong only in the "ingredients" array, never in "name". Do not include parenthetical text after the dish name unless the parentheses are clearly part of the dish's own official printed name — not a list of what's inside it. When genuinely uncertain how much of the printed text is the name versus something else, prefer the shorter reading. For example, if the menu prints:
+            2. The "name" field must contain ONLY the dish's commercial name exactly as printed — never append ingredients, side dishes, garnishes, sauces, allergens, preparation notes, or a description to it. Do not include parenthetical text after the dish name unless the parentheses are clearly part of the dish's own official printed name — not a clarification about it. When genuinely uncertain how much of the printed text is the name versus something else, prefer the shorter reading.
+
+               If the menu prints extra information after the dish name — in parentheses or otherwise (ingredients, a side dish, a preparation note, a serving note like "for two") — that information must be MOVED to the correct field, never left in "name" and never simply discarded:
+               - a list of ingredients → the "ingredients" array
+               - anything else describing the dish (a side dish, preparation, serving note, etc.) → the "description" field
+
+               For example, if the menu prints:
                  "Provolone tibio"
                  "mézclum, tomate, apio, pepino e hinojo"
                → name: "Provolone tibio", ingredients: ["mézclum", "tomate", "apio", "pepino", "hinojo"]. Never output name: "Provolone tibio con ensalada (mézclum, tomate, apio, pepino e hinojo)".
+
+               Another example — if the menu prints:
+                 "Hamburguesa clásica (servida con patatas fritas)"
+               → name: "Hamburguesa clásica", description: "Servida con patatas fritas", ingredients: [] (no ingredient list was printed). Never output name: "Hamburguesa clásica (servida con patatas fritas)", and never drop "servida con patatas fritas" entirely.
             3. Only include an ingredient if it is explicitly listed on the menu for that dish — word for word, wherever it's printed: in the dish's name, its description, or a separate ingredients list/section next to it. Never infer, assume, or complete an ingredient list from culinary knowledge, tradition, or the dish's name — no matter how obvious or traditional an ingredient seems. An empty "ingredients" array is a valid, often correct, answer; when in doubt, extract fewer ingredients, never more. For example:
                - "Margherita" with description "Tomato, mozzarella, basil" → extract exactly those three ingredients, nothing else.
                - "Chicken Caesar Salad" with description "Chicken, lettuce, parmesan, croutons" → extract exactly those four ingredients.

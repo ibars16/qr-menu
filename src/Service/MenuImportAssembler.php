@@ -9,6 +9,8 @@ use App\Entity\Ingredient;
 use App\Entity\IngredientTranslation;
 use App\Entity\MenuImportBatch;
 use App\Entity\Product;
+use App\Entity\ProductGlobalIngredient;
+use App\Entity\ProductIngredient;
 use App\Entity\ProductTag;
 use App\Entity\ProductTranslation;
 use App\Entity\Restaurant;
@@ -185,6 +187,10 @@ final class MenuImportAssembler
         $this->em->persist($translation);
         $category->getProducts()->add($product);
 
+        // $position only advances for ingredients actually linked — a run of
+        // uncertain/empty entries never leaves a gap in the saved sequence,
+        // matching MenuVisionPromptBuilder rule 4 (exact printed order).
+        $position = 0;
         foreach ((is_array($productData['ingredients'] ?? null) ? $productData['ingredients'] : []) as $ingredientData) {
             if (($ingredientData['uncertain'] ?? false) === true) {
                 $ingredientsSkippedUncertain++;
@@ -194,7 +200,8 @@ final class MenuImportAssembler
             if ($ingredientName === '') {
                 continue;
             }
-            $this->linkIngredient($product, $ingredientName, $restaurant, $locale);
+            $this->linkIngredient($product, $ingredientName, $restaurant, $locale, $position);
+            $position++;
             $ingredientsLinked++;
         }
 
@@ -223,8 +230,8 @@ final class MenuImportAssembler
         return $product;
     }
 
-    /** Exactly MenuAdminController::saveProduct()'s 3-tier resolution for a typed ingredient name, reused rather than reimplemented. */
-    private function linkIngredient(Product $product, string $name, Restaurant $restaurant, string $locale): void
+    /** Exactly MenuAdminController::saveProduct()'s 3-tier resolution for a typed ingredient name, reused rather than reimplemented — plus the position this call's ingredient occupies in the printed/entered order. */
+    private function linkIngredient(Product $product, string $name, Restaurant $restaurant, string $locale, int $position): void
     {
         $ingredient = $this->ingredientRepository->findExistingByNameAnyLocale($restaurant, $name);
         if ($ingredient) {
@@ -236,13 +243,13 @@ final class MenuImportAssembler
                 $ingredient->addTranslation($ingT);
                 $this->em->persist($ingT);
             }
-            $product->addIngredient($ingredient);
+            $this->attachIngredient($product, $ingredient, $position);
             return;
         }
 
         $globalIngredient = $this->globalIngredientRepository->findExistingByNameAnyLocale($name);
         if ($globalIngredient) {
-            $product->addGlobalIngredient($globalIngredient);
+            $this->attachGlobalIngredient($product, $globalIngredient, $position);
             return;
         }
 
@@ -258,7 +265,25 @@ final class MenuImportAssembler
         $ingredient->addTranslation($ingT);
         $this->em->persist($ingT);
 
-        $product->addIngredient($ingredient);
+        $this->attachIngredient($product, $ingredient, $position);
+    }
+
+    private function attachIngredient(Product $product, Ingredient $ingredient, int $position): void
+    {
+        $link = new ProductIngredient();
+        $link->setIngredient($ingredient);
+        $link->setPosition($position);
+        $product->addIngredientLink($link);
+        $this->em->persist($link);
+    }
+
+    private function attachGlobalIngredient(Product $product, GlobalIngredient $globalIngredient, int $position): void
+    {
+        $link = new ProductGlobalIngredient();
+        $link->setGlobalIngredient($globalIngredient);
+        $link->setPosition($position);
+        $product->addGlobalIngredientLink($link);
+        $this->em->persist($link);
     }
 
     /**

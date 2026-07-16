@@ -38,9 +38,6 @@ class Ingredient
     #[ORM\OneToMany(mappedBy: 'ingredient', targetEntity: IngredientTranslation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $translations;
 
-    #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'ingredients')]
-    private Collection $products;
-
     /**
      * The allergens this private ingredient carries — set by hand by the
      * restaurant owner (there is no taxonomy to derive it from, unlike
@@ -52,7 +49,6 @@ class Ingredient
     public function __construct()
     {
         $this->translations = new ArrayCollection();
-        $this->products = new ArrayCollection();
         $this->allergenLinks = new ArrayCollection();
     }
 
@@ -108,11 +104,6 @@ class Ingredient
         }
 
         return null;
-    }
-
-    public function getProducts(): Collection
-    {
-        return $this->products;
     }
 
     public function getAllergenLinks(): Collection
