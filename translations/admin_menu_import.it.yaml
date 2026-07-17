@@ -8,6 +8,9 @@ upload:
     drop_text: Trascina qui le foto del tuo menù, oppure tocca per scegliere i file
     drop_hint: Aggiungine quante ne servono
     submit: Inizia a leggere il mio menù
+    uploading: Caricamento delle tue foto…
+    upload_failed: Caricamento non riuscito — controlla la connessione e riprova.
+    retry: Riprova
     error:
         no_files: Scegli almeno una foto.
         too_many_files: 'Carica al massimo %max% foto alla volta.'
@@ -16,11 +19,20 @@ upload:
         storage_failed: '"%name%" non è stato salvato — riprova.'
 
 status:
-    title: 'Foto caricate (%count%)'
-    subtitle: Stiamo leggendo il tuo menù adesso — questa pagina si aggiornerà da sola.
+    reading:
+        title: 'Lettura della pagina %position% di %total%'
+        sub: Stiamo leggendo ogni piatto con attenzione.
+        sub_slow_page: Questa pagina ha molti dettagli — lettura in corso.
+        sub_slow_global: Ci vuole un po' più del solito — i menù più grandi possono richiedere un paio di minuti.
+    organizing:
+        title: Organizzazione dei tuoi piatti
+        sub: Raggruppamento delle categorie e abbinamento degli ingredienti.
+    done_title: Tutto pronto
+    reconnecting: Riconnessione…
+    trust: 'Puoi uscire tranquillamente — continuiamo a lavorare in background.'
     page_label: 'Pagina %position%'
     page_status:
-        pending: Caricata
+        pending: In coda
         analyzing: Analisi in corso…
         extracted: Letta
         failed: Non riuscita

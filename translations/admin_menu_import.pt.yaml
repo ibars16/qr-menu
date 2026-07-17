@@ -8,6 +8,9 @@ upload:
     drop_text: Arraste as fotos do seu menu para aqui, ou toque para escolher ficheiros
     drop_hint: Adicione quantas precisar
     submit: Começar a ler o meu menu
+    uploading: A carregar as suas fotos…
+    upload_failed: O carregamento falhou — verifique a sua ligação e tente novamente.
+    retry: Tentar novamente
     error:
         no_files: Escolha pelo menos uma foto.
         too_many_files: 'Carregue no máximo %max% fotos de cada vez.'
@@ -16,11 +19,20 @@ upload:
         storage_failed: '"%name%" não pôde ser guardada — tente novamente.'
 
 status:
-    title: 'Fotos carregadas (%count%)'
-    subtitle: Estamos a ler o seu menu agora — esta página vai atualizar-se automaticamente.
+    reading:
+        title: 'A ler a página %position% de %total%'
+        sub: Estamos a ler cada prato com atenção.
+        sub_slow_page: Esta página tem muitos detalhes — continuamos a ler.
+        sub_slow_global: Isto está a demorar um pouco mais do que o habitual — menus maiores podem demorar alguns minutos.
+    organizing:
+        title: A organizar os seus pratos
+        sub: A agrupar categorias e a associar ingredientes.
+    done_title: Tudo pronto
+    reconnecting: A reconectar…
+    trust: 'Pode sair descansado — continuamos a trabalhar em segundo plano.'
     page_label: 'Página %position%'
     page_status:
-        pending: Carregada
+        pending: Em fila
         analyzing: A analisar…
         extracted: Lida
         failed: Falhou

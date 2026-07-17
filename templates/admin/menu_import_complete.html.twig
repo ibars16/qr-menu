@@ -16,11 +16,32 @@
             max-width: 560px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--bd-1);
             border-radius: 14px; padding: 32px; text-align: center;
         }
-        .import-complete-icon { font-size: 40px; margin-bottom: 12px; }
+
+        /* One brief, purposeful beat — not a sequence. Numbers are already
+           correct on first paint (server-rendered); nothing here delays
+           showing them. */
+        .import-complete-icon {
+            width: 54px; height: 54px; border-radius: 50%; margin: 0 auto 14px; position: relative;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(99,153,34,0.15); color: #7aad40;
+            animation: complete-pop .4s cubic-bezier(.25,1.4,.5,1) both;
+        }
+        .import-complete-icon.is-failure { background: rgba(240,153,123,0.15); color: #F0997B; }
+        .import-complete-icon svg { width: 26px; height: 26px; }
+        .import-complete-icon.is-success::after {
+            content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1.5px solid #7aad40;
+            opacity: .6; animation: complete-ring .6s ease-out .08s both;
+        }
+        @keyframes complete-pop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes complete-ring { from { transform: scale(.75); opacity: .6; } to { transform: scale(1.5); opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) {
+            .import-complete-icon, .import-complete-icon.is-success::after { animation: none; }
+        }
+
         .import-complete-title { font-size: 20px; font-weight: 600; color: var(--tx-hi); margin-bottom: 8px; }
         .import-complete-sub { font-size: 14px; color: var(--tx-6); line-height: 1.6; margin-bottom: 24px; max-width: 34rem; margin-left: auto; margin-right: auto; }
         .import-complete-stats { display: flex; justify-content: center; gap: 24px; margin-bottom: 26px; }
-        .import-complete-stat .n { display: block; font-size: 26px; font-weight: 600; color: var(--tx-hi); }
+        .import-complete-stat .n { display: block; font-size: 26px; font-weight: 600; color: var(--tx-hi); font-variant-numeric: tabular-nums; }
         .import-complete-stat .l { font-size: 11px; color: var(--tx-7); text-transform: uppercase; letter-spacing: 0.05em; }
     </style>
 {% endblock %}
@@ -28,7 +49,9 @@
 {% block body %}
     <div class="import-complete-card">
         {% if batch.status.value == 'ready_for_review' %}
-            <div class="import-complete-icon">✅</div>
+            <div class="import-complete-icon is-success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
             <div class="import-complete-title">{{ 'complete.title_success'|trans({}, 'admin_menu_import') }}</div>
             <div class="import-complete-sub">
                 {{ 'complete.subtitle_success'|trans({}, 'admin_menu_import') }}
@@ -44,7 +67,9 @@
                 <i class="ti ti-eye" aria-hidden="true"></i> {{ 'complete.button_continue'|trans({}, 'admin_menu_import') }}
             </a>
         {% else %}
-            <div class="import-complete-icon">⚠️</div>
+            <div class="import-complete-icon is-failure">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r="0.6" fill="currentColor"/></svg>
+            </div>
             <div class="import-complete-title">{{ 'complete.title_failed'|trans({}, 'admin_menu_import') }}</div>
             <div class="import-complete-sub">{{ 'complete.subtitle_failed'|trans({}, 'admin_menu_import') }}</div>
             <a href="{{ path('admin_menu_import_new') }}" class="btn btn-primary">

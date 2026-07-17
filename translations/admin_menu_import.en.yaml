@@ -8,6 +8,9 @@ upload:
     drop_text: Drag your menu photos here, or tap to choose files
     drop_hint: Add as many as you need
     submit: Start reading my menu
+    uploading: Uploading your photos…
+    upload_failed: Upload failed — check your connection and try again.
+    retry: Try again
     error:
         no_files: Please choose at least one photo.
         too_many_files: 'Please upload %max% photos or fewer at a time.'
@@ -16,11 +19,20 @@ upload:
         storage_failed: '"%name%" couldn''t be saved — please try again.'
 
 status:
-    title: 'Photos uploaded (%count%)'
-    subtitle: We're reading your menu now — this page will update automatically.
+    reading:
+        title: 'Reading page %position% of %total%'
+        sub: Reading every dish carefully.
+        sub_slow_page: This page has a lot of detail — still reading.
+        sub_slow_global: Taking a little longer than usual — larger menus can take a couple of minutes.
+    organizing:
+        title: Organizing your dishes
+        sub: Grouping categories and matching ingredients.
+    done_title: All set
+    reconnecting: Reconnecting…
+    trust: 'Safe to leave — we''ll keep working in the background.'
     page_label: 'Page %position%'
     page_status:
-        pending: Uploaded
+        pending: Queued
         analyzing: Analyzing…
         extracted: Read
         failed: Failed

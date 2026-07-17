@@ -8,6 +8,9 @@ upload:
     drop_text: Ziehe deine Menüfotos hierher oder tippe, um Dateien auszuwählen
     drop_hint: Füge so viele hinzu, wie du brauchst
     submit: Speisekarte jetzt einlesen
+    uploading: Deine Fotos werden hochgeladen…
+    upload_failed: Hochladen fehlgeschlagen — bitte prüfe deine Verbindung und versuche es erneut.
+    retry: Erneut versuchen
     error:
         no_files: Bitte wähle mindestens ein Foto aus.
         too_many_files: 'Bitte lade höchstens %max% Fotos gleichzeitig hoch.'
@@ -16,11 +19,20 @@ upload:
         storage_failed: '„%name%" konnte nicht gespeichert werden — bitte versuche es erneut.'
 
 status:
-    title: 'Hochgeladene Fotos (%count%)'
-    subtitle: Wir lesen deine Speisekarte jetzt ein — diese Seite aktualisiert sich automatisch.
+    reading:
+        title: 'Seite %position% von %total% wird gelesen'
+        sub: Wir lesen jedes Gericht sorgfältig.
+        sub_slow_page: Diese Seite hat viele Details — wir lesen noch.
+        sub_slow_global: Das dauert etwas länger als gewöhnlich — größere Speisekarten können ein paar Minuten dauern.
+    organizing:
+        title: Deine Gerichte werden organisiert
+        sub: Kategorien werden gruppiert und Zutaten zugeordnet.
+    done_title: Fertig
+    reconnecting: Verbindung wird wiederhergestellt…
+    trust: 'Du kannst diesen Tab bedenkenlos verlassen — wir arbeiten im Hintergrund weiter.'
     page_label: 'Seite %position%'
     page_status:
-        pending: Hochgeladen
+        pending: Wartend
         analyzing: Wird analysiert…
         extracted: Eingelesen
         failed: Fehlgeschlagen

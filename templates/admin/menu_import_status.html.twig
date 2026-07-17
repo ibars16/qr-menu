@@ -14,43 +14,162 @@
     <style>
         .import-status-card {
             max-width: 640px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--bd-1);
-            border-radius: 14px; padding: 28px;
+            border-radius: 14px; padding: 30px 28px;
         }
-        .import-status-title { font-size: 18px; font-weight: 600; color: var(--tx-hi); margin-bottom: 6px; }
-        .import-status-sub { font-size: 13px; color: var(--tx-6); margin-bottom: 20px; line-height: 1.6; }
-        .import-page-list { display: flex; flex-direction: column; gap: 8px; }
+
+        /* Reconnect chip — only appears on a real poll failure. Uses [hidden]
+           rather than opacity, so it never occupies layout space (and never
+           leaves a stray gap above the hero) while inactive. */
+        .reconnect-chip {
+            display: flex; align-items: center; gap: 7px; justify-content: center; font-size: 12px; font-weight: 600;
+            color: #F0997B; background: rgba(240,153,123,0.14); border-radius: 20px; padding: 6px 14px; margin: 0 auto 16px;
+            width: max-content;
+        }
+        .reconnect-chip[hidden] { display: none; }
+        .reconnect-chip svg { width: 12px; height: 12px; animation: import-spin .8s linear infinite; }
+
+        /* Hero — the orb only animates while it's the ONLY thing moving
+           (Organizing). During Reading, the active page row is the motion
+           signal, so the orb stays a calm, static icon. */
+        .hero { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 22px; }
+        .orb-wrap { width: 60px; height: 60px; position: relative; margin-bottom: 14px; flex-shrink: 0; }
+        .orb-ring {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--brand), transparent 65%);
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+                    mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+            opacity: 0; animation: import-orbit 1.7s linear infinite; animation-play-state: paused;
+        }
+        .orb-ring.spinning { opacity: 1; animation-play-state: running; }
+        .orb-core {
+            position: absolute; inset: 7px; border-radius: 50%;
+            background: radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--brand) 55%, white 10%), var(--brand) 60%, color-mix(in srgb, var(--brand) 80%, black 25%));
+            display: flex; align-items: center; justify-content: center; color: #fff;
+            box-shadow: 0 5px 18px -6px color-mix(in srgb, var(--brand) 70%, transparent);
+        }
+        .orb-core.breathing { animation: import-breathe 2.6s ease-in-out infinite; }
+        .orb-core svg { width: 20px; height: 20px; transition: opacity .2s ease; }
+        .orb-core svg.hidden { opacity: 0; position: absolute; }
+        @keyframes import-orbit { to { transform: rotate(360deg); } }
+        @keyframes import-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes import-spin { to { transform: rotate(360deg); } }
+
+        .phase-title { font-size: 16px; font-weight: 700; color: var(--tx-hi); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+        .phase-sub { font-size: 12.5px; color: var(--tx-4); line-height: 1.5; transition: opacity .25s; }
+
+        /* Reading progress: state-based segments — width/color TRANSITIONS
+           on real events only, no continuous decorative motion. */
+        .progress-track { display: flex; gap: 4px; height: 6px; margin-bottom: 18px; }
+        .progress-seg { flex: 1; background: var(--bg-deep); border-radius: 4px; overflow: hidden; }
+        .progress-seg .fill { height: 100%; width: 0%; border-radius: 4px; background: var(--brand); transition: width .4s ease, background .3s ease; }
+        .progress-seg.active .fill { width: 42%; }
+        .progress-seg.done .fill { width: 100%; background: #7aad40; }
+        .progress-seg.failed .fill { width: 100%; background: #F0997B; }
+
+        /* Reassurance strip — one short line */
+        .trust-strip {
+            display: flex; align-items: center; gap: 9px; background: var(--bg-input); border: 1px solid var(--bd-1);
+            border-radius: 10px; padding: 10px 13px; margin-bottom: 18px;
+        }
+        .trust-strip svg { width: 15px; height: 15px; color: var(--tx-4); flex-shrink: 0; }
+        .trust-strip p { font-size: 12px; color: var(--tx-4); line-height: 1.4; }
+
+        /* Per-page list */
+        .import-page-list { display: flex; flex-direction: column; gap: 7px; }
         .import-page-row {
-            display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--bg-input);
-            border: 1px solid var(--bd-1); border-radius: 10px;
+            display: flex; align-items: center; gap: 12px; padding: 9px 11px; background: var(--bg-input);
+            border: 1px solid var(--bd-1); border-radius: 11px; transition: border-color .3s, background .3s, box-shadow .3s;
+        }
+        .import-page-row.is-active {
+            border-color: color-mix(in srgb, var(--brand) 55%, var(--bd-1));
+            background: color-mix(in srgb, var(--brand) 6%, var(--bg-input));
+            animation: import-row-glow 2.2s ease-in-out infinite;
+        }
+        @keyframes import-row-glow {
+            0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 30%, transparent); }
+            50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 55%, transparent), 0 0 16px -4px color-mix(in srgb, var(--brand) 55%, transparent); }
         }
         .import-page-thumb {
-            width: 44px; height: 44px; border-radius: 7px; object-fit: cover; background: var(--bg-hover);
+            width: 42px; height: 42px; border-radius: 8px; object-fit: cover; background: var(--bg-hover);
             flex-shrink: 0; border: 1px solid var(--bd-1);
         }
-        .import-page-name { flex: 1; min-width: 0; font-size: 13px; color: var(--tx-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .import-page-name { flex: 1; min-width: 0; font-size: 13px; color: var(--tx-2); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .import-page-name small { display: block; font-size: 11px; color: var(--tx-6); font-weight: 400; margin-top: 1px; }
         .import-page-status {
-            font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap;
-            background: var(--bg-hover); color: var(--tx-6);
+            font-size: 11px; font-weight: 600; padding: 5px 10px 5px 8px; border-radius: 20px; white-space: nowrap;
+            background: var(--bg-hover); color: var(--tx-6); display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
         }
-        .import-page-status.analyzing { background: rgba(99,153,34,0.1); color: #7aad40; animation: import-pulse 1.5s ease-in-out infinite; }
+        .import-page-status svg { width: 12px; height: 12px; }
+        .import-page-status.analyzing { background: rgba(193,68,14,0.14); color: color-mix(in srgb, var(--brand) 75%, var(--tx-2)); }
+        .import-page-status.analyzing svg { animation: import-spin 0.9s linear infinite; }
         .import-page-status.extracted { background: rgba(99,153,34,0.15); color: #7aad40; }
         .import-page-status.failed { background: rgba(240,153,123,0.15); color: #F0997B; }
-        @keyframes import-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        @media (prefers-reduced-motion: reduce) { .import-page-status.analyzing { animation: none; } }
+
+        @media (max-width: 600px) {
+            .import-status-card { padding: 24px 18px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .orb-ring, .orb-core.breathing, .import-page-row.is-active, .import-page-status.analyzing svg, .reconnect-chip svg {
+                animation: none;
+            }
+            .orb-ring.spinning { opacity: .4; }
+        }
     </style>
 {% endblock %}
 
 {% block body %}
     <div class="import-status-card">
-        <div class="import-status-title">{{ 'status.title'|trans({'%count%': batch.pages|length}, 'admin_menu_import') }}</div>
-        <div class="import-status-sub" id="import-status-sub">{{ 'status.subtitle'|trans({}, 'admin_menu_import') }}</div>
+
+        <div class="reconnect-chip" id="reconnect-chip" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9"/></svg>
+            <span id="reconnect-label"></span>
+        </div>
+
+        <div class="hero">
+            <div class="orb-wrap">
+                <div class="orb-ring" id="orb-ring"></div>
+                <div class="orb-core" id="orb-core">
+                    <svg id="icon-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                    <svg id="icon-sparkles" class="hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 4.9L18.5 8l-4.9 1.6L12 14.5l-1.6-4.9L5.5 8l4.9-1.1L12 2z"/><path d="M19 14l.8 2.4L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.6L19 14z"/><path d="M5 15l.6 1.8L7.5 17.5l-1.9.6L5 20l-.6-1.9L2.5 17.5l1.9-.7L5 15z"/></svg>
+                    <svg id="icon-check" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                </div>
+            </div>
+            <div class="phase-title" id="phase-title"></div>
+            <div class="phase-sub" id="phase-sub" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="progress-track" id="progress-track">
+            {% for page in batch.pages %}
+                {% set s = page.status.value %}
+                <div class="progress-seg {{ s == 'analyzing' ? 'active' : (s == 'extracted' ? 'done' : (s == 'failed' ? 'failed' : '')) }}" data-position="{{ page.position }}"><div class="fill"></div></div>
+            {% endfor %}
+        </div>
+
+        <div class="trust-strip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <p>{{ 'status.trust'|trans({}, 'admin_menu_import') }}</p>
+        </div>
 
         <div class="import-page-list" id="import-page-list">
             {% for page in batch.pages %}
-                <div class="import-page-row" data-position="{{ page.position }}">
+                {% set s = page.status.value %}
+                <div class="import-page-row {{ s == 'analyzing' ? 'is-active' : '' }}" data-position="{{ page.position }}">
                     <img class="import-page-thumb" src="{{ asset(page.imagePath) }}" alt="">
-                    <span class="import-page-name">{{ 'status.page_label'|trans({'%position%': page.position + 1}, 'admin_menu_import') }}</span>
-                    <span class="import-page-status {{ page.status.value }}" data-status-label>{{ ('status.page_status.' ~ page.status.value)|trans({}, 'admin_menu_import') }}</span>
+                    <span class="import-page-name">
+                        {{ 'status.page_label'|trans({'%position%': page.position + 1}, 'admin_menu_import') }}
+                        <small data-note></small>
+                    </span>
+                    <span class="import-page-status {{ s }}" data-status-label>
+                        {% if s == 'analyzing' %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9"/></svg>
+                        {% elseif s == 'extracted' %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                        {% elseif s == 'failed' %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r="0.6" fill="currentColor"/></svg>
+                        {% endif %}
+                        <span data-label>{{ ('status.page_status.' ~ s)|trans({}, 'admin_menu_import') }}</span>
+                    </span>
                 </div>
             {% endfor %}
         </div>
@@ -60,32 +179,141 @@
         (function () {
             const statusUrl = {{ path('admin_menu_import_status', {id: batch.id})|json_encode|raw }};
             const completeUrl = {{ path('admin_menu_import_complete', {id: batch.id})|json_encode|raw }};
-            const labels = {{ {
+            const totalPages = {{ batch.pages|length }};
+
+            const pageLabels = {{ {
                 'pending': 'status.page_status.pending'|trans({}, 'admin_menu_import'),
                 'analyzing': 'status.page_status.analyzing'|trans({}, 'admin_menu_import'),
                 'extracted': 'status.page_status.extracted'|trans({}, 'admin_menu_import'),
                 'failed': 'status.page_status.failed'|trans({}, 'admin_menu_import'),
             }|json_encode|raw }};
+            const T = {
+                readingTitle: {{ 'status.reading.title'|trans({}, 'admin_menu_import')|json_encode|raw }},
+                readingSub: {{ 'status.reading.sub'|trans({}, 'admin_menu_import')|json_encode|raw }},
+                readingSubSlowPage: {{ 'status.reading.sub_slow_page'|trans({}, 'admin_menu_import')|json_encode|raw }},
+                readingSubSlowGlobal: {{ 'status.reading.sub_slow_global'|trans({}, 'admin_menu_import')|json_encode|raw }},
+                organizingTitle: {{ 'status.organizing.title'|trans({}, 'admin_menu_import')|json_encode|raw }},
+                organizingSub: {{ 'status.organizing.sub'|trans({}, 'admin_menu_import')|json_encode|raw }},
+                doneTitle: {{ 'status.done_title'|trans({}, 'admin_menu_import')|json_encode|raw }},
+                reconnecting: {{ 'status.reconnecting'|trans({}, 'admin_menu_import')|json_encode|raw }},
+            };
+
+            const SLOW_PAGE_MS = 8000;   // a real single-page AI call commonly runs 10-15s
+            const SLOW_GLOBAL_MS = 30000;
+
+            const phaseTitle = document.getElementById('phase-title');
+            const phaseSub = document.getElementById('phase-sub');
+            const orbRing = document.getElementById('orb-ring');
+            const orbCore = document.getElementById('orb-core');
+            const iconScan = document.getElementById('icon-scan');
+            const iconSparkles = document.getElementById('icon-sparkles');
+            const iconCheck = document.getElementById('icon-check');
+            const reconnectChip = document.getElementById('reconnect-chip');
+            const reconnectLabel = document.getElementById('reconnect-label');
+
+            reconnectLabel.textContent = T.reconnecting;
+            phaseTitle.textContent = T.readingTitle.replace('%position%', 1).replace('%total%', totalPages);
+            phaseSub.textContent = T.readingSub;
+
+            function setIcon(which) {
+                [iconScan, iconSparkles, iconCheck].forEach(el => el.classList.add('hidden'));
+                which.classList.remove('hidden');
+            }
+            function setSub(text) {
+                if (phaseSub.textContent === text) return;
+                phaseSub.style.opacity = 0;
+                setTimeout(() => { phaseSub.textContent = text; phaseSub.style.opacity = 1; }, 150);
+            }
+
+            const pageLoadTime = Date.now();
+            const analyzingSince = {};
+            const lastStatus = {};
+            let organizingShown = false;
+            let doneShown = false;
+            let slowGlobalShown = false;
+
+            function applyPageUpdate(p) {
+                const row = document.querySelector('.import-page-row[data-position="' + p.position + '"]');
+                const seg = document.querySelector('.progress-seg[data-position="' + p.position + '"]');
+                if (!row || !seg) return;
+
+                const prev = lastStatus[p.position];
+                lastStatus[p.position] = p.status;
+
+                row.classList.toggle('is-active', p.status === 'analyzing');
+                seg.className = 'progress-seg' + (p.status === 'analyzing' ? ' active' : p.status === 'extracted' ? ' done' : p.status === 'failed' ? ' failed' : '');
+
+                const badge = row.querySelector('[data-status-label]');
+                badge.className = 'import-page-status ' + p.status;
+                const icon = p.status === 'analyzing'
+                    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9"/></svg>'
+                    : p.status === 'extracted'
+                        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'
+                        : p.status === 'failed'
+                            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r="0.6" fill="currentColor"/></svg>'
+                            : '';
+                badge.innerHTML = icon + '<span>' + (pageLabels[p.status] || p.status) + '</span>';
+
+                const note = row.querySelector('[data-note]');
+                if (p.status === 'analyzing') {
+                    if (prev !== 'analyzing') analyzingSince[p.position] = Date.now();
+                    note.textContent = (Date.now() - (analyzingSince[p.position] || Date.now())) > SLOW_PAGE_MS ? T.readingSubSlowPage : '';
+                } else {
+                    note.textContent = '';
+                }
+            }
 
             function poll() {
                 fetch(statusUrl, { headers: { 'Accept': 'application/json' } })
-                    .then(r => r.json())
+                    .then(r => { if (!r.ok) throw new Error('bad status'); return r.json(); })
                     .then(data => {
-                        data.pages.forEach(p => {
-                            const row = document.querySelector('.import-page-row[data-position="' + p.position + '"]');
-                            if (!row) return;
-                            const label = row.querySelector('[data-status-label]');
-                            label.textContent = labels[p.status] || p.status;
-                            label.className = 'import-page-status ' + p.status;
-                        });
+                        reconnectChip.hidden = true;
+
+                        data.pages.forEach(applyPageUpdate);
+
+                        const allSettled = data.pages.every(p => p.status === 'extracted' || p.status === 'failed');
 
                         if (data.terminal) {
-                            window.location.href = completeUrl;
-                        } else {
-                            setTimeout(poll, 2500);
+                            if (!doneShown) {
+                                doneShown = true;
+                                setIcon(iconCheck);
+                                orbRing.classList.remove('spinning');
+                                orbCore.classList.remove('breathing');
+                                phaseTitle.textContent = T.doneTitle;
+                                setSub('');
+                                setTimeout(() => { window.location.href = completeUrl; }, 500);
+                            }
+                            return;
                         }
+
+                        if (allSettled) {
+                            if (!organizingShown) {
+                                organizingShown = true;
+                                setIcon(iconSparkles);
+                                orbRing.classList.add('spinning');
+                                orbCore.classList.add('breathing');
+                                phaseTitle.textContent = T.organizingTitle;
+                                setSub(T.organizingSub);
+                            }
+                        } else {
+                            const active = data.pages.find(p => p.status === 'analyzing');
+                            if (active) {
+                                phaseTitle.textContent = T.readingTitle.replace('%position%', active.position + 1).replace('%total%', totalPages);
+                            }
+                            if (!slowGlobalShown && (Date.now() - pageLoadTime) > SLOW_GLOBAL_MS) {
+                                slowGlobalShown = true;
+                                setSub(T.readingSubSlowGlobal);
+                            } else if (!slowGlobalShown) {
+                                setSub(T.readingSub);
+                            }
+                        }
+
+                        setTimeout(poll, 2500);
                     })
-                    .catch(() => setTimeout(poll, 4000));
+                    .catch(() => {
+                        reconnectChip.hidden = false;
+                        setTimeout(poll, 4000);
+                    });
             }
 
             poll();

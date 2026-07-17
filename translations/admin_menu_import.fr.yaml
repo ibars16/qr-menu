@@ -8,6 +8,9 @@ upload:
     drop_text: Glissez vos photos de menu ici, ou touchez pour choisir des fichiers
     drop_hint: Ajoutez-en autant que nécessaire
     submit: Commencer à lire mon menu
+    uploading: Téléversement de vos photos…
+    upload_failed: Le téléversement a échoué — vérifiez votre connexion et réessayez.
+    retry: Réessayer
     error:
         no_files: Veuillez choisir au moins une photo.
         too_many_files: 'Veuillez téléverser %max% photos ou moins à la fois.'
@@ -16,11 +19,20 @@ upload:
         storage_failed: '« %name% » n''a pas pu être enregistrée — veuillez réessayer.'
 
 status:
-    title: 'Photos téléversées (%count%)'
-    subtitle: Nous lisons votre menu maintenant — cette page se mettra à jour automatiquement.
+    reading:
+        title: 'Lecture de la page %position% sur %total%'
+        sub: Nous lisons chaque plat avec attention.
+        sub_slow_page: Cette page contient beaucoup de détails — lecture en cours.
+        sub_slow_global: Cela prend un peu plus de temps que d'habitude — les grands menus peuvent prendre quelques minutes.
+    organizing:
+        title: Organisation de vos plats
+        sub: Regroupement des catégories et association des ingrédients.
+    done_title: C'est prêt
+    reconnecting: Reconnexion…
+    trust: 'Vous pouvez fermer cette page en toute tranquillité — nous continuons de travailler en arrière-plan.'
     page_label: 'Page %position%'
     page_status:
-        pending: Téléversée
+        pending: En attente
         analyzing: Analyse en cours…
         extracted: Lue
         failed: Échec

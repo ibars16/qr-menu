@@ -8,6 +8,9 @@ upload:
     drop_text: Arrastra aquí las fotos de tu menú, o toca para elegir archivos
     drop_hint: Añade tantas como necesites
     submit: Empezar a leer mi menú
+    uploading: Subiendo tus fotos…
+    upload_failed: No se pudo subir — comprueba tu conexión e inténtalo de nuevo.
+    retry: Intentar de nuevo
     error:
         no_files: Por favor, elige al menos una foto.
         too_many_files: 'Por favor, sube %max% fotos o menos a la vez.'
@@ -16,11 +19,20 @@ upload:
         storage_failed: '"%name%" no se pudo guardar — inténtalo de nuevo.'
 
 status:
-    title: 'Fotos subidas (%count%)'
-    subtitle: Estamos leyendo tu menú ahora mismo — esta página se actualizará sola.
+    reading:
+        title: 'Leyendo la página %position% de %total%'
+        sub: Leyendo cada plato con atención.
+        sub_slow_page: Esta página tiene mucho detalle — seguimos leyendo.
+        sub_slow_global: Está tardando un poco más de lo habitual — los menús más grandes pueden tardar un par de minutos.
+    organizing:
+        title: Organizando tus platos
+        sub: Agrupando categorías y relacionando ingredientes.
+    done_title: Todo listo
+    reconnecting: Reconectando…
+    trust: 'Puedes salir tranquilo — seguiremos trabajando en segundo plano.'
     page_label: 'Página %position%'
     page_status:
-        pending: Subida
+        pending: En cola
         analyzing: Analizando…
         extracted: Leída
         failed: Fallida
