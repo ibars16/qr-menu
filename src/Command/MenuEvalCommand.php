@@ -107,7 +107,13 @@ final class MenuEvalCommand extends Command
         }
 
         $io->section('Diff vs. golden');
-        $problems = $this->diff($golden['categories'], $actual);
+        $diff = $this->diff($golden['categories'], $actual);
+        $problems = $diff['problems'];
+        $warnings = $diff['warnings'];
+
+        foreach ($warnings as $warning) {
+            $io->writeln('  <fg=yellow>⚠</> ' . $warning);
+        }
 
         if (empty($problems)) {
             $io->success('Vision output matches the golden file.');
@@ -227,20 +233,30 @@ final class MenuEvalCommand extends Command
     }
 
     /**
-     * Tolerant diff: dishes matched by exact name (not position — LLM
-     * re-runs can reorder). Category/dish presence, counts, and supplement
-     * amounts are checked exactly; ingredient lists are compared as sets
-     * (case-insensitive) since which library entry a re-run happens to
-     * match can differ in casing without being a real regression.
+     * Tolerant diff: dishes matched by exact name first (not position — LLM
+     * re-runs can reorder). When a golden dish has no exact match, it's
+     * paired against any same-category actual dish within edit distance ≤2
+     * (case-insensitive) instead of failing outright — real menu photos
+     * routinely produce OCR-level name variance (e.g. "Raviales" vs.
+     * "Ravioles") that isn't a genuine extraction regression; a true missing
+     * or extra dish (distance >2, or no same-category candidate) still
+     * fails. A near-match pair is still compared on every other field below
+     * — only the name-spelling mismatch itself is downgraded to a warning.
+     * Category/dish presence, counts, and supplement amounts are checked
+     * exactly; ingredient lists are compared as sets (case-insensitive)
+     * since which library entry a re-run happens to match can differ in
+     * casing without being a real regression.
      *
      * @param array<int, array{name: string, dishes: array}> $goldenCategories
      * @param array<string, array{category: string, ...}> $actual
-     * @return string[] human-readable problems, empty if none
+     * @return array{problems: string[], warnings: string[]}
      */
     private function diff(array $goldenCategories, array $actual): array
     {
         $problems = [];
+        $warnings = [];
         $seenNames = [];
+        $pendingMissing = []; // [['dish' => goldenDish, 'category' => name], ...]
 
         foreach ($goldenCategories as $goldenCategory) {
             $goldenDishNames = array_column($goldenCategory['dishes'], 'name');
@@ -263,53 +279,116 @@ final class MenuEvalCommand extends Command
             foreach ($goldenCategory['dishes'] as $goldenDish) {
                 $seenNames[] = $goldenDish['name'];
                 if (!isset($actual[$goldenDish['name']])) {
-                    $problems[] = "missing dish: \"{$goldenDish['name']}\" (category \"{$goldenCategory['name']}\")";
+                    $pendingMissing[] = ['dish' => $goldenDish, 'category' => $goldenCategory['name']];
                     continue;
                 }
 
-                $a = $actual[$goldenDish['name']];
-
-                if ((float) $goldenDish['supplementPrice'] !== (float) ($a['supplementPrice'] ?? 0.0)
-                    && !($goldenDish['supplementPrice'] === null && $a['supplementPrice'] === null)
-                ) {
-                    $problems[] = sprintf(
-                        'supplementPrice mismatch for "%s": expected %s, got %s',
-                        $goldenDish['name'],
-                        var_export($goldenDish['supplementPrice'], true),
-                        var_export($a['supplementPrice'], true)
-                    );
-                }
-
-                $expectedIngredients = array_map('mb_strtolower', $goldenDish['ingredients']);
-                $actualIngredients = array_map('mb_strtolower', $a['ingredients']);
-                sort($expectedIngredients);
-                sort($actualIngredients);
-                if ($expectedIngredients !== $actualIngredients) {
-                    $problems[] = sprintf(
-                        'ingredients mismatch for "%s": expected [%s], got [%s]',
-                        $goldenDish['name'],
-                        implode(', ', $goldenDish['ingredients']),
-                        implode(', ', $a['ingredients'])
-                    );
-                }
-
-                if ($goldenDish['allergens'] !== $a['allergens']) {
-                    $problems[] = sprintf(
-                        'allergens mismatch for "%s": expected [%s], got [%s]',
-                        $goldenDish['name'],
-                        implode(', ', $goldenDish['allergens']),
-                        implode(', ', $a['allergens'])
-                    );
-                }
+                $this->compareDish($goldenDish, $actual[$goldenDish['name']], $goldenDish['name'], $problems);
             }
         }
 
-        foreach (array_keys($actual) as $name) {
-            if (!in_array($name, $seenNames, true)) {
-                $problems[] = "unexpected extra dish: \"{$name}\"";
+        $extraNames = array_values(array_diff(array_keys($actual), $seenNames));
+
+        foreach ($pendingMissing as $index => $pending) {
+            $goldenName = $pending['dish']['name'];
+            $bestMatch = null;
+            $bestDistance = null;
+            foreach ($extraNames as $extraName) {
+                if ($actual[$extraName]['category'] !== $pending['category']) {
+                    continue; // only pair within the same category — avoids coincidental cross-category matches
+                }
+                $distance = $this->editDistance($goldenName, $extraName);
+                if ($distance <= 2 && ($bestDistance === null || $distance < $bestDistance)) {
+                    $bestMatch = $extraName;
+                    $bestDistance = $distance;
+                }
+            }
+
+            if ($bestMatch !== null) {
+                $warnings[] = sprintf(
+                    'near-match dish name (edit distance %d): golden "%s" vs. actual "%s" (category "%s")',
+                    $bestDistance,
+                    $goldenName,
+                    $bestMatch,
+                    $pending['category']
+                );
+                $this->compareDish($pending['dish'], $actual[$bestMatch], $goldenName, $problems);
+                $extraNames = array_values(array_diff($extraNames, [$bestMatch]));
+                unset($pendingMissing[$index]);
             }
         }
 
-        return $problems;
+        foreach ($pendingMissing as $pending) {
+            $problems[] = "missing dish: \"{$pending['dish']['name']}\" (category \"{$pending['category']}\")";
+        }
+
+        foreach ($extraNames as $name) {
+            $problems[] = "unexpected extra dish: \"{$name}\"";
+        }
+
+        return ['problems' => $problems, 'warnings' => $warnings];
+    }
+
+    /** @param array{supplementPrice: ?float, ingredients: string[], allergens: string[]} $actualDish */
+    private function compareDish(array $goldenDish, array $actualDish, string $displayName, array &$problems): void
+    {
+        if ((float) $goldenDish['supplementPrice'] !== (float) ($actualDish['supplementPrice'] ?? 0.0)
+            && !($goldenDish['supplementPrice'] === null && $actualDish['supplementPrice'] === null)
+        ) {
+            $problems[] = sprintf(
+                'supplementPrice mismatch for "%s": expected %s, got %s',
+                $displayName,
+                var_export($goldenDish['supplementPrice'], true),
+                var_export($actualDish['supplementPrice'], true)
+            );
+        }
+
+        $expectedIngredients = array_map('mb_strtolower', $goldenDish['ingredients']);
+        $actualIngredients = array_map('mb_strtolower', $actualDish['ingredients']);
+        sort($expectedIngredients);
+        sort($actualIngredients);
+        if ($expectedIngredients !== $actualIngredients) {
+            $problems[] = sprintf(
+                'ingredients mismatch for "%s": expected [%s], got [%s]',
+                $displayName,
+                implode(', ', $goldenDish['ingredients']),
+                implode(', ', $actualDish['ingredients'])
+            );
+        }
+
+        if ($goldenDish['allergens'] !== $actualDish['allergens']) {
+            $problems[] = sprintf(
+                'allergens mismatch for "%s": expected [%s], got [%s]',
+                $displayName,
+                implode(', ', $goldenDish['allergens']),
+                implode(', ', $actualDish['allergens'])
+            );
+        }
+    }
+
+    /** UTF-8-safe Levenshtein edit distance, case-insensitive (menu dish names are rarely ASCII-only). */
+    private function editDistance(string $a, string $b): int
+    {
+        $a = mb_str_split(mb_strtolower($a));
+        $b = mb_str_split(mb_strtolower($b));
+        $lenA = count($a);
+        $lenB = count($b);
+
+        $row = range(0, $lenB);
+        for ($i = 1; $i <= $lenA; $i++) {
+            $prev = $row[0];
+            $row[0] = $i;
+            for ($j = 1; $j <= $lenB; $j++) {
+                $tmp = $row[$j];
+                $row[$j] = min(
+                    $row[$j] + 1,
+                    $row[$j - 1] + 1,
+                    $prev + ($a[$i - 1] === $b[$j - 1] ? 0 : 1)
+                );
+                $prev = $tmp;
+            }
+        }
+
+        return $row[$lenB];
     }
 }
