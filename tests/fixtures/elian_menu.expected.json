@@ -1,0 +1,404 @@
+{
+  "categories": [
+    {
+      "name": "Entrantes",
+      "dishes": [
+        {
+          "name": "Crema de verduras",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Espaguetis con salsa carbonara y queso",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Ñoquis caseros (calabaza) con salsa de queso parmesano",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [
+            "calabaza"
+          ],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Judías Bobby con hojas, queso parmesano y salsa pesto (nueces)",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [
+            "nueces"
+          ],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Ensaladita de espárragos con vinagreta de frutos secos",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Ensalada verde con remolacha",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [
+            "mézclum con tomate",
+            "apio",
+            "hinojo",
+            "pepino"
+          ],
+          "allergens": [
+            "celery"
+          ],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Vegetales salteados con quinoa y salsa de soja",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [
+            "zanahoria",
+            "brócoli",
+            "calabacín",
+            "judía",
+            "champiñón",
+            "coliflor",
+            "tomates cherrys"
+          ],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Ensaladita tibia con huevo poche trufado",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [
+            "mézclum",
+            "apio",
+            "hinojo",
+            "pepino",
+            "virutas de queso",
+            "vinagreta"
+          ],
+          "allergens": [
+            "celery"
+          ],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Gambón al ajillo",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 3.5,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Tartar de salmón",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 3.5,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Provolone tibio con ensalada",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 1.5,
+          "ingredients": [
+            "mézclum",
+            "tomate",
+            "apio",
+            "pepino",
+            "hinojo"
+          ],
+          "allergens": [
+            "celery"
+          ],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Ensaladita de burrata con salsa pesto tradicional (nueces), mézclum y tomate",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 2.3,
+          "ingredients": [
+            "nueces"
+          ],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Ensaladita de ventresca de atún",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 2.75,
+          "ingredients": [
+            "tomate",
+            "canónigos",
+            "cebolla",
+            "ventresca"
+          ],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Segundos",
+      "dishes": [
+        {
+          "name": "Raviales caseros de pollo braseado con salsa pomodoro con un toque de pesto",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Raviales caseros de calabaza con salsa pomodoro con un toque de pesto",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Risotto de setas y queso emmental",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Arroz meloso de ternera",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Arroz Negro con chipirones",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 1.5,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Arroz meloso con gambas",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 2.5,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Arroz con verduras",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Hamburguesa vegana (Kale y verduras) en crujiente empanado de quinoa inflada",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": [
+            "vegan"
+          ]
+        },
+        {
+          "name": "Bondiola de cerdo asada con salsa chimichurri (adobo argentino)",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Milanesa (lomo rebozado) de cerdo a la mostaza con patatas fritas",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Pollo a las brasas con su salsa",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Pollo relleno (dátiles - bacon) con salsa de cerveza tostada, higos y manteca",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Pollo rebozado a la provenzal con patatas fritas",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Dorada sin espinas",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 4.5,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Entraña (corte típico argentino) de ternera a la brasa",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Chuleta de ternera madurada (20 días mínimo) a las brasas",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 6.95,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Postres",
+      "dishes": [
+        {
+          "name": "Chocotorta (Galleta de chocolate con café y crema de dulce de leche, nata y queso)",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Yogurt con frutos rojos",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Helados (Chocolate - Vainilla - Limón)",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Café Solo - Cortado - Café con leche - Café largo",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Poleo Menta - Manzanilla - Té Clásico",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

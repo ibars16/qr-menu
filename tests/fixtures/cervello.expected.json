@@ -1,0 +1,626 @@
+{
+  "categories": [
+    {
+      "name": "Carpaccios",
+      "dishes": [
+        {
+          "name": "Carpaccio de gamba roja con foie",
+          "description": null,
+          "price": 19.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Carpaccio de tomate al parmesano",
+          "description": null,
+          "price": 13.5,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Carpaccio de salmón",
+          "description": null,
+          "price": 15.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Carpaccio de chuleta de vaca con virutas de parmesano",
+          "description": null,
+          "price": 16.5,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Carpaccio de pulpo de roca",
+          "description": null,
+          "price": 15.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Carpaccio de pies de cerdo",
+          "description": null,
+          "price": 16.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Pasta",
+      "dishes": [
+        {
+          "name": "Canelones Casa Cervelló",
+          "description": null,
+          "price": 12.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Macarrones a la boloñesa gratinados",
+          "description": null,
+          "price": 8.5,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Canelones de espinacas, pasas y piñones",
+          "description": null,
+          "price": 12.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Pizzas (elaboración propia)",
+      "dishes": [
+        {
+          "name": "Pizza margarita con jamón dulce",
+          "description": null,
+          "price": 11.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Pizza de escalivada y butifarra de Valls",
+          "description": null,
+          "price": 14.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Pizza cuatro quesos",
+          "description": null,
+          "price": 14.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Asados y guisos",
+      "dishes": [
+        {
+          "name": "Pies de cerdo gratinados con ajoaceite (\"allioli\") o a la brasa",
+          "description": null,
+          "price": 13.5,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "½ Ternasco de cordero",
+          "description": null,
+          "price": 18.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Paletilla de cabrito al horno",
+          "description": null,
+          "price": 26.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Pierna de cabrito a la brasa",
+          "description": null,
+          "price": 19.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Costillas y medianas de cabrito a la milanesa",
+          "description": null,
+          "price": 18.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Confit de pato \"coll verd\" con salsa de naranja",
+          "description": null,
+          "price": 16.5,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Meloso de cerdo ibérico con su jugo",
+          "description": null,
+          "price": 15.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Pescados",
+      "dishes": [
+        {
+          "name": "Lomo de bacalao gratinado con ajoaceite",
+          "description": null,
+          "price": 16.5,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Bacalao al pisto",
+          "description": null,
+          "price": 13.5,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Pata de pulpo braseada",
+          "description": null,
+          "price": 20.5,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Pescado de lonja según mercado",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Carnes a la brasa",
+      "dishes": [
+        {
+          "name": "½ Conejo ecológico con Allioli",
+          "description": null,
+          "price": 14.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Codornices",
+          "description": null,
+          "price": 13.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Longaniza de Valls con alubias",
+          "description": null,
+          "price": 10.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Muslo de Pollo",
+          "description": null,
+          "price": 10.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Churrasco de Ternera",
+          "description": null,
+          "price": 13.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Cordero de Cal Torres de Sarral",
+          "description": null,
+          "price": 17.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Entrecot de Ternera Gallega",
+          "description": null,
+          "price": 21.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Solomillo de Vaca vieja",
+          "description": null,
+          "price": 25.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Chuletón de Vaca vieja madurada",
+          "description": null,
+          "price": 60.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Ploma ibérica de Bellota",
+          "description": null,
+          "price": 21.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Costillar de cerdo a baja temperatura - para compartir",
+          "description": null,
+          "price": 30.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Lagarto ibérico de Joselito",
+          "description": null,
+          "price": 21.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Suplemento Salsas (Roquefort, Oporto, Pimienta)",
+          "description": null,
+          "price": 2.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "Postres",
+      "dishes": [
+        {
+          "name": "Crema catalana de casa Cervelló",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Flan de huevo de casa Cervelló",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Músico con moscatel o vino rancio",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Requesón con miel",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Piña natural",
+          "description": null,
+          "price": 5.5,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Piña con crema quemada",
+          "description": null,
+          "price": 6.6,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Catanias de Vilafranca del penedès",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Higos al marrasquino",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Ciruelas al marco de cava de Agustín Torelló",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Coulant de chocolate caliente",
+          "description": null,
+          "price": 6.6,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Surtido de helados artesanos",
+          "description": null,
+          "price": 7.5,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Trufas de chocolate",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Tarta al whisky",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Condesa de chocolate",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Zumo de naranja natural",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Sorbetes (limón,mandarina y albaricoque)",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [
+            "limón",
+            "mandarina",
+            "albaricoque"
+          ],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Profiteroles con chocolate caliente",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Cheesecake de frutas del bosque",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Surtido de almendras y avellanas garrapiñadas",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Tronco de crocanti",
+          "description": null,
+          "price": 6.0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Locura de chocolate",
+          "description": null,
+          "price": 6.5,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Magnum (almendrado o frac)",
+          "description": null,
+          "price": 3.0,
+          "supplementPrice": null,
+          "ingredients": [
+            "almendrado",
+            "frac"
+          ],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    }
+  ]
+}

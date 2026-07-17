@@ -1,0 +1,785 @@
+{
+  "pages": [
+    {
+      "position": 0,
+      "image": "cervello.png",
+      "detected_language": "es",
+      "categories": [
+        {
+          "name": "Carpaccios",
+          "products": [
+            {
+              "name": "Carpaccio de gamba roja con foie",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 19.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Carpaccio de tomate al parmesano",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 13.5,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Carpaccio de salmón",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 15.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Carpaccio de chuleta de vaca con virutas de parmesano",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 16.5,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Carpaccio de pulpo de roca",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 15.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Carpaccio de pies de cerdo",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 16.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            }
+          ]
+        },
+        {
+          "name": "Pasta",
+          "products": [
+            {
+              "name": "Canelones Casa Cervelló",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 12.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Macarrones a la boloñesa gratinados",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 8.5,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Canelones de espinacas, pasas y piñones",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 12.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            }
+          ]
+        },
+        {
+          "name": "Pizzas (elaboración propia)",
+          "products": [
+            {
+              "name": "Pizza margarita con jamón dulce",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 11.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Pizza de escalivada y butifarra de Valls",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 14.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Pizza cuatro quesos",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 14.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 1,
+      "image": "cervello1.png",
+      "detected_language": "es",
+      "categories": [
+        {
+          "name": "Asados y guisos",
+          "products": [
+            {
+              "name": "Pies de cerdo gratinados con ajoaceite (\"allioli\") o a la brasa",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 13.5,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "½ Ternasco de cordero",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 18.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Paletilla de cabrito al horno",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 26.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Pierna de cabrito a la brasa",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 19.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Costillas y medianas de cabrito a la milanesa",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 18.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Confit de pato \"coll verd\" con salsa de naranja",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 16.5,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Meloso de cerdo ibérico con su jugo",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 15.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            }
+          ]
+        },
+        {
+          "name": "Pescados",
+          "products": [
+            {
+              "name": "Lomo de bacalao gratinado con ajoaceite",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 16.5,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Bacalao al pisto",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 13.5,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Pata de pulpo braseada",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 20.5,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Pescado de lonja según mercado",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": null,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 2,
+      "image": "cervello2.png",
+      "detected_language": "es",
+      "categories": [
+        {
+          "name": "Carnes a la brasa",
+          "products": [
+            {
+              "name": "½ Conejo ecológico con Allioli",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 14.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Codornices",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 13.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Longaniza de Valls con alubias",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 10.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Muslo de Pollo",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 10.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Churrasco de Ternera",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 13.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Cordero de Cal Torres de Sarral",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 17.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Entrecot de Ternera Gallega",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 21.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Solomillo de Vaca vieja",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 25.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Chuletón de Vaca vieja madurada",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 60.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Ploma ibérica de Bellota",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 21.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Costillar de cerdo a baja temperatura - para compartir",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 30.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Lagarto ibérico de Joselito",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 21.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Suplemento Salsas (Roquefort, Oporto, Pimienta)",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 2.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 3,
+      "image": "cervello3.png",
+      "detected_language": "es",
+      "categories": [
+        {
+          "name": "Postres",
+          "products": [
+            {
+              "name": "Crema catalana de casa Cervelló",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Flan de huevo de casa Cervelló",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Músico con moscatel o vino rancio",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Requesón con miel",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Piña natural",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 5.5,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Piña con crema quemada",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.6,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Catanias de Vilafranca del penedès",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Higos al marrasquino",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Ciruelas al marco de cava de Agustín Torelló",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Coulant de chocolate caliente",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.6,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Surtido de helados artesanos",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 7.5,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Trufas de chocolate",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Tarta al whisky",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Condesa de chocolate",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Zumo de naranja natural",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Sorbetes (limón,mandarina y albaricoque)",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [
+                {
+                  "name": "limón",
+                  "uncertain": false
+                },
+                {
+                  "name": "mandarina",
+                  "uncertain": false
+                },
+                {
+                  "name": "albaricoque",
+                  "uncertain": false
+                }
+              ],
+              "dietary_markers": []
+            },
+            {
+              "name": "Profiteroles con chocolate caliente",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Cheesecake de frutas del bosque",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Surtido de almendras y avellanas garrapiñadas",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Tronco de crocanti",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Locura de chocolate",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 6.5,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [],
+              "dietary_markers": []
+            },
+            {
+              "name": "Magnum (almendrado o frac)",
+              "name_uncertain": false,
+              "description": null,
+              "description_uncertain": false,
+              "price": 3.0,
+              "price_uncertain": false,
+              "supplement_price": null,
+              "recommended": false,
+              "ingredients": [
+                {
+                  "name": "almendrado",
+                  "uncertain": false
+                },
+                {
+                  "name": "frac",
+                  "uncertain": false
+                }
+              ],
+              "dietary_markers": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

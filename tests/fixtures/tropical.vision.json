@@ -1,0 +1,380 @@
+{
+  "detected_language": "es",
+  "categories": [
+    {
+      "name": "PRIMEROS",
+      "products": [
+        {
+          "name": "Plato Caliente del Dia",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Ensalada con ibéricos",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Ensalada Cesar",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Gambon (Tres unidades) a la Plancha con Cogollos",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Arroz Cinco Delicias",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Pizza casera de jamón York y queso",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Espinacas a la crema con picatostes",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Timbal de Patatas, Huevo y Virutas de Jamon",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Dos Croquetones caseras de pollo",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Canelones Crujientes rellenos de carne",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Macarrones a la italiana",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        }
+      ]
+    },
+    {
+      "name": "SEGUNDOS",
+      "products": [
+        {
+          "name": "Boquerones de Tarragona Fritos",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Colas de Rape en salsa de romesco o marinera",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Chipirones a la Andaluza",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Anillas de Calamar Rebozadas",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Sepia (entera) a la plancha",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 3.0,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Paella Marinera (individual)",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 5.0,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Pechuga de pollo a la plancha",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Lomo a la plancha o Escalope",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Butiffarra de Pagés",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Bistec de Ternera a la plancha con Guarnición",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Costillas de Cabrito (6unidades) con Guarnición",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 4.0,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Entrecot a la Plancha 250 Gramos",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 5.0,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        }
+      ]
+    },
+    {
+      "name": "POSTRES",
+      "products": [
+        {
+          "name": "Flan",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Iogurt",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Cuajada con miel",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Arroz con Leche",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Contesa Helada",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Tartas del día",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Fruta fresca",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        }
+      ]
+    }
+  ]
+}

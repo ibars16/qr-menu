@@ -1,0 +1,557 @@
+{
+  "detected_language": "es",
+  "categories": [
+    {
+      "name": "Entrantes",
+      "products": [
+        {
+          "name": "Crema de verduras",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Espaguetis con salsa carbonara y queso",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Ñoquis caseros (calabaza) con salsa de queso parmesano",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [
+            {
+              "name": "calabaza",
+              "uncertain": false
+            }
+          ],
+          "dietary_markers": []
+        },
+        {
+          "name": "Judías Bobby con hojas, queso parmesano y salsa pesto (nueces)",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [
+            {
+              "name": "nueces",
+              "uncertain": false
+            }
+          ],
+          "dietary_markers": []
+        },
+        {
+          "name": "Ensaladita de espárragos con vinagreta de frutos secos",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Ensalada verde con remolacha",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [
+            {
+              "name": "mézclum con tomate",
+              "uncertain": false
+            },
+            {
+              "name": "apio",
+              "uncertain": false
+            },
+            {
+              "name": "hinojo",
+              "uncertain": false
+            },
+            {
+              "name": "pepino",
+              "uncertain": false
+            }
+          ],
+          "dietary_markers": []
+        },
+        {
+          "name": "Vegetales salteados con quinoa y salsa de soja",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [
+            {
+              "name": "zanahoria",
+              "uncertain": false
+            },
+            {
+              "name": "brócoli",
+              "uncertain": false
+            },
+            {
+              "name": "calabacín",
+              "uncertain": false
+            },
+            {
+              "name": "judía",
+              "uncertain": false
+            },
+            {
+              "name": "champiñón",
+              "uncertain": false
+            },
+            {
+              "name": "coliflor",
+              "uncertain": false
+            },
+            {
+              "name": "tomates cherrys",
+              "uncertain": false
+            }
+          ],
+          "dietary_markers": []
+        },
+        {
+          "name": "Ensaladita tibia con huevo poche trufado",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [
+            {
+              "name": "mézclum",
+              "uncertain": false
+            },
+            {
+              "name": "apio",
+              "uncertain": false
+            },
+            {
+              "name": "hinojo",
+              "uncertain": false
+            },
+            {
+              "name": "pepino",
+              "uncertain": false
+            },
+            {
+              "name": "virutas de queso",
+              "uncertain": false
+            },
+            {
+              "name": "vinagreta",
+              "uncertain": false
+            }
+          ],
+          "dietary_markers": []
+        },
+        {
+          "name": "Gambón al ajillo",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 3.5,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Tartar de salmón",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 3.5,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Provolone tibio con ensalada",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 1.5,
+          "recommended": false,
+          "ingredients": [
+            {
+              "name": "mézclum",
+              "uncertain": false
+            },
+            {
+              "name": "tomate",
+              "uncertain": false
+            },
+            {
+              "name": "apio",
+              "uncertain": false
+            },
+            {
+              "name": "pepino",
+              "uncertain": false
+            },
+            {
+              "name": "hinojo",
+              "uncertain": false
+            }
+          ],
+          "dietary_markers": []
+        },
+        {
+          "name": "Ensaladita de burrata con salsa pesto tradicional (nueces), mézclum y tomate",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 2.3,
+          "recommended": false,
+          "ingredients": [
+            {
+              "name": "nueces",
+              "uncertain": false
+            }
+          ],
+          "dietary_markers": []
+        },
+        {
+          "name": "Ensaladita de ventresca de atún",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 2.75,
+          "recommended": false,
+          "ingredients": [
+            {
+              "name": "tomate",
+              "uncertain": false
+            },
+            {
+              "name": "canónigos",
+              "uncertain": false
+            },
+            {
+              "name": "cebolla",
+              "uncertain": false
+            },
+            {
+              "name": "ventresca",
+              "uncertain": false
+            }
+          ],
+          "dietary_markers": []
+        }
+      ]
+    },
+    {
+      "name": "Segundos",
+      "products": [
+        {
+          "name": "Raviales caseros de pollo braseado con salsa pomodoro con un toque de pesto",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Raviales caseros de calabaza con salsa pomodoro con un toque de pesto",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Risotto de setas y queso emmental",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Arroz meloso de ternera",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Arroz Negro con chipirones",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 1.5,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Arroz meloso con gambas",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 2.5,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Arroz con verduras",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Hamburguesa vegana (Kale y verduras) en crujiente empanado de quinoa inflada",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": [
+            {
+              "code": "vegan",
+              "uncertain": false
+            }
+          ]
+        },
+        {
+          "name": "Bondiola de cerdo asada con salsa chimichurri (adobo argentino)",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Milanesa (lomo rebozado) de cerdo a la mostaza con patatas fritas",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Pollo a las brasas con su salsa",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Pollo relleno (dátiles - bacon) con salsa de cerveza tostada, higos y manteca",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Pollo rebozado a la provenzal con patatas fritas",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Dorada sin espinas",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 4.5,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Entraña (corte típico argentino) de ternera a la brasa",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Chuleta de ternera madurada (20 días mínimo) a las brasas",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": 6.95,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        }
+      ]
+    },
+    {
+      "name": "Postres",
+      "products": [
+        {
+          "name": "Chocotorta (Galleta de chocolate con café y crema de dulce de leche, nata y queso)",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Yogurt con frutos rojos",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Helados (Chocolate - Vainilla - Limón)",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Café Solo - Cortado - Café con leche - Café largo",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        },
+        {
+          "name": "Poleo Menta - Manzanilla - Té Clásico",
+          "name_uncertain": false,
+          "description": null,
+          "description_uncertain": false,
+          "price": null,
+          "price_uncertain": false,
+          "supplement_price": null,
+          "recommended": false,
+          "ingredients": [],
+          "dietary_markers": []
+        }
+      ]
+    }
+  ]
+}

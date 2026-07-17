@@ -76,6 +76,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Command\MenuEvalCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     App\Service\AI\AIProviderFactory:
         arguments:
             $projectDir: '%kernel.project_dir%'

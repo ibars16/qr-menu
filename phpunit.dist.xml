@@ -20,6 +20,9 @@
     <testsuites>
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
+            <!-- vision-eval hits a real AI vision provider (cost, non
+                 determinism): manual only, via "vendor/bin/phpunit tests/VisionEval" -->
+            <exclude>tests/VisionEval</exclude>
         </testsuite>
     </testsuites>
 

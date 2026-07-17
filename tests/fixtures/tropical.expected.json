@@ -1,0 +1,319 @@
+{
+  "categories": [
+    {
+      "name": "PRIMEROS",
+      "dishes": [
+        {
+          "name": "Plato Caliente del Dia",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Ensalada con ibéricos",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Ensalada Cesar",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Gambon (Tres unidades) a la Plancha con Cogollos",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Arroz Cinco Delicias",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Pizza casera de jamón York y queso",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Espinacas a la crema con picatostes",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Timbal de Patatas, Huevo y Virutas de Jamon",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Dos Croquetones caseras de pollo",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Canelones Crujientes rellenos de carne",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Macarrones a la italiana",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "SEGUNDOS",
+      "dishes": [
+        {
+          "name": "Boquerones de Tarragona Fritos",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Colas de Rape en salsa de romesco o marinera",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Chipirones a la Andaluza",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Anillas de Calamar Rebozadas",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Sepia (entera) a la plancha",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 3.0,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Paella Marinera (individual)",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 5.0,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Pechuga de pollo a la plancha",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Lomo a la plancha o Escalope",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Butiffarra de Pagés",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Bistec de Ternera a la plancha con Guarnición",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Costillas de Cabrito (6unidades) con Guarnición",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 4.0,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Entrecot a la Plancha 250 Gramos",
+          "description": null,
+          "price": 0,
+          "supplementPrice": 5.0,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "name": "POSTRES",
+      "dishes": [
+        {
+          "name": "Flan",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Iogurt",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Cuajada con miel",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Arroz con Leche",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Contesa Helada",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Tartas del día",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        },
+        {
+          "name": "Fruta fresca",
+          "description": null,
+          "price": 0,
+          "supplementPrice": null,
+          "ingredients": [],
+          "allergens": [],
+          "recommended": false,
+          "tags": []
+        }
+      ]
+    }
+  ]
+}
