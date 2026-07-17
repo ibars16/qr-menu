@@ -41,6 +41,15 @@ class Product
     #[ORM\Column(nullable: true)]
     private ?int $supplementPrice = null;
 
+    /**
+     * Per-glass price in cents for a drink also sold by the bottle — e.g.
+     * "Copa 4,00€ / Botella 18,00€". Null for everything sold at a single
+     * price. When set, $basePrice is read as the bottle price and this is
+     * the glass price; nothing else about $basePrice changes.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?int $glassPrice = null;
+
     #[ORM\Column(nullable: true)]
     private ?int $calories = null;
 
@@ -195,6 +204,22 @@ class Product
     public function getSupplementPriceDecimal(): ?float
     {
         return $this->supplementPrice !== null ? $this->supplementPrice / 100 : null;
+    }
+
+    public function getGlassPrice(): ?int
+    {
+        return $this->glassPrice;
+    }
+
+    public function setGlassPrice(?int $glassPrice): void
+    {
+        $this->glassPrice = $glassPrice;
+    }
+
+    /** Returns the glass price as a decimal, or null if this product isn't sold by the glass. Example: 400 → 4.00 */
+    public function getGlassPriceDecimal(): ?float
+    {
+        return $this->glassPrice !== null ? $this->glassPrice / 100 : null;
     }
 
     /**

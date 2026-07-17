@@ -254,6 +254,28 @@
         .field-row { display:flex; gap:10px; }
         .field-row .field { flex:1; }
 
+        /* Precio copa / suplemento — subtle text link opens a small pill
+           chooser; each type is added at most once. See
+           showExtraPriceChooser()/addExtraPrice()/removeExtraPrice(). */
+        .extra-price-toggle {
+            display:inline-flex; align-items:center; gap:5px; margin-top:8px;
+            font-size:12px; color:var(--tx-6); cursor:pointer; user-select:none; transition:color 0.1s;
+        }
+        .extra-price-toggle:hover { color:var(--tx-3); }
+        .extra-price-toggle i { font-size:12px; }
+        .extra-price-chooser { display:flex; gap:6px; margin-top:8px; }
+        .extra-price-pill {
+            font-size:12px; padding:6px 12px; border-radius:16px; border:1px solid var(--bd-2);
+            background:var(--bg-input); color:var(--tx-4); cursor:pointer; user-select:none; transition:all 0.1s;
+        }
+        .extra-price-pill:hover { border-color:var(--bd-3); color:var(--tx-1); }
+        .extra-price-field { margin-top:12px; }
+        .extra-price-field .field-label { display:flex; align-items:center; gap:6px; }
+        .extra-price-remove {
+            font-size:15px; line-height:1; font-weight:600; color:var(--tx-6); cursor:pointer; padding:0 2px;
+        }
+        .extra-price-remove:hover { color:var(--tx-1); }
+
         @media (max-width: 767px) {
             .field input, .field textarea, .field select { font-size:16px; min-height:48px; }
         }
@@ -851,6 +873,9 @@
                     setVal('p-desc',     t.description ?? '');
                     setVal('p-price',    (data.basePrice / 100).toFixed(2));
                     setVal('p-supplement-price', data.supplementPrice != null ? (data.supplementPrice / 100).toFixed(2) : '');
+                    setVal('p-glass-price', data.glassPrice != null ? (data.glassPrice / 100).toFixed(2) : '');
+                    if (data.supplementPrice != null) revealExtraPrice('supplement');
+                    if (data.glassPrice != null) revealExtraPrice('glass');
                     setVal('p-calories', data.calories ?? '');
 
                     document.querySelectorAll('.tag-pill').forEach(p =>
@@ -994,6 +1019,7 @@
                 categoryId:  parseInt(getVal('p-category')) || S.categoryId,
                 basePrice:   parseFloat(getVal('p-price')) || 0,
                 supplementPrice: getVal('p-supplement-price') ? parseFloat(getVal('p-supplement-price')) : null,
+                glassPrice:  getVal('p-glass-price') ? parseFloat(getVal('p-glass-price')) : null,
                 calories:    parseInt(getVal('p-calories')) || null,
                 spicyLevel:  S.spicy || null,
                 active:      true,
@@ -1290,6 +1316,40 @@
             renderPrivateIngredientAllergens();
         }
 
+        // ── Precio copa / suplemento — add one at a time, each at most once ─────────
+        function showExtraPriceChooser(toggleEl) {
+            const section = toggleEl.closest('.extra-price-section');
+            toggleEl.style.display = 'none';
+            section.querySelectorAll('.extra-price-pill').forEach(pill => {
+                const field = section.querySelector('.extra-price-field[data-extra="' + pill.dataset.extra + '"]');
+                pill.style.display = (field.style.display === 'none') ? '' : 'none';
+            });
+            section.querySelector('.extra-price-chooser').style.display = '';
+        }
+        function addExtraPrice(pillEl) {
+            const section = pillEl.closest('.extra-price-section');
+            section.querySelector('.extra-price-field[data-extra="' + pillEl.dataset.extra + '"]').style.display = '';
+            section.querySelector('.extra-price-chooser').style.display = 'none';
+            updateExtraPriceToggle(section);
+        }
+        function removeExtraPrice(removeEl) {
+            const field = removeEl.closest('.extra-price-field');
+            field.querySelector('input').value = '';
+            field.style.display = 'none';
+            updateExtraPriceToggle(field.closest('.extra-price-section'));
+        }
+        function updateExtraPriceToggle(section) {
+            const anyAvailable = Array.from(section.querySelectorAll('.extra-price-field')).some(f => f.style.display === 'none');
+            section.querySelector('.extra-price-toggle').style.display = anyAvailable ? '' : 'none';
+            section.querySelector('.extra-price-chooser').style.display = 'none';
+        }
+        function revealExtraPrice(type) {
+            document.querySelectorAll('.extra-price-section').forEach(section => {
+                section.querySelector('.extra-price-field[data-extra="' + type + '"]').style.display = '';
+                updateExtraPriceToggle(section);
+            });
+        }
+
         // ── Advanced allergen accordion (collapsed by default) ──────────────────────
         function toggleAllergenAdvanced(toggleEl) {
             const body = toggleEl.nextElementSibling;
@@ -1341,7 +1401,7 @@
 
         // ── Reset ──────────────────────────────────────────────────────────────────
         function resetProduct() {
-            ['p-name','p-desc','p-price','p-supplement-price','p-calories'].forEach(id =>
+            ['p-name','p-desc','p-price','p-supplement-price','p-glass-price','p-calories'].forEach(id =>
                 document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value=''; el.classList.remove('error'); })
             );
             ['p-name-error','p-desc-error','p-price-error'].forEach(id =>
@@ -1357,6 +1417,9 @@
             renderAllergenComputed([]);
             renderAllergenOverrides();
             document.querySelectorAll('[id="p-private-ingredient-allergens-wrap"]').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.extra-price-toggle').forEach(el => el.style.display = '');
+            document.querySelectorAll('.extra-price-chooser').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.extra-price-field').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.allergen-accordion-toggle').forEach(el => el.setAttribute('aria-expanded', 'false'));
             document.querySelectorAll('.allergen-accordion-body').forEach(el => el.classList.remove('open'));
             closeAllHelp();

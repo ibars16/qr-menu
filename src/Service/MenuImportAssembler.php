@@ -180,10 +180,14 @@ final class MenuImportAssembler
         $supplementPrice = $productData['supplement_price'] ?? null;
         $supplementPriceCents = is_numeric($supplementPrice) ? (int) round(((float) $supplementPrice) * 100) : null;
 
+        $glassPrice = $productData['glass_price'] ?? null;
+        $glassPriceCents = is_numeric($glassPrice) ? (int) round(((float) $glassPrice) * 100) : null;
+
         $product = new Product();
         $product->setCategory($category);
         $product->setBasePrice($priceCents);
         $product->setSupplementPrice($supplementPriceCents);
+        $product->setGlassPrice($glassPriceCents);
         $product->setPosition($category->getProducts()->count());
         $product->setActive(false);
         $product->setNeedsReview(true);

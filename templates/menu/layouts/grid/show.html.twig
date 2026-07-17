@@ -252,14 +252,14 @@
                                                 <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div>
                                             </div>
                                             <div class="front-bottom">
-                                                <div class="front-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div>
+                                                <div class="front-price">{% if product.glassPrice %}Copa {{ (product.glassPrice / 100)|number_format(2) }}€ · Botella {{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% else %}{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% endif %}</div>
                                                 <div class="flip-hint"><i class="ti ti-rotate-clockwise" style="font-size:10px"></i></div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="card-back">
                                         <button class="back-close" onclick="unflipCard(event,this)" aria-label="Cerrar"><i class="ti ti-x"></i></button>
-                                        <div class="back-header"><div class="back-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div><div class="back-price">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div></div>
+                                        <div class="back-header"><div class="back-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div><div class="back-price">{% if product.glassPrice %}Copa {{ (product.glassPrice / 100)|number_format(2) }}€ · Botella {{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% else %}{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% endif %}</div></div>
                                         <div class="back-scroll">
                                             <div class="back-body">
                                                 {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}

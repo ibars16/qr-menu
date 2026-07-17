@@ -257,7 +257,7 @@
                                             </div>
                                         </div>
                                         <div class="front-right">
-                                            <div class="front-price">{{ (product.convertedPrice / 100)|number_format(2) }}</div>
+                                            <div class="front-price">{% if product.glassPrice %}Copa {{ (product.glassPrice / 100)|number_format(2) }}€ · Botella {{ (product.convertedPrice / 100)|number_format(2) }}{% else %}{{ (product.convertedPrice / 100)|number_format(2) }}{% endif %}</div>
                                             <div class="flip-hint"><i class="ti ti-rotate-clockwise"></i> info</div>
                                         </div>
                                     </div>
@@ -265,7 +265,7 @@
                                         <button class="back-close" onclick="unflipCard(event,this)" aria-label="Volver"><i class="ti ti-x"></i></button>
                                         <div class="back-scroll horiz">
                                             <div class="back-body">
-                                                <div class="bsec"><div class="bsec-title">Plato</div><div class="back-desc" style="font-weight:600;font-size:13px;color:var(--bn)">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div><div style="font-size:18px;font-weight:700;color:var(--bp);margin-top:4px;font-variant-numeric:tabular-nums">{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}</div></div>
+                                                <div class="bsec"><div class="bsec-title">Plato</div><div class="back-desc" style="font-weight:600;font-size:13px;color:var(--bn)">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div><div style="font-size:18px;font-weight:700;color:var(--bp);margin-top:4px;font-variant-numeric:tabular-nums">{% if product.glassPrice %}Copa {{ (product.glassPrice / 100)|number_format(2) }}€ · Botella {{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% else %}{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% endif %}</div></div>
                                                 {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
                                                 {% set ingredientNames = product.getIngredientNames(locale, restaurant.defaultLanguage) %}{% if ingredientNames|length > 0 %}<div class="bsec"><div class="bsec-title">Ingredientes</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>{% endif %}
                                                 {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">Etiquetas</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>{% endif %}

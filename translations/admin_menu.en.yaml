@@ -33,13 +33,18 @@ field:
     category: Category
     description: Description
     description_placeholder: 'Briefly describe the dish, main ingredients, preparation style…'
+    extra_prices_toggle: 'Add extra price'
+    glass_price: 'Glass price (%currency%)'
+    glass_price_pill: Glass price
     ingredients: Ingredients
     photo: Dish photo
     price: 'Price (%currency%)'
     product_name: Dish name
     product_name_placeholder: 'e.g. Margherita Pizza'
+    remove_extra_price: Remove
     spicy_level: Spice level
     supplement_price: 'Supplement (%currency%)'
+    supplement_price_pill: Supplement
     tags: Tags
     allergens: Allergens
 

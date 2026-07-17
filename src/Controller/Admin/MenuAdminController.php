@@ -310,6 +310,7 @@ class MenuAdminController extends AbstractController
             'image'             => $product->getImage(),
             'basePrice'         => $product->getBasePrice(),
             'supplementPrice'   => $product->getSupplementPrice(),
+            'glassPrice'        => $product->getGlassPrice(),
             'calories'          => $product->getCalories(),
             'spicyLevel'        => $product->getSpicyLevel(),
             'active'            => $product->isActive(),
@@ -359,6 +360,11 @@ class MenuAdminController extends AbstractController
         if (array_key_exists('supplementPrice', $data)) {
             $product->setSupplementPrice($data['supplementPrice'] !== null && $data['supplementPrice'] !== ''
                 ? (int) round((float) $data['supplementPrice'] * 100)
+                : null);
+        }
+        if (array_key_exists('glassPrice', $data)) {
+            $product->setGlassPrice($data['glassPrice'] !== null && $data['glassPrice'] !== ''
+                ? (int) round((float) $data['glassPrice'] * 100)
                 : null);
         }
         if (array_key_exists('calories',   $data)) $product->setCalories($data['calories'] ?: null);

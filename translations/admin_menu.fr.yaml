@@ -33,13 +33,18 @@ field:
     category: Catégorie
     description: Description
     description_placeholder: 'Décrivez brièvement le plat, les ingrédients principaux, le mode de préparation…'
+    extra_prices_toggle: 'Ajouter un prix supplémentaire'
+    glass_price: 'Prix au verre (%currency%)'
+    glass_price_pill: Prix au verre
     ingredients: Ingrédients
     photo: Photo du plat
     price: 'Prix (%currency%)'
     product_name: Nom du plat
     product_name_placeholder: 'Ex : Pizza Margherita'
+    remove_extra_price: Retirer
     spicy_level: Niveau de piquant
     supplement_price: 'Supplément (%currency%)'
+    supplement_price_pill: Supplément
     tags: Étiquettes
     allergens: Allergènes
 

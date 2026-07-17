@@ -33,13 +33,18 @@ field:
     category: Kategorie
     description: Beschreibung
     description_placeholder: 'Beschreibe kurz das Gericht, die Hauptzutaten und die Zubereitungsart…'
+    extra_prices_toggle: 'Zusätzlichen Preis hinzufügen'
+    glass_price: 'Glaspreis (%currency%)'
+    glass_price_pill: Glaspreis
     ingredients: Zutaten
     photo: Foto des Gerichts
     price: 'Preis (%currency%)'
     product_name: Name des Gerichts
     product_name_placeholder: 'z. B. Pizza Margherita'
+    remove_extra_price: Entfernen
     spicy_level: Schärfegrad
     supplement_price: 'Zuschlag (%currency%)'
+    supplement_price_pill: Zuschlag
     tags: Etiketten
     allergens: Allergene
 
