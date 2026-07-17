@@ -358,6 +358,39 @@ class Product
         return array_map(static fn (ProductGlobalIngredient $link) => $link->getGlobalIngredient(), $this->globalIngredientLinks->toArray());
     }
 
+    /**
+     * Resolved, display-ready ingredient names spanning BOTH sources
+     * ($ingredientLinks and $globalIngredientLinks), merged by their shared
+     * position column so the printed/entered order is respected across the
+     * combined list rather than within each source separately (see
+     * MenuAdminController::getProduct(), which merges the same way for the
+     * admin panel). Each name falls back from $locale to $fallbackLocale to
+     * English (the one language the global library always has), then to the
+     * ingredient's raw code if it somehow has no translation at all.
+     *
+     * @return string[]
+     */
+    public function getIngredientNames(string $locale, string $fallbackLocale): array
+    {
+        $entries = [];
+
+        foreach ($this->ingredientLinks as $link) {
+            $ing = $link->getIngredient();
+            $t = $ing->getTranslation($locale) ?? $ing->getTranslation($fallbackLocale) ?? $ing->getTranslation('en');
+            $entries[] = ['position' => $link->getPosition(), 'name' => $t?->getName() ?? $ing->getCode()];
+        }
+
+        foreach ($this->globalIngredientLinks as $link) {
+            $gIng = $link->getGlobalIngredient();
+            $t = $gIng->getTranslation($locale) ?? $gIng->getTranslation($fallbackLocale) ?? $gIng->getTranslation('en');
+            $entries[] = ['position' => $link->getPosition(), 'name' => $t?->getName() ?? $gIng->getCode()];
+        }
+
+        usort($entries, static fn (array $a, array $b) => $a['position'] <=> $b['position']);
+
+        return array_map(static fn (array $entry) => $entry['name'], $entries);
+    }
+
     public function getTags(): Collection
     {
         return $this->tags;
