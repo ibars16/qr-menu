@@ -42,6 +42,7 @@ field:
     product_name: Nombre del plato
     product_name_placeholder: 'Ej: Pizza Margherita'
     remove_extra_price: Quitar
+    second_price_label: Etiqueta segundo precio
     spicy_level: Nivel de picante
     supplement_price: 'Suplemento (%currency%)'
     supplement_price_pill: Suplemento

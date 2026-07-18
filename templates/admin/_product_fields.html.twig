@@ -84,11 +84,21 @@
             {{ 'field.glass_price'|trans({'%currency%': restaurant.currency}, 'admin_menu') }}
             <span class="extra-price-remove" onclick="removeExtraPrice(this)" role="button" tabindex="0" aria-label="{{ 'field.remove_extra_price'|trans({}, 'admin_menu') }}">×</span>
         </label>
-        <input type="number"
-               id="p-glass-price"
-               min="0" step="0.01"
-               placeholder="0.00"
-               inputmode="decimal">
+        <div class="extra-price-glass-row">
+            <input type="number"
+                   id="p-glass-price"
+                   min="0" step="0.01"
+                   placeholder="0.00"
+                   inputmode="decimal">
+            <input type="text"
+                   id="p-second-price-label"
+                   maxlength="32"
+                   placeholder="Botella"
+                   aria-label="{{ 'field.second_price_label'|trans({}, 'admin_menu') }}">
+        </div>
+        <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
+            {{ 'field.second_price_label'|trans({}, 'admin_menu') }}
+        </p>
     </div>
 </div>
 

@@ -50,6 +50,14 @@ class Product
     #[ORM\Column(nullable: true)]
     private ?int $glassPrice = null;
 
+    /**
+     * Override for the label shown next to the bottle price when
+     * $glassPrice is set (e.g. "Copa 4,00€ / Botella 18,00€"). Null means
+     * the default label "Botella".
+     */
+    #[ORM\Column(length: 32, nullable: true)]
+    private ?string $secondPriceLabel = null;
+
     #[ORM\Column(nullable: true)]
     private ?int $calories = null;
 
@@ -220,6 +228,16 @@ class Product
     public function getGlassPriceDecimal(): ?float
     {
         return $this->glassPrice !== null ? $this->glassPrice / 100 : null;
+    }
+
+    public function getSecondPriceLabel(): ?string
+    {
+        return $this->secondPriceLabel;
+    }
+
+    public function setSecondPriceLabel(?string $secondPriceLabel): void
+    {
+        $this->secondPriceLabel = $secondPriceLabel;
     }
 
     /**

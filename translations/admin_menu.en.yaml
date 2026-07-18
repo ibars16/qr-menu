@@ -42,6 +42,7 @@ field:
     product_name: Dish name
     product_name_placeholder: 'e.g. Margherita Pizza'
     remove_extra_price: Remove
+    second_price_label: Second price label
     spicy_level: Spice level
     supplement_price: 'Supplement (%currency%)'
     supplement_price_pill: Supplement

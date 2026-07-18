@@ -275,6 +275,9 @@
             font-size:15px; line-height:1; font-weight:600; color:var(--tx-6); cursor:pointer; padding:0 2px;
         }
         .extra-price-remove:hover { color:var(--tx-1); }
+        .extra-price-glass-row { display:flex; gap:10px; }
+        .extra-price-glass-row input[type="number"] { flex:1.3; }
+        .extra-price-glass-row input[type="text"] { flex:1; }
 
         @media (max-width: 767px) {
             .field input, .field textarea, .field select { font-size:16px; min-height:48px; }
@@ -874,6 +877,7 @@
                     setVal('p-price',    (data.basePrice / 100).toFixed(2));
                     setVal('p-supplement-price', data.supplementPrice != null ? (data.supplementPrice / 100).toFixed(2) : '');
                     setVal('p-glass-price', data.glassPrice != null ? (data.glassPrice / 100).toFixed(2) : '');
+                    setVal('p-second-price-label', data.secondPriceLabel ?? '');
                     if (data.supplementPrice != null) revealExtraPrice('supplement');
                     if (data.glassPrice != null) revealExtraPrice('glass');
                     setVal('p-calories', data.calories ?? '');
@@ -1020,6 +1024,7 @@
                 basePrice:   parseFloat(getVal('p-price')) || 0,
                 supplementPrice: getVal('p-supplement-price') ? parseFloat(getVal('p-supplement-price')) : null,
                 glassPrice:  getVal('p-glass-price') ? parseFloat(getVal('p-glass-price')) : null,
+                secondPriceLabel: getVal('p-second-price-label') || null,
                 calories:    parseInt(getVal('p-calories')) || null,
                 spicyLevel:  S.spicy || null,
                 active:      true,
@@ -1401,7 +1406,7 @@
 
         // ── Reset ──────────────────────────────────────────────────────────────────
         function resetProduct() {
-            ['p-name','p-desc','p-price','p-supplement-price','p-glass-price','p-calories'].forEach(id =>
+            ['p-name','p-desc','p-price','p-supplement-price','p-glass-price','p-second-price-label','p-calories'].forEach(id =>
                 document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value=''; el.classList.remove('error'); })
             );
             ['p-name-error','p-desc-error','p-price-error'].forEach(id =>

@@ -42,6 +42,7 @@ field:
     product_name: Nome del piatto
     product_name_placeholder: 'Es: Pizza Margherita'
     remove_extra_price: Rimuovi
+    second_price_label: Etichetta secondo prezzo
     spicy_level: Livello di piccantezza
     supplement_price: 'Supplemento (%currency%)'
     supplement_price_pill: Supplemento
