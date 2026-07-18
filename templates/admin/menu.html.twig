@@ -998,7 +998,7 @@
         // ── Product CRUD ───────────────────────────────────────────────────────────
         function validateProduct() {
             let ok = true;
-            [['p-name','p-name-error'],['p-desc','p-desc-error'],['p-price','p-price-error']].forEach(([fid,eid]) => {
+            [['p-name','p-name-error'],['p-price','p-price-error']].forEach(([fid,eid]) => {
                 const val = panelEl(fid)?.value?.trim();
                 const empty = !val || (fid === 'p-price' && parseFloat(val) <= 0);
                 panelEl(eid)?.classList.toggle('show', empty);
@@ -1409,7 +1409,7 @@
             ['p-name','p-desc','p-price','p-supplement-price','p-glass-price','p-second-price-label','p-calories'].forEach(id =>
                 document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value=''; el.classList.remove('error'); })
             );
-            ['p-name-error','p-desc-error','p-price-error'].forEach(id =>
+            ['p-name-error','p-price-error'].forEach(id =>
                 document.querySelectorAll('[id="' + id + '"]').forEach(el => el.classList.remove('show'))
             );
             document.querySelectorAll('[id="p-category"]').forEach(el => { el.selectedIndex = 0; });

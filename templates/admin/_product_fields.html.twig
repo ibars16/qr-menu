@@ -22,14 +22,13 @@
     <div class="field-error" id="p-name-error">{{ 'field_error.name_required'|trans({}, 'admin_menu') }}</div>
 </div>
 
-{# Descripción — obligatoria #}
+{# Descripción — opcional #}
 <div class="field">
     <label class="field-label">
-        {{ 'field.description'|trans({}, 'admin_menu') }} <span class="req">*</span>
+        {{ 'field.description'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
     </label>
     <textarea id="p-desc"
               placeholder="{{ 'field.description_placeholder'|trans({}, 'admin_menu') }}"></textarea>
-    <div class="field-error" id="p-desc-error">{{ 'field_error.description_required'|trans({}, 'admin_menu') }}</div>
 </div>
 
 {# Precio + Calorías #}
