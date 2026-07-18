@@ -9,6 +9,16 @@
            onkeydown="if(event.key==='Enter') saveCategory()">
     <div class="field-error" id="cat-name-error">{{ 'field.name_required'|trans({}, 'admin_categories') }}</div>
 </div>
+<div class="field">
+    <label class="field-label">
+        {{ 'field.type'|trans({}, 'admin_categories') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_categories') }})</span>
+    </label>
+    <select id="cat-type-select">
+        <option value="">{{ 'field.type_unclassified'|trans({}, 'admin_categories') }}</option>
+        <option value="food">{{ 'field.type_food'|trans({}, 'admin_categories') }}</option>
+        <option value="drink">{{ 'field.type_drink'|trans({}, 'admin_categories') }}</option>
+    </select>
+</div>
 <p style="font-size:12px;color:var(--tx-6);line-height:1.5">
     💡 {{ 'hint.ai_translations'|trans({}, 'admin_categories') }}
 </p>

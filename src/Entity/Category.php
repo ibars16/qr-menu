@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\Trait\TimestampableTrait;
+use App\Enum\CategoryType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -38,6 +39,10 @@ class Category
 
     #[ORM\Column(nullable: true)]
     private ?float $aiConfidence = null;
+
+    /** Food vs. drink classification — null means unclassified. See CategoryType's docblock. */
+    #[ORM\Column(length: 20, enumType: CategoryType::class, nullable: true)]
+    private ?CategoryType $type = null;
 
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: CategoryTranslation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $translations;
@@ -115,6 +120,16 @@ class Category
     public function setAiConfidence(?float $aiConfidence): void
     {
         $this->aiConfidence = $aiConfidence;
+    }
+
+    public function getType(): ?CategoryType
+    {
+        return $this->type;
+    }
+
+    public function setType(?CategoryType $type): void
+    {
+        $this->type = $type;
     }
 
     public function getTranslations(): Collection

@@ -35,6 +35,11 @@
     .diet-filter:hover { background: var(--tab-hbg); color: var(--tab-htext); transform: translateY(-1px); }
     .diet-filter:active { transform: scale(0.97); }
     .diet-filter.active { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); box-shadow: var(--tab-act-shadow); }
+    .type-filters { display: flex; flex-wrap: wrap; gap: 7px; padding-top: 14px; }
+    .type-filter { background: var(--tab-bg); border: 1.5px solid var(--tab-border); color: var(--tab-text); border-radius: var(--tab-radius, 24px); padding: 7px 14px; cursor: pointer; font-size: 12px; font-weight: 600; line-height: 1; transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s; user-select: none; }
+    .type-filter:hover { background: var(--tab-hbg); color: var(--tab-htext); transform: translateY(-1px); }
+    .type-filter:active { transform: scale(0.97); }
+    .type-filter.active { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); box-shadow: var(--tab-act-shadow); }
     .sep { height: 1px; margin: 14px 0 0; background: var(--sep-bg); }
 
     /* Allergen filter — a single button so it's easy to find without
@@ -197,6 +202,7 @@
 
 <div class="ui-wrap">
     <div class="search-wrap"><i class="ti ti-search search-icon"></i><input type="text" class="search-input" id="menu-search" placeholder="Buscar platos…" autocomplete="off"></div>
+    {% if showTypeFilter %}<div class="type-filters"><button class="type-filter active" data-type="all">Todo</button><button class="type-filter" data-type="food">Comida</button><button class="type-filter" data-type="drink">Bebidas</button></div><div class="sep"></div>{% endif %}
     {% if tags|length > 0 %}<div class="diet-filters"><button class="diet-filter active" data-tag="all">Todo</button>{% for tag in tags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}</div><div class="sep"></div>{% endif %}
     {% if menuAllergens|length > 0 %}
         <div class="allergen-filter-wrap">
@@ -230,7 +236,7 @@
         {% if not catT %}{% set catT = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
         {% if not catT %}{% set catT = category.translations.first %}{% endif %}
         {% if catT and category.activeProductsSorted|length > 0 %}
-            <section class="cat-section" id="cat-{{ category.id }}" data-section="cat-{{ category.id }}">
+            <section class="cat-section" id="cat-{{ category.id }}" data-section="cat-{{ category.id }}" data-type="{{ category.type ? category.type.value : '' }}">
                 <div class="cat-title">{{ catT.name }}</div>
                 <div class="cards-grid">
                     {% for product in category.activeProductsSorted %}

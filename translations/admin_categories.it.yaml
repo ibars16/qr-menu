@@ -1,5 +1,8 @@
 title: Categorie
 
+common:
+    optional: facoltativo
+
 action:
     new_category: Nuova categoria
     create_first_category: Crea la prima categoria
@@ -22,6 +25,10 @@ field:
     name: Nome
     name_placeholder: 'Es.: Antipasti, Pizze, Dolci…'
     name_required: Il nome è obbligatorio
+    type: Tipo
+    type_unclassified: Non classificato
+    type_food: Cibo
+    type_drink: Bevanda
     which_category: A quale categoria appartiene?
 
 meta:

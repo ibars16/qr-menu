@@ -15,6 +15,7 @@ use App\Entity\ProductGlobalIngredient;
 use App\Entity\ProductIngredient;
 use App\Entity\ProductTranslation;
 use App\Enum\AllergenPresence;
+use App\Enum\CategoryType;
 use App\Repository\AllergenRepository;
 use App\Service\ProductAllergenResolver;
 use Doctrine\ORM\EntityManagerInterface;
@@ -151,6 +152,7 @@ class MenuAdminController extends AbstractController
         $category->setRestaurant($restaurant);
         $category->setPosition($restaurant->getCategories()->count());
         $category->setActive(true);
+        $category->setType(CategoryType::tryFrom($data['type'] ?? ''));
 
         $translation = new CategoryTranslation();
         $translation->setCategory($category);
@@ -175,6 +177,8 @@ class MenuAdminController extends AbstractController
         if (!$name) {
             return $this->json(['error' => $this->translator->trans('error.category_name_required', domain: 'admin_menu')], 400);
         }
+
+        $category->setType(CategoryType::tryFrom($data['type'] ?? ''));
 
         $locale      = $category->getRestaurant()->getDefaultLanguage();
         $translation = $category->getTranslation($locale);

@@ -1,5 +1,8 @@
 title: Categories
 
+common:
+    optional: optional
+
 action:
     new_category: New category
     create_first_category: Create first category
@@ -22,6 +25,10 @@ field:
     name: Name
     name_placeholder: 'E.g.: Starters, Pizzas, Desserts…'
     name_required: Name is required
+    type: Type
+    type_unclassified: Unclassified
+    type_food: Food
+    type_drink: Drink
     which_category: Which category does it belong to?
 
 meta:

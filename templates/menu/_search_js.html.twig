@@ -12,6 +12,15 @@ const catTabs     = document.querySelectorAll('.cat-tab');
 const dietFilters = document.querySelectorAll('.diet-filter');
 let activeTag = 'all';
 
+// Food/drink category filter — a whole .cat-section is shown or hidden by
+// its own data-type ("food"/"drink"/"" for unclassified); unlike the diet
+// tag and allergen filters below, this never hides individual rows, only
+// entire sections (a category is either all-in or all-out). A section with
+// no data-type (unclassified) always matches, in either mode — see
+// CategoryType's docblock for why null is never treated as "hidden".
+const typeFilters = document.querySelectorAll('.type-filter');
+let activeType = 'all';
+
 // Allergens a customer wants to avoid — multi-select, unlike the single-select
 // diet filter above, since someone can have more than one allergy. A dish is
 // hidden if it carries ANY selected allergen (data-allergens is "code:presence
@@ -29,8 +38,9 @@ function applyFilters() {
     let anyVisible = false;
 
     sections.forEach(sec => {
-        const catMatch = cat === 'all' || cat === sec.dataset.section;
-        if (!catMatch) { sec.style.display = 'none'; return; }
+        const catMatch  = cat === 'all' || cat === sec.dataset.section;
+        const typeMatch = activeType === 'all' || !sec.dataset.type || sec.dataset.type === activeType;
+        if (!catMatch || !typeMatch) { sec.style.display = 'none'; return; }
         const rows = sec.querySelectorAll('.card-wrap, .product-row');
         let secVisible = false;
         rows.forEach(row => {
@@ -135,6 +145,13 @@ dietFilters.forEach(btn => btn.addEventListener('click', () => {
     dietFilters.forEach(x => x.classList.remove('active'));
     btn.classList.add('active');
     activeTag = btn.dataset.tag;
+    applyFilters();
+}));
+
+typeFilters.forEach(btn => btn.addEventListener('click', () => {
+    typeFilters.forEach(x => x.classList.remove('active'));
+    btn.classList.add('active');
+    activeType = btn.dataset.type;
     applyFilters();
 }));
 

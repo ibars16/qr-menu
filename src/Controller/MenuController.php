@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Enum\AllergenPresence;
 use App\Repository\RestaurantRepository;
+use App\Service\CategoryTypeFilterResolver;
 use App\Service\CurrencyConverter;
 use App\Service\MenuPreferencesResolver;
 use App\Service\ProductAllergenResolver;
@@ -25,13 +26,14 @@ class MenuController extends AbstractController
         TagTranslationService $tagTranslationService,
         MenuPreferencesResolver $menuPreferencesResolver,
         ProductAllergenResolver $allergenResolver,
+        CategoryTypeFilterResolver $categoryTypeFilterResolver,
     ): Response {
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
             throw $this->createNotFoundException('Restaurante no encontrado.');
         }
 
-        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $menuPreferencesResolver, $allergenResolver);
+        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $menuPreferencesResolver, $allergenResolver, $categoryTypeFilterResolver);
     }
 
     // Backwards-compat redirect for QR codes already printed with the old table URL.
@@ -48,6 +50,7 @@ class MenuController extends AbstractController
         TagTranslationService $tagTranslationService,
         MenuPreferencesResolver $menuPreferencesResolver,
         ProductAllergenResolver $allergenResolver,
+        CategoryTypeFilterResolver $categoryTypeFilterResolver,
     ): Response {
         $languages  = $menuPreferencesResolver->getLanguages();
         $currencies = $menuPreferencesResolver->getCurrencies();
@@ -177,9 +180,12 @@ class MenuController extends AbstractController
             }
         }
 
+        $showTypeFilter = $categoryTypeFilterResolver->shouldShowFilter($categories);
+
         return $this->render('menu/show.html.twig', [
             'restaurant'    => $restaurant,
             'categories'    => $categories,
+            'showTypeFilter' => $showTypeFilter,
             'locale'        => $locale,
             'currency'      => $currency,
             'languages'     => $languages,
