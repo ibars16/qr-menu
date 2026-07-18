@@ -1,5 +1,6 @@
 {# Layout: Grid — portrait flip cards, 2/3/4 column grid #}
 {% include 'menu/themes/' ~ theme ~ '/vars.html.twig' %}
+{% import 'menu/_price.html.twig' as priceMacro %}
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); background-attachment: var(--bg-attach); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; }
@@ -144,6 +145,21 @@
     .back-name { font-size: 13px; font-weight: 700; color: var(--bn); letter-spacing: -0.25px; line-height: 1.22; }
     .back-price { font-size: 13px; color: var(--bp); margin-top: 2px; font-variant-numeric: tabular-nums; font-weight: 700; }
     .supplement-badge { font-size: 0.75em; font-weight: 700; color: var(--cp); white-space: nowrap; }
+    /* Stacked multi-price block (menu/_price.html.twig) — one row per price,
+       label left/muted/smaller, price right keeping the parent's own
+       styling, currency on every row. Denser than the other layouts' copy
+       since .card has a fixed height (see .front-img) — up to 4 stacked
+       rows eats into that fixed budget fast. A long label truncates with
+       an ellipsis rather than pushing the card wider. */
+    .price-stack { display: flex; flex-direction: column; gap: 0; min-width: 70px; }
+    .price-row { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 5px; line-height: 1.15; }
+    .price-item-label { grid-column: 1; min-width: 0; font-size: 0.6em; font-weight: 600; color: var(--fg-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .price-item-value { grid-column: 2; white-space: nowrap; }
+    /* .front-price's card face has no scroll escape hatch if this block
+       grows past the fixed-height card's remaining budget — unlike
+       .back-price, whose face has a scrollable body below it — so shrink
+       the price digits themselves here, on top of the reductions above. */
+    .front-price .price-item-value { font-size: 0.75em; }
 
     .back-scroll { position: relative; flex: 1; min-height: 0; overflow: hidden; }
     .back-scroll::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 36px; background: linear-gradient(transparent, var(--fade)); pointer-events: none; transition: opacity 0.22s; opacity: 0; }
@@ -258,14 +274,14 @@
                                                 <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div>
                                             </div>
                                             <div class="front-bottom">
-                                                <div class="front-price">{% if product.glassPrice %}Copa {{ (product.glassPrice / 100)|number_format(2) }}€ · {{ product.secondPriceLabel|default('Botella') }} {{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% else %}{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% endif %}</div>
+                                                <div class="front-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
                                                 <div class="flip-hint"><i class="ti ti-rotate-clockwise" style="font-size:10px"></i></div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="card-back">
                                         <button class="back-close" onclick="unflipCard(event,this)" aria-label="Cerrar"><i class="ti ti-x"></i></button>
-                                        <div class="back-header"><div class="back-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div><div class="back-price">{% if product.glassPrice %}Copa {{ (product.glassPrice / 100)|number_format(2) }}€ · {{ product.secondPriceLabel|default('Botella') }} {{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% else %}{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% endif %}</div></div>
+                                        <div class="back-header"><div class="back-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div><div class="back-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div></div>
                                         <div class="back-scroll">
                                             <div class="back-body">
                                                 {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}

@@ -33,19 +33,23 @@ field:
     category: Category
     description: Description
     description_placeholder: 'Briefly describe the dish, main ingredients, preparation style…'
-    extra_prices_toggle: 'Add extra price'
-    glass_price: 'Glass price (%currency%)'
-    glass_price_pill: Glass price
     ingredients: Ingredients
     photo: Dish photo
     price: 'Price (%currency%)'
+    price_variant_add: Add another price
+    price_variant_column_label: Label
+    price_variant_label_placeholder: 'E.g.: Bottle, Portion, Large…'
+    price_variants_collapse: Return to single price
+    price_variants_group_label: Prices
+    price_variants_toggle: Add multiple prices
+    price_variants_toggle_hint: 'For dishes with more than one price: tapa/portion, glass/bottle, sizes…'
     product_name: Dish name
     product_name_placeholder: 'e.g. Margherita Pizza'
     remove_extra_price: Remove
-    second_price_label: Second price label
     spicy_level: Spice level
+    supplement_hint: 'A fixed surcharge added to a set-menu price (e.g. +€2).'
     supplement_price: 'Supplement (%currency%)'
-    supplement_price_pill: Supplement
+    supplement_toggle: Add supplement
     tags: Tags
     allergens: Allergens
 

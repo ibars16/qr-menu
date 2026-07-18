@@ -1,5 +1,6 @@
 {# Layout: Standard — portrait cards (image top, content bottom), 1/2/3 column grid #}
 {% include 'menu/themes/' ~ theme ~ '/vars.html.twig' %}
+{% import 'menu/_price.html.twig' as priceMacro %}
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); background-attachment: var(--bg-attach, scroll); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.5; }
@@ -156,6 +157,14 @@
     .back-name { font-size: 15px; font-weight: 700; color: var(--bn); letter-spacing: -0.4px; line-height: 1.23; }
     .back-price { font-size: 14px; color: var(--bp); font-weight: 700; margin-top: 3px; font-variant-numeric: tabular-nums; }
     .supplement-badge { font-size: 0.75em; font-weight: 700; color: var(--cp); white-space: nowrap; }
+    /* Stacked multi-price block (menu/_price.html.twig) — one row per price,
+       label left/muted/smaller, price right keeping the parent's own
+       styling, currency on every row. A long label truncates with an
+       ellipsis rather than pushing the card wider. */
+    .price-stack { display: flex; flex-direction: column; gap: 2px; min-width: 100px; }
+    .price-row { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 8px; }
+    .price-item-label { grid-column: 1; min-width: 0; font-size: 0.7em; font-weight: 600; color: var(--fg-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .price-item-value { grid-column: 2; white-space: nowrap; }
 
     /* ── Scroll area with gradient fade ── */
     .back-scroll { position: relative; flex: 1; min-height: 0; overflow: hidden; }
@@ -303,7 +312,7 @@
                                                 <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div>
                                             </div>
                                             <div class="front-bottom">
-                                                <div class="front-price">{% if product.glassPrice %}Copa {{ (product.glassPrice / 100)|number_format(2) }}€ · {{ product.secondPriceLabel|default('Botella') }} {{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% else %}{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% endif %}</div>
+                                                <div class="front-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
                                                 <div class="flip-hint"><i class="ti ti-rotate-clockwise" style="font-size:11px"></i> ver más</div>
                                             </div>
                                         </div>
@@ -312,7 +321,7 @@
                                         <button class="back-close" onclick="unflipCard(event,this)" aria-label="Cerrar"><i class="ti ti-x"></i></button>
                                         <div class="back-header">
                                             <div class="back-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div>
-                                            <div class="back-price">{% if product.glassPrice %}Copa {{ (product.glassPrice / 100)|number_format(2) }}€ · {{ product.secondPriceLabel|default('Botella') }} {{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% else %}{{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}{% endif %}</div>
+                                            <div class="back-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
                                         </div>
                                         <div class="back-scroll">
                                             <div class="back-body">

@@ -33,19 +33,23 @@ field:
     category: Categoría
     description: Descripción
     description_placeholder: 'Describe brevemente el plato, ingredientes principales, forma de preparación…'
-    extra_prices_toggle: 'Añadir precio extra'
-    glass_price: 'Precio copa (%currency%)'
-    glass_price_pill: Precio copa
     ingredients: Ingredientes
     photo: Foto del plato
     price: 'Precio (%currency%)'
+    price_variant_add: Añadir otro precio
+    price_variant_column_label: Etiqueta
+    price_variant_label_placeholder: 'Ej: Botella, Ración, Grande…'
+    price_variants_collapse: Volver a precio único
+    price_variants_group_label: Precios
+    price_variants_toggle: Añadir varios precios
+    price_variants_toggle_hint: 'Para platos con más de un precio: tapa/ración, copa/botella, tamaños…'
     product_name: Nombre del plato
     product_name_placeholder: 'Ej: Pizza Margherita'
     remove_extra_price: Quitar
-    second_price_label: Etiqueta segundo precio
     spicy_level: Nivel de picante
+    supplement_hint: 'Recargo fijo sobre el precio de un menú del día (ej: +2€).'
     supplement_price: 'Suplemento (%currency%)'
-    supplement_price_pill: Suplemento
+    supplement_toggle: Añadir suplemento
     tags: Etiquetas
     allergens: Alérgenos
 

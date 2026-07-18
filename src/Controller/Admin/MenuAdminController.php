@@ -13,6 +13,7 @@ use App\Entity\Product;
 use App\Entity\ProductAllergenOverride;
 use App\Entity\ProductGlobalIngredient;
 use App\Entity\ProductIngredient;
+use App\Entity\ProductPriceVariant;
 use App\Entity\ProductTranslation;
 use App\Enum\AllergenPresence;
 use App\Enum\CategoryType;
@@ -314,8 +315,11 @@ class MenuAdminController extends AbstractController
             'image'             => $product->getImage(),
             'basePrice'         => $product->getBasePrice(),
             'supplementPrice'   => $product->getSupplementPrice(),
-            'glassPrice'        => $product->getGlassPrice(),
-            'secondPriceLabel'  => $product->getSecondPriceLabel(),
+            'basePriceLabel'    => $product->getBasePriceLabel(),
+            'priceVariants'     => array_map(
+                static fn (ProductPriceVariant $v) => ['id' => $v->getId(), 'label' => $v->getLabel(), 'price' => $v->getPrice()],
+                $product->getPriceVariants()->toArray()
+            ),
             'calories'          => $product->getCalories(),
             'spicyLevel'        => $product->getSpicyLevel(),
             'active'            => $product->isActive(),
@@ -367,14 +371,9 @@ class MenuAdminController extends AbstractController
                 ? (int) round((float) $data['supplementPrice'] * 100)
                 : null);
         }
-        if (array_key_exists('glassPrice', $data)) {
-            $product->setGlassPrice($data['glassPrice'] !== null && $data['glassPrice'] !== ''
-                ? (int) round((float) $data['glassPrice'] * 100)
-                : null);
-        }
-        if (array_key_exists('secondPriceLabel', $data)) {
-            $product->setSecondPriceLabel($data['secondPriceLabel'] !== null && trim((string) $data['secondPriceLabel']) !== ''
-                ? trim((string) $data['secondPriceLabel'])
+        if (array_key_exists('basePriceLabel', $data)) {
+            $product->setBasePriceLabel($data['basePriceLabel'] !== null && trim((string) $data['basePriceLabel']) !== ''
+                ? trim((string) $data['basePriceLabel'])
                 : null);
         }
         if (array_key_exists('calories',   $data)) $product->setCalories($data['calories'] ?: null);
@@ -502,6 +501,37 @@ class MenuAdminController extends AbstractController
 
                     $this->attachIngredient($em, $product, $ingredient, $position++);
                 }
+            }
+        }
+
+        // Price variants — free-text label + absolute price rows beyond
+        // $basePrice (e.g. "Tapa"/"Media ración"/"Ración"). Same
+        // remove-all-then-recreate diffing as allergen overrides below:
+        // there's nothing here an id needs to stay stable across (no other
+        // row references a ProductPriceVariant), so a full replace on every
+        // save is simplest. Capped at 3 rows server-side too — the admin JS
+        // already enforces this, but a client-side cap alone is never
+        // trusted for a hard product limit.
+        if (isset($data['priceVariants'])) {
+            foreach ($product->getPriceVariants()->toArray() as $existing) {
+                $product->removePriceVariant($existing);
+                $em->remove($existing);
+            }
+
+            $position = 0;
+            foreach (array_slice($data['priceVariants'], 0, 3) as $variantData) {
+                $label = trim((string) ($variantData['label'] ?? ''));
+                $price = $variantData['price'] ?? null;
+                if ($label === '' || !is_numeric($price)) {
+                    continue;
+                }
+
+                $variant = new ProductPriceVariant();
+                $variant->setLabel($label);
+                $variant->setPrice((int) round((float) $price * 100));
+                $variant->setPosition($position++);
+                $product->addPriceVariant($variant);
+                $em->persist($variant);
             }
         }
 

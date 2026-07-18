@@ -33,19 +33,23 @@ field:
     category: Catégorie
     description: Description
     description_placeholder: 'Décrivez brièvement le plat, les ingrédients principaux, le mode de préparation…'
-    extra_prices_toggle: 'Ajouter un prix supplémentaire'
-    glass_price: 'Prix au verre (%currency%)'
-    glass_price_pill: Prix au verre
     ingredients: Ingrédients
     photo: Photo du plat
     price: 'Prix (%currency%)'
+    price_variant_add: Ajouter un autre prix
+    price_variant_column_label: Libellé
+    price_variant_label_placeholder: 'Ex. : Bouteille, Portion, Grand…'
+    price_variants_collapse: Revenir à un prix unique
+    price_variants_group_label: Prix
+    price_variants_toggle: Ajouter plusieurs prix
+    price_variants_toggle_hint: 'Pour les plats avec plusieurs prix : tapas/portion, verre/bouteille, tailles…'
     product_name: Nom du plat
     product_name_placeholder: 'Ex : Pizza Margherita'
     remove_extra_price: Retirer
-    second_price_label: Libellé du second prix
     spicy_level: Niveau de piquant
+    supplement_hint: 'Supplément fixe ajouté au prix d''un menu du jour (ex. : +2 €).'
     supplement_price: 'Supplément (%currency%)'
-    supplement_price_pill: Supplément
+    supplement_toggle: Ajouter un supplément
     tags: Étiquettes
     allergens: Allergènes
 

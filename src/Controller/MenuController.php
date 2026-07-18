@@ -72,6 +72,7 @@ class MenuController extends AbstractController
         $currency      = $menuPreferencesResolver->isCurrencySupported($queryCurrency)
             ? $queryCurrency
             : ($savedPrefs['currency'] ?? $menuPreferencesResolver->guessCurrency($request, $restaurant->getCurrency()));
+        $currencyDisplay = $menuPreferencesResolver->getCurrencyDisplay($currency);
 
         // Only prompt when the customer has never chosen before and isn't
         // arriving via a link that already specifies a preference.
@@ -101,6 +102,16 @@ class MenuController extends AbstractController
                         $currency
                     )
                 );
+
+                $convertedVariantPrices = [];
+                foreach ($product->getPriceVariants() as $variant) {
+                    $convertedVariantPrices[$variant->getId()] = $currencyConverter->convert(
+                        $variant->getPrice(),
+                        $restaurant->getCurrency(),
+                        $currency
+                    );
+                }
+                $product->setConvertedVariantPrices($convertedVariantPrices);
             }
             $category->activeProductsSorted = $products;
         }
@@ -188,6 +199,7 @@ class MenuController extends AbstractController
             'showTypeFilter' => $showTypeFilter,
             'locale'        => $locale,
             'currency'      => $currency,
+            'currencyDisplay' => $currencyDisplay,
             'languages'     => $languages,
             'currencies'    => $currencies,
             'tags'          => $tags,

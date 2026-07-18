@@ -33,19 +33,23 @@ field:
     category: Kategorie
     description: Beschreibung
     description_placeholder: 'Beschreibe kurz das Gericht, die Hauptzutaten und die Zubereitungsart…'
-    extra_prices_toggle: 'Zusätzlichen Preis hinzufügen'
-    glass_price: 'Glaspreis (%currency%)'
-    glass_price_pill: Glaspreis
     ingredients: Zutaten
     photo: Foto des Gerichts
     price: 'Preis (%currency%)'
+    price_variant_add: Weiteren Preis hinzufügen
+    price_variant_column_label: Bezeichnung
+    price_variant_label_placeholder: 'Z. B.: Flasche, Portion, Groß…'
+    price_variants_collapse: Zu einem einzigen Preis zurückkehren
+    price_variants_group_label: Preise
+    price_variants_toggle: Mehrere Preise hinzufügen
+    price_variants_toggle_hint: 'Für Gerichte mit mehreren Preisen: Tapa/Portion, Glas/Flasche, Größen…'
     product_name: Name des Gerichts
     product_name_placeholder: 'z. B. Pizza Margherita'
     remove_extra_price: Entfernen
-    second_price_label: Beschriftung zweiter Preis
     spicy_level: Schärfegrad
+    supplement_hint: 'Fester Aufschlag auf den Preis eines Tagesmenüs (z. B. +2€).'
     supplement_price: 'Zuschlag (%currency%)'
-    supplement_price_pill: Zuschlag
+    supplement_toggle: Zuschlag hinzufügen
     tags: Etiketten
     allergens: Allergene
 

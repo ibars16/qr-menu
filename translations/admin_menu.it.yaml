@@ -33,19 +33,23 @@ field:
     category: Categoria
     description: Descrizione
     description_placeholder: 'Descrivi brevemente il piatto, gli ingredienti principali, il metodo di preparazione…'
-    extra_prices_toggle: 'Aggiungi prezzo extra'
-    glass_price: 'Prezzo al calice (%currency%)'
-    glass_price_pill: Prezzo al calice
     ingredients: Ingredienti
     photo: Foto del piatto
     price: 'Prezzo (%currency%)'
+    price_variant_add: Aggiungi un altro prezzo
+    price_variant_column_label: Etichetta
+    price_variant_label_placeholder: 'Es.: Bottiglia, Porzione, Grande…'
+    price_variants_collapse: Torna al prezzo unico
+    price_variants_group_label: Prezzi
+    price_variants_toggle: Aggiungi più prezzi
+    price_variants_toggle_hint: 'Per i piatti con più di un prezzo: tapa/porzione, calice/bottiglia, formati…'
     product_name: Nome del piatto
     product_name_placeholder: 'Es: Pizza Margherita'
     remove_extra_price: Rimuovi
-    second_price_label: Etichetta secondo prezzo
     spicy_level: Livello di piccantezza
+    supplement_hint: 'Sovrapprezzo fisso sul prezzo di un menù fisso (es. +2€).'
     supplement_price: 'Supplemento (%currency%)'
-    supplement_price_pill: Supplemento
+    supplement_toggle: Aggiungi supplemento
     tags: Etichette
     allergens: Allergeni
 

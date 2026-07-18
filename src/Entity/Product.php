@@ -42,21 +42,15 @@ class Product
     private ?int $supplementPrice = null;
 
     /**
-     * Per-glass price in cents for a drink also sold by the bottle — e.g.
-     * "Copa 4,00€ / Botella 18,00€". Null for everything sold at a single
-     * price. When set, $basePrice is read as the bottle price and this is
-     * the glass price; nothing else about $basePrice changes.
+     * Label for $basePrice, shown only once this product has more than one
+     * price — e.g. "Ración" when $priceVariants also has "Tapa"/"Media
+     * ración" rows. Null (the default, and the case for the vast majority
+     * of products) means this product has a single, unlabeled price:
+     * $basePrice renders alone, exactly as it always has. See
+     * ProductPriceVariant's class docblock and Product::hasPriceVariants().
      */
-    #[ORM\Column(nullable: true)]
-    private ?int $glassPrice = null;
-
-    /**
-     * Override for the label shown next to the bottle price when
-     * $glassPrice is set (e.g. "Copa 4,00€ / Botella 18,00€"). Null means
-     * the default label "Botella".
-     */
-    #[ORM\Column(length: 32, nullable: true)]
-    private ?string $secondPriceLabel = null;
+    #[ORM\Column(length: 40, nullable: true)]
+    private ?string $basePriceLabel = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $calories = null;
@@ -143,10 +137,27 @@ class Product
     private Collection $allergenOverrides;
 
     /**
+     * Additional labeled prices beyond $basePrice — e.g. "Tapa"/"Media
+     * ración" alongside $basePrice's own "Ración". Empty for the vast
+     * majority of products. See ProductPriceVariant's class docblock for
+     * why this is an ordered child entity rather than numbered columns.
+     */
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductPriceVariant::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $priceVariants;
+
+    /**
      * Temporary price after currency conversion.
      * NOT mapped to database — calculated at runtime in MenuController.
      */
     private int $convertedPrice = 0;
+
+    /**
+     * Converted prices for $priceVariants, keyed by ProductPriceVariant id.
+     * NOT mapped to database — calculated at runtime in MenuController,
+     * exactly like $convertedPrice above. See getConvertedVariantPrice().
+     */
+    private array $convertedVariantPrices = [];
 
     public function __construct()
     {
@@ -155,6 +166,7 @@ class Product
         $this->globalIngredientLinks  = new ArrayCollection();
         $this->tags                   = new ArrayCollection();
         $this->allergenOverrides      = new ArrayCollection();
+        $this->priceVariants          = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -214,30 +226,14 @@ class Product
         return $this->supplementPrice !== null ? $this->supplementPrice / 100 : null;
     }
 
-    public function getGlassPrice(): ?int
+    public function getBasePriceLabel(): ?string
     {
-        return $this->glassPrice;
+        return $this->basePriceLabel;
     }
 
-    public function setGlassPrice(?int $glassPrice): void
+    public function setBasePriceLabel(?string $basePriceLabel): void
     {
-        $this->glassPrice = $glassPrice;
-    }
-
-    /** Returns the glass price as a decimal, or null if this product isn't sold by the glass. Example: 400 → 4.00 */
-    public function getGlassPriceDecimal(): ?float
-    {
-        return $this->glassPrice !== null ? $this->glassPrice / 100 : null;
-    }
-
-    public function getSecondPriceLabel(): ?string
-    {
-        return $this->secondPriceLabel;
-    }
-
-    public function setSecondPriceLabel(?string $secondPriceLabel): void
-    {
-        $this->secondPriceLabel = $secondPriceLabel;
+        $this->basePriceLabel = $basePriceLabel;
     }
 
     /**
@@ -252,6 +248,42 @@ class Product
     public function setConvertedPrice(int $price): void
     {
         $this->convertedPrice = $price;
+    }
+
+    public function getPriceVariants(): Collection
+    {
+        return $this->priceVariants;
+    }
+
+    public function addPriceVariant(ProductPriceVariant $variant): void
+    {
+        if (!$this->priceVariants->contains($variant)) {
+            $this->priceVariants->add($variant);
+            $variant->setProduct($this);
+        }
+    }
+
+    public function removePriceVariant(ProductPriceVariant $variant): void
+    {
+        $this->priceVariants->removeElement($variant);
+    }
+
+    /** True once this product has more than one price to show — see ProductPriceVariant's class docblock. */
+    public function hasPriceVariants(): bool
+    {
+        return $this->basePriceLabel !== null || !$this->priceVariants->isEmpty();
+    }
+
+    /** Falls back to the variant's own raw price if conversion hasn't been applied yet — mirrors getConvertedPrice(). */
+    public function getConvertedVariantPrice(ProductPriceVariant $variant): int
+    {
+        return $this->convertedVariantPrices[$variant->getId()] ?? $variant->getPrice();
+    }
+
+    /** @param array<int, int> $convertedVariantPrices keyed by ProductPriceVariant id */
+    public function setConvertedVariantPrices(array $convertedVariantPrices): void
+    {
+        $this->convertedVariantPrices = $convertedVariantPrices;
     }
 
     public function getCalories(): ?int

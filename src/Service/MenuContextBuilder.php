@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Allergen;
 use App\Entity\Category;
 use App\Entity\Product;
+use App\Entity\ProductPriceVariant;
 use App\Entity\ProductTag;
 use App\Entity\Restaurant;
 
@@ -151,10 +152,21 @@ final class MenuContextBuilder
             'note' => $entry['note'],
         ], $allergenEntries);
 
+        $priceVariants = $product->hasPriceVariants()
+            ? array_merge(
+                [['label' => $product->getBasePriceLabel(), 'price' => $product->getBasePriceDecimal()]],
+                array_map(
+                    fn (ProductPriceVariant $v) => ['label' => $v->getLabel(), 'price' => $v->getPriceDecimal()],
+                    $product->getPriceVariants()->toArray()
+                )
+            )
+            : null;
+
         return [
             'name' => $translation?->getName() ?? '',
             'description' => $translation?->getDescription(),
             'price' => $product->getBasePriceDecimal(),
+            'price_variants' => $priceVariants,
             'calories' => $product->getCalories(),
             'spicy_level' => $product->getSpicyLevel(),
             'ingredients' => $ingredientNames,

@@ -254,33 +254,75 @@
         .field-row { display:flex; gap:10px; }
         .field-row .field { flex:1; }
 
-        /* Precio copa / suplemento — subtle text link opens a small pill
-           chooser; each type is added at most once. See
-           showExtraPriceChooser()/addExtraPrice()/removeExtraPrice(). */
+        /* Suplemento — subtle text link, direct reveal (no chooser). Clear
+           margin-top separates it from the price list above (see
+           .price-variants-section) so it never reads as part of that list.
+           See showSupplementField()/hideSupplementField(). */
+        .extra-price-section { margin-top:22px; }
         .extra-price-toggle {
             display:inline-flex; align-items:center; gap:5px; margin-top:8px;
             font-size:12px; color:var(--tx-6); cursor:pointer; user-select:none; transition:color 0.1s;
         }
         .extra-price-toggle:hover { color:var(--tx-3); }
         .extra-price-toggle i { font-size:12px; }
-        .extra-price-chooser { display:flex; gap:6px; margin-top:8px; }
-        .extra-price-pill {
-            font-size:12px; padding:6px 12px; border-radius:16px; border:1px solid var(--bd-2);
-            background:var(--bg-input); color:var(--tx-4); cursor:pointer; user-select:none; transition:all 0.1s;
-        }
-        .extra-price-pill:hover { border-color:var(--bd-3); color:var(--tx-1); }
         .extra-price-field { margin-top:12px; }
         .extra-price-field .field-label { display:flex; align-items:center; gap:6px; }
         .extra-price-remove {
             font-size:15px; line-height:1; font-weight:600; color:var(--tx-6); cursor:pointer; padding:0 2px;
         }
         .extra-price-remove:hover { color:var(--tx-1); }
-        .extra-price-glass-row { display:flex; gap:10px; }
-        .extra-price-glass-row input[type="number"] { flex:1.3; }
-        .extra-price-glass-row input[type="text"] { flex:1; }
+
+        /* Precios por variante — one persistent toggle (expand: re-parents
+           the base price row in as the list's first row, plus one empty
+           variant row; collapse: clears everything and moves the base row
+           back to its original spot — see togglePriceVariants()) reveals a
+           grouped box that holds the base row, extra rows, and the "add"
+           link together, so the whole thing reads as one coherent price
+           list rather than loose top-level fields. */
+        .price-variants-group {
+            margin-top:10px; padding:12px; border-radius:10px;
+            background:var(--bg-card); border:1px solid var(--bd-1);
+        }
+        .price-variants-group-label { margin-bottom:10px; }
+        /* Column headers render once, above the list — see the "field-label
+           display:none" rule below for how the base row's OWN "Precio"
+           label (needed when it's outside the group, in the simple state)
+           gets out of the way once these headers take over. */
+        .price-variant-headers { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+        .price-variant-header-label { flex:1.3; }
+        .price-variant-header-price { flex:1; }
+        .price-variant-rows { display:flex; flex-direction:column; gap:8px; }
+        .price-variant-row-item { display:flex; gap:8px; align-items:center; }
+        .price-variant-label-field { flex:1.3; }
+        .price-variant-price-field { flex:1; }
+        /* Every row's own field-label is hidden once inside the group — the
+           column headers above take over that job — so the base row's
+           input matches variant rows' bare-input height/padding exactly.
+           Harmless no-op for variant rows, which never have a label at all. */
+        .price-variants-group .price-variant-row-item .field-label { display:none; }
+        /* Same 44px width on the real ×, the base row's invisible stand-in
+           for it, and the header's — so the Etiqueta/Precio columns line up
+           in a straight edge across every row and the header. Only the real
+           × needs the matching height (its 44×44 tap target); the other two
+           are zero-height placeholders, purely for width. */
+        .price-variant-remove, .price-variant-remove-spacer, .price-variant-header-spacer {
+            width:44px; flex-shrink:0;
+        }
+        .price-variant-remove {
+            display:flex; align-items:center; justify-content:center; height:44px;
+            font-size:18px; line-height:1; font-weight:600;
+            color:var(--tx-6); cursor:pointer;
+        }
+        .price-variant-remove:hover { color:var(--tx-1); }
+        .price-variant-add {
+            display:inline-flex; align-items:center; gap:5px; margin-top:10px;
+            font-size:12px; color:var(--tx-6); cursor:pointer; user-select:none; transition:color 0.1s;
+        }
+        .price-variant-add:hover { color:var(--tx-3); }
 
         @media (max-width: 767px) {
             .field input, .field textarea, .field select { font-size:16px; min-height:48px; }
+            .field-row { flex-direction:column; }
         }
 
         /* Image upload */
@@ -766,6 +808,10 @@
         const MSG_PRODUCT_VISIBLE  = "{{ 'product.visible'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_PRODUCT_HIDDEN   = "{{ 'product.hidden'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_PRODUCT_DELETED  = "{{ 'js.product_deleted'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_PRICE_VARIANT_LABEL_PLACEHOLDER = "{{ 'field.price_variant_label_placeholder'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_REMOVE_EXTRA_PRICE = "{{ 'field.remove_extra_price'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_PRICE_VARIANTS_TOGGLE = "{{ 'field.price_variants_toggle'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_PRICE_VARIANTS_COLLAPSE = "{{ 'field.price_variants_collapse'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_CONFIRM_DELETE_PRODUCT = "{{ 'js.confirm_delete_product'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_DEFAULT_PRODUCT_NAME = "{{ 'js.default_product_name'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_NEW_INGREDIENT_LABEL = "{{ 'js.new_ingredient_label'|trans({}, 'admin_menu')|e('js') }}";
@@ -878,10 +924,20 @@
                     setVal('p-desc',     t.description ?? '');
                     setVal('p-price',    (data.basePrice / 100).toFixed(2));
                     setVal('p-supplement-price', data.supplementPrice != null ? (data.supplementPrice / 100).toFixed(2) : '');
-                    setVal('p-glass-price', data.glassPrice != null ? (data.glassPrice / 100).toFixed(2) : '');
-                    setVal('p-second-price-label', data.secondPriceLabel ?? '');
-                    if (data.supplementPrice != null) revealExtraPrice('supplement');
-                    if (data.glassPrice != null) revealExtraPrice('glass');
+                    if (data.supplementPrice != null) revealSupplementField();
+                    setVal('p-base-price-label', data.basePriceLabel ?? '');
+                    const variantsActive = data.basePriceLabel != null || (data.priceVariants ?? []).length > 0;
+                    document.querySelectorAll('.price-variants-section').forEach(section => {
+                        const rows = section.querySelector('.price-variant-rows');
+                        rows.innerHTML = '';
+                        (data.priceVariants ?? []).forEach(v => rows.appendChild(makePriceVariantRow(v.label, (v.price / 100).toFixed(2))));
+                        // Same "at least one row visible" rule as a fresh expand — a
+                        // loaded product in variants mode with no saved rows (e.g. only
+                        // a base label) still gets one empty row to fill in.
+                        if (variantsActive && rows.children.length === 0) rows.appendChild(makePriceVariantRow());
+                        updatePriceVariantAddVisibility(section);
+                    });
+                    if (variantsActive) revealPriceVariants();
                     setVal('p-calories', data.calories ?? '');
 
                     document.querySelectorAll('.tag-pill').forEach(p =>
@@ -1021,13 +1077,22 @@
             const tags = [...document.querySelectorAll('.tag-pill.on')].map(t => parseInt(t.dataset.tagId));
             document.querySelectorAll('[id="p-recommended"]:checked').forEach(cb => tags.push(parseInt(cb.dataset.tagId)));
 
+            // Owner-typed free text, never blocking save if a row is left half-filled —
+            // a row missing either half is simply dropped rather than shown as an error.
+            const priceVariants = [...activePanel().querySelectorAll('.price-variant-row-item')]
+                .map(row => ({
+                    label: row.querySelector('.price-variant-label').value.trim(),
+                    price: parseFloat(row.querySelector('.price-variant-price').value),
+                }))
+                .filter(v => v.label && !isNaN(v.price));
+
             const payload = {
                 id:          S.productId,
                 categoryId:  parseInt(getVal('p-category')) || S.categoryId,
                 basePrice:   parseFloat(getVal('p-price')) || 0,
                 supplementPrice: getVal('p-supplement-price') ? parseFloat(getVal('p-supplement-price')) : null,
-                glassPrice:  getVal('p-glass-price') ? parseFloat(getVal('p-glass-price')) : null,
-                secondPriceLabel: getVal('p-second-price-label') || null,
+                basePriceLabel: getVal('p-base-price-label') || null,
+                priceVariants: priceVariants,
                 calories:    parseInt(getVal('p-calories')) || null,
                 spicyLevel:  S.spicy || null,
                 active:      true,
@@ -1324,37 +1389,120 @@
             renderPrivateIngredientAllergens();
         }
 
-        // ── Precio copa / suplemento — add one at a time, each at most once ─────────
-        function showExtraPriceChooser(toggleEl) {
+        // ── Suplemento — single optional field, direct reveal/collapse, no
+        // intermediate chooser (there's nothing left to choose between). ────────────
+        function showSupplementField(toggleEl) {
             const section = toggleEl.closest('.extra-price-section');
             toggleEl.style.display = 'none';
-            section.querySelectorAll('.extra-price-pill').forEach(pill => {
-                const field = section.querySelector('.extra-price-field[data-extra="' + pill.dataset.extra + '"]');
-                pill.style.display = (field.style.display === 'none') ? '' : 'none';
-            });
-            section.querySelector('.extra-price-chooser').style.display = '';
+            section.querySelector('.extra-price-field').style.display = '';
         }
-        function addExtraPrice(pillEl) {
-            const section = pillEl.closest('.extra-price-section');
-            section.querySelector('.extra-price-field[data-extra="' + pillEl.dataset.extra + '"]').style.display = '';
-            section.querySelector('.extra-price-chooser').style.display = 'none';
-            updateExtraPriceToggle(section);
-        }
-        function removeExtraPrice(removeEl) {
+        function hideSupplementField(removeEl) {
             const field = removeEl.closest('.extra-price-field');
             field.querySelector('input').value = '';
             field.style.display = 'none';
-            updateExtraPriceToggle(field.closest('.extra-price-section'));
+            field.closest('.extra-price-section').querySelector('.extra-price-toggle').style.display = '';
         }
-        function updateExtraPriceToggle(section) {
-            const anyAvailable = Array.from(section.querySelectorAll('.extra-price-field')).some(f => f.style.display === 'none');
-            section.querySelector('.extra-price-toggle').style.display = anyAvailable ? '' : 'none';
-            section.querySelector('.extra-price-chooser').style.display = 'none';
-        }
-        function revealExtraPrice(type) {
+        function revealSupplementField() {
             document.querySelectorAll('.extra-price-section').forEach(section => {
-                section.querySelector('.extra-price-field[data-extra="' + type + '"]').style.display = '';
-                updateExtraPriceToggle(section);
+                section.querySelector('.extra-price-toggle').style.display = 'none';
+                section.querySelector('.extra-price-field').style.display = '';
+            });
+        }
+
+        // ── Precios por variante — one unified list. Expanding re-parents the
+        // existing base-price row (never duplicated) into .price-variant-rows
+        // as the first row; collapsing moves it back to its original spot,
+        // right before .price-variants-section, and clears everything else. ──
+        const MAX_PRICE_VARIANT_ROWS = 3; // + the base price itself = 4 total, the agreed hard cap
+
+        function makePriceVariantRow(label, price) {
+            const row = document.createElement('div');
+            row.className = 'price-variant-row-item';
+            row.innerHTML = `
+                <div class="field price-variant-label-field"><input type="text" class="price-variant-label" maxlength="40" placeholder="${MSG_PRICE_VARIANT_LABEL_PLACEHOLDER}"></div>
+                <div class="field price-variant-price-field"><input type="number" class="price-variant-price" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+                <span class="price-variant-remove" onclick="removePriceVariantRow(this)" role="button" tabindex="0" aria-label="${MSG_REMOVE_EXTRA_PRICE}">×</span>
+            `;
+            // Set as values, never interpolated into the HTML string above — label/price are
+            // owner-typed free text and must never be treated as markup.
+            row.querySelector('.price-variant-label').value = label ?? '';
+            row.querySelector('.price-variant-price').value = price ?? '';
+            return row;
+        }
+
+        // Excludes the base row on purpose — it's a permanent, uncounted
+        // member of the list (never subject to the 3-extra-rows cap).
+        function priceVariantRowCount(section) {
+            return section.querySelectorAll('.price-variant-row-item:not(.price-variant-base-row)').length;
+        }
+
+        function updatePriceVariantAddVisibility(section) {
+            section.querySelector('.price-variant-add').style.display =
+                priceVariantRowCount(section) >= MAX_PRICE_VARIANT_ROWS ? 'none' : '';
+        }
+
+        // Toggle's own icon + text reflect state — "+ Añadir varios precios"
+        // collapsed, "× Volver a precio único" expanded — so there's always a
+        // single, obvious way back to the simple state, not just per-row ×.
+        function setPriceVariantsToggleState(toggleEl, expanded) {
+            toggleEl.innerHTML = expanded
+                ? '<i class="ti ti-x" aria-hidden="true"></i> ' + MSG_PRICE_VARIANTS_COLLAPSE
+                : '<i class="ti ti-plus" aria-hidden="true"></i> ' + MSG_PRICE_VARIANTS_TOGGLE;
+        }
+
+        function togglePriceVariants(toggleEl) {
+            const panel = toggleEl.closest('.panel-body');
+            const section = toggleEl.closest('.price-variants-section');
+            const group = panel.querySelector('.price-variants-group');
+            const baseRow = panel.querySelector('.price-variant-base-row');
+            const rows = panel.querySelector('.price-variant-rows');
+            const expanding = group.style.display === 'none';
+
+            if (expanding) {
+                group.style.display = '';
+                baseRow.querySelector('.price-variant-base-label-field').style.display = '';
+                rows.prepend(baseRow); // re-parent the real inputs, never duplicate them
+                // Choosing "varios precios" already implies a second price —
+                // show one empty row right away, no second click needed.
+                rows.appendChild(makePriceVariantRow());
+                updatePriceVariantAddVisibility(section);
+            } else {
+                panel.querySelector('[id="p-base-price-label"]').value = '';
+                rows.querySelectorAll('.price-variant-row-item:not(.price-variant-base-row)').forEach(row => row.remove());
+                section.parentNode.insertBefore(baseRow, section); // back to its original spot
+                baseRow.querySelector('.price-variant-base-label-field').style.display = 'none';
+                updatePriceVariantAddVisibility(section);
+                group.style.display = 'none';
+            }
+            setPriceVariantsToggleState(toggleEl, expanding);
+        }
+
+        function addPriceVariantRow(addEl) {
+            const section = addEl.closest('.price-variants-section');
+            if (priceVariantRowCount(section) >= MAX_PRICE_VARIANT_ROWS) return;
+            section.querySelector('.price-variant-rows').appendChild(makePriceVariantRow());
+            updatePriceVariantAddVisibility(section);
+        }
+
+        function removePriceVariantRow(removeEl) {
+            const section = removeEl.closest('.price-variants-section');
+            removeEl.closest('.price-variant-row-item').remove();
+            updatePriceVariantAddVisibility(section);
+        }
+
+        // Load-time population (an existing product that already has
+        // variants) — same re-parenting as a fresh expand, keeping the
+        // toggle in its "collapse" state, since the owner may still want to
+        // return to a single price from here too.
+        function revealPriceVariants() {
+            document.querySelectorAll('.panel-body').forEach(panel => {
+                const toggle = panel.querySelector('.price-variants-toggle');
+                if (!toggle) return;
+                const baseRow = panel.querySelector('.price-variant-base-row');
+                panel.querySelector('.price-variants-group').style.display = '';
+                baseRow.querySelector('.price-variant-base-label-field').style.display = '';
+                panel.querySelector('.price-variant-rows').prepend(baseRow);
+                setPriceVariantsToggleState(toggle, true);
             });
         }
 
@@ -1409,7 +1557,7 @@
 
         // ── Reset ──────────────────────────────────────────────────────────────────
         function resetProduct() {
-            ['p-name','p-desc','p-price','p-supplement-price','p-glass-price','p-second-price-label','p-calories'].forEach(id =>
+            ['p-name','p-desc','p-price','p-supplement-price','p-base-price-label','p-calories'].forEach(id =>
                 document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value=''; el.classList.remove('error'); })
             );
             ['p-name-error','p-price-error'].forEach(id =>
@@ -1426,8 +1574,20 @@
             renderAllergenOverrides();
             document.querySelectorAll('[id="p-private-ingredient-allergens-wrap"]').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.extra-price-toggle').forEach(el => el.style.display = '');
-            document.querySelectorAll('.extra-price-chooser').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.extra-price-field').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.price-variants-group').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.price-variants-section').forEach(section => {
+                // Move the base row home BEFORE wiping .price-variant-rows — it may
+                // currently live inside there (re-parented by a previous expand),
+                // and it must never be deleted, only relocated.
+                const panel = section.closest('.panel-body');
+                const baseRow = panel.querySelector('.price-variant-base-row');
+                section.parentNode.insertBefore(baseRow, section);
+                baseRow.querySelector('.price-variant-base-label-field').style.display = 'none';
+                section.querySelector('.price-variant-rows').innerHTML = '';
+                updatePriceVariantAddVisibility(section);
+                setPriceVariantsToggleState(section.querySelector('.price-variants-toggle'), false);
+            });
             document.querySelectorAll('.allergen-accordion-toggle').forEach(el => el.setAttribute('aria-expanded', 'false'));
             document.querySelectorAll('.allergen-accordion-body').forEach(el => el.classList.remove('open'));
             closeAllHelp();

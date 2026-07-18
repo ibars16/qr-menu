@@ -55,6 +55,26 @@ class MenuPreferencesResolver
     }
 
     /**
+     * The short label to show next to a price for this currency — its
+     * symbol when exactly one supported currency uses it, so it reads
+     * unambiguously on its own (e.g. "€" for EUR), otherwise the ISO code.
+     * Several currencies here share a symbol (e.g. "$" for USD/AUD/CAD/…,
+     * "kr" for SEK/NOK/DKK) — those always show the code instead, never a
+     * bare symbol that could mean any of them.
+     */
+    public function getCurrencyDisplay(string $code): string
+    {
+        $symbol = $this->currencies[$code]['symbol'] ?? null;
+        if ($symbol === null) {
+            return $code;
+        }
+
+        $sharedBy = array_filter($this->currencies, static fn (array $c) => $c['symbol'] === $symbol);
+
+        return count($sharedBy) === 1 ? $symbol : $code;
+    }
+
+    /**
      * Best supported language for this device/browser, based on its
      * Accept-Language header, falling back when nothing supported matches.
      */
