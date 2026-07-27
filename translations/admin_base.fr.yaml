@@ -13,6 +13,7 @@ nav:
         restaurant: Restaurant
     item:
         menu: Carte
+        menus: Menus
         categories: Catégories
         tags: Étiquettes
         theme: Personnaliser la carte
@@ -29,6 +30,7 @@ theme:
 bottom_nav:
     aria_label: Navigation
     menu: Carte
+    menus: Formules
     categories: 'Catég.'
     tags: 'Étiq.'
     qr: QR

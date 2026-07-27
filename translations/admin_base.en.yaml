@@ -13,6 +13,7 @@ nav:
         restaurant: Restaurant
     item:
         menu: Menu
+        menus: Set menus
         categories: Categories
         tags: Tags
         theme: Customize menu
@@ -29,6 +30,7 @@ theme:
 bottom_nav:
     aria_label: Navigation
     menu: Menu
+    menus: Set menus
     categories: 'Categ.'
     tags: Tags
     qr: QR

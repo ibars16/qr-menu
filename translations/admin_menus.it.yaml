@@ -1,0 +1,71 @@
+title: Menù fissi
+
+action:
+    new_menu: Crea menù
+    create_first_menu: Crea il primo menù fisso
+    back_to_menus: Torna ai Menù fissi
+    edit_menu: Modifica menù fisso
+    delete_menu: Elimina menù fisso
+    add_section: Aggiungi sezione
+    delete_section: Elimina sezione
+    add_dish: Aggiungi piatto
+    cancel: Annulla
+    save: Salva
+    close: Chiudi
+    toggle_active: Attiva/disattiva
+
+common:
+    optional: facoltativo
+    unnamed: (senza nome)
+
+empty_state:
+    title: Nessun menù fisso
+    subtitle: 'Crea un menù fisso (menù del giorno, menù degustazione…) per raggruppare più piatti con un unico prezzo.'
+    no_sections_title: Inizia creando la tua prima sezione
+
+modal:
+    new_title: Nuovo menù
+    edit_title: Modifica menù fisso
+    section_new_title: Nuova sezione
+    section_edit_title: Modifica sezione
+
+field:
+    name: Nome
+    name_placeholder: 'Es.: Menù del giorno, Menù degustazione…'
+    name_required: Il nome è obbligatorio
+    menu_price: 'Prezzo del menù fisso (%currency%)'
+    menu_price_required: Il prezzo del menù fisso è obbligatorio
+    menu_description: Descrizione
+    menu_description_placeholder: 'Es.: Include pane e bevanda · Solo nei giorni feriali'
+    section_name_placeholder: 'Es.: Antipasti, Primi, Dolci…'
+
+meta:
+    dish_singular: piatto
+    dish_plural: piatti
+
+status:
+    visible: Visibile
+    hidden: Nascosto
+
+hint:
+    drag_reorder: Trascina i menù fissi per cambiarne l'ordine
+    empty_sections: 'Crea la tua prima sezione (Antipasti, Primi, Dolci…) per iniziare ad aggiungere piatti.'
+    empty_dishes_in_section: Aggiungi il primo piatto di questa sezione.
+
+toast:
+    menu_created: 'Menù fisso creato ✓'
+    menu_updated: 'Menù fisso aggiornato ✓'
+    menu_deleted: Menù fisso eliminato
+    section_created: 'Sezione creata ✓'
+    section_updated: 'Sezione aggiornata ✓'
+    section_deleted: Sezione eliminata
+
+confirm:
+    delete_menu_with_dishes: 'Eliminare "%name%" e i suoi %count% piatti? Azione irreversibile.'
+    delete_menu_simple: 'Eliminare il menù fisso "%name%"?'
+    delete_section_with_dishes: 'Eliminare la sezione "%name%" e i suoi %count% piatti? Azione irreversibile.'
+    delete_section_simple: 'Eliminare la sezione "%name%"?'
+
+error:
+    section_label_required: Il nome della sezione è obbligatorio.
+    unexpected: Qualcosa è andato storto. Riprova.

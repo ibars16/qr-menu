@@ -1,0 +1,59 @@
+{# templates/admin/_admin_js_utils.html.twig
+
+   Shared low-level helpers — used by category JS, product JS
+   (_product_js.html.twig), and the Menús screens' own section/dish-reorder
+   JS. Include this BEFORE any of those, right after declaring `const S`.
+
+   panelEl()/getVal()/setVal(): every form partial in this admin (category
+   fields, product fields) is included twice — once in a desktop modal,
+   once in a mobile bottom sheet — so there are two copies of every field
+   id in the DOM. panelEl() queries inside the currently-open panel first,
+   so reads always hit the visible copy; setVal() writes to both copies so
+   they stay in sync regardless of which one is open next. #}
+<script>
+    const LOCALE = '{{ locale }}';
+
+    const MSG_UNEXPECTED_ERROR = "{{ 'error.unexpected'|trans({}, 'admin_menu')|e('js') }}";
+
+    const isMobile = () => window.innerWidth < 768;
+
+    function activePanel() {
+        return document.querySelector('.modal-overlay.open, .sheet-overlay.open');
+    }
+    function panelEl(id) {
+        const p = activePanel();
+        return p?.querySelector('[id="' + id + '"]') ?? document.getElementById(id);
+    }
+    const getVal = id => panelEl(id)?.value?.trim() ?? '';
+    const setVal = (id, v) => document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value = v ?? ''; });
+
+    async function apiFetch(url, body=null, method=null) {
+        // Method must always be explicit (or default to POST, which is
+        // what every mutating route here expects) — it must never be
+        // inferred from whether a body was passed. A GET-only route
+        // (like product_get) that received a request with no body used
+        // to silently fall back to GET seeming to work, but a POST-only
+        // route (toggle/delete) receiving no body was silently sent as
+        // GET too, which Symfony rejects with a 405 the caller never saw
+        // coming since it always assumed method === 'POST' had been sent.
+        const m = method ?? 'POST';
+        const opts = { method: m, headers: body ? {'Content-Type':'application/json'} : {} };
+        if (body) opts.body = JSON.stringify(body);
+
+        let res, data;
+        try {
+            res = await fetch(url, opts);
+            data = await res.json();
+        } catch (e) {
+            data = null;
+        }
+
+        if (!res || !res.ok || data === null) {
+            const message = (data && data.error) ? data.error : MSG_UNEXPECTED_ERROR;
+            showToast(message, 'error');
+            return { error: message };
+        }
+
+        return data;
+    }
+</script>

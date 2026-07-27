@@ -41,7 +41,6 @@ status:
 
 hint:
     drag_reorder: Drag categories to change their order
-    ai_translations: Translations into other languages will be added automatically with AI.
 
 badge:
     position: '%position%'

@@ -49,6 +49,15 @@ class Restaurant
     #[ORM\Column(length: 20)]
     private string $theme = 'classic-dark';
 
+    /**
+     * Feature flag for the "Set menus" admin section (Admin\MenusController) —
+     * hidden by default. See App\EventSubscriber\SetMenusFeatureGate, which
+     * gates every action on that controller behind this flag, and
+     * app:restaurant:set-menus (bin/console) to flip it per restaurant.
+     */
+    #[ORM\Column]
+    private bool $setMenusEnabled = false;
+
     #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Table::class, cascade: ['persist', 'remove'])]
     private Collection $tables;
 
@@ -167,6 +176,16 @@ class Restaurant
     public function setTheme(string $theme): void
     {
         $this->theme = $theme;
+    }
+
+    public function isSetMenusEnabled(): bool
+    {
+        return $this->setMenusEnabled;
+    }
+
+    public function setSetMenusEnabled(bool $setMenusEnabled): void
+    {
+        $this->setMenusEnabled = $setMenusEnabled;
     }
 
     public function getTables(): Collection

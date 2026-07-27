@@ -13,6 +13,7 @@ nav:
         restaurant: Ristorante
     item:
         menu: Menu
+        menus: Menù fissi
         categories: Categorie
         tags: Etichette
         theme: Personalizza il menu
@@ -29,6 +30,7 @@ theme:
 bottom_nav:
     aria_label: Navigazione
     menu: Menu
+    menus: Fissi
     categories: Categ.
     tags: Etich.
     qr: QR

@@ -29,7 +29,15 @@ class CategoriesController extends AbstractController
         $restaurant = $this->restaurant();
         $languages  = require $this->getParameter('kernel.project_dir') . '/config/languages.php';
 
-        $categories = $restaurant->getCategories()->toArray();
+        // Fixed-price menus live entirely on the separate Menús screen now —
+        // see Admin\MenusController. This legacy category-list screen never
+        // had any menu-specific UI, but without this filter a menu category
+        // would still show up here by name, and its position could get
+        // tangled with normal categories' via this screen's own reorder.
+        $categories = array_values(array_filter(
+            $restaurant->getCategories()->toArray(),
+            static fn(Category $c) => !$c->isFixedPriceMenu()
+        ));
         usort($categories, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
 
         return $this->render('admin/categories.html.twig', [
@@ -78,7 +86,7 @@ class CategoriesController extends AbstractController
 
         foreach ($ids as $position => $id) {
             $cat = $em->getRepository(Category::class)->find($id);
-            if ($cat && $cat->getRestaurant() === $restaurant) {
+            if ($cat && $cat->getRestaurant() === $restaurant && !$cat->isFixedPriceMenu()) {
                 $cat->setPosition($position);
             }
         }

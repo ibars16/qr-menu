@@ -1,0 +1,71 @@
+title: Menus
+
+action:
+    new_menu: Criar menu
+    create_first_menu: Criar primeiro menu
+    back_to_menus: Voltar a Menus
+    edit_menu: Editar menu
+    delete_menu: Eliminar menu
+    add_section: Adicionar secção
+    delete_section: Eliminar secção
+    add_dish: Adicionar prato
+    cancel: Cancelar
+    save: Guardar
+    close: Fechar
+    toggle_active: Ativar/desativar
+
+common:
+    optional: opcional
+    unnamed: (sem nome)
+
+empty_state:
+    title: Sem menus
+    subtitle: 'Crie um menu de preço fixo (menu do dia, menu de degustação…) para agrupar vários pratos num único preço.'
+    no_sections_title: Comece por criar a sua primeira secção
+
+modal:
+    new_title: Novo menu
+    edit_title: Editar menu
+    section_new_title: Nova secção
+    section_edit_title: Editar secção
+
+field:
+    name: Nome
+    name_placeholder: 'Ex.: Menu do dia, Menu de degustação…'
+    name_required: O nome é obrigatório
+    menu_price: 'Preço do menu (%currency%)'
+    menu_price_required: O preço do menu é obrigatório
+    menu_description: Descrição
+    menu_description_placeholder: 'Ex.: Inclui pão e bebida · Apenas em dias de semana'
+    section_name_placeholder: 'Ex.: Entradas, Pratos principais, Sobremesas…'
+
+meta:
+    dish_singular: prato
+    dish_plural: pratos
+
+status:
+    visible: Visível
+    hidden: Oculto
+
+hint:
+    drag_reorder: Arraste os menus para alterar a ordem
+    empty_sections: 'Crie a sua primeira secção (Entradas, Pratos principais, Sobremesas…) para começar a adicionar pratos.'
+    empty_dishes_in_section: Adicione o primeiro prato desta secção.
+
+toast:
+    menu_created: 'Menu criado ✓'
+    menu_updated: 'Menu atualizado ✓'
+    menu_deleted: Menu eliminado
+    section_created: 'Secção criada ✓'
+    section_updated: 'Secção atualizada ✓'
+    section_deleted: Secção eliminada
+
+confirm:
+    delete_menu_with_dishes: 'Eliminar "%name%" e os seus %count% pratos? Não é possível desfazer.'
+    delete_menu_simple: 'Eliminar o menu "%name%"?'
+    delete_section_with_dishes: 'Eliminar a secção "%name%" e os seus %count% pratos? Não é possível desfazer.'
+    delete_section_simple: 'Eliminar a secção "%name%"?'
+
+error:
+    section_label_required: O nome da secção é obrigatório.
+    unexpected: Ocorreu um erro. Tente novamente.

@@ -44,6 +44,24 @@ class Category
     #[ORM\Column(length: 20, enumType: CategoryType::class, nullable: true)]
     private ?CategoryType $type = null;
 
+    /**
+     * Cents. Non-null turns this category into a fixed-price menu (menú del
+     * día, tasting menu…): its products are ordinary dishes sharing this one
+     * price, rather than each carrying its own. Per-dish surcharges within
+     * the menu still use Product::$supplementPrice — unchanged.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?int $menuPrice = null;
+
+    /**
+     * Free text like "Incluye pan y bebida · De lunes a viernes". Single
+     * language, stored as-is in the restaurant's own content language —
+     * same convention as Product::$basePriceLabel: no translation entity,
+     * no auto-translate.
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $menuDescription = null;
+
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: CategoryTranslation::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $translations;
 
@@ -51,10 +69,22 @@ class Category
     #[ORM\OrderBy(['position' => 'ASC'])]
     private Collection $products;
 
+    #[ORM\OneToMany(mappedBy: 'category', targetEntity: MenuSection::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $menuSections;
+
+    /**
+     * Temporary price after currency conversion, cents. NOT mapped to the
+     * database — calculated at runtime in MenuController, exactly like
+     * Product::$convertedPrice. Only meaningful when $menuPrice is set.
+     */
+    private int $convertedMenuPrice = 0;
+
     public function __construct()
     {
         $this->translations = new ArrayCollection();
         $this->products = new ArrayCollection();
+        $this->menuSections = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -132,6 +162,42 @@ class Category
         $this->type = $type;
     }
 
+    public function getMenuPrice(): ?int
+    {
+        return $this->menuPrice;
+    }
+
+    public function setMenuPrice(?int $menuPrice): void
+    {
+        $this->menuPrice = $menuPrice;
+    }
+
+    public function getMenuDescription(): ?string
+    {
+        return $this->menuDescription;
+    }
+
+    public function setMenuDescription(?string $menuDescription): void
+    {
+        $this->menuDescription = $menuDescription;
+    }
+
+    public function isFixedPriceMenu(): bool
+    {
+        return $this->menuPrice !== null;
+    }
+
+    /** Falls back to the raw price if conversion hasn't been applied yet — mirrors Product::getConvertedPrice(). */
+    public function getConvertedMenuPrice(): int
+    {
+        return $this->convertedMenuPrice > 0 ? $this->convertedMenuPrice : (int) $this->menuPrice;
+    }
+
+    public function setConvertedMenuPrice(int $price): void
+    {
+        $this->convertedMenuPrice = $price;
+    }
+
     public function getTranslations(): Collection
     {
         return $this->translations;
@@ -188,5 +254,75 @@ class Category
         usort($products, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
 
         return $products;
+    }
+
+    public function getMenuSections(): Collection
+    {
+        return $this->menuSections;
+    }
+
+    public function addMenuSection(MenuSection $section): void
+    {
+        if (!$this->menuSections->contains($section)) {
+            $this->menuSections->add($section);
+            $section->setCategory($this);
+        }
+    }
+
+    public function removeMenuSection(MenuSection $section): void
+    {
+        $this->menuSections->removeElement($section);
+    }
+
+    /**
+     * The Menús edit screen's structure: every section (in position order —
+     * this is now the sections' OWN clean 0..n-1 scale, no longer shared
+     * with Product::$position) paired with its own dishes (each section's
+     * $products, in ITS OWN position order — see MenuSection::
+     * getProductsSorted()). Every product in a menu category is required to
+     * belong to a section, so there is no "unsectioned" bucket here.
+     *
+     * @return list<array{section: MenuSection, products: Product[]}>
+     */
+    public function getSectionsWithProducts(): array
+    {
+        $sections = $this->menuSections->toArray();
+        usort($sections, static fn(MenuSection $a, MenuSection $b) => $a->getPosition() <=> $b->getPosition());
+
+        return array_map(
+            static fn(MenuSection $section) => ['section' => $section, 'products' => $section->getProductsSorted()],
+            $sections
+        );
+    }
+
+    /**
+     * Same shape as getSectionsWithProducts(), limited to each section's
+     * active dishes only — the public menu's view of a fixed-price menu's
+     * structure. The admin's own screen keeps using the unfiltered version
+     * above so an inactive dish stays visible there with its toggle.
+     *
+     * @return list<array{section: MenuSection, products: Product[]}>
+     */
+    public function getActiveSectionsWithProducts(): array
+    {
+        return array_map(
+            static fn(array $entry) => [
+                'section'  => $entry['section'],
+                'products' => array_values(array_filter($entry['products'], static fn(Product $p) => $p->isActive())),
+            ],
+            $this->getSectionsWithProducts()
+        );
+    }
+
+    /** True once at least one section has at least one active dish — gates whether this menu renders at all on the public menu. */
+    public function hasActiveMenuDishes(): bool
+    {
+        foreach ($this->getActiveSectionsWithProducts() as $entry) {
+            if (count($entry['products']) > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

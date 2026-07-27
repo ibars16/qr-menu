@@ -78,11 +78,25 @@ class MenuController extends AbstractController
         // arriving via a link that already specifies a preference.
         $showPrefsDialog = $savedPrefs === null && $queryLang === null && $queryCurrency === null;
 
-        // Active categories, sorted
-        $categories = $restaurant->getCategories()
+        // Active categories, ordered as: every set (fixed-price) menu first
+        // (in their own position band), then every normal category (in its
+        // own, independent position band) — the two never share one scale,
+        // see Category's class docblock / the Set menus restructure. This
+        // rendering query is purely data-driven: it filters on Category/
+        // Product's own $active flag only, never on
+        // Restaurant::$setMenusEnabled — that flag gates the ADMIN screen
+        // (see SetMenusFeatureGate), not what a published menu-category
+        // renders publicly. A menu created while the flag was on keeps
+        // rendering here even if the flag is later switched off.
+        $allActiveCategories = $restaurant->getCategories()
             ->filter(fn($c) => $c->isActive())
             ->toArray();
-        usort($categories, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
+
+        $setMenus = array_values(array_filter($allActiveCategories, fn($c) => $c->isFixedPriceMenu()));
+        $normalCategories = array_values(array_filter($allActiveCategories, fn($c) => !$c->isFixedPriceMenu()));
+        usort($setMenus, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
+        usort($normalCategories, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
+        $categories = array_merge($setMenus, $normalCategories);
 
         // Products with converted price
         $currencyConverter = new CurrencyConverter(
@@ -90,6 +104,22 @@ class MenuController extends AbstractController
         );
 
         foreach ($categories as $category) {
+            if ($category->isFixedPriceMenu()) {
+                $category->setConvertedMenuPrice(
+                    $currencyConverter->convert($category->getMenuPrice(), $restaurant->getCurrency(), $currency)
+                );
+                foreach ($category->getActiveSectionsWithProducts() as $entry) {
+                    foreach ($entry['products'] as $product) {
+                        if ($product->getSupplementPrice() !== null) {
+                            $product->setConvertedSupplementPrice(
+                                $currencyConverter->convert($product->getSupplementPrice(), $restaurant->getCurrency(), $currency)
+                            );
+                        }
+                    }
+                }
+                continue;
+            }
+
             $products = $category->getProducts()
                 ->filter(fn($p) => $p->isActive())
                 ->toArray();

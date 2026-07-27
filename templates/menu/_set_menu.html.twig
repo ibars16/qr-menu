@@ -1,0 +1,115 @@
+{# templates/menu/_set_menu.html.twig
+
+   Shared rendering for a fixed-price ("set") menu category — used by all 3
+   public layouts (standard/compact/grid), same rule as _price.html.twig:
+   never inlined per layout. Class names are shared; each layout defines its
+   own <style> rules for them (exactly like .price-stack/.price-row), so the
+   same markup picks up each layout's own density/spacing for free.
+
+   Two entry points:
+   - pill(): the cat-tabs bar entry for a set menu (name + converted price).
+   - section(): the full inner content of a set menu's <section class="cat-section">
+     — header (name + price + description), then each MenuSection as a group
+     label, then its dishes as compact tappable rows.
+
+   Dish rows deliberately always use a HORIZONTAL back-scroll (like the
+   compact layout's own dish rows) regardless of which of the 3 layouts is
+   active: a compact list row is short (~64px), and a vertically-stacked
+   detail body (description/ingredients/allergens) doesn't fit that height
+   the way the standard/grid layouts' own tall image cards do — horizontal
+   scroll is the one detail pattern that already works at row height. See
+   each layout's own <style> block for the accompanying CSS (the ".horiz"
+   back-scroll variant + scroll-cue-h/-l already exist for compact and were
+   added to standard/grid alongside the .set-menu-* rules).
+
+   Never shows basePrice or price variants — a set menu's dishes share the
+   header's one price; only a per-dish supplement (Product::$supplementPrice)
+   ever renders, muted, on the row's right edge.
+#}
+{% macro pill(category, locale, restaurant, currencyDisplay) %}
+    {% set t = category.getTranslation(locale) %}
+    {% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
+    {% if not t %}{% set t = category.translations.first %}{% endif %}
+    {% if t %}
+        <span class="cat-tab cat-tab-menu" data-cat="cat-{{ category.id }}">{{ t.name }} · {{ (category.convertedMenuPrice / 100)|number_format(2) }} {{ currencyDisplay }}</span>
+    {% endif %}
+{% endmacro %}
+
+{% macro section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens) %}
+    {% set menuT = category.getTranslation(locale) %}
+    {% if not menuT %}{% set menuT = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
+    {% if not menuT %}{% set menuT = category.translations.first %}{% endif %}
+    {% if menuT %}
+        <div class="set-menu-header">
+            <div class="set-menu-name">{{ menuT.name }}</div>
+            <div class="set-menu-price">{{ (category.convertedMenuPrice / 100)|number_format(2) }} {{ currencyDisplay }}</div>
+        </div>
+        {% if category.menuDescription %}
+            <div class="set-menu-desc">{{ category.menuDescription }}</div>
+        {% endif %}
+        {% for entry in category.activeSectionsWithProducts %}
+            {% if entry.products|length > 0 %}
+                <div class="set-menu-group">
+                    <div class="set-menu-group-label">{{ entry.section.label }}</div>
+                    {% for product in entry.products %}
+                        {{ _self.dish_row(product, locale, restaurant, currencyDisplay, tagNames, productAllergens) }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+
+{% macro dish_row(product, locale, restaurant, currencyDisplay, tagNames, productAllergens) %}
+    {% set pT = product.getTranslation(locale) %}
+    {% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}
+    {% if not pT %}{% set pT = product.translations.first %}{% endif %}
+    {% if pT %}
+        <div class="card-wrap set-menu-row-wrap"
+             onclick="flipCard(this)"
+             data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}"
+             data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
+            <div class="card set-menu-card">
+                <div class="card-front set-menu-front">
+                    <div class="set-menu-row">
+                        {% if product.image %}
+                            <div class="set-menu-thumb"><img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy"></div>
+                        {% endif %}
+                        <div class="set-menu-name product-name">{{ pT.name }}</div>
+                        {% if product.supplementPrice %}
+                            <div class="set-menu-supplement">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }} {{ currencyDisplay }}</div>
+                        {% endif %}
+                        <div class="set-menu-chevron"><i class="ti ti-chevron-right" aria-hidden="true"></i></div>
+                    </div>
+                </div>
+                <div class="card-back">
+                    <button class="back-close" onclick="unflipCard(event,this)" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+                    <div class="back-scroll horiz">
+                        <div class="back-body">
+                            <div class="bsec"><div class="bsec-title">Plato</div><div class="back-desc" style="font-weight:600;font-size:13px;color:var(--bn)">{{ pT.name }}</div></div>
+                            {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
+                            {% set ingredientNames = product.getIngredientNames(locale, restaurant.defaultLanguage) %}
+                            {% if ingredientNames|length > 0 %}
+                                <div class="bsec"><div class="bsec-title">Ingredientes</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>
+                            {% endif %}
+                            {% if product.tags|length > 0 %}
+                                <div class="bsec"><div class="bsec-title">Etiquetas</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>
+                            {% endif %}
+                            {% if productAllergens[product.id]|default([])|length > 0 %}
+                                <div class="bsec"><div class="bsec-title">Alérgenos</div><div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="Más información" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ Sin {{ a.name }}{{ noteBtn|raw }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · trazas{{ noteBtn|raw }}</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}{{ noteBtn|raw }}</div>{% endif %}{% endfor %}</div></div>
+                            {% endif %}
+                            {% if product.spicyLevel > 0 %}
+                                <div class="bsec"><div class="bsec-title">Picante</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}Suave{% elseif product.spicyLevel == 2 %}Medio{% elseif product.spicyLevel == 3 %}Picante{% elseif product.spicyLevel == 4 %}Muy picante{% else %}Extremo{% endif %}</span></div></div>
+                            {% endif %}
+                            {% if product.calories %}
+                                <div class="bsec"><div class="bsec-title">Calorías</div><div class="nut-row"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>
+                            {% endif %}
+                        </div>
+                        <button class="scroll-cue-l" type="button" aria-label="Volver"></button>
+                        <button class="scroll-cue-h" type="button" aria-label="Siguiente"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endmacro %}

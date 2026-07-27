@@ -1,0 +1,53 @@
+{# templates/admin/_menu_fields.html.twig
+
+   Nombre + Precio del menú + Descripción — all visible at once, no
+   progressive-disclosure toggle (unlike the old Categorías-screen flow this
+   replaces): a menu on this screen is always a menu, so there's nothing to
+   reveal. Included twice (desktop modal + mobile sheet) with a `suffix`
+   ('d'/'m') to keep field ids distinct per copy, matching this screen's
+   plain two-id convention (see categories.html.twig) rather than the
+   duplicate-id/panelEl() convention used on the Carta screen. #}
+<div class="field">
+    <label class="field-label">
+        {{ 'field.name'|trans({}, 'admin_menus') }} <span class="req">*</span>
+    </label>
+    <input type="text"
+           id="{{ suffix }}-menu-name-input"
+           placeholder="{{ 'field.name_placeholder'|trans({}, 'admin_menus') }}"
+           onkeydown="if(event.key==='Enter') UI.save()">
+    <div class="field-error" id="{{ suffix }}-menu-name-error">{{ 'field.name_required'|trans({}, 'admin_menus') }}</div>
+</div>
+{# Tipo — same options/keys as the normal category form (admin_categories
+   domain), reused rather than duplicated. Optional, defaults to "Sin
+   clasificar" (null): a menu can be a food menu, a drink/wine-pairing menu
+   (e.g. a wine-pairing tasting menu), or left unclassified. #}
+<div class="field">
+    <label class="field-label">
+        {{ 'field.type'|trans({}, 'admin_categories') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menus') }})</span>
+    </label>
+    <select id="{{ suffix }}-menu-type-select">
+        <option value="">{{ 'field.type_unclassified'|trans({}, 'admin_categories') }}</option>
+        <option value="food">{{ 'field.type_food'|trans({}, 'admin_categories') }}</option>
+        <option value="drink">{{ 'field.type_drink'|trans({}, 'admin_categories') }}</option>
+    </select>
+</div>
+<div class="field">
+    <label class="field-label">
+        {{ 'field.menu_price'|trans({'%currency%': restaurant.currency}, 'admin_menus') }} <span class="req">*</span>
+    </label>
+    <input type="number"
+           id="{{ suffix }}-menu-price-input"
+           min="0" step="0.01"
+           placeholder="0.00"
+           inputmode="decimal">
+    <div class="field-error" id="{{ suffix }}-menu-price-error">{{ 'field.menu_price_required'|trans({}, 'admin_menus') }}</div>
+</div>
+<div class="field">
+    <label class="field-label">
+        {{ 'field.menu_description'|trans({}, 'admin_menus') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menus') }})</span>
+    </label>
+    <input type="text"
+           id="{{ suffix }}-menu-description-input"
+           maxlength="255"
+           placeholder="{{ 'field.menu_description_placeholder'|trans({}, 'admin_menus') }}">
+</div>

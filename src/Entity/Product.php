@@ -22,6 +22,19 @@ class Product
     #[ORM\JoinColumn(nullable: false)]
     private Category $category;
 
+    /**
+     * Non-null only for products belonging to a fixed-price menu category
+     * (Category::$menuPrice !== null) — every such product is required to
+     * have one (see MenuSection's docblock: a freshly created menu always
+     * gets a default section, and the admin never offers "+ Añadir plato"
+     * without a section context). Always null for a normal category's
+     * products. $position below is then scoped to siblings within this
+     * section, not to the whole category — see MenuSection::getProductsSorted().
+     */
+    #[ORM\ManyToOne(targetEntity: MenuSection::class, inversedBy: 'products')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?MenuSection $menuSection = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
@@ -159,6 +172,13 @@ class Product
      */
     private array $convertedVariantPrices = [];
 
+    /**
+     * Converted $supplementPrice, cents. NOT mapped to database — calculated
+     * at runtime in MenuController, exactly like $convertedPrice. Only
+     * meaningful when $supplementPrice is set.
+     */
+    private int $convertedSupplementPrice = 0;
+
     public function __construct()
     {
         $this->translations           = new ArrayCollection();
@@ -182,6 +202,16 @@ class Product
     public function setCategory(Category $category): void
     {
         $this->category = $category;
+    }
+
+    public function getMenuSection(): ?MenuSection
+    {
+        return $this->menuSection;
+    }
+
+    public function setMenuSection(?MenuSection $menuSection): void
+    {
+        $this->menuSection = $menuSection;
     }
 
     public function getImage(): ?string
@@ -224,6 +254,21 @@ class Product
     public function getSupplementPriceDecimal(): ?float
     {
         return $this->supplementPrice !== null ? $this->supplementPrice / 100 : null;
+    }
+
+    /** Falls back to the raw supplement if conversion hasn't been applied yet — mirrors getConvertedPrice(). Null when this dish carries no supplement at all. */
+    public function getConvertedSupplementPrice(): ?int
+    {
+        if ($this->supplementPrice === null) {
+            return null;
+        }
+
+        return $this->convertedSupplementPrice > 0 ? $this->convertedSupplementPrice : $this->supplementPrice;
+    }
+
+    public function setConvertedSupplementPrice(int $price): void
+    {
+        $this->convertedSupplementPrice = $price;
     }
 
     public function getBasePriceLabel(): ?string

@@ -1,6 +1,7 @@
 {# Layout: Grid — portrait flip cards, 2/3/4 column grid #}
 {% include 'menu/themes/' ~ theme ~ '/vars.html.twig' %}
 {% import 'menu/_price.html.twig' as priceMacro %}
+{% import 'menu/_set_menu.html.twig' as setMenuMacro %}
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); background-attachment: var(--bg-attach); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; }
@@ -198,6 +199,50 @@
     .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dot-off); flex-shrink: 0; }
     .dot.on { background: var(--dot-on); }
     .spicy-txt { font-size: 10px; color: var(--spicy-t); margin-left: 3px; }
+
+    /* ── Set menu (fixed-price menu) — shared markup in menu/_set_menu.html.twig,
+       sized here for this layout's density. Dishes stay a single-column
+       compact list, not this layout's own multi-column card grid — a long
+       menu list is the one visual risk spot worth checking by hand. ── */
+    .cat-tab-menu { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); }
+    .set-menu-header { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+    .set-menu-name { font-size: 20px; font-weight: 800; color: var(--cn); letter-spacing: -0.5px; }
+    .set-menu-price { font-size: 20px; font-weight: 800; color: var(--cp); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .set-menu-desc { font-size: 12.5px; color: var(--fg-3); line-height: 1.55; margin-top: 6px; }
+    .set-menu-group { margin-top: 22px; }
+    .set-menu-group-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-3); margin-bottom: 8px; }
+    .set-menu-row-wrap { perspective: 1400px; cursor: pointer; }
+    .set-menu-row-wrap .card { height: 60px; }
+    .set-menu-row-wrap .card-front { background: var(--surface); border-bottom: 1px solid var(--row-border); display: flex; align-items: center; padding: 0 8px; border-radius: 10px; transition: background 0.2s; }
+    .set-menu-row-wrap:hover .card:not(.flipped) .card-front { background: var(--row-hover); }
+    .set-menu-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 4px; }
+    .set-menu-thumb { width: 46px; height: 46px; border-radius: 9px; overflow: hidden; flex-shrink: 0; }
+    .set-menu-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .set-menu-name.product-name { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; color: var(--cn); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .set-menu-supplement { font-size: 12px; font-weight: 600; color: var(--fg-3); white-space: nowrap; }
+    .set-menu-chevron { color: var(--fg-3); font-size: 13px; flex-shrink: 0; }
+
+    /* Horizontal back-scroll variant for set-menu dish detail — new here
+       (this layout's own back-scroll is vertical by default); mirrors the
+       compact layout's own back-scroll, which is horizontal unconditionally. */
+    .back-scroll.horiz .back-body { overflow-y: hidden; overflow-x: auto; flex-direction: row; align-items: stretch; height: 100%; padding: 0; }
+    .back-scroll.horiz .bsec { flex-shrink: 0; padding: 12px 16px; border-top: none; border-right: 1px solid var(--bdiv); }
+    .back-scroll.horiz .bsec + .bsec { padding-top: 12px; border-top: none; }
+    .back-scroll.horiz .back-desc { max-width: 180px; }
+    .back-scroll.horiz .ing-list, .back-scroll.horiz .lbl-list { flex-wrap: nowrap; }
+    .back-scroll.horiz::after { top: 0; right: 0; bottom: 0; left: auto; width: 36px; height: auto; background: linear-gradient(to right, transparent, var(--fade)); }
+    .back-scroll.horiz.can-right::after { opacity: 1; }
+    .back-scroll.horiz.can-dn::after { opacity: 0; }
+    @keyframes cue-slide   { 0%,100% { transform: translateY(-50%) translateX(0); } 50% { transform: translateY(-50%) translateX(3px);  } }
+    @keyframes cue-slide-l { 0%,100% { transform: translateY(-50%) translateX(0); } 50% { transform: translateY(-50%) translateX(-3px); } }
+    .scroll-cue-h, .scroll-cue-l { position: absolute; top: 50%; transform: translateY(-50%); background: var(--cue-bg); color: var(--cue-text); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 13px; border: none; cursor: pointer; pointer-events: none; opacity: 0; user-select: none; transition: opacity 0.22s; z-index: 2; }
+    .scroll-cue-h { right: 7px; }
+    .scroll-cue-h::after { content: '›'; }
+    .scroll-cue-l { left: 7px; }
+    .scroll-cue-l::after { content: '‹'; }
+    .back-scroll.horiz.can-right .scroll-cue-h { opacity: 1; pointer-events: auto; animation: cue-slide 2s ease-in-out infinite; }
+    .back-scroll.horiz.can-left .scroll-cue-l { opacity: 1; pointer-events: auto; animation: cue-slide-l 2s ease-in-out infinite; }
+    .nut-row { display: flex; align-items: baseline; gap: 4px; }
 </style>
 {% include 'menu/themes/' ~ theme ~ '/overrides.html.twig' ignore missing %}
 
@@ -242,7 +287,7 @@
         </div>
     {% endif %}
     <div class="allergen-disclaimer"><i class="ti ti-info-circle" style="font-size:12px"></i> La información de alérgenos es orientativa. Consulta con el personal antes de pedir si tienes alguna alergia.</div>
-    <div class="cat-tabs" id="cat-tabs"><span class="cat-tab active" data-cat="all">Todo</span>{% for category in categories %}{% set t = category.getTranslation(locale) %}{% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if not t %}{% set t = category.translations.first %}{% endif %}{% if t %}<span class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</span>{% endif %}{% endfor %}</div>
+    <div class="cat-tabs" id="cat-tabs"><span class="cat-tab active" data-cat="all">Todo</span>{% for category in categories %}{% if category.isFixedPriceMenu %}{{ setMenuMacro.pill(category, locale, restaurant, currencyDisplay) }}{% else %}{% set t = category.getTranslation(locale) %}{% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if not t %}{% set t = category.translations.first %}{% endif %}{% if t %}<span class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</span>{% endif %}{% endif %}{% endfor %}</div>
 </div>
 
 <div class="content">
@@ -251,8 +296,11 @@
         {% set catT = category.getTranslation(locale) %}
         {% if not catT %}{% set catT = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
         {% if not catT %}{% set catT = category.translations.first %}{% endif %}
-        {% if catT and category.activeProductsSorted|length > 0 %}
-            <section class="cat-section" id="cat-{{ category.id }}" data-section="cat-{{ category.id }}" data-type="{{ category.type ? category.type.value : '' }}">
+        {% if catT and (category.isFixedPriceMenu ? category.hasActiveMenuDishes : category.activeProductsSorted|length > 0) %}
+            <section class="cat-section {{ category.isFixedPriceMenu ? 'set-menu-section' : '' }}" id="cat-{{ category.id }}" data-section="cat-{{ category.id }}" data-type="{{ category.type ? category.type.value : '' }}">
+                {% if category.isFixedPriceMenu %}
+                    {{ setMenuMacro.section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens) }}
+                {% else %}
                 <div class="cat-title">{{ catT.name }}</div>
                 <div class="cards-grid">
                     {% for product in category.activeProductsSorted %}
@@ -300,6 +348,7 @@
                         {% endif %}
                     {% endfor %}
                 </div>
+                {% endif %}
             </section>
         {% endif %}
     {% else %}<div class="empty-state">No hay productos disponibles.</div>{% endfor %}

@@ -13,7 +13,7 @@
             <div class="cat-select-card-count">{{ prodCount }} {{ (prodCount == 1 ? 'meta.dish_singular' : 'meta.dish_plural')|trans({}, 'admin_categories') }}</div>
         </button>
     {% endfor %}
-    <button class="cat-select-new" onclick="UI.closeProduct(); UI.openNewCategory()">
+    <button class="cat-select-new" onclick="ProductUI.closeProduct(); UI.openNewCategory()">
         <i class="ti ti-folder-plus" aria-hidden="true"></i> {{ 'action.new_category'|trans({}, 'admin_categories') }}
     </button>
 </div>

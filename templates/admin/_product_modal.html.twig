@@ -1,0 +1,135 @@
+{# templates/admin/_product_modal.html.twig
+
+   Desktop modal + mobile sheet for creating/editing a Product — shared by
+   the Carta screen (menu.html.twig), which lets the owner pick/change the
+   category via a step-1 picker, and the Menús edit screen, where the
+   category+section are always preassigned and step 1 never applies.
+
+   Pass show_category_step=false to omit step 1 (and the "back" control
+   that leads to it) entirely — see ProductUI._hideSteps()/_hideBackBtn()
+   in _product_js.html.twig, which guard against these ids not existing in
+   that case. Defaults to true so the include in menu.html.twig doesn't
+   need to say so explicitly.
+
+   Depends on: ProductUI/saveProduct/deleteProduct (_product_js.html.twig,
+   include separately) and, only when show_category_step is true,
+   _cat_select.html.twig + UI.openNewCategory()/closeCat() from the
+   including page (Carta-only — never rendered when show_category_step is
+   false, so the Menús screen never needs those). #}
+{# NOT |default(true): Twig's default() filter falls back whenever the value
+   is "empty" by its own test, and an explicit boolean false counts as
+   empty — so show_category_step|default(true) would silently turn the
+   Menús screen's false back into true. is defined only checks presence. #}
+{% set show_category_step = show_category_step is defined ? show_category_step : true %}
+
+{# ════════════════════════════
+   DESKTOP: modal producto
+════════════════════════════ #}
+<div class="modal-overlay" id="desktop-product-modal"
+     onclick="if(event.target===this)ProductUI.closeProduct()">
+    <div class="modal modal-md">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title" id="product-modal-title">{{ 'modal.product.new_title'|trans({}, 'admin_menu') }}</div>
+                {% if show_category_step %}
+                    <div class="steps" id="product-modal-steps">
+                        <div class="step active" id="d-step-1"><div class="step-num">1</div> {{ 'step.category'|trans({}, 'admin_menu') }}</div>
+                        <div class="step-sep">›</div>
+                        <div class="step" id="d-step-2"><div class="step-num">2</div> {{ 'step.info'|trans({}, 'admin_menu') }}</div>
+                    </div>
+                {% endif %}
+            </div>
+            <button class="panel-close" onclick="ProductUI.closeProduct()" aria-label="{{ 'modal.close_aria'|trans({}, 'admin_menu') }}">
+                <i class="ti ti-x" aria-hidden="true"></i>
+            </button>
+        </div>
+        {% if show_category_step %}
+            <div id="d-step1-body">
+                <div class="panel-body">
+                    {% include 'admin/_cat_select.html.twig' %}
+                </div>
+                <div class="panel-footer">
+                    <button class="btn" onclick="ProductUI.closeProduct()">{{ 'action.cancel'|trans({}, 'admin_menu') }}</button>
+                    <button class="btn btn-primary" onclick="ProductUI.goStep2()">
+                        {{ 'action.next'|trans({}, 'admin_menu') }} <i class="ti ti-arrow-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+        <div id="d-step2-body" {% if show_category_step %}style="display:none"{% endif %}>
+            <div class="panel-body">
+                {% include 'admin/_product_fields.html.twig' %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn btn-danger" id="d-delete-btn" onclick="deleteProduct()" style="display:none">
+                    <i class="ti ti-trash" aria-hidden="true"></i>
+                </button>
+                {% if show_category_step %}
+                    <button class="btn" id="d-back-btn" onclick="ProductUI.goStep1()" style="margin-right:auto">
+                        <i class="ti ti-arrow-left" aria-hidden="true"></i> {{ 'action.back'|trans({}, 'admin_menu') }}
+                    </button>
+                {% endif %}
+                <button class="btn" onclick="ProductUI.closeProduct()">{{ 'action.cancel'|trans({}, 'admin_menu') }}</button>
+                <button class="btn btn-primary" onclick="saveProduct()">
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save_product'|trans({}, 'admin_menu') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ════════════════════════════
+   MOBILE: bottom sheet producto
+════════════════════════════ #}
+<div class="sheet-overlay" id="mobile-product-sheet"
+     onclick="if(event.target===this)ProductUI.closeProduct()">
+    <div class="sheet">
+        <div class="sheet-handle"></div>
+        <div class="panel-header">
+            <div>
+                <div class="panel-title" id="product-sheet-title">{{ 'modal.product.new_title'|trans({}, 'admin_menu') }}</div>
+                {% if show_category_step %}
+                    <div class="steps" id="product-sheet-steps">
+                        <div class="step active" id="m-step-1"><div class="step-num">1</div> {{ 'step.category'|trans({}, 'admin_menu') }}</div>
+                        <div class="step-sep">›</div>
+                        <div class="step" id="m-step-2"><div class="step-num">2</div> {{ 'step.info'|trans({}, 'admin_menu') }}</div>
+                    </div>
+                {% endif %}
+            </div>
+            <button class="panel-close" onclick="ProductUI.closeProduct()" aria-label="{{ 'modal.close_aria'|trans({}, 'admin_menu') }}">
+                <i class="ti ti-x" aria-hidden="true"></i>
+            </button>
+        </div>
+        {% if show_category_step %}
+            <div id="m-step1-body">
+                <div class="panel-body">
+                    {% include 'admin/_cat_select.html.twig' %}
+                </div>
+                <div class="panel-footer">
+                    <button class="btn" onclick="ProductUI.closeProduct()">{{ 'action.cancel'|trans({}, 'admin_menu') }}</button>
+                    <button class="btn btn-primary" onclick="ProductUI.goStep2()">
+                        {{ 'action.next'|trans({}, 'admin_menu') }} <i class="ti ti-arrow-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+        <div id="m-step2-body" {% if show_category_step %}style="display:none"{% endif %}>
+            <div class="panel-body">
+                {% include 'admin/_product_fields.html.twig' %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn btn-danger" id="m-delete-btn" onclick="deleteProduct()" style="display:none">
+                    <i class="ti ti-trash" aria-hidden="true"></i>
+                </button>
+                {% if show_category_step %}
+                    <button class="btn" id="m-back-btn" onclick="ProductUI.goStep1()">
+                        <i class="ti ti-arrow-left" aria-hidden="true"></i>
+                    </button>
+                {% endif %}
+                <button class="btn btn-primary" onclick="saveProduct()">
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_menu') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

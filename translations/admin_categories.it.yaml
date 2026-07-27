@@ -41,7 +41,6 @@ status:
 
 hint:
     drag_reorder: Trascina le categorie per cambiarne l'ordine
-    ai_translations: Le traduzioni in altre lingue verranno aggiunte automaticamente con l'IA.
 
 badge:
     position: '%position%'

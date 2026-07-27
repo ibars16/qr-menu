@@ -9,6 +9,7 @@ use App\Entity\GlobalIngredient;
 use App\Entity\Ingredient;
 use App\Entity\IngredientAllergen;
 use App\Entity\IngredientTranslation;
+use App\Entity\MenuSection;
 use App\Entity\Product;
 use App\Entity\ProductAllergenOverride;
 use App\Entity\ProductGlobalIngredient;
@@ -124,7 +125,13 @@ class MenuAdminController extends AbstractController
         $restaurant = $this->restaurant();
         $languages  = require $this->getParameter('kernel.project_dir') . '/config/languages.php';
 
-        $categories = $restaurant->getCategories()->toArray();
+        // Fixed-price menus (Category::$menuPrice !== null) live entirely on
+        // the separate Menús screen now — see Admin\MenusController. Carta
+        // only ever shows/manages normal categories and their dishes.
+        $categories = array_values(array_filter(
+            $restaurant->getCategories()->toArray(),
+            static fn(Category $c) => !$c->isFixedPriceMenu()
+        ));
         usort($categories, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
 
         return $this->render('admin/menu.html.twig', [
@@ -358,8 +365,25 @@ class MenuAdminController extends AbstractController
             }
             $product = new Product();
             $product->setCategory($category);
-            $product->setPosition($category->getProducts()->count());
             $product->setActive(true);
+
+            // Menu-category dishes always belong to a section (see
+            // MenuSection's class docblock) — "+ Añadir plato" inside the
+            // Menús edit screen always preassigns one. Position is then
+            // scoped to that section's own dishes, not the whole category
+            // (see MenuSection::getProductsSorted()); a normal category has
+            // no menuSectionId and keeps the old category-wide count.
+            $menuSectionId = $data['menuSectionId'] ?? null;
+            if ($menuSectionId) {
+                $section = $em->getRepository(MenuSection::class)->find($menuSectionId);
+                if ($section && $section->getCategory() === $category) {
+                    $product->setMenuSection($section);
+                    $product->setPosition($section->getProducts()->count());
+                }
+            }
+            if (!$product->getMenuSection()) {
+                $product->setPosition($category->getProducts()->count());
+            }
         }
 
         // Scalar fields
@@ -705,9 +729,14 @@ class MenuAdminController extends AbstractController
         $restaurant = $this->restaurant();
         $ids        = json_decode($request->getContent(), true)['ids'] ?? [];
 
+        // The Carta screen only ever lists normal categories (see menu()
+        // above), so this should never receive a menu category's id — the
+        // guard is defense in depth, keeping menus' positions untouched by
+        // this endpoint regardless. See Admin\MenusController for their own
+        // independent reorder.
         foreach ($ids as $position => $id) {
             $cat = $em->getRepository(Category::class)->find($id);
-            if ($cat && $cat->getRestaurant() === $restaurant) {
+            if ($cat && $cat->getRestaurant() === $restaurant && !$cat->isFixedPriceMenu()) {
                 $cat->setPosition($position);
             }
         }

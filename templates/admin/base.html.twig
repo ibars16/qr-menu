@@ -239,6 +239,12 @@
            class="nav-item {{ app.request.attributes.get('_route') == 'admin_menu' ? 'active' : '' }}">
             <i class="ti ti-layout-list" aria-hidden="true"></i> {{ 'nav.item.menu'|trans({}, 'admin_base') }}
         </a>
+        {% if app.user.restaurant and app.user.restaurant.setMenusEnabled %}
+            <a href="{{ path('admin_menus') }}"
+               class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_menus' ? 'active' : '' }}">
+                <i class="ti ti-book-2" aria-hidden="true"></i> {{ 'nav.item.menus'|trans({}, 'admin_base') }}
+            </a>
+        {% endif %}
         <a href="{{ path('admin_categories') }}"
            class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_categor' ? 'active' : '' }}">
             <i class="ti ti-category" aria-hidden="true"></i> {{ 'nav.item.categories'|trans({}, 'admin_base') }}
@@ -317,6 +323,12 @@
        class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_menu' ? 'active' : '' }}">
         <i class="ti ti-layout-list" aria-hidden="true"></i> {{ 'bottom_nav.menu'|trans({}, 'admin_base') }}
     </a>
+    {% if app.user.restaurant and app.user.restaurant.setMenusEnabled %}
+        <a href="{{ path('admin_menus') }}"
+           class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_menus' ? 'active' : '' }}">
+            <i class="ti ti-book-2" aria-hidden="true"></i> {{ 'bottom_nav.menus'|trans({}, 'admin_base') }}
+        </a>
+    {% endif %}
     <a href="{{ path('admin_categories') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_categor' ? 'active' : '' }}">
         <i class="ti ti-category" aria-hidden="true"></i> {{ 'bottom_nav.categories'|trans({}, 'admin_base') }}

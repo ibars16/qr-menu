@@ -1,0 +1,355 @@
+{#/home/david/gitProjects/qr-menu/templates/admin/menus.html.twig#}
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ 'title'|trans({}, 'admin_menus') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_menus') }}{% endblock %}
+
+{% block header_actions %}
+    <button class="btn btn-primary" onclick="UI.openNew()">
+        <i class="ti ti-plus" aria-hidden="true"></i> {{ 'action.new_menu'|trans({}, 'admin_menus') }}
+    </button>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .menus-wrap { max-width: 860px; }
+
+        .empty-state { text-align:center; padding:80px 24px; }
+        .empty-icon  { font-size:48px; display:block; margin-bottom:16px; opacity:0.2; }
+        .empty-title { font-size:20px; font-weight:600; color:var(--tx-hi); margin-bottom:8px; }
+        .empty-sub   { font-size:14px; color:var(--tx-6); line-height:1.6; margin-bottom:28px; max-width:360px; margin:0 auto 28px; }
+
+        /* Menu card */
+        .menu-card {
+            background: var(--bg-card); border: 1px solid var(--bd-1);
+            border-radius: 12px; margin-bottom: 10px; overflow: hidden;
+        }
+        .menu-card-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 16px; cursor: pointer;
+        }
+        .menu-drag { color: var(--tx-8); cursor: grab; font-size: 18px; flex-shrink: 0; }
+        .menu-drag:active { cursor: grabbing; }
+        .menu-info { flex: 1; min-width: 0; }
+        .menu-name { font-size: 15px; font-weight: 500; color: var(--tx-1); }
+        .menu-meta { font-size: 12px; color: var(--tx-6); margin-top: 2px; }
+        .menu-price-badge {
+            font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+            background: rgba(193,68,14,0.15); color: #C1440E; white-space: nowrap; flex-shrink: 0;
+        }
+
+        .toggle {
+            width: 36px; height: 20px; border-radius: 10px; background: var(--bg-tgl);
+            position: relative; cursor: pointer; transition: background 0.15s;
+            border: none; padding: 0; flex-shrink: 0;
+        }
+        .toggle::after {
+            content: ''; position: absolute; width: 14px; height: 14px;
+            border-radius: 50%; background: var(--tx-6); top: 3px; left: 3px;
+            transition: left 0.15s, background 0.15s;
+        }
+        .toggle.on { background: rgba(193,68,14,0.3); }
+        .toggle.on::after { left: 19px; background: #C1440E; }
+
+        .icon-btn {
+            width: 34px; height: 34px; border-radius: 8px;
+            border: 1px solid var(--bd-3); background: var(--bg-input);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--tx-5); font-size: 15px;
+            transition: color 0.1s, border-color 0.1s; flex-shrink: 0;
+        }
+        .icon-btn:hover        { color: var(--tx-1); border-color: var(--bd-2); }
+        .icon-btn.danger:hover { color: #F0997B; border-color: rgba(240,153,123,0.3); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: var(--overlay);
+            z-index: 500; display: flex; align-items: center; justify-content: center;
+            padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .modal {
+            background: var(--bg-card); border: 1px solid var(--bd-3); border-radius: 16px;
+            width: 100%; max-width: 420px; max-height: 90vh;
+            display: flex; flex-direction: column;
+            transform: translateY(8px); transition: transform 0.2s;
+        }
+        .modal-overlay.open .modal { transform: translateY(0); }
+
+        /* Mobile sheet */
+        .sheet-overlay {
+            position: fixed; inset: 0; background: var(--overlay);
+            z-index: 500; display: flex; align-items: flex-end;
+            opacity: 0; pointer-events: none; transition: opacity 0.25s;
+        }
+        .sheet-overlay.open { opacity: 1; pointer-events: all; }
+        .sheet {
+            width: 100%; background: var(--bg-card); border-radius: 20px 20px 0 0;
+            border-top: 1px solid var(--bd-3); max-height: 85vh;
+            display: flex; flex-direction: column;
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+        }
+        .sheet-overlay.open .sheet { transform: translateY(0); }
+        .sheet-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--bd-2); margin: 12px auto 0; flex-shrink: 0; }
+
+        @media (max-width: 767px) { .modal-overlay { display: none !important; } }
+        @media (min-width: 768px) { .sheet-overlay { display: none !important; } }
+
+        .panel-header {
+            padding: 16px 18px 14px; border-bottom: 1px solid var(--bd-1);
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .panel-title { font-size: 17px; font-weight: 600; color: var(--tx-hi); letter-spacing: -0.3px; }
+        .panel-close {
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 1px solid var(--bd-2); background: var(--bg-input);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--tx-5); font-size: 13px;
+        }
+        .panel-close:hover { color: var(--tx-1); }
+        .panel-body { flex: 1; min-height: 0; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+        .panel-footer {
+            padding: 14px 18px; border-top: 1px solid var(--bd-1);
+            display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0;
+            padding-bottom: calc(14px + env(safe-area-inset-bottom));
+        }
+
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field-label {
+            font-size: 11px; font-weight: 600; color: var(--tx-5);
+            text-transform: uppercase; letter-spacing: 0.07em;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .req { color: #C1440E; }
+        .opt { color: var(--tx-8); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 10px; }
+        .field input {
+            background: var(--bg-input); border: 1px solid var(--bd-2); color: var(--tx-hi);
+            font-size: 15px; padding: 12px 14px; border-radius: 10px;
+            outline: none; width: 100%; transition: border-color 0.15s;
+        }
+        .field input:focus { border-color: var(--tx-5); }
+        .field-error { font-size: 12px; color: #F0997B; display: none; margin-top: 2px; }
+        .field-error.show { display: block; }
+
+        @media (max-width: 767px) {
+            .panel-footer .btn { flex: 1; justify-content: center; min-height: 48px; font-size: 15px; }
+            .field input { font-size: 16px; min-height: 48px; }
+            .menu-card-header { padding: 16px; }
+            .menu-name { font-size: 16px; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="menus-wrap">
+
+        {% if menus|length == 0 %}
+            <div class="empty-state">
+                <span class="empty-icon">📖</span>
+                <div class="empty-title">{{ 'empty_state.title'|trans({}, 'admin_menus') }}</div>
+                <div class="empty-sub">
+                    {{ 'empty_state.subtitle'|trans({}, 'admin_menus') }}
+                </div>
+                <button class="btn btn-primary" onclick="UI.openNew()">
+                    <i class="ti ti-plus" aria-hidden="true"></i> {{ 'action.create_first_menu'|trans({}, 'admin_menus') }}
+                </button>
+            </div>
+
+        {% else %}
+            <div id="menus-sortable">
+                {% for menu in menus %}
+                    {% set menuT = menu.getTranslation(locale) %}
+                    {% set menuName = menuT ? menuT.name : 'common.unnamed'|trans({}, 'admin_menus') %}
+                    {% set dishCount = menu.products|length %}
+
+                    <div class="menu-card" data-id="{{ menu.id }}">
+                        <div class="menu-card-header">
+                            <i class="ti ti-grip-vertical menu-drag" aria-hidden="true"></i>
+                            <div class="menu-info" onclick="location.href='{{ path('admin_menus_edit', {id: menu.id}) }}'">
+                                <div class="menu-name">{{ menuName }}</div>
+                                <div class="menu-meta">
+                                    {{ dishCount }} {{ (dishCount == 1 ? 'meta.dish_singular' : 'meta.dish_plural')|trans({}, 'admin_menus') }}
+                                    · {{ (menu.isActive ? 'status.visible' : 'status.hidden')|trans({}, 'admin_menus') }}
+                                </div>
+                            </div>
+                            <span class="menu-price-badge">{{ (menu.menuPrice / 100)|number_format(2) }} {{ restaurant.currency }}</span>
+                            <button class="toggle {{ menu.isActive ? 'on' : '' }}"
+                                    onclick="toggleMenu({{ menu.id }}, this)"
+                                    title="{{ (menu.isActive ? 'status.visible' : 'status.hidden')|trans({}, 'admin_menus') }}"
+                                    aria-label="{{ 'action.toggle_active'|trans({}, 'admin_menus') }}"></button>
+                            <a class="icon-btn" href="{{ path('admin_menus_edit', {id: menu.id}) }}"
+                               title="{{ 'action.edit_menu'|trans({}, 'admin_menus') }}" aria-label="{{ 'action.edit_menu'|trans({}, 'admin_menus') }}">
+                                <i class="ti ti-edit" aria-hidden="true"></i>
+                            </a>
+                            <button class="icon-btn danger"
+                                    onclick="deleteMenu({{ menu.id }}, '{{ menuName|e('js') }}', {{ dishCount }}, this)"
+                                    title="{{ 'action.delete_menu'|trans({}, 'admin_menus') }}" aria-label="{{ 'action.delete_menu'|trans({}, 'admin_menus') }}">
+                                <i class="ti ti-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if menus|length > 1 %}
+                <p style="font-size:12px;color:var(--tx-7);margin-top:12px;text-align:center">
+                    <i class="ti ti-grip-vertical" aria-hidden="true"></i>
+                    {{ 'hint.drag_reorder'|trans({}, 'admin_menus') }}
+                </p>
+            {% endif %}
+        {% endif %}
+
+    </div>
+
+    {# ── Desktop modal: nuevo menú ── #}
+    <div class="modal-overlay" id="d-modal" onclick="if(event.target===this)UI.close()">
+        <div class="modal">
+            <div class="panel-header">
+                <div class="panel-title">{{ 'modal.new_title'|trans({}, 'admin_menus') }}</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="{{ 'action.close'|trans({}, 'admin_menus') }}"><i class="ti ti-x" aria-hidden="true"></i></button>
+            </div>
+            <div class="panel-body">
+                {% include 'admin/_menu_fields.html.twig' with {'suffix': 'd'} %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn" onclick="UI.close()">{{ 'action.cancel'|trans({}, 'admin_menus') }}</button>
+                <button class="btn btn-primary" onclick="UI.save()">
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_menus') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# ── Mobile bottom sheet: nuevo menú ── #}
+    <div class="sheet-overlay" id="m-sheet" onclick="if(event.target===this)UI.close()">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <div class="panel-header">
+                <div class="panel-title">{{ 'modal.new_title'|trans({}, 'admin_menus') }}</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="{{ 'action.close'|trans({}, 'admin_menus') }}"><i class="ti ti-x" aria-hidden="true"></i></button>
+            </div>
+            <div class="panel-body">
+                {% include 'admin/_menu_fields.html.twig' with {'suffix': 'm'} %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn" onclick="UI.close()">{{ 'action.cancel'|trans({}, 'admin_menus') }}</button>
+                <button class="btn btn-primary" onclick="UI.save()">
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_menus') }}
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        const MSG_MENU_CREATED   = "{{ 'toast.menu_created'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_MENU_DELETED   = "{{ 'toast.menu_deleted'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_VISIBLE        = "{{ 'status.visible'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_HIDDEN         = "{{ 'status.hidden'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_CONFIRM_DELETE_MENU_WITH_DISHES = "{{ 'confirm.delete_menu_with_dishes'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_CONFIRM_DELETE_MENU_SIMPLE      = "{{ 'confirm.delete_menu_simple'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_UNEXPECTED_ERROR = "{{ 'error.unexpected'|trans({}, 'admin_menus')|e('js') }}";
+
+        const isMobile = () => window.innerWidth < 768;
+
+        const UI = {
+            openNew() {
+                ['d-menu-name-input','m-menu-name-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+                ['d-menu-type-select','m-menu-type-select'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+                ['d-menu-price-input','m-menu-price-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+                ['d-menu-description-input','m-menu-description-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+                ['d-menu-name-error','m-menu-name-error','d-menu-price-error','m-menu-price-error'].forEach(id => document.getElementById(id)?.classList.remove('show'));
+                if (isMobile()) {
+                    document.getElementById('m-sheet').classList.add('open');
+                    setTimeout(() => document.getElementById('m-menu-name-input')?.focus(), 80);
+                } else {
+                    document.getElementById('d-modal').classList.add('open');
+                    setTimeout(() => document.getElementById('d-menu-name-input')?.focus(), 80);
+                }
+            },
+            close() {
+                document.getElementById('d-modal').classList.remove('open');
+                document.getElementById('m-sheet').classList.remove('open');
+            },
+            async save() {
+                const s = isMobile() ? 'm' : 'd';
+                const name  = document.getElementById(`${s}-menu-name-input`).value.trim();
+                const type  = document.getElementById(`${s}-menu-type-select`).value;
+                const price = document.getElementById(`${s}-menu-price-input`).value;
+                const description = document.getElementById(`${s}-menu-description-input`).value.trim();
+
+                let ok = true;
+                if (!name) { document.getElementById(`${s}-menu-name-error`).classList.add('show'); ok = false; }
+                else document.getElementById(`${s}-menu-name-error`).classList.remove('show');
+                if (!price || parseFloat(price) <= 0) { document.getElementById(`${s}-menu-price-error`).classList.add('show'); ok = false; }
+                else document.getElementById(`${s}-menu-price-error`).classList.remove('show');
+                if (!ok) return;
+
+                const data = await api('/admin/menus/create', { name, type, menuPrice: price, menuDescription: description || null });
+                if (data.error) { showToast(data.error, 'error'); return; }
+
+                showToast(MSG_MENU_CREATED, 'success');
+                location.href = `/admin/menus/${data.id}`;
+            },
+        };
+
+        async function toggleMenu(id, btn) {
+            const data = await api(`/admin/categories/${id}/toggle`);
+            btn.classList.toggle('on', data.active);
+            const card = btn.closest('.menu-card');
+            const meta = card.querySelector('.menu-meta');
+            if (meta) meta.innerHTML = meta.innerHTML.replace(new RegExp(`${MSG_VISIBLE}|${MSG_HIDDEN}`), data.active ? MSG_VISIBLE : MSG_HIDDEN);
+            showToast(data.active ? MSG_VISIBLE : MSG_HIDDEN);
+        }
+
+        async function deleteMenu(id, name, count, btn) {
+            const msg = count > 0
+                ? MSG_CONFIRM_DELETE_MENU_WITH_DISHES.replace('%name%', name).replace('%count%', count)
+                : MSG_CONFIRM_DELETE_MENU_SIMPLE.replace('%name%', name);
+            if (!confirm(msg)) return;
+            const data = await api(`/admin/categories/${id}/delete`);
+            if (data.ok) {
+                btn.closest('.menu-card').remove();
+                showToast(MSG_MENU_DELETED, 'success');
+                if (!document.querySelector('.menu-card')) location.reload();
+            }
+        }
+
+        // Menus reorder among themselves only — see MenusController::reorder()
+        // for why this never touches normal categories' positions.
+        const sortableEl = document.getElementById('menus-sortable');
+        if (sortableEl) {
+            Sortable.create(sortableEl, {
+                handle: '.menu-drag',
+                animation: 150,
+                onEnd: async () => {
+                    const ids = [...sortableEl.querySelectorAll('.menu-card')].map(c => parseInt(c.dataset.id));
+                    await api('/admin/menus/reorder', { ids });
+                },
+            });
+        }
+
+        async function api(url, body = null) {
+            const opts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
+            opts.body  = JSON.stringify(body ?? {});
+
+            let res, data;
+            try {
+                res = await fetch(url, opts);
+                data = await res.json();
+            } catch (e) {
+                data = null;
+            }
+
+            if (!res || !res.ok || data === null) {
+                const message = (data && data.error) ? data.error : MSG_UNEXPECTED_ERROR;
+                showToast(message, 'error');
+                return { error: message };
+            }
+
+            return data;
+        }
+    </script>
+{% endblock %}

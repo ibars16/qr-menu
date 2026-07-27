@@ -64,6 +64,35 @@ final class MenuContextBuilder
         ];
 
         foreach ($categories as $category) {
+            if ($category->isFixedPriceMenu()) {
+                $sections = [];
+                foreach ($category->getActiveSectionsWithProducts() as $entry) {
+                    if (empty($entry['products'])) {
+                        continue;
+                    }
+                    $sections[] = [
+                        'label' => $entry['section']->getLabel(),
+                        'dishes' => array_map(
+                            fn (Product $p) => $this->buildProduct($p, $locale, $restaurant, $allergensByProduct[$p->getId()] ?? [], true),
+                            $entry['products']
+                        ),
+                    ];
+                }
+
+                if (empty($sections)) {
+                    continue;
+                }
+
+                $result['categories'][] = [
+                    'name' => $this->categoryName($category, $locale, $restaurant),
+                    'type' => $category->getType()?->value,
+                    'menu_price' => $category->getMenuPrice() / 100,
+                    'menu_description' => $category->getMenuDescription(),
+                    'sections' => $sections,
+                ];
+                continue;
+            }
+
             $products = $category->getProducts()
                 ->filter(fn (Product $p) => $p->isActive())
                 ->toArray();
@@ -112,7 +141,14 @@ final class MenuContextBuilder
         return array_keys($vocabulary);
     }
 
-    private function buildProduct(Product $product, string $locale, Restaurant $restaurant, array $allergenEntries): array
+    /**
+     * @param bool $isSetMenuDish When true, this dish belongs to a fixed-price
+     *   menu category — its own standalone price and price_variants are
+     *   omitted (it shares the menu's one price, see MenuContextBuilder::build()'s
+     *   'menu_price'), replaced by 'part_of_set_menu' + 'supplement' (only
+     *   ever an extra charge on top of the menu price, never a full price).
+     */
+    private function buildProduct(Product $product, string $locale, Restaurant $restaurant, array $allergenEntries, bool $isSetMenuDish = false): array
     {
         $translation = $product->getTranslation($locale)
             ?? $product->getTranslation($restaurant->getDefaultLanguage())
@@ -152,6 +188,24 @@ final class MenuContextBuilder
             'note' => $entry['note'],
         ], $allergenEntries);
 
+        $base = [
+            'name' => $translation?->getName() ?? '',
+            'description' => $translation?->getDescription(),
+            'calories' => $product->getCalories(),
+            'spicy_level' => $product->getSpicyLevel(),
+            'ingredients' => $ingredientNames,
+            'dietary_tags' => $dietaryTags,
+            'allergens' => $allergens,
+            'highlighted' => $highlighted,
+        ];
+
+        if ($isSetMenuDish) {
+            $base['part_of_set_menu'] = true;
+            $base['supplement'] = $product->getSupplementPriceDecimal();
+
+            return $base;
+        }
+
         $priceVariants = $product->hasPriceVariants()
             ? array_merge(
                 [['label' => $product->getBasePriceLabel(), 'price' => $product->getBasePriceDecimal()]],
@@ -162,18 +216,10 @@ final class MenuContextBuilder
             )
             : null;
 
-        return [
-            'name' => $translation?->getName() ?? '',
-            'description' => $translation?->getDescription(),
-            'price' => $product->getBasePriceDecimal(),
-            'price_variants' => $priceVariants,
-            'calories' => $product->getCalories(),
-            'spicy_level' => $product->getSpicyLevel(),
-            'ingredients' => $ingredientNames,
-            'dietary_tags' => $dietaryTags,
-            'allergens' => $allergens,
-            'highlighted' => $highlighted,
-        ];
+        $base['price'] = $product->getBasePriceDecimal();
+        $base['price_variants'] = $priceVariants;
+
+        return $base;
     }
 
     private function categoryName(Category $category, string $locale, Restaurant $restaurant): string

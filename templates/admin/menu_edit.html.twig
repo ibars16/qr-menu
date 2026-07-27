@@ -1,0 +1,493 @@
+{#/home/david/gitProjects/qr-menu/templates/admin/menu_edit.html.twig#}
+{% extends 'admin/base.html.twig' %}
+
+{% set menuT = menu.getTranslation(locale) %}
+{% set menuName = menuT ? menuT.name : 'common.unnamed'|trans({}, 'admin_menus') %}
+{% set categories = [menu] %}
+
+{% block title %}{{ menuName }} · {{ 'title'|trans({}, 'admin_menus') }}{% endblock %}
+{% block page_title %}
+    <a href="{{ path('admin_menus') }}" class="back-link" aria-label="{{ 'action.back_to_menus'|trans({}, 'admin_menus') }}">
+        <i class="ti ti-arrow-left" aria-hidden="true"></i>
+    </a>
+    {{ menuName }}
+{% endblock %}
+
+{% block header_actions %}
+    <button class="btn" onclick="UI.openEditHeader()">
+        <i class="ti ti-edit" aria-hidden="true"></i>
+        <span class="hide-mobile">{{ 'action.edit_menu'|trans({}, 'admin_menus') }}</span>
+    </button>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        @media (max-width: 767px) { .hide-mobile { display: none; } }
+
+        .back-link {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border-radius: 8px; color: var(--tx-5);
+            margin-right: 6px; vertical-align: middle;
+        }
+        .back-link:hover { color: var(--tx-1); background: var(--bg-hover); }
+
+        .menu-edit-wrap { max-width: 860px; }
+
+        .menu-summary {
+            display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+            background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: 12px;
+            margin-bottom: 16px; font-size: 13px; color: var(--tx-5);
+        }
+        .menu-summary-price { font-weight: 600; color: #C1440E; }
+        .menu-summary-desc { color: var(--tx-6); }
+
+        .empty-state { text-align:center; padding:60px 24px; }
+        .empty-icon   { font-size:44px; display:block; margin-bottom:14px; opacity:0.2; }
+        .empty-title  { font-size:17px; font-weight:600; color:var(--tx-hi); margin-bottom:6px; }
+        .empty-sub    { font-size:13px; color:var(--tx-6); line-height:1.6; max-width:320px; margin:0 auto; }
+
+        .section-card {
+            border: 1px solid var(--bd-1); border-radius: 12px; margin-bottom: 12px; overflow: hidden;
+        }
+        .section-header {
+            display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+            background: var(--bg-card); border-bottom: 1px solid var(--bd-1);
+        }
+        .section-drag { color: var(--tx-8); cursor: grab; font-size: 16px; flex-shrink: 0; }
+        .section-drag:active { cursor: grabbing; }
+        .section-label {
+            flex: 1; font-size: 12px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--tx-4); cursor: pointer;
+        }
+        .section-count { font-size: 11px; color: var(--tx-6); }
+        .section-actions { display: flex; gap: 4px; }
+
+        .icon-btn {
+            width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--bd-3);
+            background: var(--bg-input); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--tx-6); font-size: 13px;
+            transition: color 0.1s, border-color 0.1s;
+        }
+        .icon-btn:hover        { color: var(--tx-1); border-color: var(--bd-2); }
+        .icon-btn.danger:hover { color: #F0997B; border-color: rgba(240,153,123,0.3); }
+
+        .toggle {
+            width: 32px; height: 18px; border-radius: 9px; background: var(--bg-tgl);
+            position: relative; cursor: pointer; transition: background 0.15s;
+            border: none; padding: 0; flex-shrink: 0;
+        }
+        .toggle::after {
+            content: ''; position: absolute; width: 12px; height: 12px;
+            border-radius: 50%; background: var(--tx-6); top: 3px; left: 3px;
+            transition: left 0.15s, background 0.15s;
+        }
+        .toggle.on { background: rgba(193,68,14,0.25); }
+        .toggle.on::after { left: 17px; background: #C1440E; }
+
+        .section-dishes { padding: 4px; min-height: 8px; }
+        .dish-row {
+            display: flex; align-items: center; gap: 8px; padding: 9px 8px;
+            border-radius: 8px; border: 1px solid transparent; cursor: pointer;
+            transition: background 0.1s, border-color 0.1s; min-height: 52px;
+        }
+        .dish-row:hover { background: var(--bg-hover); border-color: var(--bd-1); }
+        .dish-drag { color: var(--tx-8); cursor: grab; font-size: 14px; flex-shrink: 0; }
+        .dish-drag:active { cursor: grabbing; }
+        .dish-thumb {
+            width: 38px; height: 38px; border-radius: 8px; background: var(--bd-1);
+            border: 1px solid var(--bd-3); display: flex; align-items: center;
+            justify-content: center; font-size: 18px; flex-shrink: 0; overflow: hidden;
+        }
+        .dish-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .dish-info { flex: 1; min-width: 0; }
+        .dish-name { font-size: 13px; font-weight: 500; color: var(--tx-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dish-meta { font-size: 11px; color: var(--tx-6); margin-top: 2px; }
+        .dish-row.inactive { opacity: 0.4; }
+
+        .section-empty-hint {
+            padding: 10px 14px; font-size: 12px; color: var(--tx-7); text-align: center;
+        }
+
+        .add-row { padding: 4px 6px 8px; display: flex; }
+        .add-dish-btn {
+            width: 100%; padding: 8px; border: 1px dashed var(--bg-deep); border-radius: 8px;
+            background: none; color: var(--tx-8); font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+            min-height: 40px; transition: border-color 0.1s, color 0.1s;
+        }
+        .add-dish-btn:hover { border-color: var(--bd-2); color: var(--tx-4); }
+
+        .add-section-btn {
+            width: 100%; padding: 10px; border: 1px dashed var(--bg-deep); border-radius: 10px;
+            background: none; color: var(--tx-6); font-size: 13px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            min-height: 44px; margin-top: 4px; transition: border-color 0.1s, color 0.1s;
+        }
+        .add-section-btn:hover { border-color: var(--bd-2); color: var(--tx-3); }
+
+        @media (max-width: 767px) {
+            .icon-btn { width: 34px; height: 34px; font-size: 15px; }
+            .dish-row { min-height: 60px; padding: 10px 8px; }
+            .dish-thumb { width: 44px; height: 44px; font-size: 20px; }
+            .dish-name, .add-dish-btn, .add-section-btn { font-size: 14px; }
+            .add-dish-btn, .add-section-btn { min-height: 48px; }
+        }
+
+        {% include 'admin/_product_modal_css.html.twig' %}
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="menu-edit-wrap">
+        <div class="menu-summary">
+            <span class="menu-summary-price">{{ (menu.menuPrice / 100)|number_format(2) }} {{ restaurant.currency }}</span>
+            {% if menu.menuDescription %}
+                <span class="menu-summary-desc">· {{ menu.menuDescription }}</span>
+            {% endif %}
+        </div>
+
+        {% set sectionsWithProducts = menu.getSectionsWithProducts() %}
+
+        {% if sectionsWithProducts|length == 0 %}
+            <div class="empty-state">
+                <span class="empty-icon">🍽️</span>
+                <div class="empty-title">{{ 'empty_state.no_sections_title'|trans({}, 'admin_menus') }}</div>
+                <div class="empty-sub">{{ 'hint.empty_sections'|trans({}, 'admin_menus') }}</div>
+                <button class="btn btn-primary" onclick="SectionUI.open(null, '')">
+                    <i class="ti ti-plus" aria-hidden="true"></i>
+                    {{ 'action.add_section'|trans({}, 'admin_menus') }}
+                </button>
+            </div>
+        {% endif %}
+
+        <div id="sections-sortable">
+            {% for row in sectionsWithProducts %}
+                {% set section = row.section %}
+                <div class="section-card" data-id="{{ section.id }}">
+                    <div class="section-header">
+                        <i class="ti ti-grip-vertical section-drag" aria-hidden="true"></i>
+                        <span class="section-label" onclick="SectionUI.open({{ section.id }}, '{{ section.label|e('js') }}')">{{ section.label }}</span>
+                        <span class="section-count">{{ row.products|length }}</span>
+                        <div class="section-actions">
+                            <button class="icon-btn danger" onclick="deleteSection({{ section.id }}, '{{ section.label|e('js') }}', {{ row.products|length }}, this)"
+                                    title="{{ 'action.delete_section'|trans({}, 'admin_menus') }}" aria-label="{{ 'action.delete_section'|trans({}, 'admin_menus') }}">
+                                <i class="ti ti-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="section-dishes" data-section-id="{{ section.id }}">
+                        {% for product in row.products %}
+                            {% set pT = product.getTranslation(locale) %}
+                            {% set pName = pT ? pT.name : 'common.unnamed'|trans({}, 'admin_menu') %}
+                            {# product-row (in addition to dish-row) since toggleProduct()
+                               in _product_js.html.twig — shared with the Carta screen —
+                               looks for that class/.product-status specifically. #}
+                            <div class="dish-row product-row {{ not product.isActive ? 'inactive' : '' }}"
+                                 data-id="{{ product.id }}"
+                                 onclick="ProductUI.openEditProduct({{ product.id }})">
+                                <i class="ti ti-grip-vertical dish-drag" aria-hidden="true"></i>
+                                <div class="dish-thumb">
+                                    {% if product.image %}
+                                        <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pName }}">
+                                    {% else %}🍽️{% endif %}
+                                </div>
+                                <div class="dish-info">
+                                    <div class="dish-name">{{ pName }}</div>
+                                    <div class="dish-meta">
+                                        {{ (product.basePrice / 100)|number_format(2) }} {{ restaurant.currency }}
+                                        {% if product.supplementPrice %} · +{{ (product.supplementPrice / 100)|number_format(2) }} {{ restaurant.currency }}{% endif %}
+                                        · <span class="dish-status product-status">{{ product.isActive ? 'product.visible'|trans({}, 'admin_menu') : 'product.hidden'|trans({}, 'admin_menu') }}</span>
+                                    </div>
+                                </div>
+                                <button class="toggle {{ product.isActive ? 'on' : '' }}"
+                                        onclick="event.stopPropagation(); toggleProduct({{ product.id }}, this)"
+                                        title="{{ product.isActive ? 'product.visible'|trans({}, 'admin_menu') : 'product.hidden'|trans({}, 'admin_menu') }}"
+                                        aria-label="{{ 'product.toggle_aria'|trans({}, 'admin_menu') }}"></button>
+                            </div>
+                        {% else %}
+                            <div class="section-empty-hint">{{ 'hint.empty_dishes_in_section'|trans({}, 'admin_menus') }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="add-row">
+                        <button class="add-dish-btn" onclick="ProductUI.openNewProduct({{ menu.id }}, {{ section.id }})">
+                            <i class="ti ti-plus" aria-hidden="true"></i>
+                            {{ 'action.add_dish'|trans({}, 'admin_menus') }}
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if sectionsWithProducts|length > 0 %}
+            <button class="add-section-btn" onclick="SectionUI.open(null, '')">
+                <i class="ti ti-plus" aria-hidden="true"></i>
+                {{ 'action.add_section'|trans({}, 'admin_menus') }}
+            </button>
+        {% endif %}
+    </div>
+
+    {# ════════════════════════════
+   DESKTOP/MOBILE: editar cabecera del menú
+════════════════════════════ #}
+    <div class="modal-overlay" id="desktop-header-modal" onclick="if(event.target===this)UI.closeHeader()">
+        <div class="modal modal-sm">
+            <div class="panel-header">
+                <div class="panel-title">{{ 'modal.edit_title'|trans({}, 'admin_menus') }}</div>
+                <button class="panel-close" onclick="UI.closeHeader()" aria-label="{{ 'action.close'|trans({}, 'admin_menus') }}">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="panel-body">
+                {% include 'admin/_menu_fields.html.twig' with {'suffix': 'd'} %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn" onclick="UI.closeHeader()">{{ 'action.cancel'|trans({}, 'admin_menus') }}</button>
+                <button class="btn btn-primary" onclick="UI.saveHeader()">
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_menus') }}
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="sheet-overlay" id="mobile-header-sheet" onclick="if(event.target===this)UI.closeHeader()">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <div class="panel-header">
+                <div class="panel-title">{{ 'modal.edit_title'|trans({}, 'admin_menus') }}</div>
+                <button class="panel-close" onclick="UI.closeHeader()" aria-label="{{ 'action.close'|trans({}, 'admin_menus') }}">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="panel-body">
+                {% include 'admin/_menu_fields.html.twig' with {'suffix': 'm'} %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn" onclick="UI.closeHeader()">{{ 'action.cancel'|trans({}, 'admin_menus') }}</button>
+                <button class="btn btn-primary" onclick="UI.saveHeader()">
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_menus') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# ════════════════════════════
+   DESKTOP/MOBILE: nueva/editar sección — same pattern as the category
+   modal on the Carta screen (single "Nombre" field, Cancelar/Guardar),
+   replacing the native prompt() this used to be. See SectionUI in the
+   script block below. ════════════════════════════ #}
+    <div class="modal-overlay" id="desktop-section-modal" onclick="if(event.target===this)SectionUI.close()">
+        <div class="modal modal-sm">
+            <div class="panel-header">
+                <div class="panel-title" id="section-modal-title">{{ 'modal.section_new_title'|trans({}, 'admin_menus') }}</div>
+                <button class="panel-close" onclick="SectionUI.close()" aria-label="{{ 'action.close'|trans({}, 'admin_menus') }}">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="panel-body">
+                <div class="field">
+                    <label class="field-label">{{ 'field.name'|trans({}, 'admin_menus') }} <span class="req">*</span></label>
+                    <input type="text"
+                           id="section-name-input"
+                           placeholder="{{ 'field.section_name_placeholder'|trans({}, 'admin_menus') }}"
+                           onkeydown="if(event.key==='Enter') SectionUI.save()">
+                    <div class="field-error" id="section-name-error">{{ 'field.name_required'|trans({}, 'admin_menus') }}</div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <button class="btn" onclick="SectionUI.close()">{{ 'action.cancel'|trans({}, 'admin_menus') }}</button>
+                <button class="btn btn-primary" onclick="SectionUI.save()">
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_menus') }}
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="sheet-overlay" id="mobile-section-sheet" onclick="if(event.target===this)SectionUI.close()">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <div class="panel-header">
+                <div class="panel-title" id="section-sheet-title">{{ 'modal.section_new_title'|trans({}, 'admin_menus') }}</div>
+                <button class="panel-close" onclick="SectionUI.close()" aria-label="{{ 'action.close'|trans({}, 'admin_menus') }}">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="panel-body">
+                <div class="field">
+                    <label class="field-label">{{ 'field.name'|trans({}, 'admin_menus') }} <span class="req">*</span></label>
+                    <input type="text"
+                           id="section-name-input"
+                           placeholder="{{ 'field.section_name_placeholder'|trans({}, 'admin_menus') }}"
+                           onkeydown="if(event.key==='Enter') SectionUI.save()">
+                    <div class="field-error" id="section-name-error">{{ 'field.name_required'|trans({}, 'admin_menus') }}</div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <button class="btn" onclick="SectionUI.close()">{{ 'action.cancel'|trans({}, 'admin_menus') }}</button>
+                <button class="btn btn-primary" onclick="SectionUI.save()">
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_menus') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% include 'admin/_product_modal.html.twig' with {'show_category_step': false} %}
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        const MENU_ID = {{ menu.id }};
+
+        const MSG_HEADER_UPDATED = "{{ 'toast.menu_updated'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_MENU_NAME_CURRENT = "{{ menuName|e('js') }}";
+        const MSG_MENU_TYPE_CURRENT = "{{ menu.type ? menu.type.value : '' }}";
+        const MSG_MENU_PRICE_CURRENT = {{ (menu.menuPrice / 100) }};
+        const MSG_MENU_DESCRIPTION_CURRENT = "{{ menu.menuDescription ? menu.menuDescription|e('js') : '' }}";
+        const MSG_SECTION_NEW_TITLE = "{{ 'modal.section_new_title'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_SECTION_EDIT_TITLE = "{{ 'modal.section_edit_title'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_SECTION_CREATED = "{{ 'toast.section_created'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_SECTION_UPDATED = "{{ 'toast.section_updated'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_SECTION_DELETED = "{{ 'toast.section_deleted'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_CONFIRM_DELETE_SECTION_WITH_DISHES = "{{ 'confirm.delete_section_with_dishes'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_CONFIRM_DELETE_SECTION_SIMPLE = "{{ 'confirm.delete_section_simple'|trans({}, 'admin_menus')|e('js') }}";
+
+        // S must exist before _admin_js_utils/_product_js — see their
+        // shared-JS contract notes in menu.html.twig.
+        const S = {
+            productId: null,
+            categoryId: null,
+            menuSectionId: null,
+            editingCatId: null,
+            spicy: 0,
+            allergenOverrides: [],
+            ingredientAllergenCache: {},
+        };
+    </script>
+    {% include 'admin/_admin_js_utils.html.twig' %}
+    {% include 'admin/_product_js.html.twig' %}
+    <script>
+        // ── Header edit ──────────────────────────────────────────────────────────
+        const UI = {
+            openEditHeader() {
+                ['d-menu-name-input','m-menu-name-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = MSG_MENU_NAME_CURRENT; });
+                ['d-menu-type-select','m-menu-type-select'].forEach(id => { const el = document.getElementById(id); if (el) el.value = MSG_MENU_TYPE_CURRENT; });
+                ['d-menu-price-input','m-menu-price-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = MSG_MENU_PRICE_CURRENT.toFixed(2); });
+                ['d-menu-description-input','m-menu-description-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = MSG_MENU_DESCRIPTION_CURRENT; });
+                ['d-menu-name-error','m-menu-name-error','d-menu-price-error','m-menu-price-error'].forEach(id => document.getElementById(id)?.classList.remove('show'));
+                if (isMobile()) document.getElementById('mobile-header-sheet').classList.add('open');
+                else            document.getElementById('desktop-header-modal').classList.add('open');
+            },
+            closeHeader() {
+                document.getElementById('mobile-header-sheet').classList.remove('open');
+                document.getElementById('desktop-header-modal').classList.remove('open');
+            },
+            async saveHeader() {
+                const s = isMobile() ? 'm' : 'd';
+                const name  = document.getElementById(`${s}-menu-name-input`).value.trim();
+                const type  = document.getElementById(`${s}-menu-type-select`).value;
+                const price = document.getElementById(`${s}-menu-price-input`).value;
+                const description = document.getElementById(`${s}-menu-description-input`).value.trim();
+
+                let ok = true;
+                if (!name) { document.getElementById(`${s}-menu-name-error`).classList.add('show'); ok = false; }
+                else document.getElementById(`${s}-menu-name-error`).classList.remove('show');
+                if (!price || parseFloat(price) <= 0) { document.getElementById(`${s}-menu-price-error`).classList.add('show'); ok = false; }
+                else document.getElementById(`${s}-menu-price-error`).classList.remove('show');
+                if (!ok) return;
+
+                const data = await apiFetch(`/admin/menus/${MENU_ID}/edit`, { name, type, menuPrice: price, menuDescription: description || null });
+                if (data.error) { showToast(data.error, 'error'); return; }
+
+                showToast(MSG_HEADER_UPDATED, 'success');
+                this.closeHeader();
+                setTimeout(() => location.reload(), 700);
+            },
+        };
+
+        // ── Sections ─────────────────────────────────────────────────────────────
+        // Same styled modal/sheet pattern as the Carta screen's category
+        // modal (single "Nombre" field, prefilled + retitled for rename) —
+        // replaces the native prompt() this used to be. Deletion stays a
+        // native confirm(), matching category/product deletion elsewhere in
+        // this admin — that IS the established pattern for delete confirms,
+        // not an oversight.
+        const SectionUI = {
+            editingId: null,
+            open(id, currentLabel) {
+                this.editingId = id;
+                const title = id ? MSG_SECTION_EDIT_TITLE : MSG_SECTION_NEW_TITLE;
+                document.getElementById('section-modal-title').textContent = title;
+                document.getElementById('section-sheet-title').textContent = title;
+                setVal('section-name-input', currentLabel ?? '');
+                document.querySelectorAll('[id="section-name-error"]').forEach(el => el.classList.remove('show'));
+                if (isMobile()) document.getElementById('mobile-section-sheet').classList.add('open');
+                else            document.getElementById('desktop-section-modal').classList.add('open');
+                setTimeout(() => panelEl('section-name-input')?.focus(), 80);
+            },
+            close() {
+                document.getElementById('mobile-section-sheet').classList.remove('open');
+                document.getElementById('desktop-section-modal').classList.remove('open');
+            },
+            async save() {
+                const label = getVal('section-name-input');
+                if (!label) { panelEl('section-name-error')?.classList.add('show'); return; }
+                panelEl('section-name-error')?.classList.remove('show');
+
+                const url = this.editingId
+                    ? `/admin/menu-sections/${this.editingId}/rename`
+                    : `/admin/menus/${MENU_ID}/sections/create`;
+                const data = await apiFetch(url, { label });
+                if (data.error) { showToast(data.error, 'error'); return; }
+
+                showToast(this.editingId ? MSG_SECTION_UPDATED : MSG_SECTION_CREATED, 'success');
+                this.close();
+                setTimeout(() => location.reload(), 400);
+            },
+        };
+
+        async function deleteSection(id, label, dishCount, btn) {
+            const msg = dishCount > 0
+                ? MSG_CONFIRM_DELETE_SECTION_WITH_DISHES.replace('%name%', label).replace('%count%', dishCount)
+                : MSG_CONFIRM_DELETE_SECTION_SIMPLE.replace('%name%', label);
+            if (!confirm(msg)) return;
+
+            const data = await apiFetch(`/admin/menu-sections/${id}/delete`);
+            if (data.ok) {
+                showToast(MSG_SECTION_DELETED, 'success');
+                setTimeout(() => location.reload(), 400);
+            }
+        }
+
+        // ── Drag-reorder: sections among themselves, dishes within/between
+        // sections (shared Sortable "group" so a dish can be dropped into any
+        // section's list, not just reordered within its own). ──────────────────
+        function saveDishOrder() {
+            const sections = [...document.querySelectorAll('.section-dishes')].map(list => ({
+                id: parseInt(list.dataset.sectionId),
+                productIds: [...list.querySelectorAll('.dish-row')].map(r => parseInt(r.dataset.id)),
+            }));
+            apiFetch(`/admin/menus/${MENU_ID}/dishes/reorder`, { sections });
+        }
+
+        const sectionsSortableEl = document.getElementById('sections-sortable');
+        if (sectionsSortableEl) {
+            Sortable.create(sectionsSortableEl, {
+                handle: '.section-drag',
+                animation: 150,
+                onEnd: async () => {
+                    const ids = [...sectionsSortableEl.querySelectorAll('.section-card')].map(c => parseInt(c.dataset.id));
+                    await apiFetch(`/admin/menus/${MENU_ID}/sections/reorder`, { ids });
+                },
+            });
+        }
+
+        document.querySelectorAll('.section-dishes').forEach(list => {
+            Sortable.create(list, {
+                group: 'menu-dishes',
+                handle: '.dish-drag',
+                animation: 150,
+                onEnd: saveDishOrder,
+            });
+        });
+    </script>
+{% endblock %}

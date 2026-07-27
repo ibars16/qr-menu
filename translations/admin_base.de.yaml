@@ -13,6 +13,7 @@ nav:
         restaurant: Restaurant
     item:
         menu: Speisekarte
+        menus: Set-Menüs
         categories: Kategorien
         tags: Tags
         theme: Speisekarte anpassen
@@ -29,6 +30,7 @@ theme:
 bottom_nav:
     aria_label: Navigation
     menu: Speisekarte
+    menus: Set-Menüs
     categories: Kateg.
     tags: Tags
     qr: QR

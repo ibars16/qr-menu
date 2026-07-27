@@ -41,7 +41,6 @@ status:
 
 hint:
     drag_reorder: Kategorien ziehen, um die Reihenfolge zu ändern
-    ai_translations: Übersetzungen in andere Sprachen werden automatisch per KI hinzugefügt.
 
 badge:
     position: '%position%'

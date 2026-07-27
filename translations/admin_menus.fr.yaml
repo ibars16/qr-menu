@@ -1,0 +1,71 @@
+title: Menus
+
+action:
+    new_menu: Créer un menu
+    create_first_menu: Créer le premier menu
+    back_to_menus: Retour aux Menus
+    edit_menu: Modifier le menu
+    delete_menu: Supprimer le menu
+    add_section: Ajouter une section
+    delete_section: Supprimer la section
+    add_dish: Ajouter un plat
+    cancel: Annuler
+    save: Enregistrer
+    close: Fermer
+    toggle_active: Activer/désactiver
+
+common:
+    optional: facultatif
+    unnamed: (sans nom)
+
+empty_state:
+    title: Aucun menu
+    subtitle: "Créez un menu à prix fixe (menu du jour, menu dégustation…) pour regrouper plusieurs plats sous un seul prix."
+    no_sections_title: Commencez par créer votre première section
+
+modal:
+    new_title: Nouveau menu
+    edit_title: Modifier le menu
+    section_new_title: Nouvelle section
+    section_edit_title: Modifier la section
+
+field:
+    name: Nom
+    name_placeholder: "Ex. : Menu du jour, Menu dégustation…"
+    name_required: Le nom est obligatoire
+    menu_price: 'Prix du menu (%currency%)'
+    menu_price_required: Le prix du menu est obligatoire
+    menu_description: Description
+    menu_description_placeholder: "Ex. : Inclut le pain et une boisson · Uniquement en semaine"
+    section_name_placeholder: "Ex. : Entrées, Plats, Desserts…"
+
+meta:
+    dish_singular: plat
+    dish_plural: plats
+
+status:
+    visible: Visible
+    hidden: Masqué
+
+hint:
+    drag_reorder: Faites glisser les menus pour changer leur ordre
+    empty_sections: "Créez votre première section (Entrées, Plats, Desserts…) pour commencer à ajouter des plats."
+    empty_dishes_in_section: Ajoutez le premier plat de cette section.
+
+toast:
+    menu_created: 'Menu créé ✓'
+    menu_updated: 'Menu mis à jour ✓'
+    menu_deleted: Menu supprimé
+    section_created: 'Section créée ✓'
+    section_updated: 'Section mise à jour ✓'
+    section_deleted: Section supprimée
+
+confirm:
+    delete_menu_with_dishes: 'Supprimer "%name%" et ses %count% plats ? Cette action est irréversible.'
+    delete_menu_simple: 'Supprimer le menu "%name%" ?'
+    delete_section_with_dishes: 'Supprimer la section "%name%" et ses %count% plats ? Cette action est irréversible.'
+    delete_section_simple: 'Supprimer la section "%name%" ?'
+
+error:
+    section_label_required: Le nom de la section est obligatoire.
+    unexpected: Une erreur est survenue. Veuillez réessayer.

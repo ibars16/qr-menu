@@ -1,0 +1,71 @@
+title: Set menus
+
+action:
+    new_menu: Create set menu
+    create_first_menu: Create first set menu
+    back_to_menus: Back to Set menus
+    edit_menu: Edit set menu
+    delete_menu: Delete set menu
+    add_section: Add section
+    delete_section: Delete section
+    add_dish: Add dish
+    cancel: Cancel
+    save: Save
+    close: Close
+    toggle_active: Toggle active
+
+common:
+    optional: optional
+    unnamed: (unnamed)
+
+empty_state:
+    title: No set menus yet
+    subtitle: 'Create a set menu (fixed-price menu, tasting menu…) to group several dishes under a single price.'
+    no_sections_title: Start by creating your first section
+
+modal:
+    new_title: New set menu
+    edit_title: Edit set menu
+    section_new_title: New section
+    section_edit_title: Edit section
+
+field:
+    name: Name
+    name_placeholder: 'E.g.: Set menu, Tasting menu…'
+    name_required: Name is required
+    menu_price: 'Set menu price (%currency%)'
+    menu_price_required: Set menu price is required
+    menu_description: Description
+    menu_description_placeholder: 'E.g.: Includes bread and a drink · Weekdays only'
+    section_name_placeholder: 'E.g.: Starters, Mains, Desserts…'
+
+meta:
+    dish_singular: dish
+    dish_plural: dishes
+
+status:
+    visible: Visible
+    hidden: Hidden
+
+hint:
+    drag_reorder: Drag set menus to change their order
+    empty_sections: 'Create your first section (Starters, Mains, Desserts…) to start adding dishes.'
+    empty_dishes_in_section: Add this section's first dish.
+
+toast:
+    menu_created: 'Set menu created ✓'
+    menu_updated: 'Set menu updated ✓'
+    menu_deleted: Set menu deleted
+    section_created: 'Section created ✓'
+    section_updated: 'Section updated ✓'
+    section_deleted: Section deleted
+
+confirm:
+    delete_menu_with_dishes: 'Delete "%name%" and its %count% dishes? This cannot be undone.'
+    delete_menu_simple: 'Delete the set menu "%name%"?'
+    delete_section_with_dishes: 'Delete the section "%name%" and its %count% dishes? This cannot be undone.'
+    delete_section_simple: 'Delete the section "%name%"?'
+
+error:
+    section_label_required: Section name is required.
+    unexpected: Something went wrong. Please try again.
