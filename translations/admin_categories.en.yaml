@@ -9,6 +9,7 @@ action:
     edit_name: Edit name
     delete: Delete
     delete_category: Delete category
+    delete_all: Delete all
     toggle_active: Toggle active
     cancel: Cancel
     save: Save
@@ -51,10 +52,13 @@ toast:
     visible: Category visible
     hidden: Category hidden
     deleted: Category deleted
+    all_deleted: 'All categories deleted'
 
 confirm:
     delete_with_products: 'Delete "%name%" and its %count% dishes? This cannot be undone.'
     delete_simple: 'Delete the category "%name%"?'
+    delete_all_step1: 'Delete all categories (%count%) and all their dishes?'
+    delete_all_step2: 'This action is permanent and cannot be undone. Confirm you want to delete them all?'
 
 error:
     select_category_required: Select a category to continue.

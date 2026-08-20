@@ -31,6 +31,7 @@ final class SmartWaiterService
         private readonly AIModelRouter $router,
         private readonly AIProviderFactory $providerFactory,
         private readonly SmartWaiterConversationStore $conversationStore,
+        private readonly SmartWaiterFailureAlertMailer $failureAlertMailer,
         private readonly EntityManagerInterface $em,
     ) {}
 
@@ -61,6 +62,13 @@ final class SmartWaiterService
             $log->recordFailure(count($result->attempts), $lastAttempt?->reason);
             $this->em->persist($log);
             $this->em->flush();
+
+            // Every configured provider just failed — the customer is
+            // about to see the generic fallback message (see
+            // _smart_waiter.html.twig's errorFallback). Alert both the
+            // platform owner and this restaurant's own staff so a human
+            // can step in and, ideally, so someone actually fixes it.
+            $this->failureAlertMailer->alert($restaurant, $attempts);
 
             return ['conversationId' => $conversationId, 'reply' => null, 'error' => true];
         }

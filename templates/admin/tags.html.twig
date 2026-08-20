@@ -4,6 +4,12 @@
 {% block page_title %}{{ 'title'|trans({}, 'admin_tags') }}{% endblock %}
 
 {% block header_actions %}
+    {% if customTagsCount > 0 %}
+        <button class="btn btn-danger" onclick="deleteAllTags()">
+            <i class="ti ti-trash" aria-hidden="true"></i>
+            {{ 'action.delete_all'|trans({}, 'admin_tags') }}
+        </button>
+    {% endif %}
     <button class="btn btn-primary" onclick="UI.openNew()">
         <i class="ti ti-plus" aria-hidden="true"></i>
         {{ 'action.new_tag'|trans({}, 'admin_tags') }}
@@ -313,6 +319,10 @@
         const MSG_TAG_DELETED           = "{{ 'toast.deleted'|trans({}, 'admin_tags')|e('js') }}";
         const MSG_CONFIRM_DELETE_SIMPLE = "{{ 'confirm.delete_simple'|trans({}, 'admin_tags')|e('js') }}";
         const MSG_CONFIRM_DELETE_MANY   = "{{ 'confirm.delete_with_products'|trans({}, 'admin_tags')|e('js') }}";
+        const MSG_CONFIRM_DELETE_ALL_STEP1 = "{{ 'confirm.delete_all_step1'|trans({}, 'admin_tags')|e('js') }}";
+        const MSG_CONFIRM_DELETE_ALL_STEP2 = "{{ 'confirm.delete_all_step2'|trans({}, 'admin_tags')|e('js') }}";
+        const MSG_ALL_TAGS_DELETED         = "{{ 'toast.all_deleted'|trans({}, 'admin_tags')|e('js') }}";
+        const CUSTOM_TAGS_COUNT = {{ customTagsCount }};
 
         let editingId = null;
 
@@ -425,6 +435,23 @@
                 document.querySelector(`.tag-row[data-id="${id}"]`)?.remove();
                 showToast(MSG_TAG_DELETED, 'success');
                 if (!document.querySelector('.tag-row')) location.reload();
+            } else if (result.error) {
+                showToast(result.error, 'error');
+            }
+        }
+
+        // ── Delete all (custom tags only, system tags stay) ──
+        // Two sequential confirm() dialogs — this wipes every custom tag in
+        // one shot and can't be undone.
+        async function deleteAllTags() {
+            const step1 = MSG_CONFIRM_DELETE_ALL_STEP1.replace('%count%', CUSTOM_TAGS_COUNT);
+            if (!confirm(step1)) return;
+            if (!confirm(MSG_CONFIRM_DELETE_ALL_STEP2)) return;
+
+            const result = await apiFetch('/admin/tags/delete-all');
+            if (result.ok) {
+                showToast(MSG_ALL_TAGS_DELETED, 'success');
+                location.reload();
             } else if (result.error) {
                 showToast(result.error, 'error');
             }

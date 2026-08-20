@@ -7,6 +7,7 @@ action:
     back: Voltar
     save: Guardar
     save_product: Guardar prato
+    delete_all_products: Eliminar todos os pratos
 
 category:
     delete_title: Eliminar categoria
@@ -109,6 +110,9 @@ js:
     allergen_override_added: 'Exceção adicionada'
     allergen_note_required: 'Adiciona uma nota a explicar por que está marcado como "sem este alergénio"'
     ingredient_allergens_saved: 'Alergénios guardados ✓'
+    confirm_delete_all_products_step1: 'Eliminar todos os pratos (%count%) do cardápio? As categorias mantêm-se.'
+    confirm_delete_all_products_step2: 'Esta ação é definitiva e não pode ser desfeita. Confirma que quer eliminá-los todos?'
+    all_products_deleted: 'Todos os pratos foram eliminados'
 
 modal:
     category:

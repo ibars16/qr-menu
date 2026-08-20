@@ -7,6 +7,7 @@ action:
     back: Retour
     save: Enregistrer
     save_product: Enregistrer le plat
+    delete_all_products: Supprimer tous les plats
 
 category:
     delete_title: Supprimer la catégorie
@@ -109,6 +110,9 @@ js:
     allergen_override_added: 'Exception ajoutée'
     allergen_note_required: 'Ajoutez une note expliquant pourquoi ceci est marqué "sans cet allergène"'
     ingredient_allergens_saved: 'Allergènes enregistrés ✓'
+    confirm_delete_all_products_step1: 'Supprimer tous les plats (%count%) de la carte ? Les catégories seront conservées.'
+    confirm_delete_all_products_step2: 'Cette action est définitive et irréversible. Confirmez-vous vouloir tous les supprimer ?'
+    all_products_deleted: 'Tous les plats ont été supprimés'
 
 modal:
     category:

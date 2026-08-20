@@ -7,6 +7,7 @@ action:
     back: Back
     save: Save
     save_product: Save dish
+    delete_all_products: Delete all dishes
 
 category:
     delete_title: Delete category
@@ -95,6 +96,9 @@ js:
     allergen_override_added: 'Exception added'
     allergen_note_required: 'Please add a note explaining why this is marked "free from"'
     ingredient_allergens_saved: 'Allergens saved ✓'
+    confirm_delete_all_products_step1: 'Delete all dishes (%count%) in the menu? Categories will stay.'
+    confirm_delete_all_products_step2: 'This action is permanent and cannot be undone. Confirm you want to delete them all?'
+    all_products_deleted: 'All dishes have been deleted'
     category_created: 'Category created ✓'
     category_deleted: Category deleted
     category_updated: 'Category updated ✓'

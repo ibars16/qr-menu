@@ -9,6 +9,7 @@ action:
     edit_name: Namen bearbeiten
     delete: Löschen
     delete_category: Kategorie löschen
+    delete_all: Alle löschen
     toggle_active: Aktiv umschalten
     cancel: Abbrechen
     save: Speichern
@@ -51,10 +52,13 @@ toast:
     visible: Kategorie sichtbar
     hidden: Kategorie ausgeblendet
     deleted: Kategorie gelöscht
+    all_deleted: 'Alle Kategorien wurden gelöscht'
 
 confirm:
     delete_with_products: '"%name%" und die %count% zugehörigen Gerichte löschen? Dies kann nicht rückgängig gemacht werden.'
     delete_simple: 'Kategorie "%name%" löschen?'
+    delete_all_step1: 'Alle Kategorien (%count%) und all ihre Gerichte löschen?'
+    delete_all_step2: 'Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden. Möchtest du wirklich alle löschen?'
 
 error:
     select_category_required: Bitte wählen Sie eine Kategorie aus, um fortzufahren.

@@ -5,6 +5,7 @@ action:
     create_first: Create first tag
     edit_tag: Edit tag
     delete_tag: Delete tag
+    delete_all: Delete all
     cancel: Cancel
     save: Save
 
@@ -42,7 +43,10 @@ toast:
     created: 'Tag created ✓'
     updated: 'Tag updated ✓'
     deleted: Tag deleted
+    all_deleted: 'All tags deleted'
 
 confirm:
     delete_simple: 'Delete the tag "%name%"?'
     delete_with_products: 'Delete the tag "%name%"? It will be removed from the %count% dishes using it.'
+    delete_all_step1: 'Delete all tags (%count%)? System tags will not be affected.'
+    delete_all_step2: 'This action is permanent and cannot be undone. Confirm you want to delete them all?'

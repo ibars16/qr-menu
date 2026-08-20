@@ -5,6 +5,7 @@ action:
     create_first: Ersten Tag erstellen
     edit_tag: Tag bearbeiten
     delete_tag: Tag löschen
+    delete_all: Alle löschen
     cancel: Abbrechen
     save: Speichern
 
@@ -42,7 +43,10 @@ toast:
     created: 'Tag erstellt ✓'
     updated: 'Tag aktualisiert ✓'
     deleted: Tag gelöscht
+    all_deleted: 'Alle Tags wurden gelöscht'
 
 confirm:
     delete_simple: 'Tag "%name%" löschen?'
     delete_with_products: 'Tag "%name%" löschen? Er wird von %count% Gerichten entfernt, die ihn verwenden.'
+    delete_all_step1: 'Alle Tags (%count%) löschen? System-Tags sind davon nicht betroffen.'
+    delete_all_step2: 'Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden. Möchtest du wirklich alle löschen?'

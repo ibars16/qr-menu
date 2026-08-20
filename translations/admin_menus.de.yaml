@@ -6,6 +6,7 @@ action:
     back_to_menus: Zurück zu Set-Menüs
     edit_menu: Set-Menü bearbeiten
     delete_menu: Set-Menü löschen
+    delete_all: Alle löschen
     add_section: Abschnitt hinzufügen
     delete_section: Abschnitt löschen
     add_dish: Gericht hinzufügen
@@ -59,12 +60,15 @@ toast:
     section_created: 'Abschnitt erstellt ✓'
     section_updated: 'Abschnitt aktualisiert ✓'
     section_deleted: Abschnitt gelöscht
+    all_menus_deleted: 'Alle Set-Menüs wurden gelöscht'
 
 confirm:
     delete_menu_with_dishes: '"%name%" und die %count% zugehörigen Gerichte löschen? Dies kann nicht rückgängig gemacht werden.'
     delete_menu_simple: 'Set-Menü "%name%" löschen?'
     delete_section_with_dishes: 'Abschnitt "%name%" und die %count% zugehörigen Gerichte löschen? Dies kann nicht rückgängig gemacht werden.'
     delete_section_simple: 'Abschnitt "%name%" löschen?'
+    delete_all_step1: 'Alle Set-Menüs (%count%) und all ihre Gerichte löschen?'
+    delete_all_step2: 'Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden. Möchtest du wirklich alle löschen?'
 
 error:
     section_label_required: Der Name des Abschnitts ist erforderlich.

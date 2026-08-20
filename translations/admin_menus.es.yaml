@@ -6,6 +6,7 @@ action:
     back_to_menus: Volver a Menús
     edit_menu: Editar menú
     delete_menu: Eliminar menú
+    delete_all: Eliminar todos
     add_section: Añadir sección
     delete_section: Eliminar sección
     add_dish: Añadir plato
@@ -59,12 +60,15 @@ toast:
     section_created: 'Sección creada ✓'
     section_updated: 'Sección actualizada ✓'
     section_deleted: Sección eliminada
+    all_menus_deleted: 'Todos los menús eliminados'
 
 confirm:
     delete_menu_with_dishes: '¿Eliminar "%name%" y sus %count% platos? No se puede deshacer.'
     delete_menu_simple: '¿Eliminar el menú "%name%"?'
     delete_section_with_dishes: '¿Eliminar la sección "%name%" y sus %count% platos? No se puede deshacer.'
     delete_section_simple: '¿Eliminar la sección "%name%"?'
+    delete_all_step1: '¿Eliminar todos los menús (%count%) y todos sus platos?'
+    delete_all_step2: 'Esta acción es irreversible y no se puede deshacer. ¿Confirmas que quieres eliminarlos todos?'
 
 error:
     section_label_required: El nombre de la sección es obligatorio.

@@ -9,6 +9,7 @@ action:
     edit_name: Modifier le nom
     delete: Supprimer
     delete_category: Supprimer la catégorie
+    delete_all: Tout supprimer
     toggle_active: Activer/désactiver
     cancel: Annuler
     save: Enregistrer
@@ -51,10 +52,13 @@ toast:
     visible: Catégorie visible
     hidden: Catégorie masquée
     deleted: Catégorie supprimée
+    all_deleted: 'Toutes les catégories ont été supprimées'
 
 confirm:
     delete_with_products: 'Supprimer "%name%" et ses %count% plats ? Action irréversible.'
     delete_simple: 'Supprimer la catégorie "%name%" ?'
+    delete_all_step1: 'Supprimer toutes les catégories (%count%) et tous leurs plats ?'
+    delete_all_step2: 'Cette action est définitive et irréversible. Confirmez-vous vouloir toutes les supprimer ?'
 
 error:
     select_category_required: Sélectionnez une catégorie pour continuer.

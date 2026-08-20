@@ -1,6 +1,8 @@
 parameters:
     exchange_api_key:  '%env(EXCHANGE_API_KEY)%'
     gemini_api_key:    '%env(GEMINI_API_KEY)%'
+    mailer_from_email:      '%env(MAILER_FROM_EMAIL)%'
+    platform_admin_email:   '%env(PLATFORM_ADMIN_EMAIL)%'
 
 services:
 
@@ -14,6 +16,11 @@ services:
     App\Service\ExchangeRateUpdater:
         arguments:
             $exchangeApiKey: '%exchange_api_key%'
+
+    App\Service\SmartWaiterFailureAlertMailer:
+        arguments:
+            $fromEmail: '%mailer_from_email%'
+            $platformAdminEmail: '%platform_admin_email%'
 
     App\Service\DefaultTagSeeder:
         arguments:

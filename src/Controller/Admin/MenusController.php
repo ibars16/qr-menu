@@ -210,6 +210,20 @@ class MenusController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
+    /** Deletes every fixed-price menu — cascades their sections/dishes, same as MenuAdminController::deleteCategory(). Ordinary categories are untouched. */
+    #[Route('/menus/delete-all', name: 'menus_delete_all', methods: ['POST'])]
+    public function deleteAll(EntityManagerInterface $em): JsonResponse
+    {
+        $restaurant = $this->restaurant();
+
+        foreach ($this->menusFor($restaurant) as $menu) {
+            $em->remove($menu);
+        }
+        $em->flush();
+
+        return $this->json(['ok' => true]);
+    }
+
     // ── Sections (Primeros/Segundos/Postres…) ────────────────────────────────
 
     #[Route('/menus/{id}/sections/create', name: 'menus_section_create', methods: ['POST'])]

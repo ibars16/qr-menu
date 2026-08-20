@@ -7,6 +7,7 @@ action:
     back: Indietro
     save: Salva
     save_product: Salva piatto
+    delete_all_products: Elimina tutti i piatti
 
 category:
     delete_title: Elimina categoria
@@ -109,6 +110,9 @@ js:
     allergen_override_added: 'Eccezione aggiunta'
     allergen_note_required: 'Aggiungi una nota che spieghi perché è contrassegnato come "assente"'
     ingredient_allergens_saved: 'Allergeni salvati ✓'
+    confirm_delete_all_products_step1: 'Eliminare tutti i piatti (%count%) del menu? Le categorie rimarranno.'
+    confirm_delete_all_products_step2: "Questa azione è definitiva e non può essere annullata. Confermi di volerli eliminare tutti?"
+    all_products_deleted: 'Tutti i piatti sono stati eliminati'
 
 modal:
     category:

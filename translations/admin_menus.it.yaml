@@ -6,6 +6,7 @@ action:
     back_to_menus: Torna ai Menù fissi
     edit_menu: Modifica menù fisso
     delete_menu: Elimina menù fisso
+    delete_all: Elimina tutti
     add_section: Aggiungi sezione
     delete_section: Elimina sezione
     add_dish: Aggiungi piatto
@@ -59,12 +60,15 @@ toast:
     section_created: 'Sezione creata ✓'
     section_updated: 'Sezione aggiornata ✓'
     section_deleted: Sezione eliminata
+    all_menus_deleted: 'Tutti i menù fissi sono stati eliminati'
 
 confirm:
     delete_menu_with_dishes: 'Eliminare "%name%" e i suoi %count% piatti? Azione irreversibile.'
     delete_menu_simple: 'Eliminare il menù fisso "%name%"?'
     delete_section_with_dishes: 'Eliminare la sezione "%name%" e i suoi %count% piatti? Azione irreversibile.'
     delete_section_simple: 'Eliminare la sezione "%name%"?'
+    delete_all_step1: 'Eliminare tutti i menù fissi (%count%) e tutti i loro piatti?'
+    delete_all_step2: "Questa azione è definitiva e non può essere annullata. Confermi di volerli eliminare tutti?"
 
 error:
     section_label_required: Il nome della sezione è obbligatorio.

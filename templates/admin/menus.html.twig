@@ -5,6 +5,11 @@
 {% block page_title %}{{ 'title'|trans({}, 'admin_menus') }}{% endblock %}
 
 {% block header_actions %}
+    {% if menus|length > 0 %}
+        <button class="btn btn-danger" onclick="deleteAllMenus()">
+            <i class="ti ti-trash" aria-hidden="true"></i> {{ 'action.delete_all'|trans({}, 'admin_menus') }}
+        </button>
+    {% endif %}
     <button class="btn btn-primary" onclick="UI.openNew()">
         <i class="ti ti-plus" aria-hidden="true"></i> {{ 'action.new_menu'|trans({}, 'admin_menus') }}
     </button>
@@ -250,7 +255,11 @@
         const MSG_HIDDEN         = "{{ 'status.hidden'|trans({}, 'admin_menus')|e('js') }}";
         const MSG_CONFIRM_DELETE_MENU_WITH_DISHES = "{{ 'confirm.delete_menu_with_dishes'|trans({}, 'admin_menus')|e('js') }}";
         const MSG_CONFIRM_DELETE_MENU_SIMPLE      = "{{ 'confirm.delete_menu_simple'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_CONFIRM_DELETE_ALL_STEP1 = "{{ 'confirm.delete_all_step1'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_CONFIRM_DELETE_ALL_STEP2 = "{{ 'confirm.delete_all_step2'|trans({}, 'admin_menus')|e('js') }}";
+        const MSG_ALL_MENUS_DELETED = "{{ 'toast.all_menus_deleted'|trans({}, 'admin_menus')|e('js') }}";
         const MSG_UNEXPECTED_ERROR = "{{ 'error.unexpected'|trans({}, 'admin_menus')|e('js') }}";
+        const MENUS_COUNT = {{ menus|length }};
 
         const isMobile = () => window.innerWidth < 768;
 
@@ -329,6 +338,21 @@
                     await api('/admin/menus/reorder', { ids });
                 },
             });
+        }
+
+        // ── Delete all menus ──
+        // Two sequential confirm() dialogs — this wipes every fixed-price
+        // menu (and their sections/dishes) in one shot and can't be undone.
+        async function deleteAllMenus() {
+            const step1 = MSG_CONFIRM_DELETE_ALL_STEP1.replace('%count%', MENUS_COUNT);
+            if (!confirm(step1)) return;
+            if (!confirm(MSG_CONFIRM_DELETE_ALL_STEP2)) return;
+
+            const data = await api('/admin/menus/delete-all');
+            if (data.ok) {
+                showToast(MSG_ALL_MENUS_DELETED, 'success');
+                location.reload();
+            }
         }
 
         async function api(url, body = null) {

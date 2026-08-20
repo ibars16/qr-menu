@@ -78,6 +78,22 @@ class CategoriesController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
+    /** Deletes every ordinary (non-fixed-price) category — cascades to their Products, translations, etc. Fixed-price menus are untouched; see MenusController for their own delete-all. */
+    #[Route('/categories/delete-all', name: 'categories_delete_all', methods: ['POST'])]
+    public function deleteAll(EntityManagerInterface $em): JsonResponse
+    {
+        $restaurant = $this->restaurant();
+
+        foreach ($restaurant->getCategories() as $category) {
+            if (!$category->isFixedPriceMenu()) {
+                $em->remove($category);
+            }
+        }
+        $em->flush();
+
+        return $this->json(['ok' => true]);
+    }
+
     #[Route('/categories/reorder', name: 'categories_reorder', methods: ['POST'])]
     public function reorder(Request $request, EntityManagerInterface $em): JsonResponse
     {

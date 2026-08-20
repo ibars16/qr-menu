@@ -5,6 +5,12 @@
 {% block page_title %}{{ 'title'|trans({}, 'admin_menu') }}{% endblock %}
 
 {% block header_actions %}
+    {% if totalProducts > 0 %}
+        <button class="btn btn-danger" onclick="deleteAllProducts()" title="{{ 'action.delete_all_products'|trans({}, 'admin_menu') }}">
+            <i class="ti ti-trash" aria-hidden="true"></i>
+            <span class="hide-mobile">{{ 'action.delete_all_products'|trans({}, 'admin_menu') }}</span>
+        </button>
+    {% endif %}
     <button class="btn btn-ai" onclick="UI.openAiImport()">
         <i class="ti ti-sparkles" aria-hidden="true"></i>
         <span class="hide-mobile">{{ 'action.import_ai'|trans({}, 'admin_menu') }}</span>
@@ -280,6 +286,10 @@
         const MSG_CONFIRM_DELETE_CATEGORY_WITH_PRODUCTS = "{{ 'js.confirm_delete_category_with_products'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_CONFIRM_DELETE_CATEGORY = "{{ 'js.confirm_delete_category'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_CATEGORY_DELETED   = "{{ 'js.category_deleted'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CONFIRM_DELETE_ALL_PRODUCTS_STEP1 = "{{ 'js.confirm_delete_all_products_step1'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_CONFIRM_DELETE_ALL_PRODUCTS_STEP2 = "{{ 'js.confirm_delete_all_products_step2'|trans({}, 'admin_menu')|e('js') }}";
+        const MSG_ALL_PRODUCTS_DELETED = "{{ 'js.all_products_deleted'|trans({}, 'admin_menu')|e('js') }}";
+        const TOTAL_PRODUCTS_COUNT = {{ totalProducts }};
 
         // S, isMobile, apiFetch, panelEl/getVal/setVal come from
         // _admin_js_utils.html.twig — declare S first since the product JS
@@ -368,6 +378,21 @@
                 btn.closest('.cat-block').remove();
                 showToast(MSG_CATEGORY_DELETED, 'success');
                 if (!document.querySelector('.cat-block')) location.reload();
+            }
+        }
+
+        // ── Delete all dishes (categories stay) ──
+        // Two sequential confirm() dialogs — this wipes every dish in the
+        // whole carta in one shot and can't be undone.
+        async function deleteAllProducts() {
+            const step1 = MSG_CONFIRM_DELETE_ALL_PRODUCTS_STEP1.replace('%count%', TOTAL_PRODUCTS_COUNT);
+            if (!confirm(step1)) return;
+            if (!confirm(MSG_CONFIRM_DELETE_ALL_PRODUCTS_STEP2)) return;
+
+            const data = await apiFetch('/admin/products/delete-all');
+            if (data.ok) {
+                showToast(MSG_ALL_PRODUCTS_DELETED, 'success');
+                location.reload();
             }
         }
     </script>

@@ -57,10 +57,13 @@ class TagsController extends AbstractController
         $tags       = $restaurant->getProductTags()->toArray();
         usort($tags, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
 
+        $customTagsCount = count(array_filter($tags, fn($t) => !$t->isSystem()));
+
         return $this->render('admin/tags.html.twig', [
-            'restaurant' => $restaurant,
-            'tags'       => $tags,
-            'locale'     => $restaurant->getDefaultLanguage(),
+            'restaurant'      => $restaurant,
+            'tags'            => $tags,
+            'locale'          => $restaurant->getDefaultLanguage(),
+            'customTagsCount' => $customTagsCount,
         ]);
     }
 
@@ -152,6 +155,22 @@ class TagsController extends AbstractController
         }
 
         $em->remove($tag);
+        $em->flush();
+
+        return $this->json(['ok' => true]);
+    }
+
+    /** Deletes every non-system tag — system tags stay protected, same as delete() above. */
+    #[Route('/tags/delete-all', name: 'tags_delete_all', methods: ['POST'])]
+    public function deleteAll(EntityManagerInterface $em): JsonResponse
+    {
+        $restaurant = $this->restaurant();
+
+        foreach ($restaurant->getProductTags() as $tag) {
+            if (!$tag->isSystem()) {
+                $em->remove($tag);
+            }
+        }
         $em->flush();
 
         return $this->json(['ok' => true]);

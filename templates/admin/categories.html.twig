@@ -5,6 +5,11 @@
 {% block page_title %}{{ 'title'|trans({}, 'admin_categories') }}{% endblock %}
 
 {% block header_actions %}
+    {% if categories|length > 0 %}
+        <button class="btn btn-danger" onclick="deleteAllCategories()">
+            <i class="ti ti-trash" aria-hidden="true"></i> {{ 'action.delete_all'|trans({}, 'admin_categories') }}
+        </button>
+    {% endif %}
     <button class="btn btn-primary" onclick="UI.openNew()">
         <i class="ti ti-plus" aria-hidden="true"></i> {{ 'action.new_category'|trans({}, 'admin_categories') }}
     </button>
@@ -260,7 +265,11 @@
         const MSG_DELETED         = "{{ 'toast.deleted'|trans({}, 'admin_categories')|e('js') }}";
         const MSG_CONFIRM_DELETE_WITH_PRODUCTS = "{{ 'confirm.delete_with_products'|trans({}, 'admin_categories')|e('js') }}";
         const MSG_CONFIRM_DELETE_SIMPLE        = "{{ 'confirm.delete_simple'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_CONFIRM_DELETE_ALL_STEP1     = "{{ 'confirm.delete_all_step1'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_CONFIRM_DELETE_ALL_STEP2     = "{{ 'confirm.delete_all_step2'|trans({}, 'admin_categories')|e('js') }}";
+        const MSG_ALL_DELETED                  = "{{ 'toast.all_deleted'|trans({}, 'admin_categories')|e('js') }}";
         const MSG_UNEXPECTED_ERROR             = "{{ 'error.unexpected'|trans({}, 'admin_categories')|e('js') }}";
+        const CATEGORIES_COUNT = {{ categories|length }};
 
         const isMobile = () => window.innerWidth < 768;
 
@@ -347,6 +356,22 @@
                 btn.closest('.cat-card').remove();
                 showToast(MSG_DELETED, 'success');
                 if (!document.querySelector('.cat-card')) location.reload();
+            }
+        }
+
+        // ── Delete all ──
+        // Two sequential confirm() dialogs, unlike the single-item delete
+        // above — this wipes every category (and all their dishes) in one
+        // shot and can't be undone.
+        async function deleteAllCategories() {
+            const step1 = MSG_CONFIRM_DELETE_ALL_STEP1.replace('%count%', CATEGORIES_COUNT);
+            if (!confirm(step1)) return;
+            if (!confirm(MSG_CONFIRM_DELETE_ALL_STEP2)) return;
+
+            const data = await api('/admin/categories/delete-all');
+            if (data.ok) {
+                showToast(MSG_ALL_DELETED, 'success');
+                location.reload();
             }
         }
 

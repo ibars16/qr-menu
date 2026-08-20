@@ -134,12 +134,15 @@ class MenuAdminController extends AbstractController
         ));
         usort($categories, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
 
+        $totalProducts = array_sum(array_map(fn(Category $c) => $c->getProducts()->count(), $categories));
+
         return $this->render('admin/menu.html.twig', [
-            'restaurant' => $restaurant,
-            'categories' => $categories,
-            'languages'  => $languages,
-            'locale'     => $restaurant->getDefaultLanguage(),
-            'allergens'  => $this->allergenRepository->findAllOrdered(),
+            'restaurant'     => $restaurant,
+            'categories'     => $categories,
+            'languages'      => $languages,
+            'locale'         => $restaurant->getDefaultLanguage(),
+            'allergens'      => $this->allergenRepository->findAllOrdered(),
+            'totalProducts'  => $totalProducts,
         ]);
     }
 
@@ -620,6 +623,25 @@ class MenuAdminController extends AbstractController
         $this->assertOwner($product->getCategory()->getRestaurant());
         $em->remove($product);
         $em->flush();
+        return $this->json(['ok' => true]);
+    }
+
+    /** Deletes every dish in every ordinary category — the categories themselves stay, unlike CategoriesController::deleteAll(). Fixed-price menus (and their dishes) are untouched. */
+    #[Route('/products/delete-all', name: 'products_delete_all', methods: ['POST'])]
+    public function deleteAllProducts(EntityManagerInterface $em): JsonResponse
+    {
+        $restaurant = $this->restaurant();
+
+        foreach ($restaurant->getCategories() as $category) {
+            if ($category->isFixedPriceMenu()) {
+                continue;
+            }
+            foreach ($category->getProducts() as $product) {
+                $em->remove($product);
+            }
+        }
+        $em->flush();
+
         return $this->json(['ok' => true]);
     }
 

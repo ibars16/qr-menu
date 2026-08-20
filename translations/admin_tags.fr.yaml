@@ -5,6 +5,7 @@ action:
     create_first: Créer la première étiquette
     edit_tag: "Modifier l'étiquette"
     delete_tag: "Supprimer l'étiquette"
+    delete_all: Tout supprimer
     cancel: Annuler
     save: Enregistrer
 
@@ -42,7 +43,10 @@ toast:
     created: "Étiquette créée ✓"
     updated: "Étiquette mise à jour ✓"
     deleted: "Étiquette supprimée"
+    all_deleted: "Toutes les étiquettes ont été supprimées"
 
 confirm:
     delete_simple: 'Supprimer l''étiquette "%name%" ?'
     delete_with_products: 'Supprimer l''étiquette "%name%" ? Elle sera retirée des %count% plats qui l''utilisent.'
+    delete_all_step1: 'Supprimer toutes les étiquettes (%count%) ? Les étiquettes système ne seront pas affectées.'
+    delete_all_step2: 'Cette action est définitive et irréversible. Confirmez-vous vouloir toutes les supprimer ?'

@@ -7,6 +7,7 @@ action:
     back: Zurück
     save: Speichern
     save_product: Gericht speichern
+    delete_all_products: Alle Gerichte löschen
 
 category:
     delete_title: Kategorie löschen
@@ -109,6 +110,9 @@ js:
     allergen_override_added: 'Ausnahme hinzugefügt'
     allergen_note_required: 'Bitte füge eine Notiz hinzu, warum dies als "frei von" markiert ist'
     ingredient_allergens_saved: 'Allergene gespeichert ✓'
+    confirm_delete_all_products_step1: 'Alle Gerichte (%count%) der Speisekarte löschen? Die Kategorien bleiben erhalten.'
+    confirm_delete_all_products_step2: 'Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden. Möchtest du wirklich alle löschen?'
+    all_products_deleted: 'Alle Gerichte wurden gelöscht'
 
 modal:
     category:

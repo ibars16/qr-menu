@@ -5,6 +5,7 @@ action:
     create_first: Crear primera etiqueta
     edit_tag: Editar etiqueta
     delete_tag: Eliminar etiqueta
+    delete_all: Eliminar todas
     cancel: Cancelar
     save: Guardar
 
@@ -42,7 +43,10 @@ toast:
     created: 'Etiqueta creada ✓'
     updated: 'Etiqueta actualizada ✓'
     deleted: Etiqueta eliminada
+    all_deleted: 'Todas las etiquetas eliminadas'
 
 confirm:
     delete_simple: '¿Eliminar la etiqueta "%name%"?'
     delete_with_products: '¿Eliminar la etiqueta "%name%"? Se quitará de los %count% platos que la usan.'
+    delete_all_step1: '¿Eliminar todas las etiquetas (%count%)? Las etiquetas del sistema no se verán afectadas.'
+    delete_all_step2: 'Esta acción es irreversible y no se puede deshacer. ¿Confirmas que quieres eliminarlas todas?'
