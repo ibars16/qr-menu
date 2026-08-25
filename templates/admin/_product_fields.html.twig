@@ -31,6 +31,44 @@
               placeholder="{{ 'field.description_placeholder'|trans({}, 'admin_menu') }}"></textarea>
 </div>
 
+{# Traducciones IA — oculto por defecto; solo aparece en un plato ya
+   guardado que tenga alguna traducción generada aparte del idioma por
+   defecto del restaurante. Deja corregir a mano el texto de un idioma
+   concreto (p.ej. una mala traducción de la IA) sin tocar el resto — ver
+   ProductUI.renderTranslations()/selectTranslationLocale()/saveTranslation()
+   en _product_js.html.twig. #}
+<div class="translation-accordion" id="p-translations-accordion" style="display:none">
+    <div class="translation-accordion-toggle" onclick="toggleTranslationsAccordion(this)" role="button" tabindex="0" aria-expanded="false">
+        <i class="ti ti-chevron-right translation-accordion-chevron" aria-hidden="true"></i>
+        <div class="translation-accordion-toggle-text">
+            <span class="translation-accordion-title">
+                {{ 'translations.title'|trans({}, 'admin_menu') }}
+                <span class="translation-accordion-badge" id="p-translations-badge"></span>
+            </span>
+        </div>
+    </div>
+    <div class="translation-accordion-body">
+        <div class="field">
+            <label class="field-label">{{ 'translations.locale_label'|trans({}, 'admin_menu') }}</label>
+            <div class="translation-locale-row">
+                <select id="p-translation-locale" onchange="ProductUI.selectTranslationLocale(this.value)"></select>
+                <span class="translation-source-badge" id="p-translation-source-badge"></span>
+            </div>
+        </div>
+        <div class="field">
+            <label class="field-label">{{ 'translations.name_label'|trans({}, 'admin_menu') }}</label>
+            <input type="text" id="p-translation-name">
+        </div>
+        <div class="field">
+            <label class="field-label">{{ 'translations.description_label'|trans({}, 'admin_menu') }}</label>
+            <textarea id="p-translation-desc"></textarea>
+        </div>
+        <div class="allergen-add-btn" onclick="ProductUI.saveTranslation()" role="button" tabindex="0">
+            <i class="ti ti-check" style="font-size:13px" aria-hidden="true"></i> {{ 'translations.save'|trans({}, 'admin_menu') }}
+        </div>
+    </div>
+</div>
+
 {# Precio, "fila base" del bloque de precios. En estado simple es la única
    fila visible (la Etiqueta va oculta) — idéntico a hoy, con su propia
    etiqueta de campo visible (no hay fila de cabecera que la sustituya

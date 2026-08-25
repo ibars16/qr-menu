@@ -3,3 +3,5 @@ dialog:
     language_label: "Dil"
     currency_label: "Para Birimi"
     confirm: "Devam"
+loading:
+    title: "Menünüz hazırlanıyor…"

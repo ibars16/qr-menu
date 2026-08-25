@@ -19,7 +19,9 @@ use App\Entity\ProductTranslation;
 use App\Enum\AllergenPresence;
 use App\Enum\CategoryType;
 use App\Repository\AllergenRepository;
+use App\Service\CategoryTranslationService;
 use App\Service\ProductAllergenResolver;
+use App\Service\ProductTranslationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -37,6 +39,8 @@ class MenuAdminController extends AbstractController
         private readonly TranslatorInterface $translator,
         private readonly AllergenRepository $allergenRepository,
         private readonly ProductAllergenResolver $allergenResolver,
+        private readonly ProductTranslationService $productTranslationService,
+        private readonly CategoryTranslationService $categoryTranslationService,
     ) {
     }
 
@@ -193,6 +197,7 @@ class MenuAdminController extends AbstractController
 
         $locale      = $category->getRestaurant()->getDefaultLanguage();
         $translation = $category->getTranslation($locale);
+        $nameChanged = !$translation || $translation->getName() !== $name;
 
         if (!$translation) {
             $translation = new CategoryTranslation();
@@ -202,6 +207,12 @@ class MenuAdminController extends AbstractController
         }
 
         $translation->setName($name);
+        $translation->setSource(CategoryTranslation::SOURCE_HUMAN);
+
+        if ($nameChanged) {
+            $this->categoryTranslationService->invalidateStale($category, $locale);
+        }
+
         $em->flush();
 
         return $this->json(['id' => $category->getId(), 'name' => $name]);
@@ -237,6 +248,7 @@ class MenuAdminController extends AbstractController
             $translations[$t->getLocale()] = [
                 'name'        => $t->getName(),
                 'description' => $t->getDescription(),
+                'source'      => $t->getSource(),
             ];
         }
 
@@ -341,6 +353,49 @@ class MenuAdminController extends AbstractController
         ]);
     }
 
+    /**
+     * Lets the admin hand-correct one AI-generated translation (e.g. a
+     * mistranslated dish name) without touching any other locale. Setting
+     * source=human here is what protects this row from
+     * ProductTranslationService::invalidateStale() the next time the
+     * default-locale name/description changes — see that method's docblock.
+     */
+    #[Route('/products/{id}/translations/{locale}', name: 'product_translation_save', methods: ['POST'])]
+    public function saveProductTranslation(Product $product, string $locale, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $this->assertOwner($product->getCategory()->getRestaurant());
+
+        $data = json_decode($request->getContent(), true);
+        $name = trim($data['name'] ?? '');
+
+        if (!$name) {
+            return $this->json(['error' => $this->translator->trans('error.translation_name_required', domain: 'admin_menu')], 400);
+        }
+
+        $translation = $product->getTranslation($locale);
+        if (!$translation) {
+            $translation = new ProductTranslation();
+            $translation->setLocale($locale);
+            $translation->setProduct($product);
+            $product->addTranslation($translation);
+            $em->persist($translation);
+        }
+
+        $description = trim($data['description'] ?? '');
+
+        $translation->setName($name);
+        $translation->setDescription($description !== '' ? $description : null);
+        $translation->setSource(ProductTranslation::SOURCE_HUMAN);
+        $em->flush();
+
+        return $this->json([
+            'locale'      => $locale,
+            'name'        => $translation->getName(),
+            'description' => $translation->getDescription(),
+            'source'      => $translation->getSource(),
+        ]);
+    }
+
     #[Route('/products/save', name: 'product_save', methods: ['POST'])]
     public function saveProduct(Request $request, EntityManagerInterface $em): JsonResponse
     {
@@ -407,18 +462,40 @@ class MenuAdminController extends AbstractController
         if (array_key_exists('spicyLevel', $data)) $product->setSpicyLevel($data['spicyLevel'] ?: null);
         if (isset($data['active']))                 $product->setActive((bool) $data['active']);
 
-        // Translations
+        // Translations — the admin form only ever submits the restaurant's
+        // default language (see LOCALE in _admin_js_utils.html.twig), so any
+        // entry here is always admin-entered source text, never an AI fill.
+        // A change to it invalidates every AI-generated translation of this
+        // product (see ProductTranslationService::invalidateStale) so they
+        // regenerate from the new text instead of staying stale forever.
+        $defaultLocale = $restaurant->getDefaultLanguage();
+        $sourceChanged = false;
+
         foreach ($data['translations'] ?? [] as $locale => $trans) {
             $translation = $product->getTranslation($locale);
+            $newName        = $trans['name'] ?? '';
+            $newDescription = $trans['description'] ?? null;
+
             if (!$translation) {
                 $translation = new ProductTranslation();
                 $translation->setLocale($locale);
                 $translation->setProduct($product);
                 $product->addTranslation($translation);
                 $em->persist($translation);
+                $sourceChanged = $sourceChanged || $locale === $defaultLocale;
+            } elseif ($locale === $defaultLocale
+                && ($translation->getName() !== $newName || $translation->getDescription() !== $newDescription)
+            ) {
+                $sourceChanged = true;
             }
-            $translation->setName($trans['name'] ?? '');
-            $translation->setDescription($trans['description'] ?? null);
+
+            $translation->setName($newName);
+            $translation->setDescription($newDescription);
+            $translation->setSource(ProductTranslation::SOURCE_HUMAN);
+        }
+
+        if ($sourceChanged) {
+            $this->productTranslationService->invalidateStale($product, $defaultLocale);
         }
 
         // Tags

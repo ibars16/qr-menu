@@ -3,3 +3,5 @@ dialog:
     language_label: "Ngôn ngữ"
     currency_label: "Tiền tệ"
     confirm: "Tiếp tục"
+loading:
+    title: "Đang chuẩn bị thực đơn của bạn…"

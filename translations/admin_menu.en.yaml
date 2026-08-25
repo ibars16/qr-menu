@@ -157,6 +157,18 @@ upload:
 error:
     category_name_required: Name is required.
     product_not_found: Dish not found.
+    translation_name_required: The name is required.
     category_not_found: Category not found.
     allergen_free_from_note_required: Please add a short note explaining why this allergen is marked as free from.
     unexpected: Something went wrong. Please try again.
+
+translations:
+    title: AI translations
+    hint_empty: "No AI translations yet — they'll appear here once a customer views the menu in another language."
+    locale_label: Language
+    source_ai: AI-translated
+    source_human: Edited by you
+    name_label: Name
+    description_label: Description
+    save: Save correction
+    saved: 'Translation saved ✓'

@@ -3,3 +3,5 @@ dialog:
     language_label: "Språk"
     currency_label: "Valuta"
     confirm: "Fortsätt"
+loading:
+    title: "Förbereder din meny…"

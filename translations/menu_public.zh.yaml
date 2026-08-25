@@ -3,3 +3,5 @@ dialog:
     language_label: "语言"
     currency_label: "货币"
     confirm: "继续"
+loading:
+    title: "正在准备菜单…"

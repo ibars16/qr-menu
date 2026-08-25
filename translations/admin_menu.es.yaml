@@ -157,6 +157,18 @@ upload:
 error:
     category_name_required: El nombre es obligatorio.
     product_not_found: Plato no encontrado.
+    translation_name_required: El nombre es obligatorio.
     category_not_found: Categoría no encontrada.
     allergen_free_from_note_required: Añade una breve nota explicando por qué se marca como "sin este alérgeno".
     unexpected: Algo salió mal. Inténtalo de nuevo.
+
+translations:
+    title: Traducciones IA
+    hint_empty: 'Aún no hay traducciones generadas por IA — aparecerán aquí cuando un cliente vea el menú en otro idioma.'
+    locale_label: Idioma
+    source_ai: Traducido por IA
+    source_human: Editado por ti
+    name_label: Nombre
+    description_label: Descripción
+    save: Guardar corrección
+    saved: 'Traducción guardada ✓'

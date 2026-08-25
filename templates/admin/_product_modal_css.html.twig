@@ -359,6 +359,37 @@
 .allergen-accordion-body { display:none; padding:13px; border-top:1px solid var(--bd-1); }
 .allergen-accordion-body.open { display:block; }
 
+/* AI translations accordion — same visual language as the allergen
+   accordion above, own class prefix for clarity in the markup; see
+   ProductUI.renderTranslations()/toggleTranslationsAccordion(). */
+.translation-accordion { border:1px solid var(--bd-1); border-radius:10px; margin-top:14px; overflow:hidden; }
+.translation-accordion-toggle {
+    display:flex; align-items:flex-start; gap:9px; padding:11px 13px; cursor:pointer;
+    user-select:none; background:var(--bg-card); transition:background 0.15s;
+}
+.translation-accordion-toggle:hover { background:var(--bg-hover); }
+.translation-accordion-chevron { font-size:14px; color:var(--tx-6); margin-top:2px; flex-shrink:0; transition:transform 0.18s; }
+.translation-accordion-toggle[aria-expanded="true"] .translation-accordion-chevron { transform:rotate(90deg); }
+.translation-accordion-toggle-text { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.translation-accordion-title { font-size:12px; font-weight:600; color:var(--tx-3); }
+.translation-accordion-badge {
+    display:inline-flex; align-items:center; justify-content:center; min-width:16px; height:16px;
+    padding:0 4px; border-radius:999px; background:var(--tx-6); color:var(--bg-card);
+    font-size:10px; font-weight:700; margin-left:3px; vertical-align:middle;
+}
+.translation-accordion-body { display:none; padding:13px; border-top:1px solid var(--bd-1); }
+.translation-accordion-body.open { display:block; }
+.translation-locale-row { display:flex; align-items:center; gap:8px; }
+.translation-locale-row select {
+    background:var(--bg-input); border:1px solid var(--bd-2); color:var(--tx-1);
+    font-size:12px; padding:7px 9px; border-radius:8px; outline:none; font-family:inherit; min-height:0; flex:1;
+}
+.translation-source-badge {
+    font-size:10px; font-weight:600; padding:3px 8px; border-radius:20px; white-space:nowrap; flex-shrink:0;
+}
+.translation-source-badge.source-ai { background:rgba(84,74,183,0.14); color:#8f85e0; }
+.translation-source-badge.source-human { background:rgba(34,197,94,0.14); color:#4ade80; }
+
 /* Contextual help icons — click/tap to open a small popover; see toggleHelp(). */
 .help-icon {
     display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;

@@ -10,8 +10,8 @@
    include, everything _admin_js_utils.html.twig provides (S, isMobile,
    activePanel, panelEl, getVal, setVal, apiFetch) — S in particular must
    have productId/categoryId/menuSectionId/spicy/allergenOverrides/
-   ingredientAllergenCache. showToast is global (see admin/base.html.twig)
-   and needs no declaration. #}
+   ingredientAllergenCache/productTranslations. showToast is global (see
+   admin/base.html.twig) and needs no declaration. #}
 <script>
     const SPICY_LABELS = {{ ['spicy.none','spicy.mild','spicy.medium','spicy.hot','spicy.very_hot','spicy.extreme']|map(k => k|trans({}, 'admin_menu'))|json_encode|raw }};
 
@@ -44,6 +44,12 @@
     const MSG_ALLERGEN_OVERRIDE_ADDED  = "{{ 'js.allergen_override_added'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_INGREDIENT_ALLERGENS_SAVED = "{{ 'js.ingredient_allergens_saved'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_ALLERGEN_REMOVE = "{{ 'allergens.remove'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_TRANSLATIONS_SOURCE_AI    = "{{ 'translations.source_ai'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_TRANSLATIONS_SOURCE_HUMAN = "{{ 'translations.source_human'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_TRANSLATIONS_SAVED        = "{{ 'translations.saved'|trans({}, 'admin_menu')|e('js') }}";
+
+    // Locale → {name, flag} for the AI-translations locale picker (config/languages.php).
+    const LANGUAGES = {{ languages|json_encode|raw }};
 
     // Full allergen taxonomy, translated in the Admin Panel's content
     // language — small, fixed reference data (14 rows), so it's cheap to
@@ -138,7 +144,63 @@
                 S.allergenOverrides = (data.allergenOverrides ?? []).map(o => ({ allergenId: o.id, presence: o.presence, note: o.note ?? '' }));
                 renderAllergenOverrides();
                 renderPrivateIngredientAllergens();
+                this.renderTranslations(data.translations ?? {});
             } catch(e) { showToast(MSG_ERROR_LOADING_PRODUCT, 'error'); }
+        },
+
+        // AI translations — shows every locale the dish has a translation
+        // for besides the restaurant's own default (LOCALE), each tagged
+        // with its source (🤖 AI vs ✍️ edited). A brand-new/never-visited-
+        // in-another-language product has none yet, so the whole accordion
+        // stays hidden rather than showing an empty picker.
+        renderTranslations(translations) {
+            S.productTranslations = translations || {};
+            const locales = Object.keys(S.productTranslations).filter(l => l !== LOCALE).sort();
+            const wrap = () => document.querySelectorAll('[id="p-translations-accordion"]');
+
+            if (!locales.length) {
+                wrap().forEach(el => el.style.display = 'none');
+                return;
+            }
+            wrap().forEach(el => el.style.display = '');
+            document.querySelectorAll('[id="p-translations-badge"]').forEach(b => { b.textContent = locales.length; });
+
+            document.querySelectorAll('[id="p-translation-locale"]').forEach(sel => {
+                sel.innerHTML = locales.map(l => {
+                    const lang = LANGUAGES[l];
+                    const label = lang ? `${lang.flag} ${lang.name}` : l;
+                    return `<option value="${l}">${label}</option>`;
+                }).join('');
+            });
+            this.selectTranslationLocale(locales[0]);
+        },
+        selectTranslationLocale(locale) {
+            document.querySelectorAll('[id="p-translation-locale"]').forEach(el => { el.value = locale; });
+            const t = S.productTranslations[locale] || {};
+            setVal('p-translation-name', t.name ?? '');
+            setVal('p-translation-desc', t.description ?? '');
+            const isAi = t.source !== 'human';
+            document.querySelectorAll('[id="p-translation-source-badge"]').forEach(el => {
+                el.textContent = isAi ? MSG_TRANSLATIONS_SOURCE_AI : MSG_TRANSLATIONS_SOURCE_HUMAN;
+                el.className = 'translation-source-badge ' + (isAi ? 'source-ai' : 'source-human');
+            });
+        },
+        async saveTranslation() {
+            const locale = panelEl('p-translation-locale')?.value;
+            if (!locale || !S.productId) return;
+
+            const name = getVal('p-translation-name');
+            if (!name.trim()) { showToast(MSG_FILL_REQUIRED_FIELDS, 'error'); return; }
+
+            const data = await apiFetch(`/admin/products/${S.productId}/translations/${locale}`, {
+                name,
+                description: getVal('p-translation-desc'),
+            });
+            if (data.error) { showToast(data.error, 'error'); return; }
+
+            S.productTranslations[locale] = { name: data.name, description: data.description, source: data.source };
+            this.selectTranslationLocale(locale);
+            showToast(MSG_TRANSLATIONS_SAVED, 'success');
         },
         _openProduct() {
             if (isMobile()) document.getElementById('mobile-product-sheet').classList.add('open');
@@ -658,6 +720,14 @@
         body.classList.toggle('open', !open);
     }
 
+    // ── AI translations accordion (collapsed by default) ────────────────────────
+    function toggleTranslationsAccordion(toggleEl) {
+        const body = toggleEl.nextElementSibling;
+        const open = toggleEl.getAttribute('aria-expanded') === 'true';
+        toggleEl.setAttribute('aria-expanded', open ? 'false' : 'true');
+        body.classList.toggle('open', !open);
+    }
+
     // ── Contextual help icons (click/tap to open, click elsewhere to close) ─────
     function toggleHelp(event, iconEl) {
         event.stopPropagation();
@@ -734,6 +804,10 @@
         });
         document.querySelectorAll('.allergen-accordion-toggle').forEach(el => el.setAttribute('aria-expanded', 'false'));
         document.querySelectorAll('.allergen-accordion-body').forEach(el => el.classList.remove('open'));
+        S.productTranslations = {};
+        document.querySelectorAll('[id="p-translations-accordion"]').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.translation-accordion-toggle').forEach(el => el.setAttribute('aria-expanded', 'false'));
+        document.querySelectorAll('.translation-accordion-body').forEach(el => el.classList.remove('open'));
         closeAllHelp();
         const catSelectError = document.getElementById('cat-select-error');
         if (catSelectError) catSelectError.style.display = 'none';

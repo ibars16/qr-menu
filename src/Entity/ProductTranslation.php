@@ -8,6 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\UniqueConstraint(name: 'unique_product_locale', columns: ['product_id', 'locale'])]
 class ProductTranslation
 {
+    public const SOURCE_HUMAN = 'human';
+    public const SOURCE_AI    = 'ai';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -25,6 +28,12 @@ class ProductTranslation
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
+
+    // 'human' (entered/edited in the admin) or 'ai' (machine-translated,
+    // permanently cached until the source-locale text changes — see
+    // ProductTranslationService / AiProductTranslator).
+    #[ORM\Column(length: 10)]
+    private string $source = self::SOURCE_HUMAN;
 
     public function getId(): ?int
     {
@@ -69,5 +78,20 @@ class ProductTranslation
     public function setDescription(?string $description): void
     {
         $this->description = $description;
+    }
+
+    public function getSource(): string
+    {
+        return $this->source;
+    }
+
+    public function setSource(string $source): void
+    {
+        $this->source = $source;
+    }
+
+    public function isAiGenerated(): bool
+    {
+        return $this->source === self::SOURCE_AI;
     }
 }

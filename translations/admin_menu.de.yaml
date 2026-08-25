@@ -157,6 +157,18 @@ upload:
 error:
     category_name_required: Der Name ist erforderlich.
     product_not_found: Gericht nicht gefunden.
+    translation_name_required: Der Name ist erforderlich.
     category_not_found: Kategorie nicht gefunden.
     allergen_free_from_note_required: Bitte füge eine kurze Notiz hinzu, warum dieses Allergen als "frei von" markiert ist.
     unexpected: Etwas ist schiefgelaufen. Bitte versuche es erneut.
+
+translations:
+    title: KI-Übersetzungen
+    hint_empty: "Noch keine KI-Übersetzungen — sie erscheinen hier, sobald ein Kunde das Menü in einer anderen Sprache ansieht."
+    locale_label: Sprache
+    source_ai: KI-übersetzt
+    source_human: Von dir bearbeitet
+    name_label: Name
+    description_label: Beschreibung
+    save: Korrektur speichern
+    saved: 'Übersetzung gespeichert ✓'

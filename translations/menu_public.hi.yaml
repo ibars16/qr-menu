@@ -3,3 +3,5 @@ dialog:
     language_label: "भाषा"
     currency_label: "मुद्रा"
     confirm: "जारी रखें"
+loading:
+    title: "आपका मेनू तैयार किया जा रहा है…"

@@ -157,6 +157,18 @@ upload:
 error:
     category_name_required: Le nom est obligatoire.
     product_not_found: Plat introuvable.
+    translation_name_required: Le nom est obligatoire.
     category_not_found: Catégorie introuvable.
     allergen_free_from_note_required: Ajoutez une brève note expliquant pourquoi cet allergène est marqué comme absent.
     unexpected: Une erreur est survenue. Veuillez réessayer.
+
+translations:
+    title: Traductions IA
+    hint_empty: "Pas encore de traductions IA — elles apparaîtront ici dès qu'un client consultera le menu dans une autre langue."
+    locale_label: Langue
+    source_ai: Traduit par IA
+    source_human: Modifié par vous
+    name_label: Nom
+    description_label: Description
+    save: Enregistrer la correction
+    saved: 'Traduction enregistrée ✓'

@@ -61,6 +61,17 @@ services:
     App\Service\IngredientTranslatorInterface:
         alias: App\Service\GeminiIngredientTranslator
 
+    # Routed through AIModelRouter's "capable" tier (see
+    # RouterProductTranslator's docblock) rather than calling Gemini
+    # directly like the tag/ingredient translators above — dish and
+    # category names need better multilingual quality than a free lite
+    # model reliably gives in lower-resource languages.
+    App\Service\ProductTranslatorInterface:
+        alias: App\Service\RouterProductTranslator
+
+    App\Service\CategoryTranslatorInterface:
+        alias: App\Service\RouterCategoryTranslator
+
     App\Service\TagTranslationProviderInterface:
         alias: App\Service\DatabaseTagTranslationProvider
 

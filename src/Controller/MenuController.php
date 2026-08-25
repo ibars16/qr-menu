@@ -3,17 +3,22 @@
 namespace App\Controller;
 
 use App\Enum\AllergenPresence;
+use App\Repository\ProductRepository;
 use App\Repository\RestaurantRepository;
+use App\Service\CategoryTranslationService;
 use App\Service\CategoryTypeFilterResolver;
 use App\Service\CurrencyConverter;
 use App\Service\MenuPreferencesResolver;
 use App\Service\ProductAllergenResolver;
+use App\Service\ProductTranslationService;
 use App\Service\TagTranslationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class MenuController extends AbstractController
 {
@@ -24,16 +29,20 @@ class MenuController extends AbstractController
         EntityManagerInterface $em,
         Request $request,
         TagTranslationService $tagTranslationService,
+        ProductTranslationService $productTranslationService,
+        CategoryTranslationService $categoryTranslationService,
+        ProductRepository $productRepo,
         MenuPreferencesResolver $menuPreferencesResolver,
         ProductAllergenResolver $allergenResolver,
         CategoryTypeFilterResolver $categoryTypeFilterResolver,
+        TranslatorInterface $translator,
     ): Response {
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
             throw $this->createNotFoundException('Restaurante no encontrado.');
         }
 
-        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $menuPreferencesResolver, $allergenResolver, $categoryTypeFilterResolver);
+        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $productTranslationService, $categoryTranslationService, $productRepo, $menuPreferencesResolver, $allergenResolver, $categoryTypeFilterResolver, $translator);
     }
 
     // Backwards-compat redirect for QR codes already printed with the old table URL.
@@ -43,14 +52,61 @@ class MenuController extends AbstractController
         return $this->redirectToRoute('menu_show', ['slug' => $slug], 301);
     }
 
+    /**
+     * Called by the loading screen's JS (see menu/loading.html.twig) to do
+     * the actual translation work off the main navigation, so a slow/first
+     * AI call never blocks the page load — it animates a spinner instead.
+     * Synchronous itself (mirrors ProductTranslationService's reasoning:
+     * each dish+locale pair is translated once, ever), it just runs from a
+     * background fetch instead of from the page request.
+     */
+    #[Route('/r/{slug}/warm-translations', name: 'menu_warm_translations', methods: ['POST'])]
+    public function warmTranslations(
+        string $slug,
+        Request $request,
+        RestaurantRepository $restaurantRepo,
+        ProductRepository $productRepo,
+        ProductTranslationService $productTranslationService,
+        CategoryTranslationService $categoryTranslationService,
+        MenuPreferencesResolver $menuPreferencesResolver,
+    ): JsonResponse {
+        $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
+        if (!$restaurant) {
+            return $this->json(['ok' => false], 404);
+        }
+
+        $locale = $request->query->get('lang', '');
+        if (!$menuPreferencesResolver->isLanguageSupported($locale)) {
+            return $this->json(['ok' => false], 400);
+        }
+
+        $productTranslationService->resolveForMenu(
+            $restaurant,
+            $productRepo->findActiveForRestaurant($restaurant),
+            $locale
+        );
+
+        $categoryTranslationService->resolveForMenu(
+            $restaurant,
+            $restaurant->getCategories()->filter(fn($c) => $c->isActive())->toArray(),
+            $locale
+        );
+
+        return $this->json(['ok' => true]);
+    }
+
     private function renderMenu(
         \App\Entity\Restaurant $restaurant,
         Request $request,
         EntityManagerInterface $em,
         TagTranslationService $tagTranslationService,
+        ProductTranslationService $productTranslationService,
+        CategoryTranslationService $categoryTranslationService,
+        ProductRepository $productRepo,
         MenuPreferencesResolver $menuPreferencesResolver,
         ProductAllergenResolver $allergenResolver,
         CategoryTypeFilterResolver $categoryTypeFilterResolver,
+        TranslatorInterface $translator,
     ): Response {
         $languages  = $menuPreferencesResolver->getLanguages();
         $currencies = $menuPreferencesResolver->getCurrencies();
@@ -65,6 +121,46 @@ class MenuController extends AbstractController
         $locale    = $menuPreferencesResolver->isLanguageSupported($queryLang)
             ? $queryLang
             : ($savedPrefs['lang'] ?? $menuPreferencesResolver->detectLanguage($request, $restaurant->getDefaultLanguage()));
+
+        // Computed early (rather than at its original spot further down)
+        // so the loading-screen check below and the main render can both
+        // use it without querying twice.
+        $activeCategoriesForCheck = $restaurant->getCategories()
+            ->filter(fn($c) => $c->isActive())
+            ->toArray();
+
+        // If this restaurant has never served $locale before, translating it
+        // (see ProductTranslationService) takes a few real seconds — instead
+        // of blocking this navigation on that first-ever visit, detour once
+        // through a loading screen that fires the same translation off in
+        // the background and redirects back here when it's done (?mtw=1
+        // marks that this page already took that detour, so a slow/failed
+        // attempt can only ever cause one extra hop, never a redirect loop —
+        // the retried load below just renders with whatever's cached).
+        if ($request->query->get('mtw') !== '1'
+            && $locale !== $restaurant->getDefaultLanguage()
+            && ($productRepo->hasAnyMissingTranslation($restaurant, $locale)
+                || $categoryTranslationService->hasAnyMissing($restaurant, $activeCategoriesForCheck, $locale))
+        ) {
+            $nextParams        = $request->query->all();
+            $nextParams['mtw'] = '1';
+
+            // Only ~20 of the 60 public menu languages have a "loading"
+            // string translated (translations/menu_public.*.yaml) — same
+            // coverage level as the rest of the public menu chrome. Falls
+            // back to English rather than an untranslated message id.
+            $loadingText = $translator->getCatalogue($locale)->has('loading.title', 'menu_public')
+                ? $translator->trans('loading.title', [], 'menu_public', $locale)
+                : $translator->trans('loading.title', [], 'menu_public', 'en');
+
+            return $this->render('menu/loading.html.twig', [
+                'restaurant'   => $restaurant,
+                'locale'       => $locale,
+                'loading_text' => $loadingText,
+                'nextUrl'      => $request->getPathInfo() . '?' . http_build_query($nextParams),
+                'warmUrl'      => $this->generateUrl('menu_warm_translations', ['slug' => $restaurant->getSlug()]) . '?' . http_build_query(['lang' => $locale]),
+            ]);
+        }
 
         // Currency: explicit ?currency= override > saved preference > guessed
         // from the device's locale (if supported) > restaurant's own currency.
@@ -88,9 +184,7 @@ class MenuController extends AbstractController
         // (see SetMenusFeatureGate), not what a published menu-category
         // renders publicly. A menu created while the flag was on keeps
         // rendering here even if the flag is later switched off.
-        $allActiveCategories = $restaurant->getCategories()
-            ->filter(fn($c) => $c->isActive())
-            ->toArray();
+        $allActiveCategories = $activeCategoriesForCheck;
 
         $setMenus = array_values(array_filter($allActiveCategories, fn($c) => $c->isFixedPriceMenu()));
         $normalCategories = array_values(array_filter($allActiveCategories, fn($c) => !$c->isFixedPriceMenu()));
@@ -102,6 +196,11 @@ class MenuController extends AbstractController
         $currencyConverter = new CurrencyConverter(
             $em->getRepository(\App\Entity\ExchangeRate::class)
         );
+
+        // Collected alongside the loop below so ProductTranslationService
+        // can check every dish actually shown on this menu for a missing
+        // translation, without a second pass over categories/sections.
+        $allProducts = [];
 
         foreach ($categories as $category) {
             if ($category->isFixedPriceMenu()) {
@@ -115,6 +214,7 @@ class MenuController extends AbstractController
                                 $currencyConverter->convert($product->getSupplementPrice(), $restaurant->getCurrency(), $currency)
                             );
                         }
+                        $allProducts[] = $product;
                     }
                 }
                 continue;
@@ -142,9 +242,16 @@ class MenuController extends AbstractController
                     );
                 }
                 $product->setConvertedVariantPrices($convertedVariantPrices);
+                $allProducts[] = $product;
             }
             $category->activeProductsSorted = $products;
         }
+
+        // Dish/category translations — safety net only: the loading screen
+        // above already warms these before this point is normally reached,
+        // so this is a fast no-op unless that detour was skipped or failed.
+        $productTranslationService->resolveForMenu($restaurant, $allProducts, $locale);
+        $categoryTranslationService->resolveForMenu($restaurant, $allActiveCategories, $locale);
 
         // Tags — sorted + resolved names (with lazy-dispatch fallback for missing locales)
         $tags     = $restaurant->getProductTags()->toArray();

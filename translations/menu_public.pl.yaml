@@ -3,3 +3,5 @@ dialog:
     language_label: "Język"
     currency_label: "Waluta"
     confirm: "Kontynuuj"
+loading:
+    title: "Przygotowywanie menu…"

@@ -3,3 +3,5 @@ dialog:
     language_label: "Bahasa"
     currency_label: "Mata Uang"
     confirm: "Lanjutkan"
+loading:
+    title: "Menyiapkan menu Anda…"

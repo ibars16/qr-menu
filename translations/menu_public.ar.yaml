@@ -3,3 +3,5 @@ dialog:
     language_label: "اللغة"
     currency_label: "العملة"
     confirm: "متابعة"
+loading:
+    title: "جارٍ تجهيز القائمة…"

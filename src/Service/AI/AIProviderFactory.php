@@ -112,6 +112,38 @@ final class AIProviderFactory
         return null;
     }
 
+    /**
+     * Looks up one configured provider by its `id` (config/ai_providers.yaml),
+     * ignoring tier — for a caller that wants a *specific* provider tried
+     * first on its own terms (e.g. RouterProductTranslator preferring the
+     * free groq-llama entry for translation specifically) without touching
+     * that provider's tier/priority, which stays exactly as-is for
+     * AIModelRouter's normal callers (Smart Waiter). Same
+     * enabled+key-configured availability check as getAvailableProviders().
+     * Returns null if the id doesn't exist, is disabled, or has no key set.
+     */
+    public function getProviderById(string $id): ?AIProviderInterface
+    {
+        foreach ($this->loadConfig() as $entries) {
+            foreach ($entries as $entry) {
+                if ($entry['id'] !== $id) {
+                    continue;
+                }
+                if (!$entry['enabled']) {
+                    return null;
+                }
+                $apiKey = $this->resolveEnv($entry['api_key_env']);
+                if ($apiKey === null || $apiKey === '' || in_array($apiKey, self::PLACEHOLDER_VALUES, true)) {
+                    return null;
+                }
+
+                return $this->build($entry, $apiKey);
+            }
+        }
+
+        return null;
+    }
+
     private function build(array $entry, string $apiKey): AIProviderInterface
     {
         return match ($entry['adapter']) {

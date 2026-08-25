@@ -3,3 +3,5 @@ dialog:
     language_label: "言語"
     currency_label: "通貨"
     confirm: "続ける"
+loading:
+    title: "メニューを準備しています…"

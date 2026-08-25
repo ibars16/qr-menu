@@ -61,6 +61,12 @@
     function applyPrefs(lang, currency) {
         writePrefsCookie(lang, currency);
         var u = new URL(window.location);
+        // mtw=1 means "this exact URL already took the translating/loading
+        // detour" (see MenuController) — it must never survive an explicit
+        // language change, or a switch to a language that's never been
+        // served before would silently skip the loading screen and block
+        // on the translation instead (the bug this fixes).
+        u.searchParams.delete('mtw');
         u.searchParams.set('lang', lang);
         u.searchParams.set('currency', currency);
         window.location.href = u.toString();
