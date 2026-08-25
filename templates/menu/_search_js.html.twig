@@ -5,12 +5,99 @@
 function flipCard(wrap)        { wrap.querySelector('.card').classList.toggle('flipped'); }
 function unflipCard(e, btn)    { e.stopPropagation(); btn.closest('.card').classList.remove('flipped'); }
 
+// Dish detail bottom-sheet modal (standard layout's photo-first cards) — one
+// shared overlay in the DOM, content cloned in from the clicked card's own
+// <template class="dish-tpl"> so nothing needs re-rendering server-side.
+// No-op (both querySelectors return null) on layouts that don't have this
+// modal in the page, e.g. compact/grid.
+function openDishModal(card) {
+    const tpl       = card.querySelector('.dish-tpl');
+    const overlay   = document.getElementById('dish-modal-overlay');
+    const photoWrap = document.getElementById('dish-modal-photo');
+    const body      = document.getElementById('dish-modal-body');
+    if (!tpl || !overlay || !photoWrap || !body) return;
+    const content   = tpl.content.cloneNode(true);
+    const photoNode = content.querySelector('img, .dish-placeholder');
+    photoWrap.innerHTML = '';
+    body.innerHTML = '';
+    if (photoNode) photoWrap.appendChild(photoNode);
+    body.appendChild(content);
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    overlay.querySelector('.dish-modal').scrollTop = 0;
+}
+function closeDishModal() {
+    const overlay = document.getElementById('dish-modal-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDishModal(); });
+document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const card = e.target.closest ? e.target.closest('.dish-card') : null;
+    if (!card) return;
+    e.preventDefault();
+    openDishModal(card);
+});
+
+// Secondary filters (type/diet/allergens) bottom sheet — standard layout
+// only (see #filters-btn / .filters-overlay in that layout's markup);
+// no-ops elsewhere since getElementById returns null. Category tabs stay
+// in the always-visible row and are not part of this panel.
+function openFiltersPanel() {
+    const overlay = document.getElementById('filters-overlay');
+    if (!overlay) return;
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+}
+function closeFiltersPanel() {
+    const overlay = document.getElementById('filters-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeFiltersPanel(); });
+
+// Reflects the existing activeTags/activeType/activeAllergens filter state
+// (set by the handlers below) onto the "¿Alergias o dietas?" button —
+// display only, the filtering itself is untouched.
+function updateFiltersButtonBadge() {
+    const label = document.getElementById('filters-btn-label');
+    const btn   = document.getElementById('filters-btn');
+    const clearRow = document.getElementById('filters-clear-row');
+    if (!label || !btn) return;
+    const count = activeTags.size + (activeType !== 'all' ? 1 : 0) + activeAllergens.size;
+    label.textContent = count > 0 ? ('¿Alergias o dietas? (' + count + ')') : '¿Alergias o dietas?';
+    btn.classList.toggle('has-active', count > 0);
+    if (clearRow) clearRow.hidden = count === 0;
+}
+
+// Resets diet/type/allergen filters together by driving each control's own
+// existing "Todo" button / clear function — reuses their handlers rather
+// than duplicating the reset logic.
+function clearAllFilters() {
+    document.querySelector('.diet-filter[data-tag="all"]')?.click();
+    document.querySelector('.type-filter[data-type="all"]')?.click();
+    clearAllergenFilters();
+}
+
 const searchInput = document.getElementById('menu-search');
 const noResults   = document.getElementById('no-results');
 const sections    = document.querySelectorAll('.cat-section');
 const catTabs     = document.querySelectorAll('.cat-tab');
 const dietFilters = document.querySelectorAll('.diet-filter');
-let activeTag = 'all';
+// Multi-select: every checked diet/allergy/other tag chip must match (AND,
+// not OR) — these are restrictions (allergies/diets), not preferences, so
+// combining them any looser than an intersection would be a food-safety
+// problem, not just a UX one. The hidden data-tag="all" button (see
+// standard/show.html.twig's "Todo" comment; still visible on compact/grid)
+// is not a member of this set — clicking it clears the whole selection.
+let activeTags = new Set();
 
 // Food/drink category filter — a whole .cat-section is shown or hidden by
 // its own data-type ("food"/"drink"/"" for unclassified); unlike the diet
@@ -41,14 +128,14 @@ function applyFilters() {
         const catMatch  = cat === 'all' || cat === sec.dataset.section;
         const typeMatch = activeType === 'all' || !sec.dataset.type || sec.dataset.type === activeType;
         if (!catMatch || !typeMatch) { sec.style.display = 'none'; return; }
-        const rows = sec.querySelectorAll('.card-wrap, .product-row');
+        const rows = sec.querySelectorAll('.card-wrap, .product-row, .dish-card');
         let secVisible = false;
         rows.forEach(row => {
             const name      = row.querySelector('.front-name, .product-name')?.textContent.toLowerCase() ?? '';
             const tags      = (row.dataset.tags ?? '').trim().split(/\s+/).filter(Boolean);
             const allergens = (row.dataset.allergens ?? '').trim().split(/\s+/).filter(Boolean).map(a => a.split(':')[0]);
             const search        = !q || name.includes(q);
-            const tagMatch      = activeTag === 'all' || tags.includes(activeTag);
+            const tagMatch      = activeTags.size === 0 || [...activeTags].every(t => tags.includes(t));
             const allergenMatch = activeAllergens.size === 0 || ![...activeAllergens].some(a => allergens.includes(a));
             const show     = search && tagMatch && allergenMatch;
             row.style.display = show ? '' : 'none';
@@ -77,6 +164,7 @@ function onAllergenFilterChange() {
     }
     allergenFilterBtn?.classList.toggle('has-selection', activeAllergens.size > 0);
     applyFilters();
+    updateFiltersButtonBadge();
 }
 
 function clearAllergenFilters() {
@@ -142,10 +230,25 @@ catTabs.forEach(tab => tab.addEventListener('click', () => {
 }));
 
 dietFilters.forEach(btn => btn.addEventListener('click', () => {
-    dietFilters.forEach(x => x.classList.remove('active'));
-    btn.classList.add('active');
-    activeTag = btn.dataset.tag;
+    if (btn.dataset.tag === 'all') {
+        // "Todo" — the reset action, not a selectable chip: clears every
+        // active diet/allergy/other tag rather than toggling itself.
+        activeTags.clear();
+        dietFilters.forEach(x => x.classList.remove('active'));
+    } else {
+        const nowActive = !btn.classList.contains('active');
+        btn.classList.toggle('active', nowActive);
+        if (nowActive) activeTags.add(btn.dataset.tag); else activeTags.delete(btn.dataset.tag);
+    }
+    // On layouts where "Todo" is its own visible chip (compact/grid), show
+    // it active only while nothing else is selected — same "no filter"
+    // indicator the old radio behavior gave it, without making it part of
+    // the multi-select set itself.
+    document.querySelectorAll('.diet-filter[data-tag="all"]').forEach(all => {
+        all.classList.toggle('active', activeTags.size === 0);
+    });
     applyFilters();
+    updateFiltersButtonBadge();
 }));
 
 typeFilters.forEach(btn => btn.addEventListener('click', () => {
@@ -153,6 +256,7 @@ typeFilters.forEach(btn => btn.addEventListener('click', () => {
     btn.classList.add('active');
     activeType = btn.dataset.type;
     applyFilters();
+    updateFiltersButtonBadge();
 }));
 
 const obs = new IntersectionObserver(entries => {

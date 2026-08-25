@@ -218,7 +218,7 @@
 
         // Owner-typed free text, never blocking save if a row is left half-filled —
         // a row missing either half is simply dropped rather than shown as an error.
-        const priceVariants = [...activePanel().querySelectorAll('.price-variant-row-item')]
+        const priceVariants = [...activePanel().querySelectorAll('.price-variant-row-item:not(.price-variant-base-row)')]
             .map(row => ({
                 label: row.querySelector('.price-variant-label').value.trim(),
                 price: parseFloat(row.querySelector('.price-variant-price').value),
