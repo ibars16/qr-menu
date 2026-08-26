@@ -233,6 +233,12 @@ class MenuController extends AbstractController
                     )
                 );
 
+                if ($product->getSupplementPrice() !== null) {
+                    $product->setConvertedSupplementPrice(
+                        $currencyConverter->convert($product->getSupplementPrice(), $restaurant->getCurrency(), $currency)
+                    );
+                }
+
                 $convertedVariantPrices = [];
                 foreach ($product->getPriceVariants() as $variant) {
                     $convertedVariantPrices[$variant->getId()] = $currencyConverter->convert(

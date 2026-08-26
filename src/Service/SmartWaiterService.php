@@ -36,14 +36,14 @@ final class SmartWaiterService
     ) {}
 
     /** @return array{conversationId: string, reply: ?string, error: bool} */
-    public function reply(Restaurant $restaurant, string $locale, ?string $conversationId, string $userMessage): array
+    public function reply(Restaurant $restaurant, string $locale, string $currency, ?string $conversationId, string $userMessage): array
     {
         $conversationId ??= $this->conversationStore->newConversationId();
         $restaurantId = $restaurant->getId();
 
         $history = $this->conversationStore->getHistory($conversationId, $restaurantId);
 
-        $menuContext = $this->menuContextBuilder->build($restaurant, $locale);
+        $menuContext = $this->menuContextBuilder->build($restaurant, $locale, $currency);
         $vocabulary = $this->menuContextBuilder->extractVocabulary($menuContext);
         $complexity = $this->complexityClassifier->classify($userMessage, $vocabulary);
 

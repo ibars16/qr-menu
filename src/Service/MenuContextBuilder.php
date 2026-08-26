@@ -38,9 +38,19 @@ final class MenuContextBuilder
 
     public function __construct(
         private readonly ProductAllergenResolver $allergenResolver,
+        private readonly CurrencyConverter $currencyConverter,
     ) {}
 
-    public function build(Restaurant $restaurant, string $locale): array
+    /**
+     * $currency is the customer's own chosen/resolved currency (same
+     * resolution as MenuController's public menu — see
+     * SmartWaiterController::chat()), never $restaurant->getCurrency()
+     * directly: every price below is converted from the restaurant's base
+     * currency into it, so Smart Waiter never quotes a price in a different
+     * currency than the one the customer is currently looking at on the
+     * menu page.
+     */
+    public function build(Restaurant $restaurant, string $locale, string $currency): array
     {
         $categories = $restaurant->getCategories()
             ->filter(fn (Category $c) => $c->isActive())
@@ -59,7 +69,7 @@ final class MenuContextBuilder
 
         $result = [
             'restaurant_name' => $restaurant->getName(),
-            'currency' => $restaurant->getCurrency(),
+            'currency' => $currency,
             'categories' => [],
         ];
 
@@ -73,7 +83,7 @@ final class MenuContextBuilder
                     $sections[] = [
                         'label' => $entry['section']->getLabel(),
                         'dishes' => array_map(
-                            fn (Product $p) => $this->buildProduct($p, $locale, $restaurant, $allergensByProduct[$p->getId()] ?? [], true),
+                            fn (Product $p) => $this->buildProduct($p, $locale, $restaurant, $currency, $allergensByProduct[$p->getId()] ?? [], true),
                             $entry['products']
                         ),
                     ];
@@ -86,7 +96,7 @@ final class MenuContextBuilder
                 $result['categories'][] = [
                     'name' => $this->categoryName($category, $locale, $restaurant),
                     'type' => $category->getType()?->value,
-                    'menu_price' => $category->getMenuPrice() / 100,
+                    'menu_price' => $this->convertedDecimal($category->getMenuPrice() ?? 0, $restaurant, $currency),
                     'menu_description' => $category->getMenuDescription(),
                     'sections' => $sections,
                 ];
@@ -106,7 +116,7 @@ final class MenuContextBuilder
                 'name' => $this->categoryName($category, $locale, $restaurant),
                 'type' => $category->getType()?->value,
                 'products' => array_map(
-                    fn (Product $p) => $this->buildProduct($p, $locale, $restaurant, $allergensByProduct[$p->getId()] ?? []),
+                    fn (Product $p) => $this->buildProduct($p, $locale, $restaurant, $currency, $allergensByProduct[$p->getId()] ?? []),
                     $products
                 ),
             ];
@@ -148,7 +158,7 @@ final class MenuContextBuilder
      *   'menu_price'), replaced by 'part_of_set_menu' + 'supplement' (only
      *   ever an extra charge on top of the menu price, never a full price).
      */
-    private function buildProduct(Product $product, string $locale, Restaurant $restaurant, array $allergenEntries, bool $isSetMenuDish = false): array
+    private function buildProduct(Product $product, string $locale, Restaurant $restaurant, string $currency, array $allergenEntries, bool $isSetMenuDish = false): array
     {
         $translation = $product->getTranslation($locale)
             ?? $product->getTranslation($restaurant->getDefaultLanguage())
@@ -201,25 +211,33 @@ final class MenuContextBuilder
 
         if ($isSetMenuDish) {
             $base['part_of_set_menu'] = true;
-            $base['supplement'] = $product->getSupplementPriceDecimal();
+            $base['supplement'] = $product->getSupplementPrice() !== null
+                ? $this->convertedDecimal($product->getSupplementPrice(), $restaurant, $currency)
+                : null;
 
             return $base;
         }
 
         $priceVariants = $product->hasPriceVariants()
             ? array_merge(
-                [['label' => $product->getBasePriceLabel(), 'price' => $product->getBasePriceDecimal()]],
+                [['label' => $product->getBasePriceLabel(), 'price' => $this->convertedDecimal($product->getBasePrice(), $restaurant, $currency)]],
                 array_map(
-                    fn (ProductPriceVariant $v) => ['label' => $v->getLabel(), 'price' => $v->getPriceDecimal()],
+                    fn (ProductPriceVariant $v) => ['label' => $v->getLabel(), 'price' => $this->convertedDecimal($v->getPrice(), $restaurant, $currency)],
                     $product->getPriceVariants()->toArray()
                 )
             )
             : null;
 
-        $base['price'] = $product->getBasePriceDecimal();
+        $base['price'] = $this->convertedDecimal($product->getBasePrice(), $restaurant, $currency);
         $base['price_variants'] = $priceVariants;
 
         return $base;
+    }
+
+    /** Converts an amount in cents from the restaurant's base currency into $currency, as a decimal. */
+    private function convertedDecimal(int $amountInCents, Restaurant $restaurant, string $currency): float
+    {
+        return $this->currencyConverter->convert($amountInCents, $restaurant->getCurrency(), $currency) / 100;
     }
 
     private function categoryName(Category $category, string $locale, Restaurant $restaurant): string

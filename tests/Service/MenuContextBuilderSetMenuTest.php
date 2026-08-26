@@ -9,6 +9,8 @@ use App\Entity\Product;
 use App\Entity\ProductTranslation;
 use App\Entity\Restaurant;
 use App\Repository\AllergenRepository;
+use App\Repository\ExchangeRateRepository;
+use App\Service\CurrencyConverter;
 use App\Service\MenuContextBuilder;
 use App\Service\ProductAllergenResolver;
 use Doctrine\ORM\EntityManagerInterface;
@@ -85,6 +87,11 @@ final class MenuContextBuilderSetMenuTest extends TestCase
      * resolveForProducts() takes its own empty-id early return and never
      * touches the EntityManager/AllergenRepository at all — this test isn't
      * exercising allergen resolution, only the set-menu shape around it.
+     *
+     * Every build() call below passes 'EUR' as the target currency, matching
+     * restaurant()'s own base currency — CurrencyConverter::convert() short-
+     * circuits on same-currency before ever touching ExchangeRateRepository,
+     * which is why a stub with no configured behavior is safe here.
      */
     private function builder(): MenuContextBuilder
     {
@@ -92,8 +99,9 @@ final class MenuContextBuilderSetMenuTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $this->createStub(AllergenRepository::class),
         );
+        $currencyConverter = new CurrencyConverter($this->createStub(ExchangeRateRepository::class));
 
-        return new MenuContextBuilder($allergenResolver);
+        return new MenuContextBuilder($allergenResolver, $currencyConverter);
     }
 
     public function testSetMenuCategoryEmitsMenuPriceAndDescriptionInsteadOfProducts(): void
@@ -103,7 +111,7 @@ final class MenuContextBuilderSetMenuTest extends TestCase
         $section = $this->section($menu, 0, 'Primeros');
         $this->dish($section, 0, 'Sopa');
 
-        $context = $this->builder()->build($restaurant, 'es');
+        $context = $this->builder()->build($restaurant, 'es', 'EUR');
 
         self::assertCount(1, $context['categories']);
         $category = $context['categories'][0];
@@ -122,7 +130,7 @@ final class MenuContextBuilderSetMenuTest extends TestCase
         $this->dish($starters, 0, 'Sopa');
         $this->dish($mains, 0, 'Filete');
 
-        $context = $this->builder()->build($restaurant, 'es');
+        $context = $this->builder()->build($restaurant, 'es', 'EUR');
         $sections = $context['categories'][0]['sections'];
 
         self::assertCount(2, $sections);
@@ -139,7 +147,7 @@ final class MenuContextBuilderSetMenuTest extends TestCase
         $section = $this->section($menu, 0, 'Primeros');
         $this->dish($section, 0, 'Sopa');
 
-        $context = $this->builder()->build($restaurant, 'es');
+        $context = $this->builder()->build($restaurant, 'es', 'EUR');
         $dish = $context['categories'][0]['sections'][0]['dishes'][0];
 
         self::assertArrayNotHasKey('price', $dish);
@@ -156,7 +164,7 @@ final class MenuContextBuilderSetMenuTest extends TestCase
         $dish = $this->dish($section, 0, 'Solomillo');
         $dish->setSupplementPrice(350);
 
-        $context = $this->builder()->build($restaurant, 'es');
+        $context = $this->builder()->build($restaurant, 'es', 'EUR');
 
         self::assertSame(3.5, $context['categories'][0]['sections'][0]['dishes'][0]['supplement']);
     }
@@ -167,7 +175,7 @@ final class MenuContextBuilderSetMenuTest extends TestCase
         $menu = $this->menu($restaurant, 'Menú del día', 1200);
         $this->section($menu, 0, 'Postres'); // no dishes
 
-        $context = $this->builder()->build($restaurant, 'es');
+        $context = $this->builder()->build($restaurant, 'es', 'EUR');
 
         self::assertSame([], $context['categories'], 'a set menu with zero active dishes never reaches Smart Waiter');
     }
@@ -180,7 +188,7 @@ final class MenuContextBuilderSetMenuTest extends TestCase
         $this->dish($section, 0, 'Visible');
         $this->dish($section, 1, 'Oculto')->setActive(false);
 
-        $context = $this->builder()->build($restaurant, 'es');
+        $context = $this->builder()->build($restaurant, 'es', 'EUR');
 
         self::assertSame(['Visible'], array_column($context['categories'][0]['sections'][0]['dishes'], 'name'));
     }
@@ -207,7 +215,7 @@ final class MenuContextBuilderSetMenuTest extends TestCase
         $product->addTranslation($pT);
         $category->addProduct($product);
 
-        $context = $this->builder()->build($restaurant, 'es');
+        $context = $this->builder()->build($restaurant, 'es', 'EUR');
         $result = $context['categories'][0];
 
         self::assertArrayNotHasKey('menu_price', $result);

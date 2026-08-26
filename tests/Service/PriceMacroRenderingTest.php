@@ -78,11 +78,11 @@ final class PriceMacroRenderingTest extends TestCase
     {
         $product = $this->product(1000);
 
-        // Plain text, no markup at all, using the raw ISO code (never
-        // $currencyDisplay) — byte-for-byte what this macro produced before
-        // price variants (or the symbol/code convention) existed. Zero
-        // change for the vast majority of products is the whole point.
-        self::assertSame('10.00 EUR', $this->render($product, 'EUR', true, '€'));
+        // Plain text, no markup at all, using $currencyDisplay — same
+        // symbol-or-code convention as the price-variant path below, so a
+        // menu mixing simple and variant-priced dishes shows one consistent
+        // currency label throughout (see _price.html.twig's own docblock).
+        self::assertSame('10.00 €', $this->render($product, 'EUR', true, '€'));
     }
 
     public function testSimpleProductWithoutCurrencySuffix(): void

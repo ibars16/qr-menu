@@ -11,6 +11,7 @@ use App\Entity\Restaurant;
 use PHPUnit\Framework\TestCase;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 /**
@@ -19,7 +20,11 @@ use Twig\TwigFunction;
  * needed, mirroring PriceMacroRenderingTest's approach for the sibling
  * _price.html.twig macro. `asset()` is stubbed since this partial renders a
  * dish thumbnail; the real function comes from Symfony's AssetExtension,
- * irrelevant to what's being verified here.
+ * irrelevant to what's being verified here. `trans` is stubbed the same way
+ * (returns the message id verbatim, ignoring params/domain/locale) since
+ * this suite verifies set-menu structure, not translation text — real
+ * translation coverage lives in the menu_public.*.yaml lint + the live
+ * render checks done when that i18n work landed.
  */
 final class SetMenuRenderingTest extends TestCase
 {
@@ -30,6 +35,7 @@ final class SetMenuRenderingTest extends TestCase
         $projectDir = dirname(__DIR__, 2);
         $this->twig = new Environment(new FilesystemLoader($projectDir . '/templates'));
         $this->twig->addFunction(new TwigFunction('asset', static fn (string $path) => '/' . $path));
+        $this->twig->addFilter(new TwigFilter('trans', static fn (string $id, array $params = [], ?string $domain = null, ?string $locale = null) => $id));
     }
 
     private function restaurant(string $locale = 'es', string $currency = 'EUR'): Restaurant

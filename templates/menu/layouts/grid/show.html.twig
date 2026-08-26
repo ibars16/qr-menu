@@ -319,7 +319,7 @@
                                         <div class="front-body">
                                             <div>
                                                 <div class="front-badges">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="fbadge">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div>
-                                                <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div>
+                                                <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }} {{ currencyDisplay }}</span>{% endif %}</div>
                                             </div>
                                             <div class="front-bottom">
                                                 <div class="front-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
@@ -329,7 +329,7 @@
                                     </div>
                                     <div class="card-back">
                                         <button class="back-close" onclick="unflipCard(event,this)" aria-label="{{ 'common.close'|trans({}, 'menu_public', locale) }}"><i class="ti ti-x"></i></button>
-                                        <div class="back-header"><div class="back-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div><div class="back-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div></div>
+                                        <div class="back-header"><div class="back-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }} {{ currencyDisplay }}</span>{% endif %}</div><div class="back-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div></div>
                                         <div class="back-scroll">
                                             <div class="back-body">
                                                 {% if pT.description %}<div class="bsec"><div class="bsec-title">{{ 'dish.description'|trans({}, 'menu_public', locale) }}</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}

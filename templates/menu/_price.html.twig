@@ -1,13 +1,13 @@
 {# Shared price rendering for all 3 public layouts (standard/compact/grid) —
    used at both render sites (front + back of the flip card) in each. A
-   simple product (no variants) renders as a single plain text price, byte-
-   for-byte identical to before this macro existed — see the early return
-   below, which still uses the raw ISO $currency code exactly as before,
-   never $currencyDisplay. A product with variants renders one stacked row
-   per price (label left/muted, price right, currency on every row) — see
+   product with variants renders one stacked row per price (label
+   left/muted, price right, currency on every row) — see
    .price-stack/.price-row/.price-item-label/.price-item-value in each
-   layout's own <style> block. $currencyDisplay is the symbol when exactly
-   one supported currency uses it, otherwise the code — see
-   MenuPreferencesResolver::getCurrencyDisplay(). See also
-   Product::hasPriceVariants(). #}
-{% macro price(product, currency, showCurrency, currencyDisplay) %}{% if product.hasPriceVariants %}<span class="price-stack"><span class="price-row">{% if product.basePriceLabel %}<span class="price-item-label">{{ product.basePriceLabel }}</span>{% endif %}<span class="price-item-value">{{ (product.convertedPrice / 100)|number_format(2) }}{% if showCurrency %} {{ currencyDisplay }}{% endif %}</span></span>{% for variant in product.priceVariants %}<span class="price-row"><span class="price-item-label">{{ variant.label }}</span><span class="price-item-value">{{ (product.getConvertedVariantPrice(variant) / 100)|number_format(2) }}{% if showCurrency %} {{ currencyDisplay }}{% endif %}</span></span>{% endfor %}</span>{% else %}{{ (product.convertedPrice / 100)|number_format(2) }}{% if showCurrency %} {{ currency }}{% endif %}{% endif %}{% endmacro %}
+   layout's own <style> block. A simple product (no variants) renders as a
+   single plain text price. Both paths show $currencyDisplay (the symbol
+   when exactly one supported currency uses it, otherwise the code — see
+   MenuPreferencesResolver::getCurrencyDisplay()) rather than the raw
+   $currency code, so a menu mixing simple and variant-priced dishes shows
+   one consistent currency label throughout instead of "12.00 EUR" next to
+   "12.00 €". See also Product::hasPriceVariants(). #}
+{% macro price(product, currency, showCurrency, currencyDisplay) %}{% if product.hasPriceVariants %}<span class="price-stack"><span class="price-row">{% if product.basePriceLabel %}<span class="price-item-label">{{ product.basePriceLabel }}</span>{% endif %}<span class="price-item-value">{{ (product.convertedPrice / 100)|number_format(2) }}{% if showCurrency %} {{ currencyDisplay }}{% endif %}</span></span>{% for variant in product.priceVariants %}<span class="price-row"><span class="price-item-label">{{ variant.label }}</span><span class="price-item-value">{{ (product.getConvertedVariantPrice(variant) / 100)|number_format(2) }}{% if showCurrency %} {{ currencyDisplay }}{% endif %}</span></span>{% endfor %}</span>{% else %}{{ (product.convertedPrice / 100)|number_format(2) }}{% if showCurrency %} {{ currencyDisplay }}{% endif %}{% endif %}{% endmacro %}
