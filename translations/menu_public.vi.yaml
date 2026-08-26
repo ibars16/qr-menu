@@ -58,3 +58,11 @@ nav:
     down: "Xuống"
 common:
     close: "Đóng"
+chat:
+    bubble: "Hỏi về thực đơn"
+    title: "Trợ lý thực đơn"
+    greeting: "Xin chào! Hãy hỏi tôi bất cứ điều gì về thực đơn — gợi ý món ăn, nguyên liệu, dị ứng, hoặc điều khác."
+    placeholder: "Nhập câu hỏi của bạn…"
+    send: "Gửi"
+    disclaimer: "Câu trả lời do AI tạo ra. Nếu bạn bị dị ứng nặng, vui lòng xác nhận với nhân viên."
+    error_fallback: "Xin lỗi, hiện tại tôi gặp sự cố khi trả lời — vui lòng hỏi nhân viên của chúng tôi."

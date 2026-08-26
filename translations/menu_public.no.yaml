@@ -58,3 +58,11 @@ nav:
     down: "Ned"
 common:
     close: "Lukk"
+chat:
+    bubble: "Spør om menyen"
+    title: "Menyassistent"
+    greeting: "Hei! Spør meg om hva som helst om menyen — anbefalinger, ingredienser, allergier, eller noe annet."
+    placeholder: "Skriv spørsmålet ditt…"
+    send: "Send"
+    disclaimer: "AI-genererte svar. Bekreft med personalet ved alvorlig allergi."
+    error_fallback: "Beklager, jeg har problemer med å svare akkurat nå — spør gjerne personalet."

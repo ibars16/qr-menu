@@ -58,3 +58,11 @@ nav:
     down: "Ner"
 common:
     close: "Stäng"
+chat:
+    bubble: "Fråga om menyn"
+    title: "Menyassistent"
+    greeting: "Hej! Fråga mig vad som helst om menyn — rekommendationer, ingredienser, allergier eller något annat."
+    placeholder: "Skriv din fråga…"
+    send: "Skicka"
+    disclaimer: "AI-genererade svar. Bekräfta med personalen vid allvarlig allergi."
+    error_fallback: "Tyvärr har jag problem att svara just nu — fråga gärna vår personal."

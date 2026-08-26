@@ -58,3 +58,11 @@ nav:
     down: "向下"
 common:
     close: "关闭"
+chat:
+    bubble: "咨询菜单"
+    title: "菜单助手"
+    greeting: "您好！关于菜单的任何问题都可以问我 —— 推荐菜品、配料、过敏原或其他任何事情。"
+    placeholder: "输入您的问题…"
+    send: "发送"
+    disclaimer: "回答由AI生成。如有严重过敏，请务必与工作人员确认。"
+    error_fallback: "抱歉，目前暂时无法回答 —— 请咨询我们的工作人员。"

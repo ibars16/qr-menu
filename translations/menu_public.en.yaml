@@ -58,3 +58,11 @@ nav:
     down: "Down"
 common:
     close: "Close"
+chat:
+    bubble: "Ask about the menu"
+    title: "Menu Assistant"
+    greeting: "Hi! Ask me anything about the menu — recommendations, ingredients, allergies, or anything else."
+    placeholder: "Type your question…"
+    send: "Send"
+    disclaimer: "AI-generated answers. Please confirm with staff if you have a severe allergy."
+    error_fallback: "Sorry, I'm having trouble answering right now — please ask a member of staff."

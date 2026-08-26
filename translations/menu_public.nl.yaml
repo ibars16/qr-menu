@@ -58,3 +58,11 @@ nav:
     down: "Omlaag"
 common:
     close: "Sluiten"
+chat:
+    bubble: "Vraag over de kaart"
+    title: "Menu-assistent"
+    greeting: "Hallo! Vraag me alles over de kaart — aanbevelingen, ingrediënten, allergieën of iets anders."
+    placeholder: "Typ je vraag…"
+    send: "Verzenden"
+    disclaimer: "Door AI gegenereerde antwoorden. Controleer bij een ernstige allergie altijd bij het personeel."
+    error_fallback: "Sorry, ik kan nu even niet antwoorden — vraag het gerust aan ons personeel."

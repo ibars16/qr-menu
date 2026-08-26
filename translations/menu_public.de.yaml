@@ -58,3 +58,11 @@ nav:
     down: "Runter"
 common:
     close: "Schließen"
+chat:
+    bubble: "Frage zur Speisekarte"
+    title: "Menü-Assistent"
+    greeting: "Hallo! Frag mich alles zur Speisekarte — Empfehlungen, Zutaten, Allergien oder etwas anderes."
+    placeholder: "Frage eingeben…"
+    send: "Senden"
+    disclaimer: "KI-generierte Antworten. Bei schweren Allergien bitte beim Personal nachfragen."
+    error_fallback: "Entschuldigung, im Moment keine Antwort möglich — bitte fragen Sie unser Personal."

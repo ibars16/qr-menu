@@ -58,3 +58,11 @@ nav:
     down: "Giù"
 common:
     close: "Chiudi"
+chat:
+    bubble: "Chiedi sul menù"
+    title: "Assistente del menù"
+    greeting: "Ciao! Chiedimi qualsiasi cosa sul menù: consigli, ingredienti, allergie o altro."
+    placeholder: "Scrivi la tua domanda…"
+    send: "Invia"
+    disclaimer: "Risposte generate dall'IA. In caso di allergie gravi, verifica con il personale."
+    error_fallback: "Spiacenti, al momento non riesco a rispondere — chiedi al personale."

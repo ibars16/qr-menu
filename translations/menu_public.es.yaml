@@ -58,3 +58,11 @@ nav:
     down: "Bajar"
 common:
     close: "Cerrar"
+chat:
+    bubble: "Pregunta sobre el menú"
+    title: "Asistente del menú"
+    greeting: "¡Hola! Pregúntame lo que quieras sobre el menú: recomendaciones, ingredientes, alergias o cualquier otra cosa."
+    placeholder: "Escribe tu pregunta…"
+    send: "Enviar"
+    disclaimer: "Respuestas generadas por IA. Si tienes una alergia grave, confírmalo con el personal."
+    error_fallback: "Lo sentimos, ahora mismo no podemos responder — pregunta a nuestro personal."

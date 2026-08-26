@@ -58,3 +58,11 @@ nav:
     down: "Turun"
 common:
     close: "Tutup"
+chat:
+    bubble: "Tanya tentang menu"
+    title: "Asisten Menu"
+    greeting: "Hai! Tanyakan apa saja tentang menu — rekomendasi, bahan, alergi, atau lainnya."
+    placeholder: "Tulis pertanyaan Anda…"
+    send: "Kirim"
+    disclaimer: "Jawaban dihasilkan oleh AI. Jika Anda memiliki alergi parah, mohon konfirmasi dengan staf."
+    error_fallback: "Maaf, saat ini kami mengalami kendala menjawab — silakan tanya staf kami."

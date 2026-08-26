@@ -4,15 +4,22 @@
    global :root custom property from menu/themes/{theme}/vars.html.twig,
    regardless of which of the 3 layouts is active. #}
 
-{% set swStringsByLocale = {
-    en: {bubble: 'Ask about the menu', title: 'Menu Assistant', greeting: 'Hi! Ask me anything about the menu — recommendations, ingredients, allergies, or anything else.', placeholder: 'Type your question…', send: 'Send', disclaimer: 'AI-generated answers. Please confirm with staff if you have a severe allergy.', errorFallback: "Sorry, I'm having trouble answering right now — please ask a member of staff."},
-    es: {bubble: 'Pregunta sobre el menú', title: 'Asistente del menú', greeting: '¡Hola! Pregúntame lo que quieras sobre el menú: recomendaciones, ingredientes, alergias o cualquier otra cosa.', placeholder: 'Escribe tu pregunta…', send: 'Enviar', disclaimer: 'Respuestas generadas por IA. Si tienes una alergia grave, confírmalo con el personal.', errorFallback: 'Lo sentimos, ahora mismo no podemos responder — pregunta a nuestro personal.'},
-    fr: {bubble: 'Question sur le menu', title: 'Assistant du menu', greeting: 'Bonjour ! Posez-moi une question sur le menu : recommandations, ingrédients, allergies, ou autre chose.', placeholder: 'Écrivez votre question…', send: 'Envoyer', disclaimer: "Réponses générées par IA. En cas d'allergie sévère, veuillez vérifier auprès du personnel.", errorFallback: 'Désolé, impossible de répondre pour le moment — merci de demander au personnel.'},
-    de: {bubble: 'Frage zur Speisekarte', title: 'Menü-Assistent', greeting: 'Hallo! Frag mich alles zur Speisekarte — Empfehlungen, Zutaten, Allergien oder etwas anderes.', placeholder: 'Frage eingeben…', send: 'Senden', disclaimer: 'KI-generierte Antworten. Bei schweren Allergien bitte beim Personal nachfragen.', errorFallback: 'Entschuldigung, im Moment keine Antwort möglich — bitte fragen Sie unser Personal.'},
-    it: {bubble: 'Chiedi sul menù', title: 'Assistente del menù', greeting: 'Ciao! Chiedimi qualsiasi cosa sul menù: consigli, ingredienti, allergie o altro.', placeholder: 'Scrivi la tua domanda…', send: 'Invia', disclaimer: "Risposte generate dall'IA. In caso di allergie gravi, verifica con il personale.", errorFallback: 'Spiacenti, al momento non riesco a rispondere — chiedi al personale.'},
-    pt: {bubble: 'Pergunte sobre o menu', title: 'Assistente do menu', greeting: 'Olá! Pergunte-me qualquer coisa sobre o menu: recomendações, ingredientes, alergias ou outra coisa.', placeholder: 'Escreva a sua pergunta…', send: 'Enviar', disclaimer: 'Respostas geradas por IA. Em caso de alergia grave, confirme com a equipa.', errorFallback: 'Desculpe, não consigo responder agora — pergunte à nossa equipa.'},
+{# Widget text lives in translations/menu_public.*.yaml under the chat.*
+   keys (same domain/coverage as the rest of the public menu chrome — ~20 of
+   the 60 supported locales have it, the rest fall back to English exactly
+   like loading.title does), never hardcoded here or AI-generated per
+   request: it's fixed UI copy, not menu content, so there's no reason to
+   spend a model call on it and no room for it to drift off-message. #}
+{% set swStrings = {
+    bubble: 'chat.bubble'|trans({}, 'menu_public', locale),
+    title: 'chat.title'|trans({}, 'menu_public', locale),
+    greeting: 'chat.greeting'|trans({}, 'menu_public', locale),
+    placeholder: 'chat.placeholder'|trans({}, 'menu_public', locale),
+    send: 'chat.send'|trans({}, 'menu_public', locale),
+    close: 'common.close'|trans({}, 'menu_public', locale),
+    disclaimer: 'chat.disclaimer'|trans({}, 'menu_public', locale),
+    errorFallback: 'chat.error_fallback'|trans({}, 'menu_public', locale),
 } %}
-{% set swStrings = swStringsByLocale[locale] ?? swStringsByLocale['en'] %}
 
 <style>
     .sw-widget { position: fixed; right: 18px; bottom: 18px; z-index: 2000; }
@@ -99,7 +106,7 @@
     <div class="sw-panel" id="sw-panel" hidden>
         <div class="sw-header">
             <span class="sw-header-title">{{ swStrings.title }}</span>
-            <button type="button" class="sw-close" aria-label="Close" onclick="swToggle()">
+            <button type="button" class="sw-close" aria-label="{{ swStrings.close }}" onclick="swToggle()">
                 <i class="ti ti-x" aria-hidden="true"></i>
             </button>
         </div>

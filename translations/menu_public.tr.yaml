@@ -58,3 +58,11 @@ nav:
     down: "Aşağı"
 common:
     close: "Kapat"
+chat:
+    bubble: "Menü hakkında sor"
+    title: "Menü Asistanı"
+    greeting: "Merhaba! Menüyle ilgili her şeyi sorabilirsin — öneriler, malzemeler, alerjiler ya da başka bir şey."
+    placeholder: "Sorunuzu yazın…"
+    send: "Gönder"
+    disclaimer: "Yanıtlar yapay zeka tarafından oluşturulmuştur. Ciddi bir alerjiniz varsa lütfen personelle teyit edin."
+    error_fallback: "Üzgünüm, şu anda yanıt vermekte sorun yaşıyorum — lütfen personelimize sorun."
