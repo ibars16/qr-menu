@@ -236,22 +236,22 @@
 <div class="hero">
     {% if restaurant.logo %}<img class="hero-bg-img" src="{{ asset('uploads/banners/' ~ restaurant.logo) }}" alt="">{% endif %}
     <div class="hero-overlay-el"></div>
-    <div class="hero-inner"><div class="hero-name">{{ restaurant.name }}</div><div class="hero-sub">Nuestra carta</div></div>
+    <div class="hero-inner"><div class="hero-name">{{ restaurant.name }}</div><div class="hero-sub">{{ 'hero.subtitle_compact'|trans({}, 'menu_public', locale) }}</div></div>
 </div>
 
 <div class="ui-wrap">
-    <div class="search-wrap"><i class="ti ti-search search-icon"></i><input type="text" class="search-input" id="menu-search" placeholder="Buscar platos…" autocomplete="off"></div>
-    {% if showTypeFilter %}<div class="type-filters"><button class="type-filter active" data-type="all">Todo</button><button class="type-filter" data-type="food">Comida</button><button class="type-filter" data-type="drink">Bebidas</button></div><div class="sep"></div>{% endif %}
-    {% if tags|length > 0 %}<div class="diet-filters"><button class="diet-filter active" data-tag="all">Todo</button>{% for tag in tags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}</div><div class="sep"></div>{% endif %}
+    <div class="search-wrap"><i class="ti ti-search search-icon"></i><input type="text" class="search-input" id="menu-search" placeholder="{{ 'search.placeholder'|trans({}, 'menu_public', locale) }}" autocomplete="off"></div>
+    {% if showTypeFilter %}<div class="type-filters"><button class="type-filter active" data-type="all">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</button><button class="type-filter" data-type="food">{{ 'type.food'|trans({}, 'menu_public', locale) }}</button><button class="type-filter" data-type="drink">{{ 'type.drink'|trans({}, 'menu_public', locale) }}</button></div><div class="sep"></div>{% endif %}
+    {% if tags|length > 0 %}<div class="diet-filters"><button class="diet-filter active" data-tag="all">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</button>{% for tag in tags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}</div><div class="sep"></div>{% endif %}
     {% if menuAllergens|length > 0 %}
         <div class="allergen-filter-wrap">
             <button type="button" class="allergen-filter-btn" id="allergen-filter-btn" onclick="toggleAllergenFilterPanel()" aria-expanded="false" aria-haspopup="true">
                 <i class="ti ti-shield-check" style="font-size:14px" aria-hidden="true"></i>
-                <span>Evitar alérgenos</span>
+                <span>{{ 'allergen.avoid'|trans({}, 'menu_public', locale) }}</span>
                 <span class="allergen-filter-badge" id="allergen-filter-badge" style="display:none">0</span>
             </button>
             <div class="allergen-filter-panel" id="allergen-filter-panel" hidden>
-                <div class="allergen-filter-panel-title">Ocultar platos que contengan…</div>
+                <div class="allergen-filter-panel-title">{{ 'allergen.avoid_panel_title'|trans({}, 'menu_public', locale) }}</div>
                 <div class="allergen-filter-options">
                     {% for a in menuAllergens %}
                         <label class="allergen-filter-option">
@@ -260,16 +260,16 @@
                         </label>
                     {% endfor %}
                 </div>
-                <button type="button" class="allergen-filter-clear" onclick="clearAllergenFilters()">Borrar selección</button>
+                <button type="button" class="allergen-filter-clear" onclick="clearAllergenFilters()">{{ 'allergen.clear_selection'|trans({}, 'menu_public', locale) }}</button>
             </div>
         </div>
     {% endif %}
-    <div class="allergen-disclaimer"><i class="ti ti-info-circle" style="font-size:12px"></i> La información de alérgenos es orientativa. Consulta con el personal antes de pedir si tienes alguna alergia.</div>
-    <div class="cat-tabs" id="cat-tabs"><span class="cat-tab active" data-cat="all">Todo</span>{% for category in categories %}{% if category.isFixedPriceMenu %}{{ setMenuMacro.pill(category, locale, restaurant, currencyDisplay) }}{% else %}{% set t = category.getTranslation(locale) %}{% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if not t %}{% set t = category.translations.first %}{% endif %}{% if t %}<span class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</span>{% endif %}{% endif %}{% endfor %}</div>
+    <div class="allergen-disclaimer"><i class="ti ti-info-circle" style="font-size:12px"></i> {{ 'allergen.disclaimer'|trans({}, 'menu_public', locale) }}</div>
+    <div class="cat-tabs" id="cat-tabs"><span class="cat-tab active" data-cat="all">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</span>{% for category in categories %}{% if category.isFixedPriceMenu %}{{ setMenuMacro.pill(category, locale, restaurant, currencyDisplay) }}{% else %}{% set t = category.getTranslation(locale) %}{% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if not t %}{% set t = category.translations.first %}{% endif %}{% if t %}<span class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</span>{% endif %}{% endif %}{% endfor %}</div>
 </div>
 
 <div class="content">
-    <div class="no-results" id="no-results">No se encontraron platos</div>
+    <div class="no-results" id="no-results">{{ 'results.none'|trans({}, 'menu_public', locale) }}</div>
     {% for category in categories %}
         {% set catT = category.getTranslation(locale) %}
         {% if not catT %}{% set catT = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
@@ -303,19 +303,19 @@
                                         </div>
                                     </div>
                                     <div class="card-back">
-                                        <button class="back-close" onclick="unflipCard(event,this)" aria-label="Volver"><i class="ti ti-x"></i></button>
+                                        <button class="back-close" onclick="unflipCard(event,this)" aria-label="{{ 'nav.back'|trans({}, 'menu_public', locale) }}"><i class="ti ti-x"></i></button>
                                         <div class="back-scroll horiz">
                                             <div class="back-body">
-                                                <div class="bsec"><div class="bsec-title">Plato</div><div class="back-desc" style="font-weight:600;font-size:13px;color:var(--bn)">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div><div style="font-size:18px;font-weight:700;color:var(--bp);margin-top:4px;font-variant-numeric:tabular-nums">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div></div>
-                                                {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
-                                                {% set ingredientNames = product.getIngredientNames(locale, restaurant.defaultLanguage) %}{% if ingredientNames|length > 0 %}<div class="bsec"><div class="bsec-title">Ingredientes</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>{% endif %}
-                                                {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">Etiquetas</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
-                                                {% if productAllergens[product.id]|default([])|length > 0 %}<div class="bsec"><div class="bsec-title">Alérgenos</div><div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="Más información" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ Sin {{ a.name }}{{ noteBtn|raw }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · trazas{{ noteBtn|raw }}</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}{{ noteBtn|raw }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
-                                                {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">Picante</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}Suave{% elseif product.spicyLevel == 2 %}Medio{% elseif product.spicyLevel == 3 %}Picante{% elseif product.spicyLevel == 4 %}Muy picante{% else %}Extremo{% endif %}</span></div></div>{% endif %}
-                                                {% if product.calories %}<div class="bsec"><div class="bsec-title">Calorías</div><div class="nut-row"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
+                                                <div class="bsec"><div class="bsec-title">{{ 'dish.name_label'|trans({}, 'menu_public', locale) }}</div><div class="back-desc" style="font-weight:600;font-size:13px;color:var(--bn)">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.supplementPrice / 100)|number_format(2) }}€</span>{% endif %}</div><div style="font-size:18px;font-weight:700;color:var(--bp);margin-top:4px;font-variant-numeric:tabular-nums">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div></div>
+                                                {% if pT.description %}<div class="bsec"><div class="bsec-title">{{ 'dish.description'|trans({}, 'menu_public', locale) }}</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
+                                                {% set ingredientNames = product.getIngredientNames(locale, restaurant.defaultLanguage) %}{% if ingredientNames|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.ingredients'|trans({}, 'menu_public', locale) }}</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>{% endif %}
+                                                {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.tags'|trans({}, 'menu_public', locale) }}</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
+                                                {% if productAllergens[product.id]|default([])|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.allergens'|trans({}, 'menu_public', locale) }}</div><div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="' ~ ('allergen.more_info'|trans({}, 'menu_public', locale)|e('html_attr')) ~ '" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ {{ 'allergen.free_from'|trans({}, 'menu_public', locale) }} {{ a.name }}{{ noteBtn|raw }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · {{ 'allergen.traces'|trans({}, 'menu_public', locale) }}{{ noteBtn|raw }}</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}{{ noteBtn|raw }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
+                                                {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.spicy'|trans({}, 'menu_public', locale) }}</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}{{ 'dish.spice_1'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 2 %}{{ 'dish.spice_2'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 3 %}{{ 'dish.spice_3'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 4 %}{{ 'dish.spice_4'|trans({}, 'menu_public', locale) }}{% else %}{{ 'dish.spice_5'|trans({}, 'menu_public', locale) }}{% endif %}</span></div></div>{% endif %}
+                                                {% if product.calories %}<div class="bsec"><div class="bsec-title">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</div><div class="nut-row"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
                                             </div>
-                                            <button class="scroll-cue-l" type="button" aria-label="Volver"></button>
-                                            <button class="scroll-cue-h" type="button" aria-label="Siguiente"></button>
+                                            <button class="scroll-cue-l" type="button" aria-label="{{ 'nav.back'|trans({}, 'menu_public', locale) }}"></button>
+                                            <button class="scroll-cue-h" type="button" aria-label="{{ 'nav.next'|trans({}, 'menu_public', locale) }}"></button>
                                         </div>
                                     </div>
                                 </div>
@@ -326,13 +326,13 @@
                 {% endif %}
             </section>
         {% endif %}
-    {% else %}<div class="empty-state">No hay productos disponibles.</div>{% endfor %}
+    {% else %}<div class="empty-state">{{ 'results.empty'|trans({}, 'menu_public', locale) }}</div>{% endfor %}
 </div>
 
 <div class="lb-overlay" id="lb-overlay" role="dialog" aria-modal="true" aria-hidden="true" onclick="if(event.target===this)lbClose()">
     <div class="lb-content">
         <img class="lb-img" id="lb-img" src="" alt="">
-        <button class="lb-close" aria-label="Cerrar" onclick="lbClose()">×</button>
+        <button class="lb-close" aria-label="{{ 'common.close'|trans({}, 'menu_public', locale) }}" onclick="lbClose()">×</button>
     </div>
 </div>
 

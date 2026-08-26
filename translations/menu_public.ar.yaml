@@ -5,3 +5,56 @@ dialog:
     confirm: "متابعة"
 loading:
     title: "جارٍ تجهيز القائمة…"
+hero:
+    subtitle: "اكتشف قائمتنا"
+    subtitle_compact: "قائمتنا"
+search:
+    placeholder: "ابحث عن طبق…"
+tabs:
+    all: "الكل"
+type:
+    food: "طعام"
+    drink: "مشروبات"
+filters:
+    cta_label: "حساسية أو نظام غذائي؟"
+    title: "ماذا تحتاج؟"
+    clear_all: "مسح الكل"
+    type_title: "النوع"
+    diet_title: "الأنظمة الغذائية"
+    allergy_title: "الحساسية"
+    other_title: "أخرى"
+    apply: "عرض النتائج"
+allergen:
+    avoid: "تجنب مسببات الحساسية"
+    avoid_panel_title: "إخفاء الأطباق التي تحتوي على…"
+    clear_selection: "مسح الاختيار"
+    disclaimer: "معلومات مسببات الحساسية إرشادية فقط. يرجى استشارة الموظفين قبل الطلب إذا كان لديك أي حساسية."
+    more_info: "مزيد من المعلومات"
+    free_from: "خالٍ من"
+    traces: "قد يحتوي على آثار"
+results:
+    none: "لم يتم العثور على أطباق"
+    empty: "لا توجد منتجات متاحة."
+dish:
+    view_more: "عرض المزيد"
+    view_detail_aria: "عرض تفاصيل %name%"
+    modal_aria: "تفاصيل الطبق"
+    name_label: "الطبق"
+    description: "الوصف"
+    ingredients: "المكونات"
+    tags: "الوسوم"
+    allergens: "مسببات الحساسية"
+    spicy: "درجة الحرارة"
+    calories: "السعرات الحرارية"
+    spice_1: "خفيف"
+    spice_2: "متوسط"
+    spice_3: "حار"
+    spice_4: "حار جدًا"
+    spice_5: "شديد الحرارة"
+nav:
+    back: "رجوع"
+    next: "التالي"
+    up: "أعلى"
+    down: "أسفل"
+common:
+    close: "إغلاق"

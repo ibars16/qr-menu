@@ -5,3 +5,56 @@ dialog:
     confirm: "Devam"
 loading:
     title: "Menünüz hazırlanıyor…"
+hero:
+    subtitle: "Menümüzü keşfedin"
+    subtitle_compact: "Menümüz"
+search:
+    placeholder: "Yemek ara…"
+tabs:
+    all: "Tümü"
+type:
+    food: "Yemek"
+    drink: "İçecek"
+filters:
+    cta_label: "Alerji veya diyet?"
+    title: "Neye ihtiyacın var?"
+    clear_all: "Tümünü temizle"
+    type_title: "Tür"
+    diet_title: "Diyetler"
+    allergy_title: "Alerjiler"
+    other_title: "Diğer"
+    apply: "Sonuçları göster"
+allergen:
+    avoid: "Alerjenlerden kaçın"
+    avoid_panel_title: "Şunları içeren yemekleri gizle…"
+    clear_selection: "Seçimi temizle"
+    disclaimer: "Alerjen bilgileri sadece bilgilendirme amaçlıdır. Alerjiniz varsa sipariş vermeden önce personele danışın."
+    more_info: "Daha fazla bilgi"
+    free_from: "İçermez:"
+    traces: "iz miktarda içerebilir"
+results:
+    none: "Yemek bulunamadı"
+    empty: "Ürün bulunmuyor."
+dish:
+    view_more: "Daha fazla gör"
+    view_detail_aria: "%name% detayını gör"
+    modal_aria: "Yemek detayı"
+    name_label: "Yemek"
+    description: "Açıklama"
+    ingredients: "Malzemeler"
+    tags: "Etiketler"
+    allergens: "Alerjenler"
+    spicy: "Acılık"
+    calories: "Kalori"
+    spice_1: "Hafif"
+    spice_2: "Orta"
+    spice_3: "Acılı"
+    spice_4: "Çok acılı"
+    spice_5: "Aşırı acılı"
+nav:
+    back: "Geri"
+    next: "İleri"
+    up: "Yukarı"
+    down: "Aşağı"
+common:
+    close: "Kapat"

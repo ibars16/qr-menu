@@ -5,3 +5,56 @@ dialog:
     confirm: "Continue"
 loading:
     title: "Preparing your menu…"
+hero:
+    subtitle: "Explore our menu"
+    subtitle_compact: "Our menu"
+search:
+    placeholder: "Search dishes…"
+tabs:
+    all: "All"
+type:
+    food: "Food"
+    drink: "Drinks"
+filters:
+    cta_label: "Allergies or diets?"
+    title: "What do you need?"
+    clear_all: "Clear all"
+    type_title: "Type"
+    diet_title: "Diets"
+    allergy_title: "Allergies"
+    other_title: "Other"
+    apply: "Show results"
+allergen:
+    avoid: "Avoid allergens"
+    avoid_panel_title: "Hide dishes containing…"
+    clear_selection: "Clear selection"
+    disclaimer: "Allergen information is for guidance only. Please check with staff before ordering if you have any allergies."
+    more_info: "More information"
+    free_from: "No"
+    traces: "traces"
+results:
+    none: "No dishes found"
+    empty: "No products available."
+dish:
+    view_more: "View more"
+    view_detail_aria: "View details for %name%"
+    modal_aria: "Dish details"
+    name_label: "Dish"
+    description: "Description"
+    ingredients: "Ingredients"
+    tags: "Tags"
+    allergens: "Allergens"
+    spicy: "Spice level"
+    calories: "Calories"
+    spice_1: "Mild"
+    spice_2: "Medium"
+    spice_3: "Spicy"
+    spice_4: "Very spicy"
+    spice_5: "Extreme"
+nav:
+    back: "Back"
+    next: "Next"
+    up: "Up"
+    down: "Down"
+common:
+    close: "Close"

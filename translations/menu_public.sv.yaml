@@ -5,3 +5,56 @@ dialog:
     confirm: "Fortsätt"
 loading:
     title: "Förbereder din meny…"
+hero:
+    subtitle: "Utforska vår meny"
+    subtitle_compact: "Vår meny"
+search:
+    placeholder: "Sök rätter…"
+tabs:
+    all: "Alla"
+type:
+    food: "Mat"
+    drink: "Dryck"
+filters:
+    cta_label: "Allergier eller dieter?"
+    title: "Vad behöver du?"
+    clear_all: "Rensa allt"
+    type_title: "Typ"
+    diet_title: "Dieter"
+    allergy_title: "Allergier"
+    other_title: "Övrigt"
+    apply: "Visa resultat"
+allergen:
+    avoid: "Undvik allergener"
+    avoid_panel_title: "Dölj rätter som innehåller…"
+    clear_selection: "Rensa urval"
+    disclaimer: "Informationen om allergener är endast vägledande. Rådfråga personalen innan du beställer om du har allergier."
+    more_info: "Mer information"
+    free_from: "Utan"
+    traces: "spår"
+results:
+    none: "Inga rätter hittades"
+    empty: "Inga produkter tillgängliga."
+dish:
+    view_more: "Visa mer"
+    view_detail_aria: "Visa detaljer för %name%"
+    modal_aria: "Rättdetaljer"
+    name_label: "Rätt"
+    description: "Beskrivning"
+    ingredients: "Ingredienser"
+    tags: "Etiketter"
+    allergens: "Allergener"
+    spicy: "Styrka"
+    calories: "Kalorier"
+    spice_1: "Mild"
+    spice_2: "Medel"
+    spice_3: "Stark"
+    spice_4: "Mycket stark"
+    spice_5: "Extrem"
+nav:
+    back: "Tillbaka"
+    next: "Nästa"
+    up: "Upp"
+    down: "Ner"
+common:
+    close: "Stäng"

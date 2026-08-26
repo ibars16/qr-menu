@@ -83,30 +83,30 @@
                     </div>
                 </div>
                 <div class="card-back">
-                    <button class="back-close" onclick="unflipCard(event,this)" aria-label="Cerrar"><i class="ti ti-x"></i></button>
+                    <button class="back-close" onclick="unflipCard(event,this)" aria-label="{{ 'nav.back'|trans({}, 'menu_public', locale) }}"><i class="ti ti-x"></i></button>
                     <div class="back-scroll horiz">
                         <div class="back-body">
-                            <div class="bsec"><div class="bsec-title">Plato</div><div class="back-desc" style="font-weight:600;font-size:13px;color:var(--bn)">{{ pT.name }}</div></div>
-                            {% if pT.description %}<div class="bsec"><div class="bsec-title">Descripción</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
+                            <div class="bsec"><div class="bsec-title">{{ 'dish.name_label'|trans({}, 'menu_public', locale) }}</div><div class="back-desc" style="font-weight:600;font-size:13px;color:var(--bn)">{{ pT.name }}</div></div>
+                            {% if pT.description %}<div class="bsec"><div class="bsec-title">{{ 'dish.description'|trans({}, 'menu_public', locale) }}</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
                             {% set ingredientNames = product.getIngredientNames(locale, restaurant.defaultLanguage) %}
                             {% if ingredientNames|length > 0 %}
-                                <div class="bsec"><div class="bsec-title">Ingredientes</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>
+                                <div class="bsec"><div class="bsec-title">{{ 'dish.ingredients'|trans({}, 'menu_public', locale) }}</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>
                             {% endif %}
                             {% if product.tags|length > 0 %}
-                                <div class="bsec"><div class="bsec-title">Etiquetas</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>
+                                <div class="bsec"><div class="bsec-title">{{ 'dish.tags'|trans({}, 'menu_public', locale) }}</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>
                             {% endif %}
                             {% if productAllergens[product.id]|default([])|length > 0 %}
-                                <div class="bsec"><div class="bsec-title">Alérgenos</div><div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="Más información" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ Sin {{ a.name }}{{ noteBtn|raw }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · trazas{{ noteBtn|raw }}</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}{{ noteBtn|raw }}</div>{% endif %}{% endfor %}</div></div>
+                                <div class="bsec"><div class="bsec-title">{{ 'dish.allergens'|trans({}, 'menu_public', locale) }}</div><div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="' ~ ('allergen.more_info'|trans({}, 'menu_public', locale)|e('html_attr')) ~ '" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ {{ 'allergen.free_from'|trans({}, 'menu_public', locale) }} {{ a.name }}{{ noteBtn|raw }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · {{ 'allergen.traces'|trans({}, 'menu_public', locale) }}{{ noteBtn|raw }}</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}{{ noteBtn|raw }}</div>{% endif %}{% endfor %}</div></div>
                             {% endif %}
                             {% if product.spicyLevel > 0 %}
-                                <div class="bsec"><div class="bsec-title">Picante</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}Suave{% elseif product.spicyLevel == 2 %}Medio{% elseif product.spicyLevel == 3 %}Picante{% elseif product.spicyLevel == 4 %}Muy picante{% else %}Extremo{% endif %}</span></div></div>
+                                <div class="bsec"><div class="bsec-title">{{ 'dish.spicy'|trans({}, 'menu_public', locale) }}</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}{{ 'dish.spice_1'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 2 %}{{ 'dish.spice_2'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 3 %}{{ 'dish.spice_3'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 4 %}{{ 'dish.spice_4'|trans({}, 'menu_public', locale) }}{% else %}{{ 'dish.spice_5'|trans({}, 'menu_public', locale) }}{% endif %}</span></div></div>
                             {% endif %}
                             {% if product.calories %}
-                                <div class="bsec"><div class="bsec-title">Calorías</div><div class="nut-row"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>
+                                <div class="bsec"><div class="bsec-title">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</div><div class="nut-row"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>
                             {% endif %}
                         </div>
-                        <button class="scroll-cue-l" type="button" aria-label="Volver"></button>
-                        <button class="scroll-cue-h" type="button" aria-label="Siguiente"></button>
+                        <button class="scroll-cue-l" type="button" aria-label="{{ 'nav.back'|trans({}, 'menu_public', locale) }}"></button>
+                        <button class="scroll-cue-h" type="button" aria-label="{{ 'nav.next'|trans({}, 'menu_public', locale) }}"></button>
                     </div>
                 </div>
             </div>

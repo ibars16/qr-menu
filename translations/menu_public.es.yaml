@@ -5,3 +5,56 @@ dialog:
     confirm: "Continuar"
 loading:
     title: "Preparando tu menú…"
+hero:
+    subtitle: "Explora nuestra carta"
+    subtitle_compact: "Nuestra carta"
+search:
+    placeholder: "Buscar platos…"
+tabs:
+    all: "Todo"
+type:
+    food: "Comida"
+    drink: "Bebidas"
+filters:
+    cta_label: "¿Alergias o dietas?"
+    title: "¿Qué necesitas?"
+    clear_all: "Borrar todo"
+    type_title: "Tipo"
+    diet_title: "Dietas"
+    allergy_title: "Alergias"
+    other_title: "Otros"
+    apply: "Ver resultados"
+allergen:
+    avoid: "Evitar alérgenos"
+    avoid_panel_title: "Ocultar platos que contengan…"
+    clear_selection: "Borrar selección"
+    disclaimer: "La información de alérgenos es orientativa. Consulta con el personal antes de pedir si tienes alguna alergia."
+    more_info: "Más información"
+    free_from: "Sin"
+    traces: "trazas"
+results:
+    none: "No se encontraron platos"
+    empty: "No hay productos disponibles."
+dish:
+    view_more: "Ver más"
+    view_detail_aria: "Ver detalle de %name%"
+    modal_aria: "Detalle del plato"
+    name_label: "Plato"
+    description: "Descripción"
+    ingredients: "Ingredientes"
+    tags: "Etiquetas"
+    allergens: "Alérgenos"
+    spicy: "Picante"
+    calories: "Calorías"
+    spice_1: "Suave"
+    spice_2: "Medio"
+    spice_3: "Picante"
+    spice_4: "Muy picante"
+    spice_5: "Extremo"
+nav:
+    back: "Volver"
+    next: "Siguiente"
+    up: "Subir"
+    down: "Bajar"
+common:
+    close: "Cerrar"

@@ -5,3 +5,56 @@ dialog:
     confirm: "Doorgaan"
 loading:
     title: "Uw menu wordt voorbereid…"
+hero:
+    subtitle: "Ontdek onze kaart"
+    subtitle_compact: "Onze kaart"
+search:
+    placeholder: "Zoek gerechten…"
+tabs:
+    all: "Alles"
+type:
+    food: "Eten"
+    drink: "Drinken"
+filters:
+    cta_label: "Allergieën of diëten?"
+    title: "Wat heb je nodig?"
+    clear_all: "Alles wissen"
+    type_title: "Type"
+    diet_title: "Diëten"
+    allergy_title: "Allergieën"
+    other_title: "Overig"
+    apply: "Resultaten tonen"
+allergen:
+    avoid: "Allergenen vermijden"
+    avoid_panel_title: "Verberg gerechten die … bevatten"
+    clear_selection: "Selectie wissen"
+    disclaimer: "De informatie over allergenen is indicatief. Overleg bij allergieën vóór het bestellen met het personeel."
+    more_info: "Meer informatie"
+    free_from: "Zonder"
+    traces: "sporen"
+results:
+    none: "Geen gerechten gevonden"
+    empty: "Geen producten beschikbaar."
+dish:
+    view_more: "Meer bekijken"
+    view_detail_aria: "Details van %name% bekijken"
+    modal_aria: "Gerechtdetails"
+    name_label: "Gerecht"
+    description: "Beschrijving"
+    ingredients: "Ingrediënten"
+    tags: "Labels"
+    allergens: "Allergenen"
+    spicy: "Pittigheid"
+    calories: "Calorieën"
+    spice_1: "Mild"
+    spice_2: "Gemiddeld"
+    spice_3: "Pittig"
+    spice_4: "Erg pittig"
+    spice_5: "Extreem"
+nav:
+    back: "Terug"
+    next: "Volgende"
+    up: "Omhoog"
+    down: "Omlaag"
+common:
+    close: "Sluiten"

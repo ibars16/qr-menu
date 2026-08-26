@@ -5,3 +5,56 @@ dialog:
     confirm: "继续"
 loading:
     title: "正在准备菜单…"
+hero:
+    subtitle: "探索我们的菜单"
+    subtitle_compact: "我们的菜单"
+search:
+    placeholder: "搜索菜品…"
+tabs:
+    all: "全部"
+type:
+    food: "食物"
+    drink: "饮品"
+filters:
+    cta_label: "过敏或饮食限制？"
+    title: "您需要什么？"
+    clear_all: "清除全部"
+    type_title: "类型"
+    diet_title: "饮食限制"
+    allergy_title: "过敏原"
+    other_title: "其他"
+    apply: "查看结果"
+allergen:
+    avoid: "避开过敏原"
+    avoid_panel_title: "隐藏含有以下成分的菜品…"
+    clear_selection: "清除选择"
+    disclaimer: "过敏原信息仅供参考。如有过敏，请在点餐前咨询工作人员。"
+    more_info: "更多信息"
+    free_from: "不含"
+    traces: "可能含微量"
+results:
+    none: "未找到菜品"
+    empty: "暂无可用商品。"
+dish:
+    view_more: "查看更多"
+    view_detail_aria: "查看%name%详情"
+    modal_aria: "菜品详情"
+    name_label: "菜品"
+    description: "描述"
+    ingredients: "配料"
+    tags: "标签"
+    allergens: "过敏原"
+    spicy: "辣度"
+    calories: "卡路里"
+    spice_1: "微辣"
+    spice_2: "中辣"
+    spice_3: "辣"
+    spice_4: "很辣"
+    spice_5: "极辣"
+nav:
+    back: "返回"
+    next: "下一个"
+    up: "向上"
+    down: "向下"
+common:
+    close: "关闭"

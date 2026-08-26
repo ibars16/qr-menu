@@ -5,3 +5,56 @@ dialog:
     confirm: "Lanjutkan"
 loading:
     title: "Menyiapkan menu Anda…"
+hero:
+    subtitle: "Jelajahi menu kami"
+    subtitle_compact: "Menu kami"
+search:
+    placeholder: "Cari hidangan…"
+tabs:
+    all: "Semua"
+type:
+    food: "Makanan"
+    drink: "Minuman"
+filters:
+    cta_label: "Alergi atau diet?"
+    title: "Apa yang Anda butuhkan?"
+    clear_all: "Hapus semua"
+    type_title: "Jenis"
+    diet_title: "Diet"
+    allergy_title: "Alergi"
+    other_title: "Lainnya"
+    apply: "Lihat hasil"
+allergen:
+    avoid: "Hindari alergen"
+    avoid_panel_title: "Sembunyikan hidangan yang mengandung…"
+    clear_selection: "Hapus pilihan"
+    disclaimer: "Informasi alergen hanya sebagai panduan. Silakan tanyakan kepada staf sebelum memesan jika Anda memiliki alergi."
+    more_info: "Info lebih lanjut"
+    free_from: "Tanpa"
+    traces: "mungkin mengandung jejak"
+results:
+    none: "Hidangan tidak ditemukan"
+    empty: "Tidak ada produk yang tersedia."
+dish:
+    view_more: "Lihat selengkapnya"
+    view_detail_aria: "Lihat detail %name%"
+    modal_aria: "Detail hidangan"
+    name_label: "Hidangan"
+    description: "Deskripsi"
+    ingredients: "Bahan"
+    tags: "Label"
+    allergens: "Alergen"
+    spicy: "Tingkat pedas"
+    calories: "Kalori"
+    spice_1: "Ringan"
+    spice_2: "Sedang"
+    spice_3: "Pedas"
+    spice_4: "Sangat pedas"
+    spice_5: "Ekstrem"
+nav:
+    back: "Kembali"
+    next: "Berikutnya"
+    up: "Naik"
+    down: "Turun"
+common:
+    close: "Tutup"

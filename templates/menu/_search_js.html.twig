@@ -64,7 +64,8 @@ function closeFiltersPanel() {
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeFiltersPanel(); });
 
 // Reflects the existing activeTags/activeType/activeAllergens filter state
-// (set by the handlers below) onto the "¿Alergias o dietas?" button —
+// (set by the handlers below) onto the filters button label (its translated
+// base text lives in data-i18n-cta, set server-side in standard/show.html.twig) —
 // display only, the filtering itself is untouched.
 function updateFiltersButtonBadge() {
     const label = document.getElementById('filters-btn-label');
@@ -72,7 +73,8 @@ function updateFiltersButtonBadge() {
     const clearRow = document.getElementById('filters-clear-row');
     if (!label || !btn) return;
     const count = activeTags.size + (activeType !== 'all' ? 1 : 0) + activeAllergens.size;
-    label.textContent = count > 0 ? ('¿Alergias o dietas? (' + count + ')') : '¿Alergias o dietas?';
+    const baseLabel = label.dataset.i18nCta || label.textContent;
+    label.textContent = count > 0 ? (baseLabel + ' (' + count + ')') : baseLabel;
     btn.classList.toggle('has-active', count > 0);
     if (clearRow) clearRow.hidden = count === 0;
 }

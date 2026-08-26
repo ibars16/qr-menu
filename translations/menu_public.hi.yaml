@@ -5,3 +5,56 @@ dialog:
     confirm: "जारी रखें"
 loading:
     title: "आपका मेनू तैयार किया जा रहा है…"
+hero:
+    subtitle: "हमारा मेनू देखें"
+    subtitle_compact: "हमारा मेनू"
+search:
+    placeholder: "व्यंजन खोजें…"
+tabs:
+    all: "सभी"
+type:
+    food: "भोजन"
+    drink: "पेय"
+filters:
+    cta_label: "एलर्जी या डाइट?"
+    title: "आपको क्या चाहिए?"
+    clear_all: "सभी हटाएं"
+    type_title: "प्रकार"
+    diet_title: "डाइट"
+    allergy_title: "एलर्जी"
+    other_title: "अन्य"
+    apply: "परिणाम देखें"
+allergen:
+    avoid: "एलर्जेन से बचें"
+    avoid_panel_title: "इन्हें शामिल करने वाले व्यंजन छिपाएं…"
+    clear_selection: "चयन हटाएं"
+    disclaimer: "एलर्जेन की जानकारी केवल संकेत के लिए है। कृपया कोई एलर्जी होने पर ऑर्डर करने से पहले स्टाफ से पूछें।"
+    more_info: "अधिक जानकारी"
+    free_from: "बिना"
+    traces: "अंश हो सकते हैं"
+results:
+    none: "कोई व्यंजन नहीं मिला"
+    empty: "कोई उत्पाद उपलब्ध नहीं है।"
+dish:
+    view_more: "और देखें"
+    view_detail_aria: "%name% का विवरण देखें"
+    modal_aria: "व्यंजन का विवरण"
+    name_label: "व्यंजन"
+    description: "विवरण"
+    ingredients: "सामग्री"
+    tags: "टैग"
+    allergens: "एलर्जेन"
+    spicy: "तीखापन"
+    calories: "कैलोरी"
+    spice_1: "हल्का"
+    spice_2: "मध्यम"
+    spice_3: "तीखा"
+    spice_4: "बहुत तीखा"
+    spice_5: "अत्यधिक तीखा"
+nav:
+    back: "वापस"
+    next: "अगला"
+    up: "ऊपर"
+    down: "नीचे"
+common:
+    close: "बंद करें"

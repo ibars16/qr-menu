@@ -5,3 +5,56 @@ dialog:
     confirm: "Tiếp tục"
 loading:
     title: "Đang chuẩn bị thực đơn của bạn…"
+hero:
+    subtitle: "Khám phá thực đơn của chúng tôi"
+    subtitle_compact: "Thực đơn của chúng tôi"
+search:
+    placeholder: "Tìm món ăn…"
+tabs:
+    all: "Tất cả"
+type:
+    food: "Món ăn"
+    drink: "Đồ uống"
+filters:
+    cta_label: "Dị ứng hoặc chế độ ăn?"
+    title: "Bạn cần gì?"
+    clear_all: "Xóa tất cả"
+    type_title: "Loại"
+    diet_title: "Chế độ ăn"
+    allergy_title: "Dị ứng"
+    other_title: "Khác"
+    apply: "Xem kết quả"
+allergen:
+    avoid: "Tránh chất gây dị ứng"
+    avoid_panel_title: "Ẩn các món có chứa…"
+    clear_selection: "Xóa lựa chọn"
+    disclaimer: "Thông tin về chất gây dị ứng chỉ mang tính tham khảo. Vui lòng hỏi nhân viên trước khi gọi món nếu bạn bị dị ứng."
+    more_info: "Thông tin thêm"
+    free_from: "Không có"
+    traces: "có thể có dấu vết"
+results:
+    none: "Không tìm thấy món ăn"
+    empty: "Không có sản phẩm nào."
+dish:
+    view_more: "Xem thêm"
+    view_detail_aria: "Xem chi tiết %name%"
+    modal_aria: "Chi tiết món ăn"
+    name_label: "Món ăn"
+    description: "Mô tả"
+    ingredients: "Nguyên liệu"
+    tags: "Nhãn"
+    allergens: "Chất gây dị ứng"
+    spicy: "Độ cay"
+    calories: "Calo"
+    spice_1: "Nhẹ"
+    spice_2: "Vừa"
+    spice_3: "Cay"
+    spice_4: "Rất cay"
+    spice_5: "Cực cay"
+nav:
+    back: "Quay lại"
+    next: "Tiếp theo"
+    up: "Lên"
+    down: "Xuống"
+common:
+    close: "Đóng"

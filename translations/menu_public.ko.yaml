@@ -5,3 +5,56 @@ dialog:
     confirm: "계속"
 loading:
     title: "메뉴를 준비하고 있습니다…"
+hero:
+    subtitle: "메뉴를 둘러보세요"
+    subtitle_compact: "메뉴"
+search:
+    placeholder: "메뉴 검색…"
+tabs:
+    all: "전체"
+type:
+    food: "음식"
+    drink: "음료"
+filters:
+    cta_label: "알레르기 또는 식단?"
+    title: "무엇이 필요하세요?"
+    clear_all: "전체 지우기"
+    type_title: "유형"
+    diet_title: "식단"
+    allergy_title: "알레르기"
+    other_title: "기타"
+    apply: "결과 보기"
+allergen:
+    avoid: "알레르기 유발 성분 피하기"
+    avoid_panel_title: "다음을 포함하는 메뉴 숨기기…"
+    clear_selection: "선택 지우기"
+    disclaimer: "알레르기 유발 성분 정보는 참고용입니다. 알레르기가 있는 경우 주문 전 직원에게 문의해 주세요."
+    more_info: "자세히 보기"
+    free_from: "미포함:"
+    traces: "미량 함유 가능성"
+results:
+    none: "메뉴를 찾을 수 없습니다"
+    empty: "이용 가능한 상품이 없습니다."
+dish:
+    view_more: "더 보기"
+    view_detail_aria: "%name% 상세 보기"
+    modal_aria: "메뉴 상세 정보"
+    name_label: "메뉴"
+    description: "설명"
+    ingredients: "재료"
+    tags: "태그"
+    allergens: "알레르기 유발 성분"
+    spicy: "맵기"
+    calories: "칼로리"
+    spice_1: "순한맛"
+    spice_2: "보통맛"
+    spice_3: "매운맛"
+    spice_4: "아주 매운맛"
+    spice_5: "극도로 매운맛"
+nav:
+    back: "뒤로"
+    next: "다음"
+    up: "위로"
+    down: "아래로"
+common:
+    close: "닫기"

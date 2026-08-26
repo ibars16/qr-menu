@@ -5,3 +5,56 @@ dialog:
     confirm: "続ける"
 loading:
     title: "メニューを準備しています…"
+hero:
+    subtitle: "メニューを見る"
+    subtitle_compact: "メニュー"
+search:
+    placeholder: "料理を検索…"
+tabs:
+    all: "すべて"
+type:
+    food: "フード"
+    drink: "ドリンク"
+filters:
+    cta_label: "アレルギー・食事制限"
+    title: "何をお探しですか？"
+    clear_all: "すべてクリア"
+    type_title: "タイプ"
+    diet_title: "食事制限"
+    allergy_title: "アレルギー"
+    other_title: "その他"
+    apply: "結果を見る"
+allergen:
+    avoid: "アレルゲンを避ける"
+    avoid_panel_title: "次を含む料理を非表示…"
+    clear_selection: "選択をクリア"
+    disclaimer: "アレルゲン情報は目安です。アレルギーがある場合はご注文前にスタッフにご確認ください。"
+    more_info: "詳細情報"
+    free_from: "不使用："
+    traces: "微量含有"
+results:
+    none: "料理が見つかりません"
+    empty: "利用可能な商品がありません。"
+dish:
+    view_more: "詳しく見る"
+    view_detail_aria: "%name% の詳細を見る"
+    modal_aria: "料理の詳細"
+    name_label: "料理名"
+    description: "説明"
+    ingredients: "材料"
+    tags: "タグ"
+    allergens: "アレルゲン"
+    spicy: "辛さ"
+    calories: "カロリー"
+    spice_1: "マイルド"
+    spice_2: "普通"
+    spice_3: "辛い"
+    spice_4: "とても辛い"
+    spice_5: "激辛"
+nav:
+    back: "戻る"
+    next: "次へ"
+    up: "上へ"
+    down: "下へ"
+common:
+    close: "閉じる"

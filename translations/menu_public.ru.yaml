@@ -5,3 +5,56 @@ dialog:
     confirm: "Продолжить"
 loading:
     title: "Подготовка вашего меню…"
+hero:
+    subtitle: "Изучите наше меню"
+    subtitle_compact: "Наше меню"
+search:
+    placeholder: "Поиск блюд…"
+tabs:
+    all: "Все"
+type:
+    food: "Еда"
+    drink: "Напитки"
+filters:
+    cta_label: "Аллергии или диеты?"
+    title: "Что вам нужно?"
+    clear_all: "Очистить всё"
+    type_title: "Тип"
+    diet_title: "Диеты"
+    allergy_title: "Аллергии"
+    other_title: "Другое"
+    apply: "Показать результаты"
+allergen:
+    avoid: "Исключить аллергены"
+    avoid_panel_title: "Скрыть блюда, содержащие…"
+    clear_selection: "Очистить выбор"
+    disclaimer: "Информация об аллергенах носит справочный характер. Пожалуйста, уточните у персонала перед заказом, если у вас есть аллергия."
+    more_info: "Подробнее"
+    free_from: "Без"
+    traces: "следы"
+results:
+    none: "Блюда не найдены"
+    empty: "Нет доступных блюд."
+dish:
+    view_more: "Подробнее"
+    view_detail_aria: "Подробнее о %name%"
+    modal_aria: "Информация о блюде"
+    name_label: "Блюдо"
+    description: "Описание"
+    ingredients: "Ингредиенты"
+    tags: "Метки"
+    allergens: "Аллергены"
+    spicy: "Острота"
+    calories: "Калории"
+    spice_1: "Мягкое"
+    spice_2: "Среднее"
+    spice_3: "Острое"
+    spice_4: "Очень острое"
+    spice_5: "Экстремально острое"
+nav:
+    back: "Назад"
+    next: "Далее"
+    up: "Вверх"
+    down: "Вниз"
+common:
+    close: "Закрыть"

@@ -5,3 +5,56 @@ dialog:
     confirm: "ดำเนินการต่อ"
 loading:
     title: "กำลังเตรียมเมนูของคุณ…"
+hero:
+    subtitle: "สำรวจเมนูของเรา"
+    subtitle_compact: "เมนูของเรา"
+search:
+    placeholder: "ค้นหาเมนูอาหาร…"
+tabs:
+    all: "ทั้งหมด"
+type:
+    food: "อาหาร"
+    drink: "เครื่องดื่ม"
+filters:
+    cta_label: "ภูมิแพ้หรืออาหารเฉพาะ?"
+    title: "คุณต้องการอะไร?"
+    clear_all: "ล้างทั้งหมด"
+    type_title: "ประเภท"
+    diet_title: "อาหารเฉพาะ"
+    allergy_title: "สารก่อภูมิแพ้"
+    other_title: "อื่นๆ"
+    apply: "ดูผลลัพธ์"
+allergen:
+    avoid: "หลีกเลี่ยงสารก่อภูมิแพ้"
+    avoid_panel_title: "ซ่อนเมนูที่มี…"
+    clear_selection: "ล้างการเลือก"
+    disclaimer: "ข้อมูลสารก่อภูมิแพ้เป็นเพียงข้อมูลอ้างอิง โปรดสอบถามพนักงานก่อนสั่งอาหารหากคุณมีอาการแพ้"
+    more_info: "ข้อมูลเพิ่มเติม"
+    free_from: "ไม่มี"
+    traces: "อาจมีในปริมาณเล็กน้อย"
+results:
+    none: "ไม่พบเมนูอาหาร"
+    empty: "ไม่มีสินค้าให้บริการ"
+dish:
+    view_more: "ดูเพิ่มเติม"
+    view_detail_aria: "ดูรายละเอียดของ %name%"
+    modal_aria: "รายละเอียดเมนู"
+    name_label: "เมนู"
+    description: "รายละเอียด"
+    ingredients: "ส่วนผสม"
+    tags: "แท็ก"
+    allergens: "สารก่อภูมิแพ้"
+    spicy: "ระดับความเผ็ด"
+    calories: "แคลอรี"
+    spice_1: "ไม่เผ็ด"
+    spice_2: "เผ็ดปานกลาง"
+    spice_3: "เผ็ด"
+    spice_4: "เผ็ดมาก"
+    spice_5: "เผ็ดจัด"
+nav:
+    back: "ย้อนกลับ"
+    next: "ถัดไป"
+    up: "ขึ้น"
+    down: "ลง"
+common:
+    close: "ปิด"

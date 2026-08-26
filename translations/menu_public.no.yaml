@@ -5,3 +5,56 @@ dialog:
     confirm: "Fortsett"
 loading:
     title: "Forbereder menyen din…"
+hero:
+    subtitle: "Utforsk menyen vår"
+    subtitle_compact: "Vår meny"
+search:
+    placeholder: "Søk etter retter…"
+tabs:
+    all: "Alle"
+type:
+    food: "Mat"
+    drink: "Drikke"
+filters:
+    cta_label: "Allergier eller dietter?"
+    title: "Hva trenger du?"
+    clear_all: "Fjern alt"
+    type_title: "Type"
+    diet_title: "Dietter"
+    allergy_title: "Allergier"
+    other_title: "Annet"
+    apply: "Vis resultater"
+allergen:
+    avoid: "Unngå allergener"
+    avoid_panel_title: "Skjul retter som inneholder…"
+    clear_selection: "Fjern valg"
+    disclaimer: "Informasjon om allergener er kun veiledende. Sjekk med personalet før bestilling hvis du har allergier."
+    more_info: "Mer informasjon"
+    free_from: "Uten"
+    traces: "spor"
+results:
+    none: "Ingen retter funnet"
+    empty: "Ingen produkter tilgjengelig."
+dish:
+    view_more: "Se mer"
+    view_detail_aria: "Se detaljer for %name%"
+    modal_aria: "Rettdetaljer"
+    name_label: "Rett"
+    description: "Beskrivelse"
+    ingredients: "Ingredienser"
+    tags: "Merker"
+    allergens: "Allergener"
+    spicy: "Styrke"
+    calories: "Kalorier"
+    spice_1: "Mild"
+    spice_2: "Middels"
+    spice_3: "Sterk"
+    spice_4: "Veldig sterk"
+    spice_5: "Ekstrem"
+nav:
+    back: "Tilbake"
+    next: "Neste"
+    up: "Opp"
+    down: "Ned"
+common:
+    close: "Lukk"
