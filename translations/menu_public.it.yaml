@@ -36,6 +36,7 @@ results:
     none: "Nessun piatto trovato"
     empty: "Nessun prodotto disponibile."
 dish:
+    popular: "Popolare"
     view_more: "Vedi di più"
     view_detail_aria: "Vedi il dettaglio di %name%"
     modal_aria: "Dettaglio del piatto"

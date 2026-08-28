@@ -36,6 +36,7 @@ results:
     none: "Inga rätter hittades"
     empty: "Inga produkter tillgängliga."
 dish:
+    popular: "Populär"
     view_more: "Visa mer"
     view_detail_aria: "Visa detaljer för %name%"
     modal_aria: "Rättdetaljer"

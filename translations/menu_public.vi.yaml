@@ -36,6 +36,7 @@ results:
     none: "Không tìm thấy món ăn"
     empty: "Không có sản phẩm nào."
 dish:
+    popular: "Phổ biến"
     view_more: "Xem thêm"
     view_detail_aria: "Xem chi tiết %name%"
     modal_aria: "Chi tiết món ăn"

@@ -36,6 +36,7 @@ results:
     none: "Yemek bulunamadı"
     empty: "Ürün bulunmuyor."
 dish:
+    popular: "Popüler"
     view_more: "Daha fazla gör"
     view_detail_aria: "%name% detayını gör"
     modal_aria: "Yemek detayı"

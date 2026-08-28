@@ -36,6 +36,7 @@ results:
     none: "Ingen retter funnet"
     empty: "Ingen produkter tilgjengelig."
 dish:
+    popular: "Populær"
     view_more: "Se mer"
     view_detail_aria: "Se detaljer for %name%"
     modal_aria: "Rettdetaljer"

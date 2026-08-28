@@ -36,6 +36,7 @@ results:
     none: "Geen gerechten gevonden"
     empty: "Geen producten beschikbaar."
 dish:
+    popular: "Populair"
     view_more: "Meer bekijken"
     view_detail_aria: "Details van %name% bekijken"
     modal_aria: "Gerechtdetails"

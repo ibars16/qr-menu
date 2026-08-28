@@ -36,6 +36,7 @@ results:
     none: "No dishes found"
     empty: "No products available."
 dish:
+    popular: "Popular"
     view_more: "View more"
     view_detail_aria: "View details for %name%"
     modal_aria: "Dish details"

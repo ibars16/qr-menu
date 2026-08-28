@@ -36,6 +36,7 @@ results:
     none: "لم يتم العثور على أطباق"
     empty: "لا توجد منتجات متاحة."
 dish:
+    popular: "الأكثر طلبًا"
     view_more: "عرض المزيد"
     view_detail_aria: "عرض تفاصيل %name%"
     modal_aria: "تفاصيل الطبق"

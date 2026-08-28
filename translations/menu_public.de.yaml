@@ -36,6 +36,7 @@ results:
     none: "Keine Gerichte gefunden"
     empty: "Keine Produkte verfügbar."
 dish:
+    popular: "Beliebt"
     view_more: "Mehr erfahren"
     view_detail_aria: "Details zu %name% ansehen"
     modal_aria: "Gerichtdetails"

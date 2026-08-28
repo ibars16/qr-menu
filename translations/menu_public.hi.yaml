@@ -36,6 +36,7 @@ results:
     none: "कोई व्यंजन नहीं मिला"
     empty: "कोई उत्पाद उपलब्ध नहीं है।"
 dish:
+    popular: "लोकप्रिय"
     view_more: "और देखें"
     view_detail_aria: "%name% का विवरण देखें"
     modal_aria: "व्यंजन का विवरण"

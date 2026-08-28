@@ -36,6 +36,7 @@ results:
     none: "ไม่พบเมนูอาหาร"
     empty: "ไม่มีสินค้าให้บริการ"
 dish:
+    popular: "ยอดนิยม"
     view_more: "ดูเพิ่มเติม"
     view_detail_aria: "ดูรายละเอียดของ %name%"
     modal_aria: "รายละเอียดเมนู"

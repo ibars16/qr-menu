@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\ProductView;
 use App\Enum\AllergenPresence;
 use App\Repository\ProductRepository;
+use App\Repository\ProductViewRepository;
 use App\Repository\RestaurantRepository;
 use App\Service\CategoryTranslationService;
 use App\Service\CategoryTypeFilterResolver;
@@ -26,6 +27,12 @@ class MenuController extends AbstractController
 {
     private const VIEW_RATE_LIMIT_PER_MINUTE = 60;
 
+    // "Popular" badge (see renderMenu()): only the very top dishes, and only
+    // once there's enough real traffic to mean something — a 2-view badge on
+    // a brand-new restaurant would just look fake.
+    private const POPULAR_BADGE_LIMIT = 3;
+    private const POPULAR_BADGE_MIN_VIEWS = 10;
+
     #[Route('/r/{slug}', name: 'menu_show')]
     public function show(
         string $slug,
@@ -36,6 +43,7 @@ class MenuController extends AbstractController
         ProductTranslationService $productTranslationService,
         CategoryTranslationService $categoryTranslationService,
         ProductRepository $productRepo,
+        ProductViewRepository $productViewRepo,
         MenuPreferencesResolver $menuPreferencesResolver,
         ProductAllergenResolver $allergenResolver,
         CategoryTypeFilterResolver $categoryTypeFilterResolver,
@@ -46,7 +54,7 @@ class MenuController extends AbstractController
             throw $this->createNotFoundException('Restaurante no encontrado.');
         }
 
-        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $productTranslationService, $categoryTranslationService, $productRepo, $menuPreferencesResolver, $allergenResolver, $categoryTypeFilterResolver, $translator);
+        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $productTranslationService, $categoryTranslationService, $productRepo, $productViewRepo, $menuPreferencesResolver, $allergenResolver, $categoryTypeFilterResolver, $translator);
     }
 
     // Backwards-compat redirect for QR codes already printed with the old table URL.
@@ -173,6 +181,7 @@ class MenuController extends AbstractController
         ProductTranslationService $productTranslationService,
         CategoryTranslationService $categoryTranslationService,
         ProductRepository $productRepo,
+        ProductViewRepository $productViewRepo,
         MenuPreferencesResolver $menuPreferencesResolver,
         ProductAllergenResolver $allergenResolver,
         CategoryTypeFilterResolver $categoryTypeFilterResolver,
@@ -406,6 +415,18 @@ class MenuController extends AbstractController
 
         $showTypeFilter = $categoryTypeFilterResolver->shouldShowFilter($categories);
 
+        // "Popular" badge — the top few most-viewed dishes over the last 30
+        // days, but only once each has real traffic behind it (see the two
+        // POPULAR_BADGE_* constants); an under-trafficked restaurant simply
+        // shows no badges at all rather than a misleading one.
+        $popularProductIds = array_values(array_map(
+            static fn (array $row) => $row['product']->getId(),
+            array_filter(
+                $productViewRepo->topProducts($restaurant, new \DateTimeImmutable('-30 days'), self::POPULAR_BADGE_LIMIT),
+                static fn (array $row) => $row['views'] >= self::POPULAR_BADGE_MIN_VIEWS
+            )
+        ));
+
         return $this->render('menu/show.html.twig', [
             'restaurant'    => $restaurant,
             'categories'    => $categories,
@@ -419,6 +440,7 @@ class MenuController extends AbstractController
             'tagNames'      => $tagNames,
             'productAllergens' => $productAllergens,
             'menuAllergens' => $menuAllergens,
+            'popularProductIds' => $popularProductIds,
             'layout'        => $layout,
             'theme'         => $theme,
             'isPreview'     => $isPreview,

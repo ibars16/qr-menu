@@ -36,6 +36,7 @@ results:
     none: "未找到菜品"
     empty: "暂无可用商品。"
 dish:
+    popular: "热门"
     view_more: "查看更多"
     view_detail_aria: "查看%name%详情"
     modal_aria: "菜品详情"

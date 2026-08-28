@@ -36,6 +36,7 @@ results:
     none: "메뉴를 찾을 수 없습니다"
     empty: "이용 가능한 상품이 없습니다."
 dish:
+    popular: "인기"
     view_more: "더 보기"
     view_detail_aria: "%name% 상세 보기"
     modal_aria: "메뉴 상세 정보"

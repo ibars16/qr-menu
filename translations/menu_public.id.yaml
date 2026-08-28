@@ -36,6 +36,7 @@ results:
     none: "Hidangan tidak ditemukan"
     empty: "Tidak ada produk yang tersedia."
 dish:
+    popular: "Populer"
     view_more: "Lihat selengkapnya"
     view_detail_aria: "Lihat detail %name%"
     modal_aria: "Detail hidangan"
