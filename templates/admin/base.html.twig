@@ -262,6 +262,10 @@
         </a>
 
         <div class="nav-section">{{ 'nav.section.restaurant'|trans({}, 'admin_base') }}</div>
+        <a href="{{ path('admin_stats') }}"
+           class="nav-item {{ app.request.attributes.get('_route') == 'admin_stats' ? 'active' : '' }}">
+            <i class="ti ti-chart-bar" aria-hidden="true"></i> {{ 'nav.item.stats'|trans({}, 'admin_base') }}
+        </a>
         <a href="{{ path('admin_qr') }}"
            class="nav-item {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">
             <i class="ti ti-qrcode" aria-hidden="true"></i> {{ 'nav.item.qr'|trans({}, 'admin_base') }}
@@ -339,6 +343,10 @@
     <a href="{{ path('admin_tags') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_tag' ? 'active' : '' }}">
         <i class="ti ti-tag" aria-hidden="true"></i> {{ 'bottom_nav.tags'|trans({}, 'admin_base') }}
+    </a>
+    <a href="{{ path('admin_stats') }}"
+       class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_stats' ? 'active' : '' }}">
+        <i class="ti ti-chart-bar" aria-hidden="true"></i> {{ 'bottom_nav.stats'|trans({}, 'admin_base') }}
     </a>
     <a href="{{ path('admin_qr') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">

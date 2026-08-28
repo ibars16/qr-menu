@@ -17,6 +17,7 @@ nav:
         categories: Categorías
         tags: Etiquetas
         theme: Personalizar carta
+        stats: Estadísticas
         qr: Mi QR
         settings: Configuración
         logout: Cerrar sesión
@@ -33,5 +34,6 @@ bottom_nav:
     menus: Menús
     categories: 'Categ.'
     tags: 'Etiq.'
+    stats: 'Estad.'
     qr: QR
     settings: Config

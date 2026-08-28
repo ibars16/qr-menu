@@ -1,0 +1,289 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ 'title'|trans({}, 'admin_stats') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_stats') }}{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .stats-wrap { max-width: 980px; }
+        .stats-subtitle { font-size: 13px; color: var(--tx-5); margin: -8px 0 18px; }
+
+        .kpi-row {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px; margin-bottom: 20px;
+        }
+        .kpi-card {
+            background: var(--bg-card); border: 1px solid var(--bd-1);
+            border-radius: 14px; padding: 16px 18px;
+        }
+        .kpi-label {
+            font-size: 11px; font-weight: 600; color: var(--tx-6);
+            text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+        }
+        .kpi-value { font-size: 24px; font-weight: 700; color: var(--tx-hi); line-height: 1.1; }
+        .kpi-value.is-empty { color: var(--tx-5); font-size: 18px; font-weight: 600; }
+        .kpi-sub { font-size: 12px; color: var(--tx-5); margin-top: 4px; }
+
+        .chart-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-bottom: 16px; }
+        @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+
+        .chart-card {
+            background: var(--bg-card); border: 1px solid var(--bd-1);
+            border-radius: 14px; overflow: hidden;
+        }
+        .chart-card-title {
+            font-size: 12px; font-weight: 600; color: var(--tx-6);
+            text-transform: uppercase; letter-spacing: 0.08em;
+            padding: 14px 18px 12px; border-bottom: 1px solid var(--bd-1);
+            background: var(--bg-nav);
+        }
+        .chart-card-body { padding: 18px; }
+        .chart-card-body.is-tall { height: 280px; }
+        .chart-card-body.is-short { height: 220px; }
+        .chart-card-body.is-centered { display: flex; align-items: center; justify-content: center; }
+        .chart-card-body.is-centered canvas { max-width: 260px; max-height: 260px; }
+
+        .chart-empty {
+            display: flex; align-items: center; justify-content: center;
+            height: 100%; min-height: 160px; color: var(--tx-5); font-size: 13px;
+            text-align: center; padding: 0 20px;
+        }
+
+        .never-viewed-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+        .never-viewed-list li {
+            font-size: 13px; color: var(--tx-2); background: var(--bg-nav);
+            border: 1px solid var(--bd-1); border-radius: 8px; padding: 6px 12px;
+        }
+        .never-viewed-more {
+            font-size: 12px; color: var(--tx-5); margin-top: 10px; cursor: pointer;
+            list-style: none; display: inline-block;
+        }
+        .never-viewed-more::-webkit-details-marker { display: none; }
+        .never-viewed-more:hover { color: var(--tx-3); }
+        .never-viewed-details[open] .never-viewed-more { margin-bottom: 10px; }
+
+        @media (max-width: 767px) {
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="stats-wrap">
+        <div class="stats-subtitle">{{ 'subtitle'|trans({}, 'admin_stats') }}</div>
+
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-label">{{ 'kpi.views'|trans({}, 'admin_stats') }}</div>
+                <div class="kpi-value">{{ totalViews }}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">{{ 'kpi.conversations'|trans({}, 'admin_stats') }}</div>
+                <div class="kpi-value">{{ conversations }}</div>
+            </div>
+        </div>
+
+        <div class="chart-grid">
+            <div class="chart-card">
+                <div class="chart-card-title">{{ 'chart.top_products'|trans({}, 'admin_stats') }}</div>
+                <div class="chart-card-body is-tall">
+                    {% if topProducts is empty %}
+                        <div class="chart-empty">{{ 'empty.no_views'|trans({}, 'admin_stats') }}</div>
+                    {% else %}
+                        <canvas id="chart-top-products"></canvas>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-card-title">{{ 'chart.locale_breakdown'|trans({}, 'admin_stats') }}</div>
+                <div class="chart-card-body is-tall is-centered">
+                    {% if localeBreakdown is empty %}
+                        <div class="chart-empty">{{ 'empty.no_conversations'|trans({}, 'admin_stats') }}</div>
+                    {% else %}
+                        <canvas id="chart-locale-breakdown"></canvas>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card" style="margin-bottom: 16px;">
+            <div class="chart-card-title">{{ 'chart.views_trend'|trans({}, 'admin_stats') }}</div>
+            <div class="chart-card-body is-short">
+                {% if viewsPerDay is empty %}
+                    <div class="chart-empty">{{ 'empty.no_views'|trans({}, 'admin_stats') }}</div>
+                {% else %}
+                    <canvas id="chart-views-trend"></canvas>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-card-title">{{ 'chart.never_viewed'|trans({}, 'admin_stats') }}</div>
+            <div class="chart-card-body">
+                {% if neverViewed is empty %}
+                    <div class="chart-empty">{{ 'empty.all_viewed'|trans({}, 'admin_stats') }}</div>
+                {% else %}
+                    <ul class="never-viewed-list">
+                        {% for product in neverViewed|slice(0, 10) %}
+                            <li>{{ product.name }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% if neverViewed|length > 10 %}
+                        <details class="never-viewed-details">
+                            <summary class="never-viewed-more">{{ 'chart.never_viewed_more'|trans({'%count%': neverViewed|length - 10}, 'admin_stats') }}</summary>
+                            <ul class="never-viewed-list">
+                                {% for product in neverViewed|slice(10) %}
+                                    <li>{{ product.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script id="stats-data" type="application/json">
+        {{ {
+            topProducts: topProducts,
+            viewsPerDay: viewsPerDay,
+            localeBreakdown: localeBreakdown,
+        }|json_encode|raw }}
+    </script>
+    <script>
+        const DATA = JSON.parse(document.getElementById('stats-data').textContent);
+
+        // App's own design tokens (see admin/base.html.twig), read live so
+        // the charts follow the light/dark toggle without their own copy.
+        const styles = getComputedStyle(document.documentElement);
+        const tx3   = styles.getPropertyValue('--tx-3').trim() || '#888';
+        const tx6   = styles.getPropertyValue('--tx-6').trim() || '#444';
+        const grid  = styles.getPropertyValue('--bd-1').trim() || '#1c1c1c';
+        const brand = styles.getPropertyValue('--brand').trim() || '#C1440E';
+        const fontFamily = getComputedStyle(document.body).fontFamily;
+
+        // Validated categorical palette (dataviz skill) — fixed hue order,
+        // never cycled/reassigned; anything past 8 languages folds into "Other".
+        const CATEGORICAL = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767'];
+
+        // Direct value label at the tip of each bar (see dataviz skill's mark
+        // spec: "Bars -> value at the tip") — Chart.js core ships no
+        // datalabels plugin, so this draws the count in a text token color,
+        // never the series color, right after each bar's own draw pass.
+        const barValueLabelPlugin = {
+            id: 'barValueLabel',
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+                chart.data.datasets.forEach((dataset, i) => {
+                    chart.getDatasetMeta(i).data.forEach((bar, index) => {
+                        const value = dataset.data[index];
+                        ctx.save();
+                        ctx.fillStyle = tx3;
+                        ctx.font = '11px ' + fontFamily;
+                        ctx.textBaseline = 'middle';
+                        ctx.textAlign = 'left';
+                        ctx.fillText(String(value), bar.x + 6, bar.y);
+                        ctx.restore();
+                    });
+                });
+            },
+        };
+
+        const commonScales = {
+            x: { grid: { display: false }, ticks: { color: tx3, font: { size: 11 } } },
+            y: { beginAtZero: true, grid: { color: grid }, border: { display: false }, ticks: { color: tx3, font: { size: 11 } } },
+        };
+
+        import('chart.js').then(({ Chart, registerables }) => {
+            Chart.register(...registerables);
+            Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+
+            const topEl = document.getElementById('chart-top-products');
+            if (topEl) {
+                new Chart(topEl, {
+                    type: 'bar',
+                    data: {
+                        labels: DATA.topProducts.map(p => p.name),
+                        datasets: [{
+                            data: DATA.topProducts.map(p => p.views),
+                            backgroundColor: brand,
+                            borderRadius: 4,
+                            maxBarThickness: 24,
+                        }],
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        layout: { padding: { right: 28 } },
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { beginAtZero: true, grid: { color: grid }, border: { display: false }, ticks: { color: tx3, font: { size: 11 }, precision: 0 } },
+                            y: { grid: { display: false }, ticks: { color: tx6, font: { size: 12 } } },
+                        },
+                    },
+                    plugins: [barValueLabelPlugin],
+                });
+            }
+
+            const trendEl = document.getElementById('chart-views-trend');
+            if (trendEl) {
+                new Chart(trendEl, {
+                    type: 'line',
+                    data: {
+                        labels: DATA.viewsPerDay.map(d => d.day.slice(5)),
+                        datasets: [{
+                            data: DATA.viewsPerDay.map(d => d.views),
+                            borderColor: brand,
+                            backgroundColor: brand + '1a',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            fill: true,
+                            tension: 0.25,
+                        }],
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            ...commonScales,
+                            y: { ...commonScales.y, ticks: { ...commonScales.y.ticks, precision: 0 } },
+                        },
+                    },
+                });
+            }
+
+            const localeEl = document.getElementById('chart-locale-breakdown');
+            if (localeEl) {
+                // Cap to the first 8 categorical slots (palette's validated
+                // capacity); anything beyond folds into "Other" rather than
+                // reusing/cycling a hue.
+                const entries = DATA.localeBreakdown;
+                const head = entries.slice(0, 8);
+                const restCount = entries.slice(8).reduce((sum, e) => sum + e.count, 0);
+                const labels = head.map(e => e.locale.toUpperCase());
+                const values = head.map(e => e.count);
+                if (restCount > 0) { labels.push('Other'); values.push(restCount); }
+
+                new Chart(localeEl, {
+                    type: 'doughnut',
+                    data: {
+                        labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: CATEGORICAL.slice(0, labels.length),
+                            borderColor: styles.getPropertyValue('--bg-card').trim() || '#141414',
+                            borderWidth: 2,
+                        }],
+                    },
+                    options: {
+                        aspectRatio: 1,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: tx3, boxWidth: 10, font: { size: 11 }, padding: 12 } },
+                        },
+                    },
+                });
+            }
+        });
+    </script>
+{% endblock %}

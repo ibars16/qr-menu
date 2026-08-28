@@ -1,0 +1,18 @@
+title: Statistiques
+subtitle: 30 derniers jours
+
+kpi:
+    views: Vues de plats
+    conversations: Conversations Smart Waiter
+
+chart:
+    top_products: Plats les plus vus
+    views_trend: Vues par jour
+    locale_breakdown: Langues du Smart Waiter
+    never_viewed: Plats sans vues
+    never_viewed_more: 'et %count% de plus'
+
+empty:
+    no_views: "Aucune vue de plat enregistrée pour l'instant."
+    no_conversations: Aucune conversation Smart Waiter pour l'instant.
+    all_viewed: "Tous vos plats actifs ont été vus au moins une fois !"

@@ -17,6 +17,7 @@ nav:
         categories: Categories
         tags: Tags
         theme: Customize menu
+        stats: Statistics
         qr: My QR
         settings: Settings
         logout: Log out
@@ -33,5 +34,6 @@ bottom_nav:
     menus: Set menus
     categories: 'Categ.'
     tags: Tags
+    stats: Stats
     qr: QR
     settings: Config

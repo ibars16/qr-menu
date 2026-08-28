@@ -57,6 +57,35 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
+     * Active dishes for $restaurant NOT in $excludeIds, in menu order — used
+     * with ProductViewRepository::viewedProductIds() to list dishes nobody
+     * has looked at (see StatsController). An empty $excludeIds means every
+     * active dish qualifies (Doctrine's NOT IN() rejects an empty set, so
+     * that clause is skipped entirely rather than passed an empty array).
+     *
+     * @param int[] $excludeIds
+     * @return Product[]
+     */
+    public function findActiveExcludingIds(Restaurant $restaurant, array $excludeIds): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->innerJoin('p.category', 'c')
+            ->andWhere('c.restaurant = :restaurant')
+            ->andWhere('p.active = true')
+            ->andWhere('c.active = true')
+            ->setParameter('restaurant', $restaurant)
+            ->orderBy('c.position', 'ASC')
+            ->addOrderBy('p.position', 'ASC');
+
+        if ($excludeIds !== []) {
+            $qb->andWhere('p.id NOT IN (:excludeIds)')
+                ->setParameter('excludeIds', $excludeIds);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Cheap existence check (no entity hydration) used to decide whether the
      * menu page needs to detour through the translating/loading screen — see
      * MenuController::renderMenu().

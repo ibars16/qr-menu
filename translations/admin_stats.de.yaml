@@ -1,0 +1,18 @@
+title: Statistiken
+subtitle: Letzte 30 Tage
+
+kpi:
+    views: Gerichtsaufrufe
+    conversations: Smart-Waiter-Gespräche
+
+chart:
+    top_products: Meistgesehene Gerichte
+    views_trend: Aufrufe pro Tag
+    locale_breakdown: Sprachen im Smart Waiter
+    never_viewed: Gerichte ohne Aufrufe
+    never_viewed_more: 'und %count% weitere'
+
+empty:
+    no_views: Noch keine Gerichtsaufrufe erfasst.
+    no_conversations: Noch keine Smart-Waiter-Gespräche.
+    all_viewed: Jedes aktive Gericht wurde mindestens einmal aufgerufen!

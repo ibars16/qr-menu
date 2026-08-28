@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\ProductView;
 use App\Enum\AllergenPresence;
 use App\Repository\ProductRepository;
 use App\Repository\RestaurantRepository;
@@ -13,6 +14,7 @@ use App\Service\ProductAllergenResolver;
 use App\Service\ProductTranslationService;
 use App\Service\TagTranslationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +24,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class MenuController extends AbstractController
 {
+    private const VIEW_RATE_LIMIT_PER_MINUTE = 60;
+
     #[Route('/r/{slug}', name: 'menu_show')]
     public function show(
         string $slug,
@@ -93,6 +97,72 @@ class MenuController extends AbstractController
         );
 
         return $this->json(['ok' => true]);
+    }
+
+    /**
+     * Fires from the menu's own JS whenever a customer opens a dish's detail
+     * (modal on standard, flip on compact/grid) — see menu/_search_js.html.twig's
+     * trackDishView(). Fire-and-forget from the client's side, so this never
+     * needs to report anything but ok/error.
+     */
+    #[Route('/r/{slug}/view', name: 'menu_track_view', methods: ['POST'])]
+    public function trackView(
+        string $slug,
+        Request $request,
+        RestaurantRepository $restaurantRepo,
+        ProductRepository $productRepo,
+        EntityManagerInterface $em,
+        CacheItemPoolInterface $cache,
+    ): JsonResponse {
+        $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
+        if (!$restaurant) {
+            return $this->json(['ok' => false], 404);
+        }
+
+        if (!$this->allowViewTracking($cache, $restaurant->getId(), $request->getClientIp() ?? '')) {
+            return $this->json(['error' => 'rate_limited'], 429);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $productId = $data['productId'] ?? null;
+        if (!is_int($productId) && !ctype_digit((string) $productId)) {
+            return $this->json(['ok' => false], 400);
+        }
+
+        $product = $productRepo->find((int) $productId);
+        // Client-supplied id: must belong to this restaurant, never trust it
+        // blindly, or one restaurant's traffic could write view rows against
+        // another restaurant's product.
+        if (!$product || $product->getCategory()->getRestaurant() !== $restaurant) {
+            return $this->json(['ok' => false], 404);
+        }
+
+        $em->persist(new ProductView($restaurant, $product));
+        $em->flush();
+
+        return $this->json(['ok' => true]);
+    }
+
+    // Same cache-counter idiom as SmartWaiterController::allowRequest — no
+    // rate-limiter component used anywhere in this app, deliberately kept as
+    // a small per-controller helper rather than a shared abstraction. Views
+    // fire far more often per visitor than chat messages, hence the higher
+    // ceiling than Smart Waiter's 20/min.
+    private function allowViewTracking(CacheItemPoolInterface $cache, int $restaurantId, string $ip): bool
+    {
+        $safeIp = preg_replace('/[^a-zA-Z0-9]/', '', $ip);
+        $item = $cache->getItem(sprintf('product_view_rl_%d_%s', $restaurantId, $safeIp));
+
+        $count = $item->isHit() ? (int) $item->get() : 0;
+        if ($count >= self::VIEW_RATE_LIMIT_PER_MINUTE) {
+            return false;
+        }
+
+        $item->set($count + 1);
+        $item->expiresAfter(60);
+        $cache->save($item);
+
+        return true;
     }
 
     private function renderMenu(

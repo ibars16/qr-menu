@@ -14,26 +14,35 @@ class SmartWaiterExchangeLogRepository extends ServiceEntityRepository
         parent::__construct($registry, SmartWaiterExchangeLog::class);
     }
 
-    public function countConversations(Restaurant $restaurant): int
+    public function countConversations(Restaurant $restaurant, \DateTimeImmutable $since): int
     {
         return (int) $this->createQueryBuilder('l')
             ->select('COUNT(DISTINCT l.conversationId)')
             ->andWhere('l.restaurant = :restaurant')
+            ->andWhere('l.createdAt >= :since')
             ->setParameter('restaurant', $restaurant)
+            ->setParameter('since', $since)
             ->getQuery()
             ->getSingleScalarResult();
     }
 
-    public function averageLatencyMs(Restaurant $restaurant): ?float
+    /** @return array<int, array{locale: string, count: int}> ordered most-used first */
+    public function localeBreakdown(Restaurant $restaurant, \DateTimeImmutable $since): array
     {
-        $avg = $this->createQueryBuilder('l')
-            ->select('AVG(l.latencyMs)')
+        $rows = $this->createQueryBuilder('l')
+            ->select('l.locale AS locale', 'COUNT(l.id) AS cnt')
             ->andWhere('l.restaurant = :restaurant')
-            ->andWhere('l.success = true')
+            ->andWhere('l.createdAt >= :since')
             ->setParameter('restaurant', $restaurant)
+            ->setParameter('since', $since)
+            ->groupBy('l.locale')
+            ->orderBy('cnt', 'DESC')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getResult();
 
-        return $avg !== null ? (float) $avg : null;
+        return array_map(
+            static fn (array $row) => ['locale' => $row['locale'], 'count' => (int) $row['cnt']],
+            $rows
+        );
     }
 }

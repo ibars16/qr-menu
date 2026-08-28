@@ -484,7 +484,7 @@
                         {% if pT %}
                             {% set featuredTag = product.tags|filter(t => t.code == 'recommended')|first %}
                             {% set isDrink = category.type is defined and category.type and category.type.value == 'drink' %}
-                            <div class="dish-card" onclick="openDishModal(this)" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': pT.name}, 'menu_public', locale) }}" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}" data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
+                            <div class="dish-card" onclick="openDishModal(this)" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': pT.name}, 'menu_public', locale) }}" data-product-id="{{ product.id }}" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}" data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
                                 <div class="front-img">
                                     {% if product.image %}
                                         <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">

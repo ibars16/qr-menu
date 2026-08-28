@@ -17,6 +17,7 @@ nav:
         categories: Kategorien
         tags: Tags
         theme: Speisekarte anpassen
+        stats: Statistiken
         qr: Mein QR-Code
         settings: Einstellungen
         logout: Abmelden
@@ -33,5 +34,6 @@ bottom_nav:
     menus: Set-Menüs
     categories: Kateg.
     tags: Tags
+    stats: Statist.
     qr: QR
     settings: Konfig.

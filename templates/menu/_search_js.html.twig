@@ -2,7 +2,28 @@
 // changeLanguage / changeCurrency are defined in menu/_prefs_dialog.html.twig,
 // included once from menu/show.html.twig — they also persist the choice to
 // the customer's preference cookie before reloading.
-function flipCard(wrap)        { wrap.querySelector('.card').classList.toggle('flipped'); }
+
+// Dish-view tracking (see MenuController::trackView) — fire-and-forget, one
+// request per distinct dish per page load. viewedProductIds dedupes repeat
+// opens/flips of the same dish client-side, on top of the server's own
+// per-IP rate limit.
+const TRACK_VIEW_URL = '{{ path('menu_track_view', {slug: restaurant.slug}) }}';
+const viewedProductIds = new Set();
+function trackDishView(productId) {
+    if (!productId || viewedProductIds.has(productId)) return;
+    viewedProductIds.add(productId);
+    fetch(TRACK_VIEW_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: Number(productId) }),
+        keepalive: true,
+    }).catch(() => {});
+}
+
+function flipCard(wrap) {
+    const flipped = wrap.querySelector('.card').classList.toggle('flipped');
+    if (flipped) trackDishView(wrap.dataset.productId);
+}
 function unflipCard(e, btn)    { e.stopPropagation(); btn.closest('.card').classList.remove('flipped'); }
 
 // Dish detail bottom-sheet modal (standard layout's photo-first cards) — one
@@ -16,6 +37,7 @@ function openDishModal(card) {
     const photoWrap = document.getElementById('dish-modal-photo');
     const body      = document.getElementById('dish-modal-body');
     if (!tpl || !overlay || !photoWrap || !body) return;
+    trackDishView(card.dataset.productId);
     const content   = tpl.content.cloneNode(true);
     const photoNode = content.querySelector('img, .dish-placeholder');
     photoWrap.innerHTML = '';

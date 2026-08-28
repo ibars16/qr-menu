@@ -1,0 +1,18 @@
+title: Statistics
+subtitle: Last 30 days
+
+kpi:
+    views: Dish views
+    conversations: Smart Waiter conversations
+
+chart:
+    top_products: Most-viewed dishes
+    views_trend: Views per day
+    locale_breakdown: Smart Waiter languages
+    never_viewed: Dishes with no views
+    never_viewed_more: 'and %count% more'
+
+empty:
+    no_views: No dish views recorded yet.
+    no_conversations: No Smart Waiter conversations yet.
+    all_viewed: Every active dish has been viewed at least once!

@@ -17,6 +17,7 @@ nav:
         categories: Catégories
         tags: Étiquettes
         theme: Personnaliser la carte
+        stats: Statistiques
         qr: Mon QR
         settings: Paramètres
         logout: Déconnexion
@@ -33,5 +34,6 @@ bottom_nav:
     menus: Formules
     categories: 'Catég.'
     tags: 'Étiq.'
+    stats: 'Stat.'
     qr: QR
     settings: Config

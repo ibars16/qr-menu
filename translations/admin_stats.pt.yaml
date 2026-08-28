@@ -1,0 +1,18 @@
+title: Estatísticas
+subtitle: Últimos 30 dias
+
+kpi:
+    views: Visualizações de pratos
+    conversations: Conversas do Smart Waiter
+
+chart:
+    top_products: Pratos mais vistos
+    views_trend: Visualizações por dia
+    locale_breakdown: Idiomas do Smart Waiter
+    never_viewed: Pratos sem visualizações
+    never_viewed_more: 'e mais %count%'
+
+empty:
+    no_views: Ainda não há visualizações de pratos registadas.
+    no_conversations: Ainda não há conversas do Smart Waiter.
+    all_viewed: Todos os pratos ativos já foram vistos pelo menos uma vez!

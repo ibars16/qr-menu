@@ -17,6 +17,7 @@ nav:
         categories: Categorie
         tags: Etichette
         theme: Personalizza il menu
+        stats: Statistiche
         qr: Il mio QR
         settings: Impostazioni
         logout: Esci
@@ -33,5 +34,6 @@ bottom_nav:
     menus: Fissi
     categories: Categ.
     tags: Etich.
+    stats: Statist.
     qr: QR
     settings: Config
