@@ -1,0 +1,48 @@
+title: Usuarios
+
+info_banner: Los propietarios tienen acceso total. El personal solo puede gestionar la carta y ver las estadísticas.
+
+action:
+    add_user: Añadir usuario
+    edit_user: Editar usuario
+    delete_user: Eliminar usuario
+    cancel: Cancelar
+    save: Guardar
+
+aria:
+    close: Cerrar
+
+field:
+    email: Email
+    first_name: Nombre
+    last_name: Apellidos
+    password: Contraseña
+    role: Rol
+
+hint:
+    password_edit: Deja este campo en blanco para no cambiar la contraseña.
+    role: 'Propietario: acceso total. Personal: solo carta, categorías, etiquetas, personalización y estadísticas.'
+
+role:
+    owner: Propietario
+    staff: Personal
+
+label:
+    you: Tú
+
+error:
+    email_invalid: Introduce un email válido.
+    email_taken: Ese email ya está en uso por otra cuenta.
+    password_too_short: La contraseña debe tener al menos 8 caracteres.
+    invalid_role: Rol no válido.
+    cannot_demote_last_owner: No puedes quitar el rol de Propietario al único propietario del restaurante.
+    cannot_delete_last_owner: No puedes eliminar al único propietario del restaurante.
+    cannot_delete_self: No puedes eliminar tu propia cuenta.
+
+toast:
+    created: 'Usuario añadido ✓'
+    updated: 'Usuario actualizado ✓'
+    deleted: 'Usuario eliminado ✓'
+
+confirm:
+    delete: '¿Eliminar a %name%? Esta acción no se puede deshacer.'

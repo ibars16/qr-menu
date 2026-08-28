@@ -1,0 +1,48 @@
+title: Utilizadores
+
+info_banner: Os proprietários têm acesso total. A equipa só pode gerir o cardápio e ver as estatísticas.
+
+action:
+    add_user: Adicionar utilizador
+    edit_user: Editar utilizador
+    delete_user: Eliminar utilizador
+    cancel: Cancelar
+    save: Guardar
+
+aria:
+    close: Fechar
+
+field:
+    email: Email
+    first_name: Nome
+    last_name: Apelido
+    password: Palavra-passe
+    role: Função
+
+hint:
+    password_edit: Deixa em branco para manter a palavra-passe atual.
+    role: 'Proprietário: acesso total. Equipa: apenas cardápio, categorias, etiquetas, personalização e estatísticas.'
+
+role:
+    owner: Proprietário
+    staff: Equipa
+
+label:
+    you: Tu
+
+error:
+    email_invalid: Introduz um email válido.
+    email_taken: Esse email já está a ser usado por outra conta.
+    password_too_short: A palavra-passe deve ter pelo menos 8 caracteres.
+    invalid_role: Função inválida.
+    cannot_demote_last_owner: Não podes retirar a função de Proprietário ao único proprietário do restaurante.
+    cannot_delete_last_owner: Não podes eliminar o único proprietário do restaurante.
+    cannot_delete_self: Não podes eliminar a tua própria conta.
+
+toast:
+    created: 'Utilizador adicionado ✓'
+    updated: 'Utilizador atualizado ✓'
+    deleted: 'Utilizador eliminado ✓'
+
+confirm:
+    delete: 'Eliminar %name%? Esta ação não pode ser desfeita.'

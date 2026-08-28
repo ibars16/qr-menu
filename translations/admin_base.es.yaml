@@ -19,6 +19,7 @@ nav:
         theme: Personalizar carta
         stats: Estadísticas
         qr: Mi QR
+        users: Usuarios
         settings: Configuración
         logout: Cerrar sesión
 
@@ -36,4 +37,5 @@ bottom_nav:
     tags: 'Etiq.'
     stats: 'Estad.'
     qr: QR
+    users: Equipo
     settings: Config

@@ -1,0 +1,48 @@
+title: Utenti
+
+info_banner: I proprietari hanno accesso completo. Il personale può solo gestire il menu e visualizzare le statistiche.
+
+action:
+    add_user: Aggiungi utente
+    edit_user: Modifica utente
+    delete_user: Elimina utente
+    cancel: Annulla
+    save: Salva
+
+aria:
+    close: Chiudi
+
+field:
+    email: Email
+    first_name: Nome
+    last_name: Cognome
+    password: Password
+    role: Ruolo
+
+hint:
+    password_edit: Lascia vuoto per mantenere la password attuale.
+    role: 'Proprietario: accesso completo. Personale: solo menu, categorie, etichette, personalizzazione e statistiche.'
+
+role:
+    owner: Proprietario
+    staff: Personale
+
+label:
+    you: Tu
+
+error:
+    email_invalid: Inserisci un indirizzo email valido.
+    email_taken: Questa email è già utilizzata da un altro account.
+    password_too_short: La password deve contenere almeno 8 caratteri.
+    invalid_role: Ruolo non valido.
+    cannot_demote_last_owner: Non puoi togliere il ruolo di proprietario all'unico proprietario del ristorante.
+    cannot_delete_last_owner: Non puoi eliminare l'unico proprietario del ristorante.
+    cannot_delete_self: Non puoi eliminare il tuo stesso account.
+
+toast:
+    created: 'Utente aggiunto ✓'
+    updated: 'Utente aggiornato ✓'
+    deleted: 'Utente eliminato ✓'
+
+confirm:
+    delete: 'Eliminare %name%? Questa azione non può essere annullata.'

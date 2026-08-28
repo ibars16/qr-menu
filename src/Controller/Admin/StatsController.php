@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin', name: 'admin_')]
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_STAFF')]
 class StatsController extends AbstractController
 {
     private function restaurant(): Restaurant

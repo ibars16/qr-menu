@@ -28,7 +28,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * reaches a terminal state.
  */
 #[Route('/admin/menu/import', name: 'admin_menu_import_')]
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_STAFF')]
 class MenuImportController extends AbstractController
 {
     private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

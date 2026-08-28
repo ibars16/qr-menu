@@ -19,6 +19,7 @@ nav:
         theme: Customize menu
         stats: Statistics
         qr: My QR
+        users: Users
         settings: Settings
         logout: Log out
 
@@ -36,4 +37,5 @@ bottom_nav:
     tags: Tags
     stats: Stats
     qr: QR
+    users: Team
     settings: Config

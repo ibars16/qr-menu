@@ -29,7 +29,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * deleteCategory(), which are already generic over any Category.
  */
 #[Route('/admin', name: 'admin_')]
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_STAFF')]
 class MenusController extends AbstractController
 {
     public function __construct(

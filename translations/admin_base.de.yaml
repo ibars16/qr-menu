@@ -19,6 +19,7 @@ nav:
         theme: Speisekarte anpassen
         stats: Statistiken
         qr: Mein QR-Code
+        users: Benutzer
         settings: Einstellungen
         logout: Abmelden
 
@@ -36,4 +37,5 @@ bottom_nav:
     tags: Tags
     stats: Statist.
     qr: QR
+    users: Team
     settings: Konfig.

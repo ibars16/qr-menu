@@ -19,6 +19,7 @@ nav:
         theme: Personalizar cardápio
         stats: Estatísticas
         qr: Meu QR
+        users: Utilizadores
         settings: Configurações
         logout: Sair
 
@@ -36,4 +37,5 @@ bottom_nav:
     tags: Etiq.
     stats: Estat.
     qr: QR
+    users: Equipa
     settings: Config

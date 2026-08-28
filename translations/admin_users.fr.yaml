@@ -1,0 +1,48 @@
+title: Utilisateurs
+
+info_banner: Les propriétaires ont un accès complet. Le personnel peut uniquement gérer la carte et consulter les statistiques.
+
+action:
+    add_user: Ajouter un utilisateur
+    edit_user: Modifier l'utilisateur
+    delete_user: Supprimer l'utilisateur
+    cancel: Annuler
+    save: Enregistrer
+
+aria:
+    close: Fermer
+
+field:
+    email: Email
+    first_name: Prénom
+    last_name: Nom
+    password: Mot de passe
+    role: Rôle
+
+hint:
+    password_edit: Laissez ce champ vide pour conserver le mot de passe actuel.
+    role: 'Propriétaire : accès complet. Personnel : carte, catégories, étiquettes, personnalisation et statistiques uniquement.'
+
+role:
+    owner: Propriétaire
+    staff: Personnel
+
+label:
+    you: Toi
+
+error:
+    email_invalid: Saisissez une adresse email valide.
+    email_taken: Cet email est déjà utilisé par un autre compte.
+    password_too_short: Le mot de passe doit contenir au moins 8 caractères.
+    invalid_role: Rôle invalide.
+    cannot_demote_last_owner: "Vous ne pouvez pas retirer le rôle de propriétaire à l'unique propriétaire du restaurant."
+    cannot_delete_last_owner: "Vous ne pouvez pas supprimer l'unique propriétaire du restaurant."
+    cannot_delete_self: Vous ne pouvez pas supprimer votre propre compte.
+
+toast:
+    created: 'Utilisateur ajouté ✓'
+    updated: 'Utilisateur mis à jour ✓'
+    deleted: 'Utilisateur supprimé ✓'
+
+confirm:
+    delete: 'Supprimer %name% ? Cette action est irréversible.'

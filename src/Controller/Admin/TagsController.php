@@ -14,7 +14,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin', name: 'admin_')]
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_STAFF')]
 class TagsController extends AbstractController
 {
     private function restaurant(): \App\Entity\Restaurant

@@ -266,14 +266,20 @@
            class="nav-item {{ app.request.attributes.get('_route') == 'admin_stats' ? 'active' : '' }}">
             <i class="ti ti-chart-bar" aria-hidden="true"></i> {{ 'nav.item.stats'|trans({}, 'admin_base') }}
         </a>
-        <a href="{{ path('admin_qr') }}"
-           class="nav-item {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">
-            <i class="ti ti-qrcode" aria-hidden="true"></i> {{ 'nav.item.qr'|trans({}, 'admin_base') }}
-        </a>
-        <a href="{{ path('admin_settings') }}"
-           class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
-            <i class="ti ti-settings" aria-hidden="true"></i> {{ 'nav.item.settings'|trans({}, 'admin_base') }}
-        </a>
+        {% if is_granted('ROLE_OWNER') %}
+            <a href="{{ path('admin_qr') }}"
+               class="nav-item {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">
+                <i class="ti ti-qrcode" aria-hidden="true"></i> {{ 'nav.item.qr'|trans({}, 'admin_base') }}
+            </a>
+            <a href="{{ path('admin_users') }}"
+               class="nav-item {{ app.request.attributes.get('_route') == 'admin_users' ? 'active' : '' }}">
+                <i class="ti ti-users" aria-hidden="true"></i> {{ 'nav.item.users'|trans({}, 'admin_base') }}
+            </a>
+            <a href="{{ path('admin_settings') }}"
+               class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
+                <i class="ti ti-settings" aria-hidden="true"></i> {{ 'nav.item.settings'|trans({}, 'admin_base') }}
+            </a>
+        {% endif %}
 
         <div class="sidebar-footer">
             <div class="sidebar-theme-row">
@@ -348,14 +354,20 @@
        class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_stats' ? 'active' : '' }}">
         <i class="ti ti-chart-bar" aria-hidden="true"></i> {{ 'bottom_nav.stats'|trans({}, 'admin_base') }}
     </a>
-    <a href="{{ path('admin_qr') }}"
-       class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">
-        <i class="ti ti-qrcode" aria-hidden="true"></i> {{ 'bottom_nav.qr'|trans({}, 'admin_base') }}
-    </a>
-    <a href="{{ path('admin_settings') }}"
-       class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
-        <i class="ti ti-settings" aria-hidden="true"></i> {{ 'bottom_nav.settings'|trans({}, 'admin_base') }}
-    </a>
+    {% if is_granted('ROLE_OWNER') %}
+        <a href="{{ path('admin_qr') }}"
+           class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">
+            <i class="ti ti-qrcode" aria-hidden="true"></i> {{ 'bottom_nav.qr'|trans({}, 'admin_base') }}
+        </a>
+        <a href="{{ path('admin_users') }}"
+           class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_users' ? 'active' : '' }}">
+            <i class="ti ti-users" aria-hidden="true"></i> {{ 'bottom_nav.users'|trans({}, 'admin_base') }}
+        </a>
+        <a href="{{ path('admin_settings') }}"
+           class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
+            <i class="ti ti-settings" aria-hidden="true"></i> {{ 'bottom_nav.settings'|trans({}, 'admin_base') }}
+        </a>
+    {% endif %}
 </nav>
 
 <div class="toast" id="global-toast" role="status" aria-live="polite"></div>

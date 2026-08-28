@@ -15,7 +15,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin', name: 'admin_')]
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_OWNER')]
 class SettingsController extends AbstractController
 {
     #[Route('/settings', name: 'settings')]

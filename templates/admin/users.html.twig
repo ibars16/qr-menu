@@ -1,0 +1,402 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ 'title'|trans({}, 'admin_users') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_users') }}{% endblock %}
+{% block header_actions %}
+    <button class="btn btn-primary" onclick="UI.openNew()">
+        <i class="ti ti-plus" aria-hidden="true"></i> {{ 'action.add_user'|trans({}, 'admin_users') }}
+    </button>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .users-wrap { max-width: 680px; }
+
+        .info-banner {
+            background: var(--bg-nav); border: 1px solid var(--bd-1); border-radius: 10px;
+            padding: 12px 16px; font-size: 13px; color: var(--tx-5); line-height: 1.6;
+            margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px;
+        }
+        .info-banner i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+        .users-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .user-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px; background: var(--bg-card);
+            border: 1px solid var(--bd-1); border-radius: 10px;
+            transition: border-color 0.1s;
+        }
+        .user-row:hover { border-color: var(--bd-3); }
+
+        .user-avatar {
+            width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+            background: var(--bg-nav); border: 1px solid var(--bd-1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; font-weight: 600; color: var(--tx-3);
+        }
+
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-size: 14px; font-weight: 500; color: var(--tx-1); display: flex; align-items: center; gap: 6px; }
+        .user-meta { font-size: 12px; color: var(--tx-6); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+        .you-badge {
+            font-size: 10px; font-weight: 600; color: var(--tx-6);
+            border: 1px solid var(--bd-2); border-radius: 5px; padding: 1px 6px;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .role-badge {
+            font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+        }
+        .role-badge.role-owner { background: rgba(193,68,14,0.12); color: var(--brand); }
+        .role-badge.role-staff { background: var(--bg-nav); color: var(--tx-5); border: 1px solid var(--bd-1); }
+
+        .user-actions { display: flex; gap: 4px; }
+
+        .icon-btn {
+            width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--bd-3);
+            background: var(--bg-input); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--tx-6); font-size: 13px;
+            transition: color 0.1s, border-color 0.1s;
+        }
+        .icon-btn:hover        { color: var(--tx-1); border-color: var(--bd-2); }
+        .icon-btn.danger:hover { color: #F0997B; border-color: rgba(240,153,123,0.3); }
+
+        @media (max-width: 767px) {
+            .icon-btn { width: 38px; height: 38px; font-size: 16px; }
+            .user-row { padding: 10px 12px; }
+        }
+
+        /* Modal / Sheet — same shape as tags.html.twig's own (this codebase
+           duplicates this per-screen rather than sharing it, see TagsController's
+           own copy) */
+        .modal-overlay {
+            position: fixed; inset: 0; background: var(--overlay);
+            z-index: 500; display: flex; align-items: center; justify-content: center;
+            padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .modal {
+            background: var(--bg-card); border: 1px solid var(--bd-3); border-radius: 16px;
+            width: 100%; max-width: 420px; max-height: 90vh; display: flex; flex-direction: column;
+            transform: translateY(8px) scale(0.98); transition: transform 0.2s;
+        }
+        .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+        .sheet-overlay {
+            position: fixed; inset: 0; background: var(--overlay);
+            z-index: 500; display: flex; align-items: flex-end;
+            opacity: 0; pointer-events: none; transition: opacity 0.25s;
+        }
+        .sheet-overlay.open { opacity: 1; pointer-events: all; }
+        .sheet {
+            width: 100%; background: var(--bg-card); border-radius: 20px 20px 0 0;
+            border-top: 1px solid var(--bd-3); max-height: 92vh;
+            display: flex; flex-direction: column;
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+        }
+        .sheet-overlay.open .sheet { transform: translateY(0); }
+        .sheet-handle {
+            width: 36px; height: 4px; border-radius: 2px; background: var(--bd-2);
+            margin: 10px auto 0; flex-shrink: 0;
+        }
+
+        .panel-header {
+            padding: 14px 16px 12px; border-bottom: 1px solid var(--bd-1);
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .panel-title { font-size: 16px; font-weight: 600; color: var(--tx-hi); letter-spacing: -0.3px; }
+        .panel-close {
+            width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--bd-2);
+            background: var(--bg-input); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--tx-5); font-size: 13px;
+        }
+        .panel-close:hover { color: var(--tx-1); }
+        .panel-body {
+            flex: 1; min-height: 0; overflow-y: auto; padding: 18px; display: flex; flex-direction: column;
+            gap: 16px; scrollbar-width: thin; scrollbar-color: var(--bg-tgl) transparent;
+        }
+        .panel-footer {
+            padding: 12px 18px; border-top: 1px solid var(--bd-1);
+            display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        }
+
+        @media (max-width: 767px) {
+            .panel-title  { font-size: 17px; }
+            .panel-body   { padding: 16px; gap: 16px; }
+            .panel-footer { justify-content: stretch; }
+            .panel-footer .btn { flex: 1; justify-content: center; min-height: 48px; font-size: 15px; }
+            .panel-footer .btn-danger { flex: 0; min-width: 48px; padding: 0; }
+        }
+
+        /* Form fields */
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field-label {
+            font-size: 11px; font-weight: 600; color: var(--tx-5);
+            text-transform: uppercase; letter-spacing: 0.07em;
+        }
+        .req { color: #C1440E; }
+        .field input, .field select {
+            background: var(--bg-input); border: 1px solid var(--bd-2); color: var(--tx-1);
+            font-size: 14px; padding: 10px 12px; border-radius: 9px;
+            outline: none; width: 100%; font-family: inherit;
+            transition: border-color 0.15s; min-height: 42px;
+        }
+        .field input::placeholder { color: var(--tx-7); }
+        .field input:focus, .field select:focus { border-color: var(--tx-5); }
+        .field input.error { border-color: rgba(240,100,80,0.6); }
+        .field input:disabled { opacity: 0.6; cursor: not-allowed; }
+        .field-error { font-size: 11px; color: #F0997B; margin-top: 2px; display: none; }
+        .field-error.show { display: block; }
+        .field-hint { font-size: 12px; color: var(--tx-6); line-height: 1.4; }
+
+        @media (max-width: 767px) {
+            .field input, .field select { font-size: 16px; min-height: 48px; }
+        }
+
+        @media (max-width: 767px)  { .modal-overlay { display: none !important; } }
+        @media (min-width: 768px)  { .sheet-overlay { display: none !important; } }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="users-wrap">
+
+        <div class="info-banner">
+            <i class="ti ti-info-circle" aria-hidden="true"></i>
+            {{ 'info_banner'|trans({}, 'admin_users') }}
+        </div>
+
+        <div class="users-list">
+            {% for user in users %}
+                {% set isOwner = 'ROLE_OWNER' in user.roles %}
+                {% set displayName = user.fullName is not empty ? user.fullName : user.email %}
+                <div class="user-row" data-id="{{ user.id }}">
+                    <div class="user-avatar">{{ user.email|slice(0, 1)|upper }}</div>
+                    <div class="user-info">
+                        <div class="user-name">
+                            {{ displayName }}
+                            {% if user.id == currentUserId %}<span class="you-badge">{{ 'label.you'|trans({}, 'admin_users') }}</span>{% endif %}
+                        </div>
+                        <div class="user-meta">
+                            {{ user.email }}
+                            <span class="role-badge {{ isOwner ? 'role-owner' : 'role-staff' }}">
+                                {{ (isOwner ? 'role.owner' : 'role.staff')|trans({}, 'admin_users') }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <button class="icon-btn"
+                                onclick="UI.openEdit({{ user.id }}, '{{ (user.firstName ?? '')|e('js') }}', '{{ (user.lastName ?? '')|e('js') }}', '{{ isOwner ? 'owner' : 'staff' }}')"
+                                title="{{ 'action.edit_user'|trans({}, 'admin_users') }}">
+                            <i class="ti ti-edit" aria-hidden="true"></i>
+                        </button>
+                        {% if user.id != currentUserId %}
+                            <button class="icon-btn danger"
+                                    onclick="deleteUser({{ user.id }}, '{{ displayName|e('js') }}')"
+                                    title="{{ 'action.delete_user'|trans({}, 'admin_users') }}">
+                                <i class="ti ti-trash" aria-hidden="true"></i>
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    {# ── DESKTOP MODAL ── #}
+    <div class="modal-overlay" id="desktop-modal"
+         onclick="if(event.target===this)UI.close()">
+        <div class="modal">
+            <div class="panel-header">
+                <div class="panel-title" id="modal-title">{{ 'action.add_user'|trans({}, 'admin_users') }}</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="{{ 'aria.close'|trans({}, 'admin_users') }}">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="panel-body">
+                {% include 'admin/_user_fields.html.twig' %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn btn-danger" id="d-delete-btn" style="display:none"
+                        onclick="deleteCurrentUser()">
+                    <i class="ti ti-trash" aria-hidden="true"></i>
+                </button>
+                <button class="btn" style="margin-right:auto" onclick="UI.close()">{{ 'action.cancel'|trans({}, 'admin_users') }}</button>
+                <button class="btn btn-primary" onclick="saveUser()">
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_users') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# ── MOBILE SHEET ── #}
+    <div class="sheet-overlay" id="mobile-sheet"
+         onclick="if(event.target===this)UI.close()">
+        <div class="sheet">
+            <div class="sheet-handle"></div>
+            <div class="panel-header">
+                <div class="panel-title" id="sheet-title">{{ 'action.add_user'|trans({}, 'admin_users') }}</div>
+                <button class="panel-close" onclick="UI.close()" aria-label="{{ 'aria.close'|trans({}, 'admin_users') }}">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="panel-body">
+                {% include 'admin/_user_fields.html.twig' %}
+            </div>
+            <div class="panel-footer">
+                <button class="btn btn-danger" id="m-delete-btn" style="display:none"
+                        onclick="deleteCurrentUser()">
+                    <i class="ti ti-trash" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-primary" onclick="saveUser()">
+                    <i class="ti ti-check" aria-hidden="true"></i> {{ 'action.save'|trans({}, 'admin_users') }}
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const MSG_NEW_USER      = "{{ 'action.add_user'|trans({}, 'admin_users')|e('js') }}";
+        const MSG_EDIT_USER     = "{{ 'action.edit_user'|trans({}, 'admin_users')|e('js') }}";
+        const MSG_USER_CREATED  = "{{ 'toast.created'|trans({}, 'admin_users')|e('js') }}";
+        const MSG_USER_UPDATED  = "{{ 'toast.updated'|trans({}, 'admin_users')|e('js') }}";
+        const MSG_USER_DELETED  = "{{ 'toast.deleted'|trans({}, 'admin_users')|e('js') }}";
+        const MSG_CONFIRM_DELETE = "{{ 'confirm.delete'|trans({}, 'admin_users')|e('js') }}";
+
+        let editingId = null;
+
+        function activePanel() {
+            return document.querySelector('.modal-overlay.open') ||
+                   document.querySelector('.sheet-overlay.open');
+        }
+        function getFieldVal(id) {
+            const p = activePanel();
+            return (p?.querySelector('[id="' + id + '"]') ?? document.getElementById(id))?.value?.trim() ?? '';
+        }
+        function setFieldVal(id, val) {
+            document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value = val ?? ''; });
+        }
+        function fieldError(id, errorId, show) {
+            document.querySelectorAll('[id="' + id + '"]').forEach(el => el.classList.toggle('error', show));
+            document.querySelectorAll('[id="' + errorId + '"]').forEach(el => el.classList.toggle('show', show));
+        }
+        function setFieldDisabled(id, disabled) {
+            document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.disabled = disabled; });
+        }
+
+        const UI = {
+            openNew() {
+                editingId = null;
+                this._setTitle(MSG_NEW_USER);
+                this._showDelete(false);
+                this._reset();
+                setFieldDisabled('user-email', false);
+                document.querySelectorAll('[id="user-password-req"]').forEach(el => el.style.display = '');
+                document.querySelectorAll('[id="user-password-hint"]').forEach(el => el.style.display = 'none');
+                this._open();
+                setTimeout(() => activePanel()?.querySelector('[id="user-email"]')?.focus(), 80);
+            },
+            openEdit(id, firstName, lastName, role) {
+                editingId = id;
+                this._setTitle(MSG_EDIT_USER);
+                this._showDelete(true);
+                this._reset();
+                setFieldVal('user-first-name', firstName);
+                setFieldVal('user-last-name', lastName);
+                setFieldVal('user-role', role);
+                setFieldDisabled('user-email', true);
+                document.querySelectorAll('[id="user-password-req"]').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('[id="user-password-hint"]').forEach(el => el.style.display = '');
+                this._open();
+                setTimeout(() => activePanel()?.querySelector('[id="user-first-name"]')?.focus(), 80);
+            },
+            _open() {
+                if (window.isMobile())
+                    document.getElementById('mobile-sheet').classList.add('open');
+                else
+                    document.getElementById('desktop-modal').classList.add('open');
+            },
+            close() {
+                document.getElementById('mobile-sheet').classList.remove('open');
+                document.getElementById('desktop-modal').classList.remove('open');
+            },
+            _setTitle(t) {
+                document.getElementById('modal-title').textContent = t;
+                document.getElementById('sheet-title').textContent = t;
+            },
+            _showDelete(show) {
+                document.getElementById('d-delete-btn').style.display = show ? '' : 'none';
+                document.getElementById('m-delete-btn').style.display = show ? '' : 'none';
+            },
+            _reset() {
+                setFieldVal('user-email', '');
+                setFieldVal('user-first-name', '');
+                setFieldVal('user-last-name', '');
+                setFieldVal('user-password', '');
+                setFieldVal('user-role', 'staff');
+                fieldError('user-email', 'user-email-error', false);
+                fieldError('user-password', 'user-password-error', false);
+            },
+        };
+
+        async function saveUser() {
+            const email     = getFieldVal('user-email');
+            const firstName = getFieldVal('user-first-name');
+            const lastName  = getFieldVal('user-last-name');
+            const password  = getFieldVal('user-password');
+            const role      = getFieldVal('user-role');
+
+            if (!editingId && !email) {
+                fieldError('user-email', 'user-email-error', true);
+                return;
+            }
+            fieldError('user-email', 'user-email-error', false);
+
+            if ((!editingId || password) && password.length < 8) {
+                fieldError('user-password', 'user-password-error', true);
+                return;
+            }
+            fieldError('user-password', 'user-password-error', false);
+
+            const url  = editingId ? `/admin/usuarios/${editingId}/editar` : '/admin/usuarios/crear';
+            const body = editingId
+                ? { firstName, lastName, role, password: password || undefined }
+                : { email, firstName, lastName, role, password };
+
+            const result = await apiFetch(url, body);
+            if (result.error) { showToast(result.error, 'error'); return; }
+
+            showToast(editingId ? MSG_USER_UPDATED : MSG_USER_CREATED, 'success');
+            UI.close();
+            setTimeout(() => location.reload(), 700);
+        }
+
+        async function deleteUser(id, name) {
+            if (!confirm(MSG_CONFIRM_DELETE.replace('%name%', name))) return;
+            const result = await apiFetch(`/admin/usuarios/${id}/eliminar`);
+            if (result.ok) {
+                showToast(MSG_USER_DELETED, 'success');
+                setTimeout(() => location.reload(), 700);
+            } else if (result.error) {
+                showToast(result.error, 'error');
+            }
+        }
+
+        function deleteCurrentUser() {
+            if (editingId) deleteUser(editingId, getFieldVal('user-first-name') || '');
+        }
+
+        async function apiFetch(url, body = null) {
+            const opts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(url, opts);
+            return res.json();
+        }
+    </script>
+{% endblock %}

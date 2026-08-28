@@ -19,6 +19,7 @@ nav:
         theme: Personnaliser la carte
         stats: Statistiques
         qr: Mon QR
+        users: Utilisateurs
         settings: Paramètres
         logout: Déconnexion
 
@@ -36,4 +37,5 @@ bottom_nav:
     tags: 'Étiq.'
     stats: 'Stat.'
     qr: QR
+    users: Équipe
     settings: Config

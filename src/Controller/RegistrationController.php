@@ -61,7 +61,7 @@ class RegistrationController extends AbstractController
             // 2. Create User
             $user = new User();
             $user->setEmail($data['email']);
-            $user->setRoles(['ROLE_USER']);
+            $user->setRoles([User::ROLE_OWNER]);
             $user->setPassword($hasher->hashPassword($user, $data['password']));
             $user->setRestaurant($restaurant);
 

@@ -19,6 +19,7 @@ nav:
         theme: Personalizza il menu
         stats: Statistiche
         qr: Il mio QR
+        users: Utenti
         settings: Impostazioni
         logout: Esci
 
@@ -36,4 +37,5 @@ bottom_nav:
     tags: Etich.
     stats: Statist.
     qr: QR
+    users: Team
     settings: Config

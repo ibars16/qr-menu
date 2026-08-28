@@ -42,7 +42,7 @@ final class AdminLocaleSubscriberTest extends WebTestCase
         $this->user = new User();
         $this->user->setEmail('admin-locale-test-' . uniqid() . '@example.test');
         $this->user->setPassword('unused-in-tests');
-        $this->user->setRoles(['ROLE_USER']);
+        $this->user->setRoles([User::ROLE_OWNER]);
         $this->user->setRestaurant($this->restaurant);
         $this->em->persist($this->user);
 

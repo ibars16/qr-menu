@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin', name: 'admin_')]
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_STAFF')]
 class ThemeController extends AbstractController
 {
     // 'name' and 'desc' are NOT stored here — they're translated per-locale in

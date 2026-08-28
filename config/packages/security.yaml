@@ -34,6 +34,12 @@ security:
                 secret: '%kernel.secret%'
                 lifetime: 604800
 
+    # Owner (User::ROLE_OWNER) automatically satisfies any ROLE_STAFF check
+    # too — the per-restaurant "full access vs content-only" split lives in
+    # each Admin\*Controller's own #[IsGranted], not here.
+    role_hierarchy:
+        ROLE_OWNER: ROLE_STAFF
+
     access_control:
         - { path: ^/admin/login, roles: PUBLIC_ACCESS }
         - { path: ^/register,    roles: PUBLIC_ACCESS }

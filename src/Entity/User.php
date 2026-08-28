@@ -14,6 +14,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use TimestampableTrait;
 
+    /** Full access to a restaurant's admin panel, including managing its team (see UsersController). */
+    public const ROLE_OWNER = 'ROLE_OWNER';
+
+    /** Content-only access — see security.yaml's role_hierarchy (ROLE_OWNER implies this) and the per-controller #[IsGranted] split. */
+    public const ROLE_STAFF = 'ROLE_STAFF';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

@@ -45,7 +45,7 @@ final class SetMenusFeatureGateTest extends WebTestCase
         $this->user = new User();
         $this->user->setEmail('set-menus-gate-test-' . uniqid() . '@example.test');
         $this->user->setPassword('unused-in-tests');
-        $this->user->setRoles(['ROLE_USER']);
+        $this->user->setRoles([User::ROLE_OWNER]);
         $this->user->setRestaurant($this->restaurant);
         $this->em->persist($this->user);
 

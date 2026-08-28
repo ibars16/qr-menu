@@ -1,0 +1,48 @@
+title: Users
+
+info_banner: Owners have full access. Staff can only manage the menu and view statistics.
+
+action:
+    add_user: Add user
+    edit_user: Edit user
+    delete_user: Delete user
+    cancel: Cancel
+    save: Save
+
+aria:
+    close: Close
+
+field:
+    email: Email
+    first_name: First name
+    last_name: Last name
+    password: Password
+    role: Role
+
+hint:
+    password_edit: Leave this blank to keep the current password.
+    role: 'Owner: full access. Staff: menu, categories, tags, customization and stats only.'
+
+role:
+    owner: Owner
+    staff: Staff
+
+label:
+    you: You
+
+error:
+    email_invalid: Enter a valid email address.
+    email_taken: That email is already used by another account.
+    password_too_short: Password must be at least 8 characters.
+    invalid_role: Invalid role.
+    cannot_demote_last_owner: You can't remove the Owner role from the restaurant's only owner.
+    cannot_delete_last_owner: You can't delete the restaurant's only owner.
+    cannot_delete_self: You can't delete your own account.
+
+toast:
+    created: 'User added ✓'
+    updated: 'User updated ✓'
+    deleted: 'User deleted ✓'
+
+confirm:
+    delete: 'Delete %name%? This cannot be undone.'
