@@ -1,0 +1,74 @@
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="{{ path('app_home') }}" class="nav-brand">
+            <span class="nav-logo-mark">Q</span>
+            <span class="nav-brand-name">QR Menu</span>
+        </a>
+
+        {# Desktop controls — hidden on mobile, see .nav-mobile below for the equivalent there. #}
+        <div class="nav-links nav-links-desktop">
+            {% if app.request.attributes.get('_route') == 'app_home' and locales is defined %}
+                <details class="nav-lang-dropdown nav-dropdown">
+                    <summary class="nav-lang-current">
+                        <span>{{ locales[locale].flag }}</span> {{ locale|upper }}
+                        <i class="ti ti-chevron-down" aria-hidden="true"></i>
+                    </summary>
+                    <div class="nav-lang-menu">
+                        {% for code, meta in locales %}
+                            <a href="{{ path('app_home') }}?lang={{ code }}" class="nav-lang-item{{ code == locale ? ' active' : '' }}">
+                                <span>{{ meta.flag }}</span> {{ meta.name }}
+                                {% if code == locale %}<i class="ti ti-check" aria-hidden="true"></i>{% endif %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </details>
+            {% endif %}
+            <button type="button" class="nav-theme-toggle" onclick="toggleSiteTheme()" title="Cambiar tema" aria-label="Cambiar entre modo oscuro y claro">
+                <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
+                <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
+            </button>
+            <a href="{{ path('admin_login') }}" class="nav-login">{{ 'nav.login'|trans({}, 'public_site', locale|default('es')) }}</a>
+            <a href="{{ path('app_register') }}" class="nav-cta">{{ 'nav.cta'|trans({}, 'public_site', locale|default('es')) }}</a>
+        </div>
+
+        {# Mobile controls — theme toggle stays visible next to the hamburger
+           itself; everything else (language, login, CTA) lives in the
+           slide-down panel the hamburger opens. #}
+        <div class="nav-mobile-controls">
+            <button type="button" class="nav-theme-toggle" onclick="toggleSiteTheme()" title="Cambiar tema" aria-label="Cambiar entre modo oscuro y claro">
+                <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
+                <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
+            </button>
+            <details class="nav-mobile nav-dropdown">
+                <summary class="nav-mobile-toggle" aria-label="Abrir menú">
+                    <i class="ti ti-menu-2" aria-hidden="true"></i>
+                </summary>
+                <div class="nav-mobile-panel">
+                    {% if app.request.attributes.get('_route') == 'app_home' and locales is defined %}
+                        <div class="nav-mobile-section-label">Idioma</div>
+                        <div class="nav-mobile-langs">
+                            {% for code, meta in locales %}
+                                <a href="{{ path('app_home') }}?lang={{ code }}" class="nav-mobile-lang{{ code == locale ? ' active' : '' }}" title="{{ meta.name }}">{{ meta.flag }}</a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <a href="{{ path('admin_login') }}" class="nav-login nav-mobile-login">{{ 'nav.login'|trans({}, 'public_site', locale|default('es')) }}</a>
+                    <a href="{{ path('app_register') }}" class="nav-cta nav-mobile-cta">{{ 'nav.cta'|trans({}, 'public_site', locale|default('es')) }}</a>
+                </div>
+            </details>
+        </div>
+    </div>
+</nav>
+
+<script>
+    window.toggleSiteTheme = function () {
+        var isLight = document.documentElement.classList.toggle('light');
+        try { localStorage.setItem('site-theme', isLight ? 'light' : 'dark'); } catch (e) {}
+    };
+
+    document.addEventListener('click', function (e) {
+        document.querySelectorAll('.nav-dropdown[open]').forEach(function (el) {
+            if (!el.contains(e.target)) el.removeAttribute('open');
+        });
+    });
+</script>

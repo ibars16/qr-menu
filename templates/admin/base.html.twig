@@ -73,6 +73,13 @@
         .sidebar-header { padding: 16px; border-bottom: 1px solid var(--bd-1); }
         .sidebar-restaurant { font-size: 14px; font-weight: 600; color: var(--tx-hi); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sidebar-role { font-size: 11px; color: var(--tx-5); margin-top: 2px; }
+        .trial-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 11px; color: var(--tx-4);
+            background: var(--bg-hover); border: 1px solid var(--bd-1);
+            padding: 4px 9px; border-radius: 999px; margin-top: 8px;
+        }
+        .trial-badge i { font-size: 12px; }
 
         /* Ver carta — destacado arriba */
         .ver-carta-btn {
@@ -225,6 +232,12 @@
         <div class="sidebar-header">
             <div class="sidebar-restaurant">{{ app.user.restaurant ? app.user.restaurant.name : 'QR Menu' }}</div>
             <div class="sidebar-role">{{ 'sidebar.role'|trans({}, 'admin_base') }}</div>
+            {% if app.user.restaurant and app.user.restaurant.trialActive %}
+                <div class="trial-badge">
+                    <i class="ti ti-clock" aria-hidden="true"></i>
+                    Prueba gratuita · quedan {{ app.user.restaurant.trialDaysRemaining }} días
+                </div>
+            {% endif %}
         </div>
 
         {# VER CARTA — destacado arriba #}

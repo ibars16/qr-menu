@@ -34,6 +34,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Service\PublicSiteLocaleResolver:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     App\Command\SeedPresetTagsCommand:
         arguments:
             $projectDir: '%kernel.project_dir%'

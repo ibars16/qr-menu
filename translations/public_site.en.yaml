@@ -1,0 +1,78 @@
+title: "QR Menu — Digital menu for your restaurant"
+
+meta:
+  description: "Create your restaurant's digital menu in minutes: QR menu, admin panel, AI chat for your customers, and stats. Try it free for 1 month, no credit card required."
+  og_title: "QR Menu — Digital menu for your restaurant"
+  og_description: "QR menu, admin panel, AI chat and stats for your restaurant. Try it free for 1 month, no credit card required."
+
+nav:
+  login: "Log in"
+  cta: "Free 1-month trial"
+
+hero:
+  badge: "Free 1-month trial, no card needed"
+  title: "Your restaurant's menu, digital and always up to date"
+  subtitle: "Your customers scan a QR code and see the menu instantly — in their language, with photos, allergens and prices always current. You edit it from a panel built to be managed in a minute."
+  cta_primary: "Try it free for 1 month →"
+  cta_secondary: "See what's included"
+  note: "No credit card required. Cancel anytime."
+
+mockup:
+  tagline: "Explore our menu"
+  search_placeholder: "Search dishes…"
+  view_more: "View more"
+
+features:
+  eyebrow: "Features"
+  title: "Everything your menu needs"
+  subtitle: "Built so a restaurant can manage it alone, without depending on anyone."
+  qr:
+    title: "Digital menu via QR"
+    desc: "A QR code on each table takes customers straight to your menu — no apps, no downloads."
+  admin:
+    title: "Admin panel"
+    desc: "Add dishes, categories, photos and prices in seconds, from your phone or computer."
+  smart_waiter:
+    title: "Smart Waiter (AI chat)"
+    desc: "Your customers ask about allergens, ingredients or recommendations and get an instant answer."
+  stats:
+    title: "Statistics"
+    desc: "Which dishes get the most views and how the chat is used — useful data for your menu, no technical noise."
+  multilang:
+    title: "Multi-language"
+    desc: "Your menu is automatically translated into more than 20 languages, so every customer understands it in theirs."
+  multicurrency:
+    title: "Multi-currency"
+    desc: "Choose your menu's currency — euros, dollars and more — and every price always shows correctly."
+  fixed_menus:
+    title: "Fixed-price menus"
+    desc: "Daily menu, tasting menu — their own prices and structure, separate from the regular menu."
+  themes:
+    title: "Visual themes"
+    desc: "Several styles and colors so your menu matches your restaurant's image."
+
+steps:
+  eyebrow: "How it works"
+  title: "Up and running in minutes"
+  step1:
+    title: "Sign up"
+    desc: "Create your free account, no credit card required. One minute and your panel is ready."
+  step2:
+    title: "Build your menu"
+    desc: "Add categories and dishes, or import your current menu to save the manual work."
+  step3:
+    title: "Share the QR"
+    desc: "Download your QR code, print it on your tables, and your digital menu is live."
+
+cta:
+  title: "Try QR Menu free for 1 month"
+  subtitle: "No credit card required. Set up your menu today."
+  button: "Create my free account →"
+
+footer:
+  home: "Home"
+  about: "About us"
+  privacy: "Privacy"
+  terms: "Terms"
+  cookies: "Cookies"
+  login: "Log in"

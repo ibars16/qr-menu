@@ -1,0 +1,40 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Política de Privacidad — QR Menu{% endblock %}
+
+{% block content %}
+    <div class="legal">
+        <h1>Política de Privacidad</h1>
+        <div class="legal-updated">Última actualización: {{ "now"|date("d/m/Y") }}</div>
+
+        <div class="legal-placeholder">
+            ⚠️ Documento pendiente de completar antes de publicar en producción: falta el nombre legal/fiscal del responsable del tratamiento y un email de contacto real para temas de privacidad. Sustituye los campos entre corchetes por esos datos.
+        </div>
+
+        <h2>1. Responsable del tratamiento</h2>
+        <p>[Nombre legal pendiente] es responsable del tratamiento de los datos personales recogidos a través de QR Menu. Para cualquier consulta sobre esta política puedes escribir a [email de contacto pendiente].</p>
+
+        <h2>2. Qué datos recopilamos</h2>
+        <ul>
+            <li><strong>Datos de tu cuenta:</strong> email y contraseña (almacenada de forma cifrada, nunca en texto plano) y el nombre de tu restaurante.</li>
+            <li><strong>Datos de tu carta:</strong> categorías, platos, precios, descripciones e imágenes que subas para tu carta digital.</li>
+            <li><strong>Datos de uso de tu carta pública:</strong> qué platos se visualizan, para poder mostrarte estadísticas sobre tu propia carta.</li>
+            <li><strong>Interacciones con el asistente Smart Waiter:</strong> registramos que se ha producido una conversación y su idioma, con fines estadísticos agregados. No almacenamos el contenido de los mensajes que escriben tus clientes.</li>
+        </ul>
+
+        <h2>3. Con quién compartimos datos</h2>
+        <p>Utilizamos proveedores externos de inteligencia artificial para funciones como el asistente Smart Waiter y la importación de cartas a partir de una foto. Estos proveedores procesan el contenido necesario para prestar ese servicio, bajo sus propias condiciones de tratamiento de datos. No vendemos datos personales a terceros.</p>
+
+        <h2>4. Cookies</h2>
+        <p>Consulta nuestra <a href="{{ path('app_cookies') }}">Política de Cookies</a> para saber qué usamos y por qué.</p>
+
+        <h2>5. Tus derechos</h2>
+        <p>Puedes solicitar acceso, rectificación, supresión o portabilidad de tus datos personales, así como oponerte u limitar su tratamiento, escribiendo a [email de contacto pendiente].</p>
+
+        <h2>6. Conservación de los datos</h2>
+        <p>Conservamos tus datos mientras tu cuenta esté activa. Si eliminas tu cuenta, los datos asociados se eliminan salvo que exista una obligación legal de conservarlos por más tiempo.</p>
+
+        <h2>7. Cambios en esta política</h2>
+        <p>Podemos actualizar esta política para reflejar cambios en el servicio o en la normativa aplicable. Publicaremos cualquier cambio relevante en esta misma página.</p>
+    </div>
+{% endblock %}

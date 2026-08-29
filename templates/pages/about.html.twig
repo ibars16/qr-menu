@@ -1,0 +1,27 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Sobre nosotros — QR Menu{% endblock %}
+
+{% block meta %}
+    <meta name="description" content="QR Menu ayuda a los restaurantes a tener una carta digital simple, siempre actualizada y sin depender de nadie para mantenerla.">
+{% endblock %}
+
+{% block content %}
+    <div class="legal">
+        <h1>Sobre nosotros</h1>
+
+        <p>QR Menu nace de una idea simple: la carta de un restaurante cambia constantemente — precios, platos de temporada, alérgenos — y mantenerla actualizada en papel o en herramientas complicadas es un trabajo extra que nadie tiene tiempo de hacer bien.</p>
+
+        <h2>Qué hacemos</h2>
+        <p>Construimos una carta digital que cualquier restaurante puede gestionar por su cuenta, sin conocimientos técnicos: se edita en minutos desde un panel pensado para el día a día de un restaurante, y el cliente la ve al instante escaneando un código QR, sin instalar nada.</p>
+
+        <h2>Cómo pensamos el producto</h2>
+        <ul>
+            <li>El restaurante mantiene el control total de su carta y sus datos.</li>
+            <li>Nada de configuraciones complicadas: lo esencial debe poder hacerse en minutos.</li>
+            <li>La carta tiene que verse bien y funcionar igual de bien para el cliente que para el dueño que la actualiza a diario.</li>
+        </ul>
+
+        <p>Si tienes preguntas sobre el producto, puedes escribirnos — el contacto está en nuestra <a href="{{ path('app_privacy') }}">política de privacidad</a>.</p>
+    </div>
+{% endblock %}

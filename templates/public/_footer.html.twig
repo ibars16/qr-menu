@@ -1,0 +1,16 @@
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <span class="nav-logo-mark">Q</span> QR Menu
+        </div>
+        <nav class="footer-links">
+            <a href="{{ path('app_home') }}">{{ 'footer.home'|trans({}, 'public_site', locale|default('es')) }}</a>
+            <a href="{{ path('app_about') }}">{{ 'footer.about'|trans({}, 'public_site', locale|default('es')) }}</a>
+            <a href="{{ path('app_privacy') }}">{{ 'footer.privacy'|trans({}, 'public_site', locale|default('es')) }}</a>
+            <a href="{{ path('app_terms') }}">{{ 'footer.terms'|trans({}, 'public_site', locale|default('es')) }}</a>
+            <a href="{{ path('app_cookies') }}">{{ 'footer.cookies'|trans({}, 'public_site', locale|default('es')) }}</a>
+            <a href="{{ path('admin_login') }}">{{ 'footer.login'|trans({}, 'public_site', locale|default('es')) }}</a>
+        </nav>
+        <div class="footer-copy">© {{ "now"|date("Y") }} QR Menu</div>
+    </div>
+</footer>

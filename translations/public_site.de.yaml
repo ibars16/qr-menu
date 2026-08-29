@@ -1,0 +1,78 @@
+title: "QR Menu — Digitale Speisekarte für Ihr Restaurant"
+
+meta:
+  description: "Erstellen Sie die digitale Speisekarte Ihres Restaurants in wenigen Minuten: QR-Menü, Verwaltungspanel, KI-Chat für Ihre Kunden und Statistiken. 1 Monat kostenlos testen, keine Kreditkarte nötig."
+  og_title: "QR Menu — Digitale Speisekarte für Ihr Restaurant"
+  og_description: "QR-Menü, Verwaltungspanel, KI-Chat und Statistiken für Ihr Restaurant. 1 Monat kostenlos testen, keine Kreditkarte nötig."
+
+nav:
+  login: "Anmelden"
+  cta: "1 Monat kostenlos testen"
+
+hero:
+  badge: "1 Monat kostenlos, keine Kreditkarte"
+  title: "Die Speisekarte Ihres Restaurants, digital und immer aktuell"
+  subtitle: "Ihre Kunden scannen einen QR-Code und sehen die Speisekarte sofort — in ihrer Sprache, mit Fotos, Allergenen und stets aktuellen Preisen. Sie bearbeiten sie über ein Panel, das sich in einer Minute verwalten lässt."
+  cta_primary: "1 Monat kostenlos testen →"
+  cta_secondary: "Alle Funktionen ansehen"
+  note: "Keine Kreditkarte nötig. Jederzeit kündbar."
+
+mockup:
+  tagline: "Entdecken Sie unsere Speisekarte"
+  search_placeholder: "Gerichte suchen…"
+  view_more: "Mehr ansehen"
+
+features:
+  eyebrow: "Funktionen"
+  title: "Alles, was Ihre Speisekarte braucht"
+  subtitle: "So gestaltet, dass ein Restaurant sie allein verwalten kann, ohne auf jemanden angewiesen zu sein."
+  qr:
+    title: "Digitale Speisekarte per QR"
+    desc: "Ein QR-Code pro Tisch führt direkt zu Ihrer Speisekarte — ohne App, ohne Download für den Kunden."
+  admin:
+    title: "Verwaltungspanel"
+    desc: "Fügen Sie Gerichte, Kategorien, Fotos und Preise in Sekunden hinzu — vom Handy oder Computer aus."
+  smart_waiter:
+    title: "Smart Waiter (KI-Chat)"
+    desc: "Ihre Kunden fragen nach Allergenen, Zutaten oder Empfehlungen und erhalten sofort eine Antwort."
+  stats:
+    title: "Statistiken"
+    desc: "Welche Gerichte am meisten angesehen werden und wie der Chat genutzt wird — nützliche Daten für Ihre Speisekarte, kein technisches Rauschen."
+  multilang:
+    title: "Mehrsprachig"
+    desc: "Ihre Speisekarte wird automatisch in mehr als 20 Sprachen übersetzt, damit jeder Kunde sie in seiner eigenen versteht."
+  multicurrency:
+    title: "Mehrere Währungen"
+    desc: "Wählen Sie die Währung Ihrer Speisekarte — Euro, Dollar und mehr — und alle Preise werden stets korrekt angezeigt."
+  fixed_menus:
+    title: "Menüs zum Festpreis"
+    desc: "Tagesmenü, Degustationsmenü — mit eigenen Preisen und eigener Struktur, getrennt von der normalen Speisekarte."
+  themes:
+    title: "Visuelle Themes"
+    desc: "Mehrere Stile und Farben, damit die Speisekarte zum Erscheinungsbild Ihres Restaurants passt."
+
+steps:
+  eyebrow: "So funktioniert's"
+  title: "In wenigen Minuten startklar"
+  step1:
+    title: "Registrieren"
+    desc: "Erstellen Sie Ihr kostenloses Konto, ohne Kreditkarte. Eine Minute, und Ihr Panel ist startklar."
+  step2:
+    title: "Speisekarte erstellen"
+    desc: "Fügen Sie Kategorien und Gerichte hinzu oder importieren Sie Ihre aktuelle Speisekarte, um sich die manuelle Arbeit zu sparen."
+  step3:
+    title: "QR-Code teilen"
+    desc: "Laden Sie Ihren QR-Code herunter, drucken Sie ihn auf die Tische, und Ihre digitale Speisekarte ist live."
+
+cta:
+  title: "Testen Sie QR Menu 1 Monat lang kostenlos"
+  subtitle: "Keine Kreditkarte nötig. Richten Sie Ihre Speisekarte noch heute ein."
+  button: "Kostenloses Konto erstellen →"
+
+footer:
+  home: "Startseite"
+  about: "Über uns"
+  privacy: "Datenschutz"
+  terms: "AGB"
+  cookies: "Cookies"
+  login: "Anmelden"

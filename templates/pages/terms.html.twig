@@ -1,0 +1,44 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Términos de Servicio — QR Menu{% endblock %}
+
+{% block content %}
+    <div class="legal">
+        <h1>Términos de Servicio</h1>
+        <div class="legal-updated">Última actualización: {{ "now"|date("d/m/Y") }}</div>
+
+        <div class="legal-placeholder">
+            ⚠️ Documento pendiente de completar antes de publicar en producción: faltan el nombre legal/fiscal del prestador del servicio, un email de contacto real y la jurisdicción aplicable. Sustituye los campos entre corchetes por esos datos.
+        </div>
+
+        <h2>1. Aceptación de estos términos</h2>
+        <p>Al crear una cuenta en QR Menu aceptas estos Términos de Servicio y nuestra <a href="{{ path('app_privacy') }}">Política de Privacidad</a>.</p>
+
+        <h2>2. Descripción del servicio</h2>
+        <p>QR Menu ofrece una carta digital para restaurantes, accesible por código QR, junto con un panel de administración para gestionarla. Ofrecemos una prueba gratuita de 1 mes, sin necesidad de tarjeta de crédito.</p>
+
+        <h2>3. Tu cuenta</h2>
+        <p>Eres responsable de mantener la confidencialidad de tu contraseña y de la veracidad de los datos que proporciones sobre tu restaurante.</p>
+
+        <h2>4. Prueba gratuita</h2>
+        <p>La prueba gratuita dura 1 mes desde la creación de la cuenta. Las condiciones de uso una vez finalizada la prueba se comunicarán con antelación razonable antes de aplicarse.</p>
+
+        <h2>5. Contenido de tu carta</h2>
+        <p>El contenido de tu carta (platos, precios, imágenes, descripciones) es tu responsabilidad. Debes tener los derechos necesarios sobre cualquier imagen o texto que subas.</p>
+
+        <h2>6. Uso aceptable</h2>
+        <p>No debes usar el servicio para publicar contenido ilegal, engañoso o que infrinja derechos de terceros.</p>
+
+        <h2>7. Disponibilidad y cambios en el servicio</h2>
+        <p>Trabajamos para mantener el servicio disponible, pero no garantizamos un funcionamiento ininterrumpido. Podemos modificar o mejorar funcionalidades con el tiempo.</p>
+
+        <h2>8. Limitación de responsabilidad</h2>
+        <p>El servicio se ofrece "tal cual". En la medida permitida por la ley, no seremos responsables de daños indirectos derivados del uso del servicio.</p>
+
+        <h2>9. Legislación aplicable</h2>
+        <p>Estos términos se rigen por la legislación de [jurisdicción pendiente].</p>
+
+        <h2>10. Contacto</h2>
+        <p>Para cualquier duda sobre estos términos, escríbenos a [email de contacto pendiente].</p>
+    </div>
+{% endblock %}

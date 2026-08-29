@@ -210,6 +210,29 @@ class Restaurant
         $this->menuContentVersion++;
     }
 
+    private const TRIAL_DAYS = 30;
+
+    /** Purely computed from createdAt — no stored column, nothing to migrate. */
+    public function getTrialEndsAt(): \DateTimeImmutable
+    {
+        return $this->getCreatedAt()->modify('+' . self::TRIAL_DAYS . ' days');
+    }
+
+    public function isTrialActive(): bool
+    {
+        return new \DateTimeImmutable() < $this->getTrialEndsAt();
+    }
+
+    public function getTrialDaysRemaining(): int
+    {
+        if (!$this->isTrialActive()) {
+            return 0;
+        }
+
+        // +1 rounds up so signup day shows "30 días", not "29".
+        return (new \DateTimeImmutable())->diff($this->getTrialEndsAt())->days + 1;
+    }
+
     public function getTables(): Collection
     {
         return $this->tables;

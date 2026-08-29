@@ -1,0 +1,78 @@
+title: "QR Menu — Menu digitale per il tuo ristorante"
+
+meta:
+  description: "Crea il menu digitale del tuo ristorante in pochi minuti: menu tramite QR, pannello di amministrazione, chat IA per i tuoi clienti e statistiche. Prova gratuita di 1 mese, senza carta di credito."
+  og_title: "QR Menu — Menu digitale per il tuo ristorante"
+  og_description: "Menu tramite QR, pannello di amministrazione, chat IA e statistiche per il tuo ristorante. Prova gratuita di 1 mese, senza carta di credito."
+
+nav:
+  login: "Accedi"
+  cta: "Prova gratuita di 1 mese"
+
+hero:
+  badge: "Prova gratuita di 1 mese, senza carta"
+  title: "Il menu del tuo ristorante, digitale e sempre aggiornato"
+  subtitle: "I tuoi clienti scansionano un QR e vedono il menu all'istante — nella loro lingua, con foto, allergeni e prezzi sempre aggiornati. Tu lo modifichi da un pannello pensato per essere gestito in un minuto."
+  cta_primary: "Prova gratuita di 1 mese →"
+  cta_secondary: "Scopri cosa include"
+  note: "Senza carta di credito. Annulla quando vuoi."
+
+mockup:
+  tagline: "Scopri il nostro menu"
+  search_placeholder: "Cerca piatti…"
+  view_more: "Vedi di più"
+
+features:
+  eyebrow: "Funzionalità"
+  title: "Tutto ciò che serve al tuo menu"
+  subtitle: "Pensato per essere gestito da un ristorante da solo, senza dipendere da nessuno."
+  qr:
+    title: "Menu digitale tramite QR"
+    desc: "Un QR code per tavolo porta direttamente al tuo menu, senza app né download per il cliente."
+  admin:
+    title: "Pannello di amministrazione"
+    desc: "Aggiungi piatti, categorie, foto e prezzi in pochi secondi, dal cellulare o dal computer."
+  smart_waiter:
+    title: "Smart Waiter (chat IA)"
+    desc: "I tuoi clienti chiedono di allergeni, ingredienti o consigli e ricevono una risposta immediata."
+  stats:
+    title: "Statistiche"
+    desc: "Quali piatti vengono visti di più e come viene usata la chat — dati utili per il tuo menu, senza rumore tecnico."
+  multilang:
+    title: "Multilingua"
+    desc: "Il tuo menu viene tradotto automaticamente in più di 20 lingue, così ogni cliente lo capisce nella propria."
+  multicurrency:
+    title: "Multivaluta"
+    desc: "Scegli la valuta del tuo menu — euro, dollari e altro — e tutti i prezzi vengono sempre mostrati correttamente."
+  fixed_menus:
+    title: "Menu a prezzo fisso"
+    desc: "Menu del giorno, menu degustazione — con prezzi e struttura propri, separati dal menu normale."
+  themes:
+    title: "Temi visivi"
+    desc: "Diversi stili e colori per far combaciare il menu con l'immagine del tuo ristorante."
+
+steps:
+  eyebrow: "Come funziona"
+  title: "Operativo in pochi minuti"
+  step1:
+    title: "Registrati"
+    desc: "Crea il tuo account gratuito, senza carta di credito. Un minuto e il tuo pannello è pronto."
+  step2:
+    title: "Crea il tuo menu"
+    desc: "Aggiungi categorie e piatti, oppure importa il tuo menu attuale per risparmiare il lavoro manuale."
+  step3:
+    title: "Condividi il QR"
+    desc: "Scarica il tuo QR code, stampalo sui tavoli e il tuo menu digitale è online."
+
+cta:
+  title: "Prova QR Menu gratis per 1 mese"
+  subtitle: "Senza carta di credito. Configura il tuo menu oggi stesso."
+  button: "Crea il mio account gratuito →"
+
+footer:
+  home: "Home"
+  about: "Chi siamo"
+  privacy: "Privacy"
+  terms: "Termini"
+  cookies: "Cookie"
+  login: "Accedi"

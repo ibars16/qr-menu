@@ -1,0 +1,24 @@
+{% extends 'public/base.html.twig' %}
+
+{% block title %}Política de Cookies — QR Menu{% endblock %}
+
+{% block content %}
+    <div class="legal">
+        <h1>Política de Cookies</h1>
+        <div class="legal-updated">Última actualización: {{ "now"|date("d/m/Y") }}</div>
+
+        <h2>Qué usamos</h2>
+        <ul>
+            <li><strong>Cookie de sesión:</strong> necesaria para mantenerte identificado al iniciar sesión en el panel de administración. Es puramente técnica — sin ella no podrías usar tu cuenta — y no requiere tu consentimiento.</li>
+            <li><strong>Preferencia de tema (claro/oscuro):</strong> se guarda en el almacenamiento local de tu navegador (no es exactamente una cookie) para recordar cómo prefieres ver el panel.</li>
+        </ul>
+
+        <h2>Qué no usamos</h2>
+        <p>No utilizamos cookies de publicidad ni de seguimiento de terceros.</p>
+
+        <h2>Cómo gestionarlas</h2>
+        <p>Puedes eliminar o bloquear cookies desde la configuración de tu navegador. Ten en cuenta que bloquear la cookie de sesión te impedirá iniciar sesión en el panel de administración.</p>
+
+        <p>Para más información sobre cómo tratamos tus datos, consulta nuestra <a href="{{ path('app_privacy') }}">Política de Privacidad</a>.</p>
+    </div>
+{% endblock %}

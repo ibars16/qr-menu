@@ -1,0 +1,78 @@
+title: "QR Menu — Carta digital para tu restaurante"
+
+meta:
+  description: "Crea la carta digital de tu restaurante en minutos: menú por QR, panel de administración, chat con IA para tus clientes y estadísticas. Prueba gratis 1 mes, sin tarjeta de crédito."
+  og_title: "QR Menu — Carta digital para tu restaurante"
+  og_description: "Menú por QR, panel de administración, chat con IA y estadísticas para tu restaurante. Prueba gratis 1 mes, sin tarjeta de crédito."
+
+nav:
+  login: "Iniciar sesión"
+  cta: "Prueba gratis 1 mes"
+
+hero:
+  badge: "Prueba gratis 1 mes, sin tarjeta"
+  title: "La carta de tu restaurante, digital y siempre actualizada"
+  subtitle: "Tus clientes escanean un QR y ven la carta al instante — en su idioma, con fotos, alérgenos y precios siempre al día. Tú la editas desde un panel pensado para gestionarse en un minuto."
+  cta_primary: "Prueba gratis 1 mes →"
+  cta_secondary: "Ver qué incluye"
+  note: "Sin tarjeta de crédito. Cancela cuando quieras."
+
+mockup:
+  tagline: "Explora nuestra carta"
+  search_placeholder: "Buscar platos…"
+  view_more: "Ver más"
+
+features:
+  eyebrow: "Funcionalidades"
+  title: "Todo lo que necesita tu carta"
+  subtitle: "Pensado para que un restaurante lo pueda gestionar solo, sin depender de nadie."
+  qr:
+    title: "Carta digital por QR"
+    desc: "Un código QR por mesa lleva directo a tu carta, sin apps ni descargas para el cliente."
+  admin:
+    title: "Panel de administración"
+    desc: "Añade platos, categorías, fotos y precios en segundos, desde el móvil o el ordenador."
+  smart_waiter:
+    title: "Smart Waiter (chat IA)"
+    desc: "Tus clientes preguntan por alérgenos, ingredientes o recomendaciones y reciben respuesta al instante."
+  stats:
+    title: "Estadísticas"
+    desc: "Qué platos se miran más y cómo se usa el chat — datos útiles para tu carta, no ruido técnico."
+  multilang:
+    title: "Multi-idioma"
+    desc: "Tu carta se traduce automáticamente a más de 20 idiomas, para que cualquier cliente la entienda en el suyo."
+  multicurrency:
+    title: "Multidivisas"
+    desc: "Elige la moneda de tu carta — euros, dólares y más — y todos los precios se muestran siempre correctos."
+  fixed_menus:
+    title: "Menús de precio fijo"
+    desc: "Menú del día, menú degustación — precios y estructura propios, aparte de la carta normal."
+  themes:
+    title: "Temas visuales"
+    desc: "Varios estilos y colores para que la carta encaje con la imagen de tu restaurante."
+
+steps:
+  eyebrow: "Cómo funciona"
+  title: "En marcha en unos minutos"
+  step1:
+    title: "Regístrate"
+    desc: "Crea tu cuenta gratis, sin tarjeta de crédito. Un minuto y ya tienes tu panel listo."
+  step2:
+    title: "Crea tu carta"
+    desc: "Añade categorías y platos, o importa tu carta actual para ahorrarte el trabajo manual."
+  step3:
+    title: "Comparte el QR"
+    desc: "Descarga tu código QR, imprímelo en las mesas y tu carta digital ya está en marcha."
+
+cta:
+  title: "Prueba QR Menu gratis durante 1 mes"
+  subtitle: "Sin tarjeta de crédito. Configura tu carta hoy mismo."
+  button: "Crear mi cuenta gratis →"
+
+footer:
+  home: "Inicio"
+  about: "Sobre nosotros"
+  privacy: "Privacidad"
+  terms: "Términos"
+  cookies: "Cookies"
+  login: "Iniciar sesión"

@@ -3,20 +3,61 @@
 {% block title %}Acceder — QR Menu{% endblock %}
 
 {% block stylesheets %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+    <script>(function(){try{if(localStorage.getItem('admin-theme')==='light'||localStorage.getItem('site-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
     <style>
-        :root { --brand: #C1440E; }
+        :root {
+            --brand:          #C1440E;
+            --bg-page:        #0a0a0a;
+            --bg-card:        #141414;
+            --bg-input:       #1a1a1a;
+            --bd-card:        #242424;
+            --bd-input:       #2a2a2a;
+            --tx-hi:          #fff;
+            --tx-label:       #888;
+            --tx-sub:         #555;
+            --tx-muted:       #666;
+            --tx-placeholder: #444;
+            --accent-text:    #F0997B;
+        }
+        html.light {
+            --bg-page:        #f2f2f3;
+            --bg-card:        #fafafa;
+            --bg-input:       #efefef;
+            --bd-card:        #d4d4d8;
+            --bd-input:       #d4d4d8;
+            --tx-hi:          #111;
+            --tx-label:       #777;
+            --tx-sub:         #777;
+            --tx-muted:       #666;
+            --tx-placeholder: #999;
+            --accent-text:    #C1440E;
+        }
+        .theme-icon-light { display: none; }
+        html.light .theme-icon-dark  { display: none; }
+        html.light .theme-icon-light { display: inline-flex; }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0a0a0a;
+            background: var(--bg-page);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
+
+        .theme-toggle-btn {
+            position: fixed; top: 20px; right: 20px;
+            width: 34px; height: 34px; border-radius: 8px;
+            border: 1px solid var(--bd-card); background: var(--bg-card);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--tx-label); font-size: 16px;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .theme-toggle-btn:hover { color: var(--tx-hi); border-color: var(--tx-muted); }
 
         .login-wrap {
             width: 100%;
@@ -38,26 +79,26 @@
         }
         .login-logo-name {
             font-size: 20px; font-weight: 600;
-            color: #fff; letter-spacing: -0.4px;
+            color: var(--tx-hi); letter-spacing: -0.4px;
         }
         .login-logo-sub {
-            font-size: 13px; color: #555; margin-top: 4px;
+            font-size: 13px; color: var(--tx-sub); margin-top: 4px;
         }
 
         .login-card {
-            background: #141414;
-            border: 1px solid #242424;
+            background: var(--bg-card);
+            border: 1px solid var(--bd-card);
             border-radius: 16px;
             padding: 28px 24px;
         }
 
         .login-title {
             font-size: 17px; font-weight: 600;
-            color: #fff; letter-spacing: -0.3px;
+            color: var(--tx-hi); letter-spacing: -0.3px;
             margin-bottom: 6px;
         }
         .login-sub {
-            font-size: 13px; color: #555;
+            font-size: 13px; color: var(--tx-sub);
             margin-bottom: 24px;
         }
 
@@ -65,20 +106,20 @@
         .field label {
             display: block;
             font-size: 12px; font-weight: 500;
-            color: #888; text-transform: uppercase;
+            color: var(--tx-label); text-transform: uppercase;
             letter-spacing: 0.06em; margin-bottom: 6px;
         }
         .field input {
             width: 100%;
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            color: #fff; font-size: 15px;
+            background: var(--bg-input);
+            border: 1px solid var(--bd-input);
+            color: var(--tx-hi); font-size: 15px;
             padding: 11px 14px;
             border-radius: 10px; outline: none;
             transition: border-color 0.15s;
         }
-        .field input::placeholder { color: #444; }
-        .field input:focus { border-color: #555; }
+        .field input::placeholder { color: var(--tx-placeholder); }
+        .field input:focus { border-color: var(--tx-sub); }
 
         .remember-row {
             display: flex; align-items: center;
@@ -89,7 +130,7 @@
             accent-color: var(--brand); cursor: pointer;
         }
         .remember-row label {
-            font-size: 13px; color: #666; cursor: pointer;
+            font-size: 13px; color: var(--tx-muted); cursor: pointer;
         }
 
         .login-btn {
@@ -107,7 +148,7 @@
             border: 1px solid rgba(193, 68, 14, 0.3);
             border-radius: 10px;
             padding: 10px 14px;
-            font-size: 13px; color: #F0997B;
+            font-size: 13px; color: var(--accent-text);
             margin-bottom: 20px;
             display: flex; align-items: center; gap: 8px;
         }
@@ -115,6 +156,11 @@
 {% endblock %}
 
 {% block body %}
+    <button type="button" class="theme-toggle-btn" onclick="toggleSiteTheme()" title="Cambiar tema" aria-label="Cambiar entre modo oscuro y claro">
+        <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
+        <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
+    </button>
+
     <div class="login-wrap">
 
         <div class="login-logo">
@@ -168,13 +214,24 @@
                 <button type="submit" class="login-btn">Entrar</button>
 
             </form>
-            <div style="text-align:center;margin-top:16px;font-size:13px;color:#555">
+            <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--tx-sub)">
                 ¿No tienes cuenta?
-                <a href="{{ path('app_register') }}" style="color:#888;text-decoration:none">
+                <a href="{{ path('app_register') }}" style="color:var(--tx-label);text-decoration:none">
                     Regístrate gratis
                 </a>
             </div>
         </div>
 
     </div>
+
+    <script>
+        window.toggleSiteTheme = function () {
+            var isLight = document.documentElement.classList.toggle('light');
+            var value = isLight ? 'light' : 'dark';
+            try {
+                localStorage.setItem('admin-theme', value);
+                localStorage.setItem('site-theme', value);
+            } catch (e) {}
+        };
+    </script>
 {% endblock %}

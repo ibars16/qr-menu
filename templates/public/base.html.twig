@@ -1,0 +1,186 @@
+{% extends 'base.html.twig' %}
+
+{% block meta %}{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+    <script>(function(){try{if(localStorage.getItem('site-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
+    <style>
+        :root {
+            --brand:       #C1440E;
+            --bg-page:     #0a0a0a;
+            --bg-nav:      rgba(10,10,10,0.85);
+            --bg-card:     #141414;
+            --bg-elevated: #111111;
+            --bg-subtle:   #171717;
+            --bg-input:    #1a1a1a;
+            --bd-1:        #1c1c1c;
+            --bd-2:        #242424;
+            --tx-hi:       #fff;
+            --tx-1:        #ccc;
+            --tx-2:        #999;
+            --tx-3:        #777;
+            --tx-4:        #555;
+            --accent-text: #F0997B;
+        }
+        html.light {
+            --bg-page:     #f2f2f3;
+            --bg-nav:      rgba(255,255,255,0.85);
+            --bg-card:     #fafafa;
+            --bg-elevated: #ffffff;
+            --bg-subtle:   #f5f5f5;
+            --bg-input:    #efefef;
+            --bd-1:        #e4e4e7;
+            --bd-2:        #d4d4d8;
+            --tx-hi:       #111;
+            --tx-1:        #333;
+            --tx-2:        #555;
+            --tx-3:        #666;
+            --tx-4:        #888;
+            --accent-text: #C1440E;
+        }
+        .theme-icon-light { display: none; }
+        html.light .theme-icon-dark  { display: none; }
+        html.light .theme-icon-light { display: inline-flex; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-page); color: var(--tx-1); }
+
+        .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+        /* Nav */
+        .nav {
+            position: sticky; top: 0; z-index: 50;
+            background: var(--bg-nav); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--bd-1);
+        }
+        .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; max-width: 1080px; margin: 0 auto; }
+        .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo-mark { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .nav-brand-name { font-size: 15px; font-weight: 600; color: var(--tx-hi); letter-spacing: -0.3px; }
+        .nav-links { display: flex; align-items: center; gap: 14px; }
+        .nav-lang-dropdown { position: relative; }
+        .nav-lang-current {
+            display: flex; align-items: center; gap: 5px; list-style: none; cursor: pointer;
+            font-size: 13px; font-weight: 600; color: var(--tx-2);
+            background: var(--bg-card); border: 1px solid var(--bd-2);
+            padding: 6px 10px; border-radius: 999px; user-select: none;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .nav-lang-current::-webkit-details-marker { display: none; }
+        .nav-lang-current:hover { color: var(--tx-hi); border-color: var(--tx-4); }
+        .nav-lang-current i { font-size: 11px; transition: transform 0.15s; }
+        .nav-lang-dropdown[open] .nav-lang-current i { transform: rotate(180deg); }
+        .nav-lang-menu {
+            position: absolute; top: calc(100% + 8px); right: 0; z-index: 60;
+            min-width: 168px; background: var(--bg-card); border: 1px solid var(--bd-2);
+            border-radius: 12px; padding: 6px; box-shadow: 0 16px 32px -12px rgba(0,0,0,0.6);
+        }
+        .nav-lang-item {
+            display: flex; align-items: center; gap: 9px; padding: 8px 10px;
+            border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--tx-2);
+            text-decoration: none; white-space: nowrap; transition: background 0.12s, color 0.12s;
+        }
+        .nav-lang-item span { font-size: 15px; }
+        .nav-lang-item:hover { background: var(--bg-input); color: var(--tx-hi); }
+        .nav-lang-item.active { color: var(--tx-hi); }
+        .nav-lang-item i { margin-left: auto; font-size: 13px; color: var(--brand); }
+        .nav-login {
+            font-size: 13px; font-weight: 500; color: var(--tx-1); text-decoration: none;
+            background: var(--bg-card); border: 1px solid var(--bd-2);
+            padding: 7px 14px; border-radius: 999px; transition: border-color 0.15s, color 0.15s;
+        }
+        .nav-login:hover { color: var(--tx-hi); border-color: var(--tx-4); }
+        .nav-cta { font-size: 13px; font-weight: 600; color: #fff; background: var(--brand); padding: 9px 16px; border-radius: 8px; text-decoration: none; transition: opacity 0.15s; }
+        .nav-cta:hover { opacity: 0.9; }
+        .nav-theme-toggle {
+            width: 32px; height: 32px; border-radius: 999px;
+            border: 1px solid var(--bd-2); background: var(--bg-card);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--tx-2); font-size: 14px;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .nav-theme-toggle:hover { color: var(--tx-hi); border-color: var(--tx-4); }
+
+        /* Mobile nav — a real slide-down menu (hamburger + panel), not the
+           desktop row squeezed smaller. Hidden above 640px; .nav-links-desktop
+           takes over there. Theme toggle stays outside the panel, next to
+           the hamburger itself, so it's reachable without opening the menu. */
+        .nav-mobile-controls { display: none; align-items: center; gap: 8px; }
+        .nav-mobile { position: relative; }
+        .nav-mobile-toggle {
+            display: flex; align-items: center; justify-content: center; list-style: none; cursor: pointer;
+            width: 38px; height: 38px; border-radius: 10px;
+            border: 1px solid var(--bd-2); background: var(--bg-card);
+            color: var(--tx-2); font-size: 18px; transition: color 0.15s, border-color 0.15s;
+        }
+        .nav-mobile-toggle::-webkit-details-marker { display: none; }
+        .nav-mobile[open] .nav-mobile-toggle { color: var(--tx-hi); border-color: var(--tx-4); }
+        .nav-mobile-panel {
+            position: absolute; top: calc(100% + 10px); right: 0; z-index: 70;
+            width: 78vw; max-width: 280px;
+            background: var(--bg-card); border: 1px solid var(--bd-2);
+            border-radius: 16px; padding: 16px;
+            box-shadow: 0 20px 40px -14px rgba(0,0,0,0.6);
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .nav-mobile-section-label { font-size: 10px; font-weight: 700; color: var(--tx-4); text-transform: uppercase; letter-spacing: 0.08em; }
+        .nav-mobile-langs { display: flex; flex-wrap: wrap; gap: 7px; margin-top: -6px; }
+        .nav-mobile-lang {
+            width: 36px; height: 36px; border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; background: var(--bg-input); border: 1px solid var(--bd-2);
+            text-decoration: none; opacity: 0.55; transition: opacity 0.12s, border-color 0.12s;
+        }
+        .nav-mobile-lang.active { opacity: 1; border-color: var(--brand); }
+        .nav-mobile-login { width: 100%; text-align: center; }
+        .nav-mobile-cta { width: 100%; text-align: center; }
+
+        @media (max-width: 640px) {
+            .nav-inner { padding: 10px 16px; }
+            .nav-brand-name { font-size: 14px; }
+            .nav-links-desktop { display: none; }
+            .nav-mobile-controls { display: flex; }
+        }
+
+        /* Buttons (shared with any page needing a CTA) */
+        .btn-primary { font-size: 15px; font-weight: 600; color: #fff; background: var(--brand); padding: 14px 26px; border-radius: 10px; text-decoration: none; display: inline-block; transition: opacity 0.15s; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary { font-size: 15px; font-weight: 500; color: var(--tx-1); background: var(--bg-card); border: 1px solid var(--bd-2); padding: 14px 26px; border-radius: 10px; text-decoration: none; display: inline-block; transition: border-color 0.15s, color 0.15s; }
+        .btn-secondary:hover { border-color: var(--tx-4); color: var(--tx-hi); }
+
+        /* Footer */
+        .footer { border-top: 1px solid var(--bd-1); padding: 40px 24px 28px; margin-top: 0; }
+        .footer-inner { max-width: 1080px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; }
+        .footer-brand { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--tx-2); }
+        .footer-links { display: flex; flex-wrap: wrap; gap: 18px; }
+        .footer-links a { font-size: 13px; color: var(--tx-3); text-decoration: none; }
+        .footer-links a:hover { color: var(--tx-hi); }
+        .footer-copy { width: 100%; text-align: center; font-size: 12px; color: var(--tx-4); margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--bd-1); }
+
+        /* Shared prose layout for About/Privacy/Terms/Cookies */
+        .legal { max-width: 720px; margin: 0 auto; padding: 64px 24px 80px; }
+        .legal h1 { font-size: 30px; font-weight: 700; color: var(--tx-hi); letter-spacing: -0.6px; margin-bottom: 8px; }
+        .legal .legal-updated { font-size: 12px; color: var(--tx-4); margin-bottom: 36px; }
+        .legal h2 { font-size: 18px; font-weight: 600; color: var(--tx-hi); letter-spacing: -0.2px; margin: 32px 0 12px; }
+        .legal p { font-size: 14px; color: var(--tx-2); line-height: 1.7; margin-bottom: 12px; }
+        .legal ul { margin: 0 0 12px 20px; }
+        .legal li { font-size: 14px; color: var(--tx-2); line-height: 1.7; margin-bottom: 6px; }
+        .legal a { color: var(--accent-text); text-decoration: none; }
+        .legal a:hover { text-decoration: underline; }
+        .legal-placeholder {
+            background: rgba(193,68,14,0.1); border: 1px solid rgba(193,68,14,0.3);
+            border-radius: 10px; padding: 14px 16px; font-size: 13px; color: var(--accent-text);
+            margin: 20px 0;
+        }
+
+        {% block extra_stylesheets %}{% endblock %}
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'public/_nav.html.twig' %}
+    {% block content %}{% endblock %}
+    {% include 'public/_footer.html.twig' %}
+{% endblock %}
