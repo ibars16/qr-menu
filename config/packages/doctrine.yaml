@@ -20,6 +20,19 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+        # Backs enableResultCache() calls (see MenuController's menu-content
+        # cache) — needs to be active in every env, not just prod, since
+        # those calls would otherwise fail with no result cache driver
+        # configured when run outside prod (e.g. in tests).
+        result_cache_driver:
+            type: pool
+            pool: doctrine.result_cache_pool
+
+framework:
+    cache:
+        pools:
+            doctrine.result_cache_pool:
+                adapter: cache.app
 
 when@test:
     doctrine:
@@ -33,14 +46,9 @@ when@prod:
             query_cache_driver:
                 type: pool
                 pool: doctrine.system_cache_pool
-            result_cache_driver:
-                type: pool
-                pool: doctrine.result_cache_pool
 
     framework:
         cache:
             pools:
-                doctrine.result_cache_pool:
-                    adapter: cache.app
                 doctrine.system_cache_pool:
                     adapter: cache.system

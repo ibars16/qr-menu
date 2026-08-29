@@ -144,6 +144,7 @@ class MenusController extends AbstractController
         // docblock. Pre-existing menus that already got a synthesized
         // "Platos" section from the (a)→(b) data migration are unaffected;
         // this only changes what happens for a brand-new menu going forward.
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['id' => $menu->getId()]);
@@ -183,6 +184,7 @@ class MenusController extends AbstractController
         }
         $translation->setName($name);
 
+        $menu->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['id' => $menu->getId(), 'name' => $name]);
@@ -205,6 +207,7 @@ class MenusController extends AbstractController
                 $menu->setPosition($position);
             }
         }
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['ok' => true]);
@@ -219,6 +222,7 @@ class MenusController extends AbstractController
         foreach ($this->menusFor($restaurant) as $menu) {
             $em->remove($menu);
         }
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['ok' => true]);
@@ -246,6 +250,7 @@ class MenusController extends AbstractController
         $section->setPosition($menu->getMenuSections()->count());
 
         $em->persist($section);
+        $menu->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['id' => $section->getId(), 'label' => $label]);
@@ -263,6 +268,7 @@ class MenusController extends AbstractController
         }
 
         $section->setLabel($label);
+        $section->getCategory()->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['id' => $section->getId(), 'label' => $label]);
@@ -280,6 +286,7 @@ class MenusController extends AbstractController
         // same way, so a section behaves like the small category-like
         // container it is. The client confirms the dish count first — see
         // the confirm_delete_section_with_dishes copy.
+        $section->getCategory()->getRestaurant()->bumpMenuContentVersion();
         $em->remove($section);
         $em->flush();
 
@@ -302,6 +309,7 @@ class MenusController extends AbstractController
                 }
             }
         }
+        $menu->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['ok' => true]);
@@ -346,6 +354,7 @@ class MenusController extends AbstractController
             }
         }
 
+        $menu->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['ok' => true]);

@@ -9,6 +9,9 @@ use Doctrine\Persistence\ManagerRegistry;
 
 class CategoryRepository extends ServiceEntityRepository
 {
+    /** Same safety-net TTL and reasoning as ProductRepository::CACHE_TTL. */
+    private const CACHE_TTL = 21600;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Category::class);
@@ -62,5 +65,38 @@ class CategoryRepository extends ServiceEntityRepository
             ->orderBy('c.position', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Bulk-initializes $categories' translations collections in one query —
+     * same fetch-join-per-request idiom as ProductRepository::warmMenuCollections()
+     * and ProductTagRepository::warmTranslations(), so the per-category
+     * getTranslation() calls in CategoryTranslationService and the public
+     * menu templates don't each trigger their own lazy load.
+     *
+     * $cacheKeyPrefix is opt-in — only ever passed from the public menu path
+     * (via CategoryTranslationService), so admin screens keep getting live
+     * data by default.
+     *
+     * @param Category[] $categories
+     */
+    public function warmTranslations(array $categories, ?string $cacheKeyPrefix = null): void
+    {
+        if ($categories === []) {
+            return;
+        }
+
+        $query = $this->createQueryBuilder('c')
+            ->select('c', 'tr')
+            ->leftJoin('c.translations', 'tr')
+            ->where('c IN (:categories)')
+            ->setParameter('categories', $categories)
+            ->getQuery();
+
+        if ($cacheKeyPrefix !== null) {
+            $query->enableResultCache(self::CACHE_TTL, $cacheKeyPrefix . '_categorytranslations');
+        }
+
+        $query->getResult();
     }
 }

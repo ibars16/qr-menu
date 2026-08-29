@@ -92,6 +92,7 @@ class TagsController extends AbstractController
 
         $em->persist($tag);
         $em->persist($t);
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
 
         // Translations into other locales are generated lazily on first customer
@@ -133,6 +134,7 @@ class TagsController extends AbstractController
             $em->persist($t);
         }
         $t->setName($name);
+        $tag->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json([
@@ -154,6 +156,7 @@ class TagsController extends AbstractController
             return $this->json(['error' => $translator->trans('error.system_tag_cannot_delete', domain: 'admin_tags')], 403);
         }
 
+        $tag->getRestaurant()->bumpMenuContentVersion();
         $em->remove($tag);
         $em->flush();
 
@@ -171,6 +174,7 @@ class TagsController extends AbstractController
                 $em->remove($tag);
             }
         }
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['ok' => true]);
@@ -188,6 +192,7 @@ class TagsController extends AbstractController
                 $tag->setPosition($position);
             }
         }
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['ok' => true]);

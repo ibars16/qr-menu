@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Restaurant;
 use App\Message\TranslateTagsMessage;
+use App\Repository\ProductTagRepository;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
@@ -20,6 +21,7 @@ final class TagTranslationService
 {
     public function __construct(
         private readonly MessageBusInterface $bus,
+        private readonly ProductTagRepository $productTagRepository,
     ) {}
 
     /**
@@ -27,13 +29,21 @@ final class TagTranslationService
      *
      * Dispatches at most one TranslateTagsMessage if any translation is absent.
      *
+     * $cacheKeyPrefix is opt-in — only the public menu (MenuController)
+     * passes one; every other caller keeps warming live, uncached.
+     *
      * @return array<int, string>
      */
-    public function resolveForMenu(Restaurant $restaurant, string $locale): array
+    public function resolveForMenu(Restaurant $restaurant, string $locale, ?string $cacheKeyPrefix = null): array
     {
         $defaultLocale = $restaurant->getDefaultLanguage();
         $names         = [];
         $hasMissing    = false;
+
+        // One query for every tag's translations, instead of the
+        // per-tag lazy load getTranslation() below would otherwise
+        // trigger — see ProductTagRepository::warmTranslations().
+        $this->productTagRepository->warmTranslations($restaurant->getProductTags()->toArray(), $cacheKeyPrefix);
 
         foreach ($restaurant->getProductTags() as $tag) {
             $translation = $tag->getTranslation($locale);

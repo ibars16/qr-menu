@@ -176,6 +176,7 @@ class MenuAdminController extends AbstractController
 
         $em->persist($category);
         $em->persist($translation);
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['id' => $category->getId(), 'name' => $name]);
@@ -213,6 +214,7 @@ class MenuAdminController extends AbstractController
             $this->categoryTranslationService->invalidateStale($category, $locale);
         }
 
+        $category->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['id' => $category->getId(), 'name' => $name]);
@@ -223,6 +225,7 @@ class MenuAdminController extends AbstractController
     {
         $this->assertOwner($category->getRestaurant());
         $category->setActive(!$category->isActive());
+        $category->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
         return $this->json(['active' => $category->isActive()]);
     }
@@ -231,6 +234,7 @@ class MenuAdminController extends AbstractController
     public function deleteCategory(Category $category, EntityManagerInterface $em): JsonResponse
     {
         $this->assertOwner($category->getRestaurant());
+        $category->getRestaurant()->bumpMenuContentVersion();
         $em->remove($category);
         $em->flush();
         return $this->json(['ok' => true]);
@@ -386,6 +390,7 @@ class MenuAdminController extends AbstractController
         $translation->setName($name);
         $translation->setDescription($description !== '' ? $description : null);
         $translation->setSource(ProductTranslation::SOURCE_HUMAN);
+        $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json([
@@ -673,6 +678,7 @@ class MenuAdminController extends AbstractController
         }
 
         $em->persist($product);
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
 
         $locale      = $restaurant->getDefaultLanguage();
@@ -690,6 +696,7 @@ class MenuAdminController extends AbstractController
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
         $product->setActive(!$product->isActive());
+        $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
         return $this->json(['active' => $product->isActive()]);
     }
@@ -698,6 +705,7 @@ class MenuAdminController extends AbstractController
     public function deleteProduct(Product $product, EntityManagerInterface $em): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
+        $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
         $em->remove($product);
         $em->flush();
         return $this->json(['ok' => true]);
@@ -717,6 +725,7 @@ class MenuAdminController extends AbstractController
                 $em->remove($product);
             }
         }
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['ok' => true]);
@@ -815,6 +824,10 @@ class MenuAdminController extends AbstractController
             $em->persist($link);
         }
 
+        // Doesn't touch Product at all, but changes every product using
+        // this ingredient's *computed* allergens (see ProductAllergenResolver) —
+        // still needs a bump.
+        $ingredient->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['ok' => true]);
@@ -839,6 +852,7 @@ class MenuAdminController extends AbstractController
                 $cat->setPosition($position);
             }
         }
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
         return $this->json(['ok' => true]);
     }
@@ -855,6 +869,7 @@ class MenuAdminController extends AbstractController
                 $product->setPosition($position);
             }
         }
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
         return $this->json(['ok' => true]);
     }

@@ -15,6 +15,7 @@ use App\Service\MenuContextBuilder;
 use App\Service\ProductAllergenResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * Covers the Smart Waiter data shape for fixed-price ("set") menu
@@ -98,6 +99,7 @@ final class MenuContextBuilderSetMenuTest extends TestCase
         $allergenResolver = new ProductAllergenResolver(
             $this->createStub(EntityManagerInterface::class),
             $this->createStub(AllergenRepository::class),
+            $this->createStub(CacheItemPoolInterface::class),
         );
         $currencyConverter = new CurrencyConverter($this->createStub(ExchangeRateRepository::class));
 

@@ -74,6 +74,7 @@ class CategoriesController extends AbstractController
             $translation->setName($name);
         }
 
+        $category->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
         return $this->json(['ok' => true]);
     }
@@ -89,6 +90,7 @@ class CategoriesController extends AbstractController
                 $em->remove($category);
             }
         }
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
 
         return $this->json(['ok' => true]);
@@ -106,6 +108,7 @@ class CategoriesController extends AbstractController
                 $cat->setPosition($position);
             }
         }
+        $restaurant->bumpMenuContentVersion();
         $em->flush();
         return $this->json(['ok' => true]);
     }

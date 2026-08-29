@@ -78,6 +78,11 @@ class SettingsController extends AbstractController
                 $restaurant->setLogo(null);
             }
 
+            // name/logo/primaryColor/currency/defaultLanguage all appear on
+            // the public menu; adminLocale is the only field here that
+            // doesn't. One flush covers all of them, so bump unconditionally
+            // rather than trying to detect which fields actually changed.
+            $restaurant->bumpMenuContentVersion();
             $em->flush();
             $this->addFlash('success', $translator->trans('flash.saved', domain: 'admin_settings'));
             return $this->redirectToRoute('admin_settings');

@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Category;
 use App\Entity\Restaurant;
+use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -19,16 +20,27 @@ final class CategoryTranslationService
         private readonly AiCategoryTranslator   $aiTranslator,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface        $logger,
+        private readonly CategoryRepository     $categoryRepository,
     ) {}
 
     /**
+     * $cacheKeyPrefix is opt-in — only the public menu (MenuController)
+     * passes one; every other caller keeps warming live, uncached.
+     *
      * @param Category[] $categories
      */
-    public function hasAnyMissing(Restaurant $restaurant, array $categories, string $locale): bool
+    public function hasAnyMissing(Restaurant $restaurant, array $categories, string $locale, ?string $cacheKeyPrefix = null): bool
     {
         if ($locale === $restaurant->getDefaultLanguage()) {
             return false;
         }
+
+        // One query for every category's translations, instead of the
+        // per-category lazy load getTranslation() below would otherwise
+        // trigger — see CategoryRepository::warmTranslations(). Also
+        // benefits the public menu templates, which re-read the same
+        // categories' translations right after this call returns.
+        $this->categoryRepository->warmTranslations($categories, $cacheKeyPrefix);
 
         foreach ($categories as $category) {
             if ($category->getTranslation($locale) === null) {
@@ -45,9 +57,9 @@ final class CategoryTranslationService
      *
      * @param Category[] $categories
      */
-    public function resolveForMenu(Restaurant $restaurant, array $categories, string $locale): void
+    public function resolveForMenu(Restaurant $restaurant, array $categories, string $locale, ?string $cacheKeyPrefix = null): void
     {
-        if (!$this->hasAnyMissing($restaurant, $categories, $locale)) {
+        if (!$this->hasAnyMissing($restaurant, $categories, $locale, $cacheKeyPrefix)) {
             return;
         }
 

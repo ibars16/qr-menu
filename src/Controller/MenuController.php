@@ -33,6 +33,35 @@ class MenuController extends AbstractController
     private const POPULAR_BADGE_LIMIT = 3;
     private const POPULAR_BADGE_MIN_VIEWS = 10;
 
+    /**
+     * True whenever this request must never read or write the menu-content
+     * cache — the owner's own live layout/theme preview, the one path where
+     * "always exactly current" matters more than speed. Bypasses on the
+     * mere presence of either query param, not just when preview actually
+     * activates (the auth check for that happens later): preview traffic is
+     * rare and always admin-only, so erring toward "don't cache" here costs
+     * nothing.
+     */
+    private function shouldBypassMenuCache(Request $request): bool
+    {
+        return $request->query->has('preview_layout') || $request->query->has('preview_theme');
+    }
+
+    /**
+     * Shared prefix for every menu-content cache entry this request might
+     * read or write (see ProductRepository::warmMenuCollections(),
+     * CategoryRepository/ProductTagRepository::warmTranslations(),
+     * ProductAllergenResolver::resolveForRestaurant()) — each of those
+     * appends its own suffix. Folding Restaurant::$menuContentVersion in
+     * here is the entire invalidation mechanism: bumping it changes every
+     * key built from it, so old entries are simply never read again rather
+     * than needing explicit deletion.
+     */
+    private function menuCacheKeyPrefix(\App\Entity\Restaurant $restaurant, string $locale): string
+    {
+        return sprintf('menu_v%d_r%d_%s', $restaurant->getMenuContentVersion(), $restaurant->getId(), $locale);
+    }
+
     #[Route('/r/{slug}', name: 'menu_show')]
     public function show(
         string $slug,
@@ -201,6 +230,13 @@ class MenuController extends AbstractController
             ? $queryLang
             : ($savedPrefs['lang'] ?? $menuPreferencesResolver->detectLanguage($request, $restaurant->getDefaultLanguage()));
 
+        // null on the owner's own live preview request — every cache read/
+        // write below is skipped entirely in that case (see
+        // shouldBypassMenuCache()'s own docblock).
+        $cacheKeyPrefix = $this->shouldBypassMenuCache($request)
+            ? null
+            : $this->menuCacheKeyPrefix($restaurant, $locale);
+
         // Computed early (rather than at its original spot further down)
         // so the loading-screen check below and the main render can both
         // use it without querying twice.
@@ -219,7 +255,7 @@ class MenuController extends AbstractController
         if ($request->query->get('mtw') !== '1'
             && $locale !== $restaurant->getDefaultLanguage()
             && ($productRepo->hasAnyMissingTranslation($restaurant, $locale)
-                || $categoryTranslationService->hasAnyMissing($restaurant, $activeCategoriesForCheck, $locale))
+                || $categoryTranslationService->hasAnyMissing($restaurant, $activeCategoriesForCheck, $locale, $cacheKeyPrefix))
         ) {
             $nextParams        = $request->query->all();
             $nextParams['mtw'] = '1';
@@ -276,6 +312,19 @@ class MenuController extends AbstractController
             $em->getRepository(\App\Entity\ExchangeRate::class)
         );
 
+        // Bulk-initializes every to-many collection the loop below and the
+        // template touch per product (tags, price variants, translations,
+        // ingredient links) — one query per collection for the whole menu,
+        // instead of Doctrine lazily re-querying per product per collection
+        // the first time each is touched (measured: ~130 queries for a
+        // 21-dish menu before this, mostly this exact N+1 shape). Must run
+        // before the loop below, which is the first thing to touch
+        // getPriceVariants() per product. See ProductRepository::warmMenuCollections().
+        $productRepo->warmMenuCollections(
+            $productRepo->findActiveForRestaurant($restaurant, $cacheKeyPrefix),
+            $cacheKeyPrefix
+        );
+
         // Collected alongside the loop below so ProductTranslationService
         // can check every dish actually shown on this menu for a missing
         // translation, without a second pass over categories/sections.
@@ -329,19 +378,18 @@ class MenuController extends AbstractController
                 $product->setConvertedVariantPrices($convertedVariantPrices);
                 $allProducts[] = $product;
             }
-            $category->activeProductsSorted = $products;
         }
 
         // Dish/category translations — safety net only: the loading screen
         // above already warms these before this point is normally reached,
         // so this is a fast no-op unless that detour was skipped or failed.
         $productTranslationService->resolveForMenu($restaurant, $allProducts, $locale);
-        $categoryTranslationService->resolveForMenu($restaurant, $allActiveCategories, $locale);
+        $categoryTranslationService->resolveForMenu($restaurant, $allActiveCategories, $locale, $cacheKeyPrefix);
 
         // Tags — sorted + resolved names (with lazy-dispatch fallback for missing locales)
         $tags     = $restaurant->getProductTags()->toArray();
         usort($tags, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
-        $tagNames = $tagTranslationService->resolveForMenu($restaurant, $locale);
+        $tagNames = $tagTranslationService->resolveForMenu($restaurant, $locale, $cacheKeyPrefix);
 
         // Allergens — computed once for the whole menu (see
         // ProductAllergenResolver), then serialized per product in the
@@ -361,7 +409,7 @@ class MenuController extends AbstractController
 
         $productAllergens   = [];
         $menuAllergensByCode = [];
-        foreach ($allergenResolver->resolveForRestaurant($restaurant) as $productId => $entries) {
+        foreach ($allergenResolver->resolveForRestaurant($restaurant, $cacheKeyPrefix) as $productId => $entries) {
             $serialized = [];
             foreach ($entries as $entry) {
                 $allergen = $entry['allergen'];

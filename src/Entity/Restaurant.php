@@ -58,6 +58,18 @@ class Restaurant
     #[ORM\Column]
     private bool $setMenusEnabled = false;
 
+    /**
+     * Bumped by every admin write that changes something the public menu
+     * displays (see MenuAdminController, CategoriesController,
+     * TagsController, MenusController, SettingsController, and
+     * TranslateTagsMessageHandler) — MenuController folds this into its
+     * content-cache keys, so a bump alone makes every previously-cached key
+     * for this restaurant unused, with no explicit cache deletion needed.
+     * Never set directly; only ever incremented via bumpMenuContentVersion().
+     */
+    #[ORM\Column]
+    private int $menuContentVersion = 1;
+
     #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Table::class, cascade: ['persist', 'remove'])]
     private Collection $tables;
 
@@ -186,6 +198,16 @@ class Restaurant
     public function setSetMenusEnabled(bool $setMenusEnabled): void
     {
         $this->setMenusEnabled = $setMenusEnabled;
+    }
+
+    public function getMenuContentVersion(): int
+    {
+        return $this->menuContentVersion;
+    }
+
+    public function bumpMenuContentVersion(): void
+    {
+        $this->menuContentVersion++;
     }
 
     public function getTables(): Collection
