@@ -11,7 +11,8 @@ nav:
 
 hero:
   badge: "Prueba gratis 1 mes, sin tarjeta"
-  title: "La carta de tu restaurante, digital y siempre actualizada"
+  title_main: "La carta de tu restaurante, "
+  title_accent: "digital y siempre actualizada"
   subtitle: "Tus clientes escanean un QR y ven la carta al instante — en su idioma, con fotos, alérgenos y precios siempre al día. Tú la editas desde un panel pensado para gestionarse en un minuto."
   cta_primary: "Prueba gratis 1 mes →"
   cta_secondary: "Ver qué incluye"
@@ -21,6 +22,28 @@ mockup:
   tagline: "Explora nuestra carta"
   search_placeholder: "Buscar platos…"
   view_more: "Ver más"
+
+demo:
+  link: "👀 Ver una carta real →"
+
+faq:
+  eyebrow: "Preguntas frecuentes"
+  title: "Antes de que preguntes"
+  q1:
+    q: "¿Necesito tarjeta de crédito para la prueba?"
+    a: "No. La prueba de 1 mes es completamente gratuita, sin tarjeta ni compromiso."
+  q2:
+    q: "¿Puedo importar la carta que ya tengo?"
+    a: "Sí. Sube una foto de tu carta actual y la IA la organiza por categorías y platos automáticamente."
+  q3:
+    q: "¿Mis clientes tienen que instalar algo?"
+    a: "No. Escanean el código QR y ven la carta directamente en el navegador del móvil."
+  q4:
+    q: "¿En cuántos idiomas se puede ver mi carta?"
+    a: "Se traduce automáticamente a más de 20 idiomas, sin que tengas que hacer nada."
+  q5:
+    q: "¿Qué pasa cuando termina el mes de prueba?"
+    a: "Te avisaremos con antelación antes de que cambie nada — de momento no hace falta que pienses en ello."
 
 features:
   eyebrow: "Funcionalidades"

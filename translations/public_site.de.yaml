@@ -11,7 +11,8 @@ nav:
 
 hero:
   badge: "1 Monat kostenlos, keine Kreditkarte"
-  title: "Die Speisekarte Ihres Restaurants, digital und immer aktuell"
+  title_main: "Die Speisekarte Ihres Restaurants, "
+  title_accent: "digital und immer aktuell"
   subtitle: "Ihre Kunden scannen einen QR-Code und sehen die Speisekarte sofort — in ihrer Sprache, mit Fotos, Allergenen und stets aktuellen Preisen. Sie bearbeiten sie über ein Panel, das sich in einer Minute verwalten lässt."
   cta_primary: "1 Monat kostenlos testen →"
   cta_secondary: "Alle Funktionen ansehen"
@@ -21,6 +22,28 @@ mockup:
   tagline: "Entdecken Sie unsere Speisekarte"
   search_placeholder: "Gerichte suchen…"
   view_more: "Mehr ansehen"
+
+demo:
+  link: "👀 Echte Speisekarte ansehen →"
+
+faq:
+  eyebrow: "Häufige Fragen"
+  title: "Bevor Sie fragen"
+  q1:
+    q: "Brauche ich eine Kreditkarte für die Testphase?"
+    a: "Nein. Die 1-monatige Testphase ist völlig kostenlos, ohne Kreditkarte und ohne Verpflichtung."
+  q2:
+    q: "Kann ich meine bestehende Speisekarte importieren?"
+    a: "Ja. Laden Sie ein Foto Ihrer aktuellen Speisekarte hoch, und die KI ordnet sie automatisch nach Kategorien und Gerichten."
+  q3:
+    q: "Müssen meine Kunden etwas installieren?"
+    a: "Nein. Sie scannen den QR-Code und sehen die Speisekarte direkt im Browser ihres Handys."
+  q4:
+    q: "In wie vielen Sprachen kann meine Speisekarte angezeigt werden?"
+    a: "Sie wird automatisch in mehr als 20 Sprachen übersetzt, ohne dass Sie etwas tun müssen."
+  q5:
+    q: "Was passiert, wenn der Testmonat endet?"
+    a: "Wir informieren Sie rechtzeitig, bevor sich etwas ändert — darüber müssen Sie sich jetzt noch keine Gedanken machen."
 
 features:
   eyebrow: "Funktionen"

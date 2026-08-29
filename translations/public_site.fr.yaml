@@ -11,7 +11,8 @@ nav:
 
 hero:
   badge: "Essai gratuit d'1 mois, sans carte"
-  title: "La carte de votre restaurant, digitale et toujours à jour"
+  title_main: "La carte de votre restaurant, "
+  title_accent: "digitale et toujours à jour"
   subtitle: "Vos clients scannent un QR code et voient la carte à l'instant — dans leur langue, avec photos, allergènes et prix toujours à jour. Vous la modifiez depuis un panneau pensé pour se gérer en une minute."
   cta_primary: "Essai gratuit d'1 mois →"
   cta_secondary: "Voir ce qui est inclus"
@@ -21,6 +22,28 @@ mockup:
   tagline: "Découvrez notre carte"
   search_placeholder: "Rechercher un plat…"
   view_more: "Voir plus"
+
+demo:
+  link: "👀 Voir une carte réelle →"
+
+faq:
+  eyebrow: "Questions fréquentes"
+  title: "Avant que vous ne demandiez"
+  q1:
+    q: "Ai-je besoin d'une carte bancaire pour l'essai ?"
+    a: "Non. L'essai d'1 mois est entièrement gratuit, sans carte ni engagement."
+  q2:
+    q: "Puis-je importer la carte que j'ai déjà ?"
+    a: "Oui. Téléchargez une photo de votre carte actuelle et l'IA l'organise automatiquement par catégories et plats."
+  q3:
+    q: "Mes clients doivent-ils installer quelque chose ?"
+    a: "Non. Ils scannent le QR code et voient la carte directement dans le navigateur de leur mobile."
+  q4:
+    q: "En combien de langues ma carte peut-elle s'afficher ?"
+    a: "Elle est traduite automatiquement en plus de 20 langues, sans rien à faire de votre part."
+  q5:
+    q: "Que se passe-t-il à la fin du mois d'essai ?"
+    a: "Nous vous préviendrons bien à l'avance avant tout changement — pas besoin d'y penser pour le moment."
 
 features:
   eyebrow: "Fonctionnalités"

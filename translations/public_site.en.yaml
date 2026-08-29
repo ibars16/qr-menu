@@ -11,7 +11,8 @@ nav:
 
 hero:
   badge: "Free 1-month trial, no card needed"
-  title: "Your restaurant's menu, digital and always up to date"
+  title_main: "Your restaurant's menu, "
+  title_accent: "digital and always up to date"
   subtitle: "Your customers scan a QR code and see the menu instantly — in their language, with photos, allergens and prices always current. You edit it from a panel built to be managed in a minute."
   cta_primary: "Try it free for 1 month →"
   cta_secondary: "See what's included"
@@ -21,6 +22,28 @@ mockup:
   tagline: "Explore our menu"
   search_placeholder: "Search dishes…"
   view_more: "View more"
+
+demo:
+  link: "👀 See a real menu →"
+
+faq:
+  eyebrow: "FAQ"
+  title: "Before you ask"
+  q1:
+    q: "Do I need a credit card for the trial?"
+    a: "No. The 1-month trial is completely free, no card and no commitment."
+  q2:
+    q: "Can I import the menu I already have?"
+    a: "Yes. Upload a photo of your current menu and the AI organizes it into categories and dishes automatically."
+  q3:
+    q: "Do my customers have to install anything?"
+    a: "No. They scan the QR code and see the menu directly in their phone's browser."
+  q4:
+    q: "How many languages can my menu be shown in?"
+    a: "It's automatically translated into more than 20 languages, with nothing for you to do."
+  q5:
+    q: "What happens when the trial month ends?"
+    a: "We'll let you know well in advance before anything changes — no need to think about it right now."
 
 features:
   eyebrow: "Features"

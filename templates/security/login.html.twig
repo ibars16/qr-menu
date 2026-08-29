@@ -2,12 +2,24 @@
 
 {% block title %}Acceder — QR Menu{% endblock %}
 
+{# See public/base.html.twig's turbo_meta block for why: this page's own
+   inline <style> block isn't Turbo-trackable, so a Turbo visit landing here
+   (including via the back button) can leave the wrong styles applied. #}
+{% block turbo_meta %}
+    <meta name="turbo-visit-control" content="reload">
+{% endblock %}
+
 {% block stylesheets %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>(function(){try{if(localStorage.getItem('admin-theme')==='light'||localStorage.getItem('site-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
     <style>
         :root {
             --brand:          #C1440E;
+            --brand-2:        #E8622A;
+            --brand-grad:     linear-gradient(135deg, var(--brand), var(--brand-2));
             --bg-page:        #0a0a0a;
             --bg-card:        #141414;
             --bg-input:       #1a1a1a;
@@ -40,17 +52,25 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            position: relative;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--bg-page);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; top: -260px; left: 50%; transform: translateX(-50%);
+            width: 900px; height: 560px; pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse at center, rgba(193,68,14,0.18) 0%, rgba(193,68,14,0.05) 40%, transparent 68%);
+            filter: blur(60px);
         }
 
         .theme-toggle-btn {
-            position: fixed; top: 20px; right: 20px;
+            position: fixed; top: 20px; right: 20px; z-index: 2;
             width: 34px; height: 34px; border-radius: 8px;
             border: 1px solid var(--bd-card); background: var(--bg-card);
             display: flex; align-items: center; justify-content: center;
@@ -60,6 +80,7 @@
         .theme-toggle-btn:hover { color: var(--tx-hi); border-color: var(--tx-muted); }
 
         .login-wrap {
+            position: relative; z-index: 1;
             width: 100%;
             max-width: 380px;
         }
@@ -68,14 +89,16 @@
             text-align: center;
             margin-bottom: 32px;
         }
+        .login-logo-link { text-decoration: none; display: inline-block; }
         .login-logo-mark {
             width: 52px; height: 52px;
             border-radius: 14px;
-            background: var(--brand);
+            background: var(--brand-grad);
             display: inline-flex;
             align-items: center; justify-content: center;
             font-size: 22px; font-weight: 700; color: #fff;
             margin-bottom: 12px;
+            box-shadow: 0 10px 24px -10px rgba(193,68,14,0.6);
         }
         .login-logo-name {
             font-size: 20px; font-weight: 600;
@@ -88,8 +111,9 @@
         .login-card {
             background: var(--bg-card);
             border: 1px solid var(--bd-card);
-            border-radius: 16px;
-            padding: 28px 24px;
+            border-radius: 20px;
+            padding: 30px 26px;
+            box-shadow: 0 30px 60px -30px rgba(0,0,0,0.5);
         }
 
         .login-title {
@@ -119,7 +143,7 @@
             transition: border-color 0.15s;
         }
         .field input::placeholder { color: var(--tx-placeholder); }
-        .field input:focus { border-color: var(--tx-sub); }
+        .field input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(193,68,14,0.15); }
 
         .remember-row {
             display: flex; align-items: center;
@@ -134,14 +158,15 @@
         }
 
         .login-btn {
-            width: 100%; padding: 12px;
-            background: var(--brand); color: #fff;
+            width: 100%; padding: 13px;
+            background: var(--brand-grad); color: #fff;
             border: none; border-radius: 10px;
             font-size: 15px; font-weight: 600;
             cursor: pointer; letter-spacing: -0.2px;
-            transition: opacity 0.15s;
+            box-shadow: 0 12px 26px -10px rgba(193,68,14,0.55);
+            transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
         }
-        .login-btn:hover { opacity: 0.9; }
+        .login-btn:hover { opacity: 0.94; transform: translateY(-1px); box-shadow: 0 16px 32px -10px rgba(193,68,14,0.65); }
 
         .error-msg {
             background: rgba(193, 68, 14, 0.12);
@@ -164,8 +189,10 @@
     <div class="login-wrap">
 
         <div class="login-logo">
-            <div class="login-logo-mark">Q</div>
-            <div class="login-logo-name">QR Menu</div>
+            <a href="{{ path('app_home') }}" class="login-logo-link">
+                <div class="login-logo-mark">Q</div>
+                <div class="login-logo-name">QR Menu</div>
+            </a>
             <div class="login-logo-sub">Panel de administración</div>
         </div>
 

@@ -11,7 +11,8 @@ nav:
 
 hero:
   badge: "Prova gratuita di 1 mese, senza carta"
-  title: "Il menu del tuo ristorante, digitale e sempre aggiornato"
+  title_main: "Il menu del tuo ristorante, "
+  title_accent: "digitale e sempre aggiornato"
   subtitle: "I tuoi clienti scansionano un QR e vedono il menu all'istante — nella loro lingua, con foto, allergeni e prezzi sempre aggiornati. Tu lo modifichi da un pannello pensato per essere gestito in un minuto."
   cta_primary: "Prova gratuita di 1 mese →"
   cta_secondary: "Scopri cosa include"
@@ -21,6 +22,28 @@ mockup:
   tagline: "Scopri il nostro menu"
   search_placeholder: "Cerca piatti…"
   view_more: "Vedi di più"
+
+demo:
+  link: "👀 Vedi un menu reale →"
+
+faq:
+  eyebrow: "Domande frequenti"
+  title: "Prima che tu chieda"
+  q1:
+    q: "Serve la carta di credito per la prova?"
+    a: "No. La prova di 1 mese è completamente gratuita, senza carta né impegno."
+  q2:
+    q: "Posso importare il menu che ho già?"
+    a: "Sì. Carica una foto del tuo menu attuale e l'IA lo organizza automaticamente per categorie e piatti."
+  q3:
+    q: "I miei clienti devono installare qualcosa?"
+    a: "No. Scansionano il codice QR e vedono il menu direttamente nel browser del cellulare."
+  q4:
+    q: "In quante lingue può essere mostrato il mio menu?"
+    a: "Viene tradotto automaticamente in più di 20 lingue, senza che tu debba fare nulla."
+  q5:
+    q: "Cosa succede quando finisce il mese di prova?"
+    a: "Ti avviseremo con anticipo prima che cambi qualcosa — per ora non devi pensarci."
 
 features:
   eyebrow: "Funzionalità"
