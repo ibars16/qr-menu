@@ -4,37 +4,59 @@
 {% import 'menu/_set_menu.html.twig' as setMenuMacro %}
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); background-attachment: var(--bg-attach, scroll); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.5; }
+    body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); background-attachment: var(--bg-attach, scroll); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.5; }
 
     /* ── Header ── */
-    .header { position: sticky; top: 0; z-index: 200; background: var(--hdr-bg); backdrop-filter: var(--hdr-blur); -webkit-backdrop-filter: var(--hdr-blur); border-bottom: 1px solid var(--hdr-border); padding: 14px 22px; }
+    .header { position: sticky; top: 0; z-index: 200; background: var(--hdr-bg); backdrop-filter: var(--hdr-blur); -webkit-backdrop-filter: var(--hdr-blur); border-bottom: 1px solid var(--hdr-border); padding: 14px 22px; box-shadow: 0 8px 24px -18px rgba(0,0,0,0.28); }
     .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 980px; margin: 0 auto; }
     .logo-wrap { display: flex; align-items: center; gap: 12px; }
-    .logo { width: 40px; height: 40px; border-radius: 12px; background: var(--logo-bg); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 800; flex-shrink: 0; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.22); }
+    .logo { width: 40px; height: 40px; border-radius: 12px; background: var(--logo-bg); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 800; flex-shrink: 0; overflow: hidden; box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 14px -3px rgba(0,0,0,0.32); }
     .logo img { width: 100%; height: 100%; object-fit: cover; }
     .resto-name { font-size: 16px; font-weight: 700; color: var(--fg); letter-spacing: -0.4px; }
-    .selectors { display: flex; gap: 6px; }
-    .sel-wrap { position: relative; }
-    .sel-wrap select { appearance: none; background: var(--surface); border: 1.5px solid var(--b1); color: var(--fg-2); font-size: 12px; padding: 7px 26px 7px 12px; border-radius: 24px; cursor: pointer; outline: none; transition: border-color 0.2s, background 0.2s; font-weight: 500; }
-    .sel-wrap select:hover { border-color: var(--b2); }
-    .sel-wrap .chev { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); font-size: 9px; color: var(--fg-3); pointer-events: none; }
+
+    /* ── Language / currency selectors — custom <details> dropdowns, not
+       native <select>, so the trigger pill and the open menu can both be
+       fully themed (native select popups can't be styled at all). ── */
+    .selectors { display: flex; gap: 8px; }
+    .nav-dd { position: relative; }
+    .nav-dd summary { list-style: none; }
+    .nav-dd summary::-webkit-details-marker { display: none; }
+    .nav-dd-trigger { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); border: 1.5px solid var(--b1); color: var(--fg-2); font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: 24px; cursor: pointer; outline: none; user-select: none; transition: border-color 0.2s, color 0.2s, box-shadow 0.2s; }
+    .nav-dd-trigger:hover { border-color: var(--b2); color: var(--fg); }
+    .nav-dd-trigger i { font-size: 9px; color: var(--fg-3); transition: transform 0.2s; }
+    .nav-dd-symbol { display: inline-flex; align-items: center; justify-content: center; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 4px; background: var(--cbg); color: var(--cp); font-size: 10px; font-weight: 800; line-height: 1; }
+    .nav-dd[open] .nav-dd-trigger { border-color: var(--cf-hborder); color: var(--fg); box-shadow: 0 0 0 3px var(--cbg); }
+    .nav-dd[open] .nav-dd-trigger i { transform: rotate(180deg); }
+    .nav-dd-menu { position: absolute; top: calc(100% + 10px); right: 0; z-index: 60; min-width: 200px; max-height: 320px; overflow-y: auto; background: var(--cb-bg); border: 1px solid var(--cb-border); border-radius: 14px; padding: 6px; box-shadow: 0 18px 44px -14px rgba(0,0,0,0.32); }
+    .nav-dd-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 10px; border: none; background: none; border-radius: 9px; font: inherit; font-size: 13px; font-weight: 500; color: var(--bn); text-align: left; cursor: pointer; transition: background 0.15s; }
+    .nav-dd-item span { font-size: 15px; flex-shrink: 0; }
+    .nav-dd-item:hover { background: var(--row-hover, var(--tab-hbg)); }
+    .nav-dd-item.active { font-weight: 700; }
+    .nav-dd-item i { margin-left: auto; font-size: 12px; color: var(--cp); flex-shrink: 0; }
 
     /* ── Hero ── */
     .hero { position: relative; padding: var(--hero-pad, 54px 24px 46px); background: var(--hero-bg); border-bottom: 1px solid var(--hero-border); overflow: hidden; }
+    .hero::before {
+        content: ''; position: absolute; top: -140px; left: 50%; transform: translateX(-50%);
+        width: 640px; height: 360px; pointer-events: none; z-index: 0;
+        background: radial-gradient(ellipse at center, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.16) 42%, transparent 72%);
+        filter: blur(46px);
+    }
     .hero-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: var(--hero-img-op, 0); pointer-events: none; }
     .hero-overlay-el { position: absolute; inset: 0; background: var(--hero-overlay, none); pointer-events: none; }
     .hero-inner { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; }
-    .hero-name { font-size: 42px; font-weight: 900; color: var(--hero-fg, var(--fg)); letter-spacing: -1.6px; line-height: 1.03; }
-    .hero-sub { font-size: 15px; color: var(--hero-fg-2, var(--fg-2)); margin-top: 10px; letter-spacing: 0.01em; }
+    .hero-kicker { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; color: var(--cp); background: var(--cbg); border: 1px solid var(--cbc); padding: 6px 14px; border-radius: 999px; margin-bottom: 16px; }
+    .hero-kicker i { font-size: 12px; }
+    .hero-name { font-size: 44px; font-weight: 800; color: var(--hero-fg, var(--fg)); letter-spacing: -1.8px; line-height: 1.03; text-shadow: 0 2px 24px rgba(0,0,0,0.05); }
 
     /* ── UI wrapper ── */
     .ui-wrap { padding: 0 18px; }
     @media (min-width: 768px) { .ui-wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; } }
 
     .search-wrap { padding-top: 24px; position: relative; }
-    .search-input { width: 100%; background: var(--in-bg); border: 1.5px solid var(--in-border); color: var(--in-text); font-size: 15px; padding: 15px 18px 15px 52px; border-radius: var(--search-radius, 16px); outline: none; transition: border-color 0.22s, box-shadow 0.22s; }
+    .search-input { width: 100%; background: var(--in-bg); border: 1.5px solid var(--in-border); color: var(--in-text); font-size: 15px; padding: 15px 18px 15px 52px; border-radius: var(--search-radius, 16px); outline: none; box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 10px 24px -18px rgba(0,0,0,0.22); transition: border-color 0.22s, box-shadow 0.22s; }
     .search-input::placeholder { color: var(--in-ph); }
-    .search-input:focus { border-color: var(--in-focus-border); box-shadow: var(--in-focus-shadow); }
+    .search-input:focus { border-color: var(--in-focus-border); box-shadow: var(--in-focus-shadow), 0 10px 24px -18px rgba(0,0,0,0.22); }
     .search-icon { position: absolute; left: 18px; top: 39px; font-size: 17px; color: var(--fg-3); pointer-events: none; }
 
     .diet-filters { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -148,8 +170,8 @@
     .front-img { width: 100%; height: 182px; flex-shrink: 0; background: var(--cf-img); display: flex; align-items: center; justify-content: center; font-size: 46px; position: relative; overflow: hidden; }
     .front-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .front-img-overlay { position: absolute; inset: 0; background: var(--img-overlay, linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.14) 100%)); pointer-events: none; }
-    .spicy-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.55); color: #ef4444; border-radius: 20px; padding: 3px 7px; font-size: 15px; line-height: 1; z-index: 3; display: flex; align-items: center; gap: 1px; }
-    .popular-badge { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); color: #ffb020; border-radius: 20px; padding: 3px 8px; font-size: 11px; font-weight: 700; line-height: 1.3; z-index: 3; display: flex; align-items: center; gap: 3px; letter-spacing: 0.02em; }
+    .spicy-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: #ef4444; border-radius: 20px; padding: 3px 7px; font-size: 15px; line-height: 1; z-index: 3; display: flex; align-items: center; gap: 1px; box-shadow: 0 2px 10px rgba(0,0,0,0.18); }
+    .popular-badge { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: #ffb020; border-radius: 20px; padding: 3px 8px; font-size: 11px; font-weight: 700; line-height: 1.3; z-index: 3; display: flex; align-items: center; gap: 3px; letter-spacing: 0.02em; box-shadow: 0 2px 10px rgba(0,0,0,0.18); }
 
     /* ── Info — below image, full width ── */
     .front-info { flex: 1; padding: 11px 14px 12px; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; overflow: hidden; }
@@ -272,9 +294,9 @@
        set-menu rows (menu/_set_menu.html.twig), which still use the 3D
        flip mechanic and must keep working unmodified. The whole card is
        one tap target; "Ver más" is a visual cue only. ══════════════════ */
-    .dish-card { cursor: pointer; border-radius: var(--card-radius, 18px); overflow: hidden; background: var(--cf-bg); border: 1px solid var(--cf-border); box-shadow: var(--card-shadow, none); transition: box-shadow 0.25s, transform 0.15s; }
-    .dish-card:hover { box-shadow: var(--cf-hshadow, var(--card-shadow, none)); }
-    .dish-card:active { transform: scale(0.986); }
+    .dish-card { cursor: pointer; border-radius: var(--card-radius, 18px); overflow: hidden; background: var(--cf-bg); border: 1px solid var(--cf-border); box-shadow: var(--card-shadow, none); transition: box-shadow 0.35s ease, transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.3s ease; }
+    .dish-card:hover { box-shadow: var(--cf-hshadow, var(--card-shadow, none)); border-color: var(--cf-hborder); transform: translateY(-5px); }
+    .dish-card:active { transform: translateY(-2px) scale(0.99); }
 
     /* Photo — edge to edge, fixed height so every card matches regardless
        of the source image's own proportions (portrait/square/landscape).
@@ -282,7 +304,8 @@
        both dimensions, so it's a no-op fallback rather than a competing
        rule. */
     .dish-card .front-img { position: relative; width: 100%; height: clamp(11.875rem, 42vw, 12.5rem); aspect-ratio: 4/3; background: var(--cf-img); overflow: hidden; font-size: initial; display: block; }
-    .dish-card .front-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .dish-card .front-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
+    .dish-card:hover .front-img img { transform: scale(1.045); }
 
     /* No-photo placeholder — a warm brand-colored panel with an icon and
        the dish name, styled to look intentional rather than a broken
@@ -294,25 +317,28 @@
     /* Floating "Popular / Recomendado" pill — only rendered when the
        product carries the 'recommended' system tag. Kept neutral (not red)
        so the price pill below is the only strong accent on the card. */
-    .dish-pill { position: absolute; top: 0.625rem; left: 0.625rem; z-index: 2; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(255,255,255,0.9); color: var(--fg-2); font-size: 0.75rem; font-weight: 700; padding: 0.3125rem 0.625rem; border-radius: 999px; box-shadow: 0 2px 10px rgba(0,0,0,0.14); }
+    .dish-pill { position: absolute; top: 0.625rem; left: 0.625rem; z-index: 2; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(255,255,255,0.82); backdrop-filter: blur(8px) saturate(160%); -webkit-backdrop-filter: blur(8px) saturate(160%); color: var(--fg-2); font-size: 0.75rem; font-weight: 700; padding: 0.3125rem 0.625rem; border-radius: 999px; box-shadow: 0 2px 10px rgba(0,0,0,0.14); }
 
     /* Info strip below the photo — name, one-line description, price. */
-    .dish-card .front-info { padding: 0.875rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.375rem; }
-    .dish-card .front-name { font-size: 1.0625rem; font-weight: 500; color: var(--cn); letter-spacing: -0.2px; line-height: 1.3; white-space: normal; overflow-wrap: break-word; }
+    .dish-card .front-info { padding: 1.125rem 1.125rem 1.125rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .dish-card .front-name { font-size: 1.0625rem; font-weight: 600; color: var(--cn); letter-spacing: -0.1px; line-height: 1.4; white-space: normal; overflow-wrap: break-word; }
     .front-desc { font-size: 0.8125rem; font-weight: 400; color: var(--fg-2); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .dish-bottom { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.25rem; }
+    .dish-bottom { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.375rem; }
 
     /* Price — the one strong accent on the card: a filled pill, brand red
        on white text. var(--cp) already resolves to the brand red in the
        warm-cream theme (and to each other theme's own accent), with the
        literal brand hex as a fallback if a theme ever leaves it unset. */
-    .dish-price { display: inline-flex; align-items: center; background: var(--cp, #c0341d); color: #fff; font-size: 1rem; font-weight: 500; letter-spacing: -0.2px; padding: 0.4375rem 0.9375rem; border-radius: 1.875rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .dish-price { display: inline-flex; align-items: center; background: var(--cp, #c0341d); color: #fff; font-size: 1rem; font-weight: 500; letter-spacing: -0.2px; padding: 0.4375rem 0.9375rem; border-radius: 1.875rem; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 6px 16px -7px rgba(0,0,0,0.5); }
     .dish-price .price-item-label, .dish-price .price-item-value { color: #fff; }
 
     /* "Ver más" — a discreet outline button, readable as tappable without
-       competing with the price pill's stronger fill. */
-    .more-hint { font-size: 0.875rem; font-weight: 500; color: #c0341d; border: 1.5px solid #e7c3b8; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.4375rem 0.875rem; border-radius: 1.875rem; white-space: nowrap; flex-shrink: 0; }
+       competing with the price pill's stronger fill. Fills solid on card
+       hover as the tap affordance (the whole card is one target, so the
+       hover state lives on .dish-card, not on this element itself). */
+    .more-hint { font-size: 0.875rem; font-weight: 500; color: #c0341d; border: 1.5px solid #e7c3b8; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.4375rem 0.875rem; border-radius: 1.875rem; white-space: nowrap; flex-shrink: 0; transition: background 0.2s, color 0.2s, border-color 0.2s; }
     .more-hint i { font-size: 0.75rem; }
+    .dish-card:hover .more-hint { background: #c0341d; border-color: #c0341d; color: #fff; }
 
     /* ── Dish detail modal — bottom sheet, one shared instance reused for
        every card (content is cloned in from that card's own <template>
@@ -331,8 +357,8 @@
        purpose, this padding just keeps the last section (calories, etc.)
        from rendering underneath it. */
     .dish-modal-body { padding: 1.25rem 1.25rem 6rem; display: flex; flex-direction: column; gap: 0.9375rem; }
-    .dish-detail-name { font-size: 1.375rem; font-weight: 500; color: var(--bn); line-height: 1.3; }
-    .dish-detail-price { display: inline-flex; align-self: flex-start; align-items: center; background: var(--cp, #c0341d); color: #fff; font-size: 1rem; font-weight: 500; letter-spacing: -0.2px; padding: 0.4375rem 0.9375rem; border-radius: 1.875rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .dish-detail-name { font-size: 1.375rem; font-weight: 700; letter-spacing: -0.4px; color: var(--bn); line-height: 1.25; }
+    .dish-detail-price { display: inline-flex; align-self: flex-start; align-items: center; background: var(--cp, #c0341d); color: #fff; font-size: 1rem; font-weight: 500; letter-spacing: -0.2px; padding: 0.4375rem 0.9375rem; border-radius: 1.875rem; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 6px 16px -7px rgba(0,0,0,0.5); }
     .dish-detail-price .price-item-label, .dish-detail-price .price-item-value { color: #fff; }
     .dish-detail-desc { font-size: 0.9375rem; font-weight: 400; color: var(--bdesc); line-height: 1.6; }
     .dish-allergen-box { background: var(--allergen-box-bg, rgba(214,69,69,0.06)); border: 1px solid var(--allergen-box-b, rgba(214,69,69,0.16)); border-radius: 0.875rem; padding: 0.875rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
@@ -348,18 +374,56 @@
             <div class="resto-name">{{ restaurant.name }}</div>
         </div>
         <div class="selectors">
-            <div class="sel-wrap"><select onchange="changeLanguage(this.value)">{% for code, lang in languages %}<option value="{{ code }}" {{ locale == code ? 'selected' : '' }}>{{ lang.flag }} {{ code|upper }}</option>{% endfor %}</select><span class="chev">▾</span></div>
-            <div class="sel-wrap"><select onchange="changeCurrency(this.value)">{% for code, curr in currencies %}<option value="{{ code }}" {{ currency == code ? 'selected' : '' }}>{{ curr.symbol }} {{ code }}</option>{% endfor %}</select><span class="chev">▾</span></div>
+            <details class="nav-dd">
+                <summary class="nav-dd-trigger">{{ languages[locale] is defined ? languages[locale].flag : '' }} {{ locale|upper }} <i class="ti ti-chevron-down" aria-hidden="true"></i></summary>
+                <div class="nav-dd-menu">
+                    {% for code, lang in languages %}
+                        <button type="button" class="nav-dd-item {{ locale == code ? 'active' : '' }}" onclick="changeLanguage('{{ code }}')">
+                            <span>{{ lang.flag }}</span> {{ lang.name|default(code|upper) }}
+                            {% if locale == code %}<i class="ti ti-check" aria-hidden="true"></i>{% endif %}
+                        </button>
+                    {% endfor %}
+                </div>
+            </details>
+            <details class="nav-dd">
+                <summary class="nav-dd-trigger"><span class="nav-dd-symbol">{{ currencies[currency] is defined ? currencies[currency].symbol : '' }}</span> {{ currency }} <i class="ti ti-chevron-down" aria-hidden="true"></i></summary>
+                <div class="nav-dd-menu">
+                    {% for code, curr in currencies %}
+                        <button type="button" class="nav-dd-item {{ currency == code ? 'active' : '' }}" onclick="changeCurrency('{{ code }}')">
+                            <span class="nav-dd-symbol">{{ curr.symbol }}</span> {{ code }} — {{ curr.name }}
+                            {% if currency == code %}<i class="ti ti-check" aria-hidden="true"></i>{% endif %}
+                        </button>
+                    {% endfor %}
+                </div>
+            </details>
         </div>
     </div>
 </header>
+<script>
+    // Language/currency <details> dropdowns: close any other open one when
+    // a new one opens, and close on outside click (native <details> alone
+    // leaves siblings open and never closes on outside click).
+    document.querySelectorAll('.nav-dd').forEach(function (dd) {
+        dd.addEventListener('toggle', function () {
+            if (!dd.open) return;
+            document.querySelectorAll('.nav-dd[open]').forEach(function (other) {
+                if (other !== dd) other.removeAttribute('open');
+            });
+        });
+    });
+    document.addEventListener('click', function (e) {
+        document.querySelectorAll('.nav-dd[open]').forEach(function (dd) {
+            if (!dd.contains(e.target)) dd.removeAttribute('open');
+        });
+    });
+</script>
 
 <div class="hero">
     {% if restaurant.logo %}<img class="hero-bg-img" src="{{ asset('uploads/banners/' ~ restaurant.logo) }}" alt="">{% endif %}
     <div class="hero-overlay-el"></div>
     <div class="hero-inner">
+        <div class="hero-kicker"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> {{ 'hero.subtitle'|trans({}, 'menu_public', locale) }}</div>
         <div class="hero-name">{{ restaurant.name }}</div>
-        <div class="hero-sub">{{ 'hero.subtitle'|trans({}, 'menu_public', locale) }}</div>
     </div>
 </div>
 
