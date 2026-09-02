@@ -23,6 +23,7 @@ filters:
     allergy_title: "Allergier"
     other_title: "Övrigt"
     apply: "Visa resultat"
+    no_results: "Inga resultat"
 allergen:
     avoid: "Undvik allergener"
     avoid_panel_title: "Dölj rätter som innehåller…"

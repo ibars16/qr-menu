@@ -23,6 +23,7 @@ filters:
     allergy_title: "สารก่อภูมิแพ้"
     other_title: "อื่นๆ"
     apply: "ดูผลลัพธ์"
+    no_results: "ไม่พบผลลัพธ์"
 allergen:
     avoid: "หลีกเลี่ยงสารก่อภูมิแพ้"
     avoid_panel_title: "ซ่อนเมนูที่มี…"

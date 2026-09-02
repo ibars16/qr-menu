@@ -23,6 +23,7 @@ filters:
     allergy_title: "الحساسية"
     other_title: "أخرى"
     apply: "عرض النتائج"
+    no_results: "لا نتائج"
 allergen:
     avoid: "تجنب مسببات الحساسية"
     avoid_panel_title: "إخفاء الأطباق التي تحتوي على…"

@@ -23,6 +23,7 @@ filters:
     allergy_title: "알레르기"
     other_title: "기타"
     apply: "결과 보기"
+    no_results: "결과 없음"
 allergen:
     avoid: "알레르기 유발 성분 피하기"
     avoid_panel_title: "다음을 포함하는 메뉴 숨기기…"

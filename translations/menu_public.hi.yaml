@@ -23,6 +23,7 @@ filters:
     allergy_title: "एलर्जी"
     other_title: "अन्य"
     apply: "परिणाम देखें"
+    no_results: "कोई परिणाम नहीं"
 allergen:
     avoid: "एलर्जेन से बचें"
     avoid_panel_title: "इन्हें शामिल करने वाले व्यंजन छिपाएं…"

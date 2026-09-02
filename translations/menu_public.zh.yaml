@@ -23,6 +23,7 @@ filters:
     allergy_title: "过敏原"
     other_title: "其他"
     apply: "查看结果"
+    no_results: "没有结果"
 allergen:
     avoid: "避开过敏原"
     avoid_panel_title: "隐藏含有以下成分的菜品…"

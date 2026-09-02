@@ -23,6 +23,7 @@ filters:
     allergy_title: "Allergieën"
     other_title: "Overig"
     apply: "Resultaten tonen"
+    no_results: "Geen resultaten"
 allergen:
     avoid: "Allergenen vermijden"
     avoid_panel_title: "Verberg gerechten die … bevatten"

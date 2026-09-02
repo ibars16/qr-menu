@@ -23,6 +23,7 @@ filters:
     allergy_title: "Allergie"
     other_title: "Altro"
     apply: "Mostra risultati"
+    no_results: "Nessun risultato"
 allergen:
     avoid: "Evita allergeni"
     avoid_panel_title: "Nascondi i piatti che contengono…"

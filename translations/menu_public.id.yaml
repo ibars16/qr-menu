@@ -23,6 +23,7 @@ filters:
     allergy_title: "Alergi"
     other_title: "Lainnya"
     apply: "Lihat hasil"
+    no_results: "Tidak ada hasil"
 allergen:
     avoid: "Hindari alergen"
     avoid_panel_title: "Sembunyikan hidangan yang mengandung…"

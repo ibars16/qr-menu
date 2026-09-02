@@ -23,6 +23,7 @@ filters:
     allergy_title: "Alerjiler"
     other_title: "Diğer"
     apply: "Sonuçları göster"
+    no_results: "Sonuç yok"
 allergen:
     avoid: "Alerjenlerden kaçın"
     avoid_panel_title: "Şunları içeren yemekleri gizle…"

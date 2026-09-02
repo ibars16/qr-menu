@@ -23,6 +23,7 @@ filters:
     allergy_title: "Dị ứng"
     other_title: "Khác"
     apply: "Xem kết quả"
+    no_results: "Không có kết quả"
 allergen:
     avoid: "Tránh chất gây dị ứng"
     avoid_panel_title: "Ẩn các món có chứa…"

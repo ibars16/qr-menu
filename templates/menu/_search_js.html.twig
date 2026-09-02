@@ -125,20 +125,55 @@ function closeFiltersPanel() {
 }
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeFiltersPanel(); });
 
+// "Ver resultados" — the 0-match state (see updateFiltersButtonBadge()
+// below) makes this aria-disabled rather than removing it or disabling it
+// natively, specifically so it stays reachable and announced by a screen
+// reader instead of just vanishing; that means the click can still fire, so
+// this is what actually turns the tap into a no-op in that state. "Borrar
+// todo" (clearAllFilters(), unaffected by any of this) stays the only way
+// out of a 0-match selection.
+function applyFiltersPanel() {
+    const btn = document.getElementById('filters-apply-btn');
+    if (btn && btn.getAttribute('aria-disabled') === 'true') return;
+    closeFiltersPanel();
+}
+
 // Reflects the existing activeTags/activeType/activeAllergens filter state
 // (set by the handlers below) onto the filters button label (its translated
 // base text lives in data-i18n-cta, set server-side in standard/show.html.twig) —
-// display only, the filtering itself is untouched.
+// display only, the filtering itself is untouched. Also drives the live
+// "Ver resultados (N)" count and its 0-match state — see countMatchingDishes()
+// just below applyFilters(), which this reuses rather than recomputing.
 function updateFiltersButtonBadge() {
     const label = document.getElementById('filters-btn-label');
     const btn   = document.getElementById('filters-btn');
     const clearRow = document.getElementById('filters-clear-row');
-    if (!label || !btn) return;
-    const count = activeTags.size + (activeType !== 'all' ? 1 : 0) + activeAllergens.size;
-    const baseLabel = label.dataset.i18nCta || label.textContent;
-    label.textContent = count > 0 ? (baseLabel + ' (' + count + ')') : baseLabel;
-    btn.classList.toggle('has-active', count > 0);
-    if (clearRow) clearRow.hidden = count === 0;
+    const applyBtn = document.getElementById('filters-apply-btn');
+    if (label && btn) {
+        const filterCount = activeTags.size + (activeType !== 'all' ? 1 : 0) + activeAllergens.size;
+        const baseLabel = label.dataset.i18nCta || label.textContent;
+        label.textContent = filterCount > 0 ? (baseLabel + ' (' + filterCount + ')') : baseLabel;
+        btn.classList.toggle('has-active', filterCount > 0);
+        if (clearRow) clearRow.hidden = filterCount === 0;
+
+        if (applyBtn) {
+            if (filterCount === 0) {
+                // No filters active — the plain label, dish count doesn't
+                // add anything (see the task's own "el total no aporta").
+                applyBtn.textContent = applyBtn.dataset.i18nApply;
+                applyBtn.setAttribute('aria-disabled', 'false');
+            } else {
+                const dishCount = countMatchingDishes();
+                if (dishCount === 0) {
+                    applyBtn.textContent = applyBtn.dataset.i18nEmpty;
+                    applyBtn.setAttribute('aria-disabled', 'true');
+                } else {
+                    applyBtn.textContent = applyBtn.dataset.i18nApply + ' (' + dishCount + ')';
+                    applyBtn.setAttribute('aria-disabled', 'false');
+                }
+            }
+        }
+    }
 }
 
 // Resets diet/type/allergen filters together by driving each control's own
@@ -185,26 +220,41 @@ let activeType = 'all';
 // for where the checklist itself comes from).
 let activeAllergens = new Set();
 
-function applyFilters() {
-    const q      = searchInput.value.toLowerCase().trim();
+// Shared predicates — applyFilters() (below) and countMatchingDishes() (for
+// the live "Ver resultados (N)" count) both call these, so the number shown
+// before applying can never drift from what applying actually reveals. Pure
+// functions: no DOM mutation, so countMatchingDishes() can run at any time
+// without disturbing whatever applyFilters() last rendered.
+function sectionMatchesActiveScope(sec, cat) {
+    const catMatch  = cat === 'all' || cat === sec.dataset.section;
+    const typeMatch = activeType === 'all' || !sec.dataset.type || sec.dataset.type === activeType;
+    return catMatch && typeMatch;
+}
+function rowMatchesActiveFilters(row, q) {
+    const name      = row.querySelector('.front-name, .product-name')?.textContent.toLowerCase() ?? '';
+    const tags      = (row.dataset.tags ?? '').trim().split(/\s+/).filter(Boolean);
+    const allergens = (row.dataset.allergens ?? '').trim().split(/\s+/).filter(Boolean).map(a => a.split(':')[0]);
+    const search        = !q || name.includes(q);
+    const tagMatch       = activeTags.size === 0 || [...activeTags].every(t => tags.includes(t));
+    const allergenMatch  = activeAllergens.size === 0 || ![...activeAllergens].some(a => allergens.includes(a));
+    return search && tagMatch && allergenMatch;
+}
+function currentCategory() {
     const active = document.querySelector('.cat-tab.active');
-    const cat    = active ? active.dataset.cat : 'all';
+    return active ? active.dataset.cat : 'all';
+}
+
+function applyFilters() {
+    const q   = searchInput.value.toLowerCase().trim();
+    const cat = currentCategory();
     let anyVisible = false;
 
     sections.forEach(sec => {
-        const catMatch  = cat === 'all' || cat === sec.dataset.section;
-        const typeMatch = activeType === 'all' || !sec.dataset.type || sec.dataset.type === activeType;
-        if (!catMatch || !typeMatch) { sec.style.display = 'none'; return; }
+        if (!sectionMatchesActiveScope(sec, cat)) { sec.style.display = 'none'; return; }
         const rows = sec.querySelectorAll('.card-wrap, .product-row, .dish-card');
         let secVisible = false;
         rows.forEach(row => {
-            const name      = row.querySelector('.front-name, .product-name')?.textContent.toLowerCase() ?? '';
-            const tags      = (row.dataset.tags ?? '').trim().split(/\s+/).filter(Boolean);
-            const allergens = (row.dataset.allergens ?? '').trim().split(/\s+/).filter(Boolean).map(a => a.split(':')[0]);
-            const search        = !q || name.includes(q);
-            const tagMatch      = activeTags.size === 0 || [...activeTags].every(t => tags.includes(t));
-            const allergenMatch = activeAllergens.size === 0 || ![...activeAllergens].some(a => allergens.includes(a));
-            const show     = search && tagMatch && allergenMatch;
+            const show = rowMatchesActiveFilters(row, q);
             row.style.display = show ? '' : 'none';
             if (show) secVisible = true;
         });
@@ -212,6 +262,23 @@ function applyFilters() {
         if (secVisible) anyVisible = true;
     });
     if (noResults) noResults.style.display = anyVisible ? 'none' : 'block';
+}
+
+// How many dishes would be visible if "Ver resultados" were applied right
+// now — same scope/predicate as applyFilters() above, just counting instead
+// of touching style.display. Drives the filters panel's live "(N)" only;
+// never called from applyFilters() itself and has no side effect on it.
+function countMatchingDishes() {
+    const q   = searchInput.value.toLowerCase().trim();
+    const cat = currentCategory();
+    let count = 0;
+    sections.forEach(sec => {
+        if (!sectionMatchesActiveScope(sec, cat)) return;
+        sec.querySelectorAll('.card-wrap, .product-row, .dish-card').forEach(row => {
+            if (rowMatchesActiveFilters(row, q)) count++;
+        });
+    });
+    return count;
 }
 
 function onAllergenFilterChange() {
@@ -285,7 +352,10 @@ document.addEventListener('keydown', e => {
     closeAllergenNotes();
 });
 
-searchInput?.addEventListener('input', applyFilters);
+// Also refreshes the filters panel's live count: if it's open (or gets
+// reopened) while a search term is active, "Ver resultados (N)" must
+// already reflect it — same reasoning as the task's own "N refleja ambos".
+searchInput?.addEventListener('input', () => { applyFilters(); updateFiltersButtonBadge(); });
 
 catTabs.forEach(tab => tab.addEventListener('click', () => {
     catTabs.forEach(t => t.classList.remove('active'));

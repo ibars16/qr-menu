@@ -143,6 +143,17 @@
     .filters-panel-footer { padding: 0.25rem 1.25rem 6rem; }
     .filters-apply-btn { display: block; width: 100%; background: #c0341d; color: #fff; border: none; border-radius: 0.875rem; padding: 0.875rem; min-height: 2.75rem; font-size: 1rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: opacity 0.15s; }
     .filters-apply-btn:hover { opacity: 0.9; }
+    /* 0-results state — aria-disabled (not the disabled attribute) so it
+       stays reachable by Tab and a screen reader still gets a reason, not
+       just silence; the click handler (applyFiltersPanel(), see
+       _search_js.html.twig) is what actually no-ops the tap. Muted via the
+       same --surface-2/--fg-3 tokens every theme already defines (see
+       .no-results/.dish-placeholder for the same pairing) — higher
+       specificity than the plain .filters-apply-btn rule above (and
+       maison's own override in overrides.html.twig), so it wins in every
+       theme without needing a second, theme-specific copy of this rule. */
+    .filters-apply-btn[aria-disabled="true"] { background: var(--surface-2, #e5e5e5); color: var(--fg-3, #888); cursor: default; }
+    .filters-apply-btn[aria-disabled="true"]:hover { opacity: 1; }
 
     /* ── Content ── */
     .content { padding: 0 18px 120px; }
@@ -589,7 +600,10 @@
                 <div class="allergen-disclaimer"><i class="ti ti-info-circle" style="font-size:12px"></i> {{ 'allergen.disclaimer'|trans({}, 'menu_public', locale) }}</div>
             </div>
             <div class="filters-panel-footer">
-                <button type="button" class="filters-apply-btn" onclick="closeFiltersPanel()">{{ 'filters.apply'|trans({}, 'menu_public', locale) }}</button>
+                <button type="button" class="filters-apply-btn" id="filters-apply-btn" aria-disabled="false"
+                    data-i18n-apply="{{ 'filters.apply'|trans({}, 'menu_public', locale)|e('html_attr') }}"
+                    data-i18n-empty="{{ 'filters.no_results'|trans({}, 'menu_public', locale)|e('html_attr') }}"
+                    onclick="applyFiltersPanel()">{{ 'filters.apply'|trans({}, 'menu_public', locale) }}</button>
             </div>
         </div>
     </div>

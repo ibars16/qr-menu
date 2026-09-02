@@ -23,6 +23,7 @@ filters:
     allergy_title: "Аллергии"
     other_title: "Другое"
     apply: "Показать результаты"
+    no_results: "Нет результатов"
 allergen:
     avoid: "Исключить аллергены"
     avoid_panel_title: "Скрыть блюда, содержащие…"

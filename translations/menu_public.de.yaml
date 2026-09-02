@@ -23,6 +23,7 @@ filters:
     allergy_title: "Allergien"
     other_title: "Sonstiges"
     apply: "Ergebnisse anzeigen"
+    no_results: "Keine Ergebnisse"
 allergen:
     avoid: "Allergene vermeiden"
     avoid_panel_title: "Gerichte ausblenden, die … enthalten"

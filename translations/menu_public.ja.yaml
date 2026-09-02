@@ -23,6 +23,7 @@ filters:
     allergy_title: "アレルギー"
     other_title: "その他"
     apply: "結果を見る"
+    no_results: "結果なし"
 allergen:
     avoid: "アレルゲンを避ける"
     avoid_panel_title: "次を含む料理を非表示…"
