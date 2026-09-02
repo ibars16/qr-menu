@@ -81,10 +81,8 @@
     /* Allergen checklist — reused unstyled-wrapper markup inside the
        unified Filtros panel (see .filters-panel below). The standalone
        dropdown button/panel this used to have (.allergen-filter-btn/
-       -panel/-badge) is gone from this layout, but toggleAllergenFilterPanel()
-       etc. stay in menu/_search_js.html.twig untouched — compact/grid still
-       use that dropdown, and the shared JS already null-guards elements
-       that don't exist on a given layout's page. */
+       -panel/-badge, plus toggleAllergenFilterPanel() in
+       menu/_search_js.html.twig) is gone. */
     .allergen-filter-options { display: flex; flex-direction: column; gap: 1px; max-height: 260px; overflow-y: auto; }
     .allergen-filter-option { display: flex; align-items: center; gap: 9px; padding: 8px 7px; min-height: 2.75rem; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--bn); user-select: none; }
     .allergen-filter-option:hover { background: var(--in-bg); }
@@ -278,9 +276,9 @@
     .set-menu-supplement { font-size: 12.5px; font-weight: 600; color: var(--fg-3); white-space: nowrap; }
     .set-menu-chevron { color: var(--fg-3); font-size: 14px; flex-shrink: 0; }
 
-    /* Horizontal back-scroll variant for set-menu dish detail — new here
-       (this layout's own back-scroll is vertical by default); mirrors the
-       compact layout's own back-scroll, which is horizontal unconditionally. */
+    /* Horizontal back-scroll variant for set-menu dish detail — this
+       layout's own back-scroll is vertical by default; set-menu rows use
+       this horizontal one instead (see _set_menu.html.twig). */
     .back-scroll.horiz .back-body { overflow-y: hidden; overflow-x: auto; flex-direction: row; align-items: stretch; height: 100%; padding: 0; }
     .back-scroll.horiz .bsec { flex-shrink: 0; padding: 14px 18px; border-top: none; border-right: 1px solid var(--bdiv); }
     .back-scroll.horiz .bsec + .bsec { padding-top: 14px; border-top: none; }

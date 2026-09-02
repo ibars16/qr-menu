@@ -7,7 +7,6 @@ loading:
     title: "Menyiapkan menu Anda…"
 hero:
     subtitle: "Jelajahi menu kami"
-    subtitle_compact: "Menu kami"
 search:
     placeholder: "Cari hidangan…"
 tabs:

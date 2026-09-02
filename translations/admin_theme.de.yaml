@@ -43,12 +43,6 @@ layout:
     standard:
         name: Standard
         desc: Karten mit Bild oben und Namen unten. Ausgewogen und wirkungsvoll.
-    compact:
-        name: Kompakte Liste
-        desc: Nummerierte Zeilen, schnell zu überblicken. Ideal für lange Speisekarten.
-    grid:
-        name: Raster
-        desc: Vertikale Karten mit großem Bild. Sehr visuell und wirkungsvoll.
 
 theme:
     classic-dark:

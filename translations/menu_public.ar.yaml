@@ -7,7 +7,6 @@ loading:
     title: "جارٍ تجهيز القائمة…"
 hero:
     subtitle: "اكتشف قائمتنا"
-    subtitle_compact: "قائمتنا"
 search:
     placeholder: "ابحث عن طبق…"
 tabs:

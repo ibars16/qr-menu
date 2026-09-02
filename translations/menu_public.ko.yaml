@@ -7,7 +7,6 @@ loading:
     title: "메뉴를 준비하고 있습니다…"
 hero:
     subtitle: "메뉴를 둘러보세요"
-    subtitle_compact: "메뉴"
 search:
     placeholder: "메뉴 검색…"
 tabs:

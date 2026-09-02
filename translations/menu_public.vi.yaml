@@ -7,7 +7,6 @@ loading:
     title: "Đang chuẩn bị thực đơn của bạn…"
 hero:
     subtitle: "Khám phá thực đơn của chúng tôi"
-    subtitle_compact: "Thực đơn của chúng tôi"
 search:
     placeholder: "Tìm món ăn…"
 tabs:

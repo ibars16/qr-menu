@@ -7,7 +7,6 @@ loading:
     title: "Preparando tu menú…"
 hero:
     subtitle: "Explora nuestra carta"
-    subtitle_compact: "Nuestra carta"
 search:
     placeholder: "Buscar platos…"
 tabs:

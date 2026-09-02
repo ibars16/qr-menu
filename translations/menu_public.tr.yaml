@@ -7,7 +7,6 @@ loading:
     title: "Menünüz hazırlanıyor…"
 hero:
     subtitle: "Menümüzü keşfedin"
-    subtitle_compact: "Menümüz"
 search:
     placeholder: "Yemek ara…"
 tabs:

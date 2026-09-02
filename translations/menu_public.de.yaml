@@ -7,7 +7,6 @@ loading:
     title: "Ihr Menü wird vorbereitet…"
 hero:
     subtitle: "Entdecke unsere Karte"
-    subtitle_compact: "Unsere Karte"
 search:
     placeholder: "Gerichte suchen…"
 tabs:

@@ -21,12 +21,6 @@ class ThemeController extends AbstractController
         'standard' => [
             'icon' => '▤',
         ],
-        'compact' => [
-            'icon' => '≡',
-        ],
-        'grid' => [
-            'icon' => '⊞',
-        ],
     ];
 
     public const THEMES = [

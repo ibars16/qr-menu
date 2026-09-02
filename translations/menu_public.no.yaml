@@ -7,7 +7,6 @@ loading:
     title: "Forbereder menyen din…"
 hero:
     subtitle: "Utforsk menyen vår"
-    subtitle_compact: "Vår meny"
 search:
     placeholder: "Søk etter retter…"
 tabs:

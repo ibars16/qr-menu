@@ -111,22 +111,6 @@
     .lt-stdprice  { font-size: 8px; font-weight: 800; color: #C1440E; }
     .lt-stdhint   { height: 7px; width: 26px; background: #181818; border: 1px solid #252525; border-radius: 8px; }
 
-    /* Compact: numbered list rows */
-    .lt-compact-wrap { display: flex; flex-direction: column; flex: 1; }
-    .lt-crow  { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid #0e0e0e; }
-    .lt-num   { font-size: 8px; font-weight: 700; color: #383838; width: 14px; flex-shrink: 0; text-align: right; }
-    .lt-cimg  { width: 22px; height: 22px; border-radius: 4px; background: #181818; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
-    .lt-cname { flex: 1; height: 5px; background: #242424; border-radius: 3px; }
-    .lt-cprice{ font-size: 8px; font-weight: 700; color: #555; }
-
-    /* Grid: 2×2 image-heavy portrait cells */
-    .lt-grid  { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px; padding: 9px; flex: 1; }
-    .lt-gcell { background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #1e1e1e; display: flex; flex-direction: column; }
-    .lt-gimg  { flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; background: #181818; }
-    .lt-gbody { flex: 1; padding: 4px 6px; display: flex; flex-direction: column; justify-content: space-between; }
-    .lt-gname { height: 4px; background: #272727; border-radius: 3px; width: 82%; }
-    .lt-gprice{ font-size: 7px; font-weight: 800; color: #C1440E; }
-
     /* ── Theme cards ── */
     .themes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(218px,1fr)); gap: 10px; }
     @media (max-width: 500px) { .themes-grid { grid-template-columns: 1fr 1fr; } }
@@ -195,39 +179,22 @@
         {% for key, layout in layouts %}
             <div class="sel-card {{ restaurant.layout == key ? 'is-active' : '' }}" id="lcard-{{ key }}">
                 <div class="layout-thumb">
-                    {% if key == 'standard' %}
-                        <div class="lt-stdstack">
-                            <div class="lt-stdcard">
-                                <div class="lt-stdimg">🥩</div>
-                                <div class="lt-stdbody">
-                                    <div class="lt-stdname"></div>
-                                    <div class="lt-stdbot"><div class="lt-stdprice">24 €</div><div class="lt-stdhint"></div></div>
-                                </div>
-                            </div>
-                            <div class="lt-stdcard">
-                                <div class="lt-stdimg">🥗</div>
-                                <div class="lt-stdbody">
-                                    <div class="lt-stdname"></div>
-                                    <div class="lt-stdbot"><div class="lt-stdprice">16 €</div><div class="lt-stdhint"></div></div>
-                                </div>
+                    <div class="lt-stdstack">
+                        <div class="lt-stdcard">
+                            <div class="lt-stdimg">🥩</div>
+                            <div class="lt-stdbody">
+                                <div class="lt-stdname"></div>
+                                <div class="lt-stdbot"><div class="lt-stdprice">24 €</div><div class="lt-stdhint"></div></div>
                             </div>
                         </div>
-                    {% elseif key == 'compact' %}
-                        <div class="lt-compact-wrap">
-                            <div class="lt-crow"><div class="lt-num">01</div><div class="lt-cimg">🥩</div><div class="lt-cname"></div><div class="lt-cprice">24 €</div></div>
-                            <div class="lt-crow"><div class="lt-num">02</div><div class="lt-cimg">🥗</div><div class="lt-cname"></div><div class="lt-cprice">16 €</div></div>
-                            <div class="lt-crow"><div class="lt-num">03</div><div class="lt-cimg">🍕</div><div class="lt-cname"></div><div class="lt-cprice">14 €</div></div>
-                            <div class="lt-crow"><div class="lt-num">04</div><div class="lt-cimg">🥑</div><div class="lt-cname"></div><div class="lt-cprice">18 €</div></div>
-                            <div class="lt-crow"><div class="lt-num">05</div><div class="lt-cimg">🦐</div><div class="lt-cname"></div><div class="lt-cprice">22 €</div></div>
+                        <div class="lt-stdcard">
+                            <div class="lt-stdimg">🥗</div>
+                            <div class="lt-stdbody">
+                                <div class="lt-stdname"></div>
+                                <div class="lt-stdbot"><div class="lt-stdprice">16 €</div><div class="lt-stdhint"></div></div>
+                            </div>
                         </div>
-                    {% else %}
-                        <div class="lt-grid">
-                            <div class="lt-gcell"><div class="lt-gimg">🥩</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">24 €</div></div></div>
-                            <div class="lt-gcell"><div class="lt-gimg">🥗</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">16 €</div></div></div>
-                            <div class="lt-gcell"><div class="lt-gimg">🍕</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">14 €</div></div></div>
-                            <div class="lt-gcell"><div class="lt-gimg">🦐</div><div class="lt-gbody"><div class="lt-gname"></div><div class="lt-gprice">22 €</div></div></div>
-                        </div>
-                    {% endif %}
+                    </div>
                 </div>
                 <div class="card-footer">
                     <div class="card-label">{{ layout.icon }} {{ ('layout.' ~ key ~ '.name')|trans({}, 'admin_theme') }}</div>

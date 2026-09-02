@@ -7,7 +7,6 @@ loading:
     title: "आपका मेनू तैयार किया जा रहा है…"
 hero:
     subtitle: "हमारा मेनू देखें"
-    subtitle_compact: "हमारा मेनू"
 search:
     placeholder: "व्यंजन खोजें…"
 tabs:

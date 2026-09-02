@@ -43,12 +43,6 @@ layout:
     standard:
         name: Standard
         desc: Cartes avec image en haut et nom en dessous. Équilibré et percutant.
-    compact:
-        name: Liste compacte
-        desc: Lignes numérotées, à parcourir rapidement. Idéal pour les longues cartes.
-    grid:
-        name: Grille
-        desc: Cartes verticales avec grande image. Très visuel et percutant.
 
 theme:
     classic-dark:

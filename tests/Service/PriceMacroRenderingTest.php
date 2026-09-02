@@ -9,8 +9,8 @@ use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
 /**
- * Renders the actual menu/_price.html.twig macro (shared by all 3 public
- * layouts) against a standalone Twig environment — no kernel/DB needed,
+ * Renders the actual menu/_price.html.twig macro against a standalone Twig
+ * environment — no kernel/DB needed,
  * since the macro only touches plain entity getters. This is the real
  * rendering rule, not a reimplementation of it.
  *

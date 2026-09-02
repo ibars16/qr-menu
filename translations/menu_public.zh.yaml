@@ -7,7 +7,6 @@ loading:
     title: "正在准备菜单…"
 hero:
     subtitle: "探索我们的菜单"
-    subtitle_compact: "我们的菜单"
 search:
     placeholder: "搜索菜品…"
 tabs:

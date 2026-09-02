@@ -138,9 +138,9 @@ class MenuController extends AbstractController
 
     /**
      * Fires from the menu's own JS whenever a customer opens a dish's detail
-     * (modal on standard, flip on compact/grid) — see menu/_search_js.html.twig's
-     * trackDishView(). Fire-and-forget from the client's side, so this never
-     * needs to report anything but ok/error.
+     * (modal) — see menu/_search_js.html.twig's trackDishView(). Fire-and-
+     * forget from the client's side, so this never needs to report anything
+     * but ok/error.
      */
     #[Route('/r/{slug}/view', name: 'menu_track_view', methods: ['POST'])]
     public function trackView(
@@ -438,11 +438,15 @@ class MenuController extends AbstractController
         );
 
         // Layout + theme (with preview support)
-        $layout        = $restaurant->getLayout();
+        $validLayouts  = ['standard'];
+        $validThemes   = ['classic-dark', 'classic-warm', 'glass', 'ocean', 'noir', 'forest', 'terra', 'warm-cream', 'maison'];
+        // Same whitelist check as the preview-query guard below, applied to
+        // the stored value too — belt and suspenders against any restaurant
+        // row still carrying a layout the app no longer renders (e.g. a
+        // deleted one, or a future migration that doesn't get run in time).
+        $layout        = in_array($restaurant->getLayout(), $validLayouts, true) ? $restaurant->getLayout() : 'standard';
         $theme         = $restaurant->getTheme();
         $isPreview     = false;
-        $validLayouts  = ['standard', 'compact', 'grid'];
-        $validThemes   = ['classic-dark', 'classic-warm', 'glass', 'ocean', 'noir', 'forest', 'terra', 'warm-cream', 'maison'];
 
         $previewLayout = $request->query->get('preview_layout');
         $previewTheme  = $request->query->get('preview_theme');

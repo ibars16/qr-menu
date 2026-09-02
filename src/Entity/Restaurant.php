@@ -45,7 +45,7 @@ class Restaurant
     #[ORM\Column(length: 5)]
     private string $adminLocale = 'es';
 
-    /** Visual layout for the public menu: standard | compact | grid */
+    /** Visual layout for the public menu. Only 'standard' exists today — see ThemeController::LAYOUTS. */
     #[ORM\Column(length: 20)]
     private string $layout = 'standard';
 

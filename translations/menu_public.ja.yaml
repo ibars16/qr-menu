@@ -7,7 +7,6 @@ loading:
     title: "メニューを準備しています…"
 hero:
     subtitle: "メニューを見る"
-    subtitle_compact: "メニュー"
 search:
     placeholder: "料理を検索…"
 tabs:

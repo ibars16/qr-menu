@@ -1,10 +1,9 @@
 {# templates/menu/_set_menu.html.twig
 
-   Shared rendering for a fixed-price ("set") menu category — used by all 3
-   public layouts (standard/compact/grid), same rule as _price.html.twig:
-   never inlined per layout. Class names are shared; each layout defines its
-   own <style> rules for them (exactly like .price-stack/.price-row), so the
-   same markup picks up each layout's own density/spacing for free.
+   Shared rendering for a fixed-price ("set") menu category — same rule as
+   _price.html.twig: never inlined per layout. Class names are shared; the
+   layout defines its own <style> rules for them (exactly like
+   .price-stack/.price-row).
 
    Two entry points:
    - pill(): the cat-tabs bar entry for a set menu (name + converted price).
@@ -12,15 +11,13 @@
      — header (name + price + description), then each MenuSection as a group
      label, then its dishes as compact tappable rows.
 
-   Dish rows deliberately always use a HORIZONTAL back-scroll (like the
-   compact layout's own dish rows) regardless of which of the 3 layouts is
-   active: a compact list row is short (~64px), and a vertically-stacked
-   detail body (description/ingredients/allergens) doesn't fit that height
-   the way the standard/grid layouts' own tall image cards do — horizontal
-   scroll is the one detail pattern that already works at row height. See
-   each layout's own <style> block for the accompanying CSS (the ".horiz"
-   back-scroll variant + scroll-cue-h/-l already exist for compact and were
-   added to standard/grid alongside the .set-menu-* rules).
+   Dish rows deliberately always use a HORIZONTAL back-scroll: a compact
+   list row is short (~64px), and a vertically-stacked detail body
+   (description/ingredients/allergens) doesn't fit that height the way the
+   layout's own tall image cards do — horizontal scroll is the one detail
+   pattern that already works at row height. See the layout's own <style>
+   block for the accompanying CSS (the ".horiz" back-scroll variant +
+   scroll-cue-h/-l, alongside the .set-menu-* rules).
 
    Never shows basePrice or price variants — a set menu's dishes share the
    header's one price; only a per-dish supplement (Product::$supplementPrice)

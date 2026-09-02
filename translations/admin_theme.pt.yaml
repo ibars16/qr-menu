@@ -43,12 +43,6 @@ layout:
     standard:
         name: Padrão
         desc: Cartões com imagem em cima e nome em baixo. Equilibrado e impactante.
-    compact:
-        name: Lista compacta
-        desc: Linhas numeradas, rápidas de percorrer. Ideal para cardápios extensos.
-    grid:
-        name: Grelha
-        desc: Cartões verticais com imagem grande. Muito visual e impactante.
 
 theme:
     classic-dark:

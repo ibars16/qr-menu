@@ -7,7 +7,6 @@ loading:
     title: "Uw menu wordt voorbereid…"
 hero:
     subtitle: "Ontdek onze kaart"
-    subtitle_compact: "Onze kaart"
 search:
     placeholder: "Zoek gerechten…"
 tabs:

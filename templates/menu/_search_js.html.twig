@@ -29,8 +29,8 @@ function unflipCard(e, btn)    { e.stopPropagation(); btn.closest('.card').class
 // Dish detail bottom-sheet modal (standard layout's photo-first cards) — one
 // shared overlay in the DOM, content cloned in from the clicked card's own
 // <template class="dish-tpl"> so nothing needs re-rendering server-side.
-// No-op (both querySelectors return null) on layouts that don't have this
-// modal in the page, e.g. compact/grid.
+// No-op (both querySelectors return null) on any page that doesn't have
+// this modal.
 function openDishModal(card) {
     const tpl       = card.querySelector('.dish-tpl');
     const overlay   = document.getElementById('dish-modal-overlay');
@@ -163,8 +163,8 @@ const dietFilters = document.querySelectorAll('.diet-filter:not(.allergen-filter
 // not OR) — these are restrictions (allergies/diets), not preferences, so
 // combining them any looser than an intersection would be a food-safety
 // problem, not just a UX one. The hidden data-tag="all" button (see
-// standard/show.html.twig's "Todo" comment; still visible on compact/grid)
-// is not a member of this set — clicking it clears the whole selection.
+// standard/show.html.twig's "Todo" comment) is not a member of this set —
+// clicking it clears the whole selection.
 let activeTags = new Set();
 
 // Food/drink category filter — a whole .cat-section is shown or hidden by
@@ -181,9 +181,6 @@ let activeType = 'all';
 // hidden if it carries ANY selected allergen (data-allergens is "code:presence
 // code:presence …", already on every card — see MenuController::$menuAllergens
 // for where the checklist itself comes from).
-const allergenFilterBtn   = document.getElementById('allergen-filter-btn');
-const allergenFilterPanel = document.getElementById('allergen-filter-panel');
-const allergenFilterBadge = document.getElementById('allergen-filter-badge');
 let activeAllergens = new Set();
 
 function applyFilters() {
@@ -215,13 +212,6 @@ function applyFilters() {
     if (noResults) noResults.style.display = anyVisible ? 'none' : 'block';
 }
 
-function toggleAllergenFilterPanel() {
-    if (!allergenFilterPanel) return;
-    const open = !allergenFilterPanel.hidden;
-    allergenFilterPanel.hidden = open;
-    allergenFilterBtn?.setAttribute('aria-expanded', open ? 'false' : 'true');
-}
-
 function onAllergenFilterChange() {
     // Two markup variants feed the same activeAllergens set: legacy layouts
     // use a native checkbox (read via :checked/value), maison uses a chip
@@ -231,11 +221,6 @@ function onAllergenFilterChange() {
     const checked  = Array.from(document.querySelectorAll('.allergen-filter-option input:checked')).map(el => el.value);
     const activeBt = Array.from(document.querySelectorAll('.allergen-filter-option.active[data-allergen]')).map(el => el.dataset.allergen);
     activeAllergens = new Set([...checked, ...activeBt]);
-    if (allergenFilterBadge) {
-        allergenFilterBadge.textContent = String(activeAllergens.size);
-        allergenFilterBadge.style.display = activeAllergens.size > 0 ? '' : 'none';
-    }
-    allergenFilterBtn?.classList.toggle('has-selection', activeAllergens.size > 0);
     applyFilters();
     updateFiltersButtonBadge();
 }
@@ -260,13 +245,6 @@ document.querySelectorAll('.allergen-filter-option[data-allergen]').forEach(btn 
         btn.setAttribute('aria-pressed', String(nowActive));
         onAllergenFilterChange();
     });
-});
-
-document.addEventListener('click', e => {
-    if (!allergenFilterPanel || allergenFilterPanel.hidden) return;
-    if (allergenFilterPanel.contains(e.target) || allergenFilterBtn?.contains(e.target)) return;
-    allergenFilterPanel.hidden = true;
-    allergenFilterBtn?.setAttribute('aria-expanded', 'false');
 });
 
 // Cross-contamination / exception notes on allergen chips — click-to-open,
@@ -303,10 +281,6 @@ document.addEventListener('click', closeAllergenNotes);
 document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     closeAllergenNotes();
-    if (allergenFilterPanel && !allergenFilterPanel.hidden) {
-        allergenFilterPanel.hidden = true;
-        allergenFilterBtn?.setAttribute('aria-expanded', 'false');
-    }
 });
 
 searchInput?.addEventListener('input', applyFilters);
@@ -331,10 +305,10 @@ dietFilters.forEach(btn => btn.addEventListener('click', () => {
         btn.setAttribute('aria-pressed', String(nowActive));
         if (nowActive) activeTags.add(btn.dataset.tag); else activeTags.delete(btn.dataset.tag);
     }
-    // On layouts where "Todo" is its own visible chip (compact/grid), show
-    // it active only while nothing else is selected — same "no filter"
-    // indicator the old radio behavior gave it, without making it part of
-    // the multi-select set itself.
+    // Keeps the hidden data-tag="all" button's own active state in sync
+    // (it's the reset target for clearAllFilters(), not a visible chip on
+    // this layout) — same "no filter" indicator the old radio behavior
+    // gave it, without making it part of the multi-select set itself.
     document.querySelectorAll('.diet-filter[data-tag="all"]').forEach(all => {
         all.classList.toggle('active', activeTags.size === 0);
         all.setAttribute('aria-pressed', String(activeTags.size === 0));
