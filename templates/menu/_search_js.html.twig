@@ -145,8 +145,8 @@ function updateFiltersButtonBadge() {
 // existing "Todo" button / clear function — reuses their handlers rather
 // than duplicating the reset logic.
 function clearAllFilters() {
-    document.querySelector('.diet-filter[data-tag="all"]')?.click();
-    document.querySelector('.type-filter[data-type="all"]')?.click();
+    document.querySelector('[data-filter="diet"][data-tag="all"]')?.click();
+    document.querySelector('[data-filter="type"][data-type="all"]')?.click();
     clearAllergenFilters();
 }
 
@@ -154,11 +154,13 @@ const searchInput = document.getElementById('menu-search');
 const noResults   = document.getElementById('no-results');
 const sections    = document.querySelectorAll('.cat-section');
 const catTabs     = document.querySelectorAll('.cat-tab');
-// :not(.allergen-filter-option) excludes maison's allergen chip buttons —
-// they reuse the .diet-filter class purely for its visual styling (pill,
-// active-state tint) but are driven by activeAllergens/onAllergenFilterChange()
-// below instead of activeTags, and must not double-handle clicks here too.
-const dietFilters = document.querySelectorAll('.diet-filter:not(.allergen-filter-option)');
+// Selected by data-filter, not by the visual .diet-filter class — that
+// class (and .chip/.allergen-filter-option) is style-only now. Maison's
+// allergen chip buttons reuse .diet-filter purely for its look but carry
+// data-filter="allergen" instead of "diet", so they're driven by
+// activeAllergens/onAllergenFilterChange() below and never double-handled
+// here even though they'd otherwise match a plain .diet-filter selector.
+const dietFilters = document.querySelectorAll('[data-filter="diet"]');
 // Multi-select: every checked diet/allergy/other tag chip must match (AND,
 // not OR) — these are restrictions (allergies/diets), not preferences, so
 // combining them any looser than an intersection would be a food-safety
@@ -173,7 +175,7 @@ let activeTags = new Set();
 // entire sections (a category is either all-in or all-out). A section with
 // no data-type (unclassified) always matches, in either mode — see
 // CategoryType's docblock for why null is never treated as "hidden".
-const typeFilters = document.querySelectorAll('.type-filter');
+const typeFilters = document.querySelectorAll('[data-filter="type"]');
 let activeType = 'all';
 
 // Allergens a customer wants to avoid — multi-select, unlike the single-select
@@ -218,16 +220,16 @@ function onAllergenFilterChange() {
     // button (read via .active/data-allergen — see standard/show.html.twig's
     // theme == 'maison' branch). A given render only ever has one variant in
     // the DOM, so reading both selectors is safe and never double-counts.
-    const checked  = Array.from(document.querySelectorAll('.allergen-filter-option input:checked')).map(el => el.value);
-    const activeBt = Array.from(document.querySelectorAll('.allergen-filter-option.active[data-allergen]')).map(el => el.dataset.allergen);
+    const checked  = Array.from(document.querySelectorAll('[data-filter="allergen"]:checked')).map(el => el.value);
+    const activeBt = Array.from(document.querySelectorAll('[data-filter="allergen"].active[data-allergen]')).map(el => el.dataset.allergen);
     activeAllergens = new Set([...checked, ...activeBt]);
     applyFilters();
     updateFiltersButtonBadge();
 }
 
 function clearAllergenFilters() {
-    document.querySelectorAll('.allergen-filter-option input:checked').forEach(el => { el.checked = false; });
-    document.querySelectorAll('.allergen-filter-option.active[data-allergen]').forEach(el => {
+    document.querySelectorAll('[data-filter="allergen"]:checked').forEach(el => { el.checked = false; });
+    document.querySelectorAll('[data-filter="allergen"].active[data-allergen]').forEach(el => {
         el.classList.remove('active');
         el.setAttribute('aria-pressed', 'false');
     });
@@ -238,7 +240,7 @@ function clearAllergenFilters() {
 // standard/show.html.twig). Toggles the same activeAllergens set that the
 // checkbox variant drives elsewhere; filtering itself (applyFilters) never
 // knows which markup produced the set.
-document.querySelectorAll('.allergen-filter-option[data-allergen]').forEach(btn => {
+document.querySelectorAll('[data-filter="allergen"][data-allergen]').forEach(btn => {
     btn.addEventListener('click', () => {
         const nowActive = !btn.classList.contains('active');
         btn.classList.toggle('active', nowActive);
@@ -309,7 +311,7 @@ dietFilters.forEach(btn => btn.addEventListener('click', () => {
     // (it's the reset target for clearAllFilters(), not a visible chip on
     // this layout) — same "no filter" indicator the old radio behavior
     // gave it, without making it part of the multi-select set itself.
-    document.querySelectorAll('.diet-filter[data-tag="all"]').forEach(all => {
+    document.querySelectorAll('[data-filter="diet"][data-tag="all"]').forEach(all => {
         all.classList.toggle('active', activeTags.size === 0);
         all.setAttribute('aria-pressed', String(activeTags.size === 0));
     });

@@ -524,9 +524,9 @@
                     <div class="filters-section">
                         <div class="filters-section-title">{{ 'filters.type_title'|trans({}, 'menu_public', locale) }}</div>
                         <div class="type-filters">
-                            <button class="type-filter active" data-type="all">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</button>
-                            <button class="type-filter" data-type="food">{{ 'type.food'|trans({}, 'menu_public', locale) }}</button>
-                            <button class="type-filter" data-type="drink">{{ 'type.drink'|trans({}, 'menu_public', locale) }}</button>
+                            <button class="type-filter active" data-filter="type" data-type="all">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</button>
+                            <button class="type-filter" data-filter="type" data-type="food">{{ 'type.food'|trans({}, 'menu_public', locale) }}</button>
+                            <button class="type-filter" data-filter="type" data-type="drink">{{ 'type.drink'|trans({}, 'menu_public', locale) }}</button>
                         </div>
                     </div>
                 {% endif %}
@@ -539,8 +539,8 @@
                                Kept in the DOM (not deleted) because it's still the reset target
                                for the diet-filter group: clearAllFilters() in _search_js.html.twig
                                clicks it programmatically, which works on a hidden element. #}
-                            <button class="diet-filter active" data-tag="all" style="display:none" aria-hidden="true" tabindex="-1">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</button>
-                            {% for tag in dietaTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, theme) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
+                            <button class="diet-filter active" data-filter="diet" data-tag="all" style="display:none" aria-hidden="true" tabindex="-1">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</button>
+                            {% for tag in dietaTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-filter="diet" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, theme) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
                         </div>
                     </div>
                 {% endif %}
@@ -548,7 +548,7 @@
                     <div class="filters-section">
                         <div class="filters-section-title">{{ 'filters.allergy_title'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(alergiaTags|length) }}</span>{% endif %}</div>
                         <div class="diet-filters">
-                            {% for tag in alergiaTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, theme) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
+                            {% for tag in alergiaTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-filter="diet" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, theme) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
                         </div>
                     </div>
                 {% endif %}
@@ -563,14 +563,14 @@
                                below untouched. #}
                             <div class="diet-filters">
                                 {% for a in menuAllergens %}
-                                    <button type="button" class="diet-filter allergen-filter-option" data-allergen="{{ a.code }}" aria-pressed="false">{{ _self.chipIcon(a.icon, theme) }}{{ a.name }}</button>
+                                    <button type="button" class="diet-filter allergen-filter-option" data-filter="allergen" data-allergen="{{ a.code }}" aria-pressed="false">{{ _self.chipIcon(a.icon, theme) }}{{ a.name }}</button>
                                 {% endfor %}
                             </div>
                         {% else %}
                             <div class="allergen-filter-options">
                                 {% for a in menuAllergens %}
                                     <label class="allergen-filter-option">
-                                        <input type="checkbox" value="{{ a.code }}" onchange="onAllergenFilterChange()">
+                                        <input type="checkbox" data-filter="allergen" value="{{ a.code }}" onchange="onAllergenFilterChange()">
                                         <span>{{ a.icon }} {{ a.name }}</span>
                                     </label>
                                 {% endfor %}
@@ -582,7 +582,7 @@
                     <div class="filters-section">
                         <div class="filters-section-title">{{ 'filters.other_title'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(otrosTags|length) }}</span>{% endif %}</div>
                         <div class="diet-filters">
-                            {% for tag in otrosTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, theme) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
+                            {% for tag in otrosTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-filter="diet" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, theme) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
                         </div>
                     </div>
                 {% endif %}
