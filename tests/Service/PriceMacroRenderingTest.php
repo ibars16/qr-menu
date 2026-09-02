@@ -78,11 +78,16 @@ final class PriceMacroRenderingTest extends TestCase
     {
         $product = $this->product(1000);
 
-        // Plain text, no markup at all, using $currencyDisplay — same
-        // symbol-or-code convention as the price-variant path below, so a
-        // menu mixing simple and variant-priced dishes shows one consistent
-        // currency label throughout (see _price.html.twig's own docblock).
-        self::assertSame('10.00 €', $this->render($product, 'EUR', true, '€'));
+        // No .price-stack/.price-row wrapper (that's the variant case below)
+        // — just the number plus a .price-currency span around
+        // $currencyDisplay, no text-node space between them (spacing is a
+        // CSS margin on .price-currency, themed per layout, not part of the
+        // rendered text — see that class in each layout's own <style>
+        // block). Same symbol-or-code convention as the price-variant path
+        // below, so a menu mixing simple and variant-priced dishes shows one
+        // consistent currency label throughout (see _price.html.twig's own
+        // docblock).
+        self::assertSame('10.00<span class="price-currency">€</span>', $this->render($product, 'EUR', true, '€'));
     }
 
     public function testSimpleProductWithoutCurrencySuffix(): void
@@ -113,9 +118,12 @@ final class PriceMacroRenderingTest extends TestCase
         $rows = $this->parseRows($this->render($product, 'EUR', true, '€'));
 
         self::assertCount(3, $rows, 'one .price-row per price: base + 2 variants');
-        self::assertSame(['label' => 'Ración', 'value' => '8.00 €'], $rows[0]);
-        self::assertSame(['label' => 'Tapa', 'value' => '3.00 €'], $rows[1]);
-        self::assertSame(['label' => 'Media ración', 'value' => '5.00 €'], $rows[2]);
+        // No space in the parsed text: the gap is a CSS margin on
+        // .price-currency (the value's own child span), not a text node —
+        // see testSimpleProductRendersOnlyItsSinglePlainPrice's comment.
+        self::assertSame(['label' => 'Ración', 'value' => '8.00€'], $rows[0]);
+        self::assertSame(['label' => 'Tapa', 'value' => '3.00€'], $rows[1]);
+        self::assertSame(['label' => 'Media ración', 'value' => '5.00€'], $rows[2]);
     }
 
     public function testEveryRowCarriesItsOwnCurrencyNotJustOne(): void
@@ -165,10 +173,10 @@ final class PriceMacroRenderingTest extends TestCase
         $product->setBasePriceLabel('Ración');
 
         $rows = $this->parseRows($this->render($product, 'USD', true, 'USD')); // USD's symbol "$" is ambiguous, so display = code
-        self::assertSame('8.00 USD', $rows[0]['value']);
+        self::assertSame('8.00USD', $rows[0]['value']);
 
         $rows = $this->parseRows($this->render($product, 'GBP', true, '£')); // GBP's "£" is unambiguous
-        self::assertSame('8.00 £', $rows[0]['value']);
+        self::assertSame('8.00£', $rows[0]['value']);
     }
 
     public function testVariantPricesUseTheCurrencyConvertedAmountNotTheRawOne(): void
@@ -185,8 +193,8 @@ final class PriceMacroRenderingTest extends TestCase
 
         $rows = $this->parseRows($this->render($product, 'USD', true, 'USD'));
 
-        self::assertSame('8.80 USD', $rows[0]['value']);
-        self::assertSame('3.30 USD', $rows[1]['value']);
+        self::assertSame('8.80USD', $rows[0]['value']);
+        self::assertSame('3.30USD', $rows[1]['value']);
     }
 
     public function testNullBasePriceLabelRendersItsRowWithNoLabelNode(): void
@@ -207,7 +215,7 @@ final class PriceMacroRenderingTest extends TestCase
 
         self::assertCount(2, $rows);
         self::assertNull($rows[0]['label']);
-        self::assertSame('8.00 €', $rows[0]['value']);
+        self::assertSame('8.00€', $rows[0]['value']);
         self::assertSame('Tapa', $rows[1]['label']);
     }
 
