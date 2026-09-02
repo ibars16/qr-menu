@@ -160,6 +160,10 @@ error:
     translation_name_required: Il nome è obbligatorio.
     category_not_found: Categoria non trovata.
     allergen_free_from_note_required: Aggiungi una breve nota che spieghi perché questo allergene è contrassegnato come assente.
+    image_invalid: Nessuna immagine valida selezionata.
+    image_unsupported_type: Formato immagine non supportato. Usa JPEG, PNG o WebP.
+    image_too_large: L'immagine è troppo grande (max 8 MB).
+    image_upload_failed: Impossibile caricare l'immagine. Riprova.
     unexpected: Qualcosa è andato storto. Riprova.
 
 translations:

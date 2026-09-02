@@ -72,3 +72,6 @@ theme:
     terra:
         name: Terra
         desc: Terracota mediterránea. Ideal para tapas, pintxos y cocina informal.
+    maison:
+        name: Maison
+        desc: Pergamino, marfil y vino, con tipografía serif editorial. Alta gastronomía y sofisticación.

@@ -72,3 +72,6 @@ theme:
     terra:
         name: Terra
         desc: Mediterranean terracotta. Ideal for tapas, pintxos and casual dining.
+    maison:
+        name: Maison
+        desc: Parchment, ivory and wine, with editorial serif type. Fine dining and sophistication.

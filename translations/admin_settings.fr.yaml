@@ -8,6 +8,8 @@ section:
 field:
     name: Nom
     name_placeholder: Nom de votre restaurant
+    tagline: Slogan
+    tagline_placeholder: 'Ex. Cuisine méditerranéenne de saison'
     menu_url: URL de votre carte numérique
     logo: Logo du restaurant
     primary_color: Couleur principale
@@ -24,6 +26,7 @@ action:
 
 hint:
     logo_format: 'PNG ou JPG, 2 Mo max.'
+    tagline: "Affiché sous le nom du restaurant sur certains thèmes de la carte publique."
     primary_color: Utilisée dans toute la carte numérique
     menu_language: La langue dans laquelle vous saisissez les noms et descriptions des plats.
     admin_language: "La langue de ce panneau de gestion. Elle n'affecte pas la carte vue par vos clients."

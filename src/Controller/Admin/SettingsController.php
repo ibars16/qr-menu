@@ -36,6 +36,7 @@ class SettingsController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $name        = trim($request->request->get('name', ''));
+            $tagline     = trim($request->request->get('tagline', ''));
             $color       = $request->request->get('primaryColor', '#C1440E');
             $currency    = $request->request->get('currency', 'EUR');
             $language    = $request->request->get('defaultLanguage', 'es');
@@ -47,6 +48,7 @@ class SettingsController extends AbstractController
             }
 
             $restaurant->setName($name);
+            $restaurant->setTagline($tagline !== '' ? $tagline : null);
             $restaurant->setPrimaryColor($color);
             $restaurant->setCurrency($currency);
             $restaurant->setDefaultLanguage($language);
@@ -74,14 +76,15 @@ class SettingsController extends AbstractController
             }
 
             // Handle logo removal
-            if ($request->request->get('removeLogo') === '1') {
+            if ($request->request->get('removeLogoFlag') === '1') {
                 $restaurant->setLogo(null);
             }
 
-            // name/logo/primaryColor/currency/defaultLanguage all appear on
-            // the public menu; adminLocale is the only field here that
-            // doesn't. One flush covers all of them, so bump unconditionally
-            // rather than trying to detect which fields actually changed.
+            // name/tagline/logo/primaryColor/currency/defaultLanguage all
+            // appear on the public menu; adminLocale is the only field here
+            // that doesn't. One flush covers all of them, so bump
+            // unconditionally rather than trying to detect which fields
+            // actually changed.
             $restaurant->bumpMenuContentVersion();
             $em->flush();
             $this->addFlash('success', $translator->trans('flash.saved', domain: 'admin_settings'));

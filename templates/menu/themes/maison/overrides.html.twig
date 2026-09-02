@@ -1,0 +1,292 @@
+{# Maison — structural overrides for the standard layout only (see
+   conversation: layout-level changes for this theme stay scoped to
+   `standard`; compact/grid inherit the maison palette/typography from
+   vars.html.twig but keep their existing structure for now).
+
+   This file is included right after standard/show.html.twig's own
+   <style> block (`{% include 'menu/themes/' ~ theme ~ '/overrides.html.twig'
+   ignore missing %}`), so equal-specificity selectors here win by source
+   order alone — nothing below needs raised specificity or !important. #}
+<style>
+    html { scroll-behavior: smooth; }
+
+    /* Category tabs — underline instead of filled pills. carta-estilo.css's
+       .tabs{gap:24px;padding:18px 20px 2px} assumes .tabs is a direct child
+       with no other horizontal gutter; ours sits inside .ui-wrap, which
+       already supplies that left/right gutter to the search field and
+       section headers above/below it. Copying the 20px side padding
+       verbatim here would double that indent and misalign the tabs against
+       everything else — so gap/vertical padding are copied literally (18px
+       top, matching the reference exactly), side padding is left at 0 to
+       keep the shared gutter single-sourced. */
+    .cat-tabs { gap: 24px; padding: 18px 0 2px; }
+    .cat-tab {
+        background: none; border: none; border-radius: 0; padding: 0 0 9px; min-height: auto;
+        color: var(--tab-text); font-weight: 400; font-size: calc(14.5px * var(--font-scale)); box-shadow: none; position: relative;
+    }
+    .cat-tab:hover { background: none; color: var(--fg); transform: none; }
+    .cat-tab:active { transform: none; }
+    .cat-tab.active { background: none; color: var(--fg); font-weight: 500; box-shadow: none; }
+    .cat-tab.active::after {
+        content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 2px;
+        background: var(--cp); border-radius: 2px;
+    }
+
+    /* Section header — serif, sentence case, no uppercase/left accent bar */
+    .cat-title { text-transform: none; letter-spacing: 0; font-size: calc(23px * var(--font-scale)); font-weight: 500; gap: 12px; }
+    .cat-title::before { display: none; }
+
+    /* Dish count next to the section title — brass, small-caps spacing,
+       body font (not the serif display font the title itself uses).
+       Matches carta-estilo .sec-head .count exactly; --cf-hborder is the
+       same brass hex as carta-estilo's --brass token. */
+    .cat-title .count {
+        font-family: var(--font-body); font-size: 11px; font-weight: 600;
+        letter-spacing: 0.2em; color: var(--cf-hborder);
+    }
+
+    /* Price — fine display-serif typography, no filled pill */
+    .dish-price, .dish-detail-price {
+        background: none; box-shadow: none; padding: 0; color: var(--cn); font-family: var(--font-display);
+        font-size: calc(18px * var(--font-scale));
+    }
+    .dish-price .price-item-label, .dish-detail-price .price-item-label {
+        color: var(--fg-2); font-family: var(--font-body); font-size: 0.7em; letter-spacing: 0.04em;
+    }
+    .dish-price .price-item-value, .dish-detail-price .price-item-value { color: var(--cn); }
+
+    /* "Ver más" — discreet text link; the arrow slides on hover instead of
+       the pill filling solid (the base layout's default treatment). */
+    .more-hint { background: none; border: none; color: var(--cp); padding: 0; }
+    .dish-card:hover .more-hint { background: none; border-color: transparent; color: var(--wine-soft); }
+    .more-hint i { transition: transform 0.25s ease; }
+    .dish-card:hover .more-hint i { transform: translateX(3px); }
+
+    /* Photo frame — shorter than the other themes', matching carta-estilo
+       .dish-photo{height:150px} (markup only renders the photo branch below
+       when theme == 'maison' — the no-photo case is .dish-row instead, see
+       menu/layouts/standard/show.html.twig and .dish-row further down). */
+    .dish-card .front-img { height: 150px; aspect-ratio: auto; }
+    .dish-card { box-shadow: none; }
+    /* Dish name, photo card only — .dish-row .front-name below sets its
+       own size for the no-photo row variant; both selectors match a row's
+       name equally (same specificity, two classes each), so the row rule
+       staying declared after this one in source order is what makes it
+       win there — see the padding-top gotcha noted near .search-wrap. */
+    .dish-card .front-name { font-size: calc(19px * var(--font-scale)); }
+
+    /* No-photo panel — only ever reached now inside the dish-detail modal's
+       .dish-modal-photo (the front-card grid uses .dish-row instead, see
+       below): a single flat block, no logo/icon (a delivery-style glyph
+       doesn't belong on a restaurant menu). Just the restaurant name, small
+       and muted, centered — never the dish's own name, never a second
+       element. */
+    .dish-placeholder {
+        background: var(--surface-2); display: flex; align-items: center; justify-content: center; padding: 0.75rem;
+    }
+    .dish-placeholder span {
+        font-size: 11px; font-weight: 500; letter-spacing: 0.04em; color: var(--fg-2); text-align: center; -webkit-line-clamp: 1;
+    }
+
+    /* No-photo dish, front-card grid: a plain text row instead of a card
+       with an empty image frame — grid-column spans the full grid width so
+       it reads as a list divider across both columns at the ≥640px
+       breakpoint, not a half-width card-shaped hole. Horizontal margin is
+       0 (not carta-estilo's literal 20px) for the same reason the tabs
+       above drop their side padding: .cards-grid already sits inside
+       .content's own 18/24px gutter, so a second one would double it. */
+    .dish-row {
+        grid-column: 1 / -1; background: none; border: none; border-radius: 0; box-shadow: none;
+        margin: 0; padding: 17px 0; border-top: 1px solid var(--line-soft); cursor: pointer;
+    }
+    .dish-row:hover { box-shadow: none; border-color: var(--line-soft); transform: none; }
+    .dish-row:active { transform: none; }
+    .row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+    .dish-row .front-name {
+        font-family: var(--font-display); font-size: calc(18px * var(--font-scale)); font-weight: 500;
+        line-height: 1.25; white-space: normal; overflow: visible; text-overflow: clip;
+    }
+    .row-price {
+        font-family: var(--font-display); font-size: calc(18px * var(--font-scale)); font-weight: 500;
+        color: var(--cn); white-space: nowrap; flex-shrink: 0;
+    }
+    .row-price .price-item-label { color: var(--fg-2); font-family: var(--font-body); font-size: 0.7em; letter-spacing: 0.04em; }
+    .row-price .price-item-value { color: var(--cn); }
+    .dish-row .front-desc {
+        display: block; -webkit-line-clamp: unset; -webkit-box-orient: unset; overflow: visible;
+        font-size: calc(13.5px * var(--font-scale)); color: var(--fg-2); line-height: 1.5; margin: 5px 0 0; max-width: 80%;
+    }
+    .dish-row .more-hint { font-size: 11.5px; margin-top: 8px; }
+
+    /* Description — up to 2 lines instead of truncating at 1; typography
+       matches carta-estilo .dish-desc exactly. */
+    .front-desc {
+        font-size: calc(13.5px * var(--font-scale)); color: var(--fg-2); line-height: 1.5; margin: 6px 0 10px;
+        white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    /* Allergen icon row on the card front — capped at 4 + "+N" overflow
+       (markup only rendered when theme == 'maison'). Matches carta-estilo
+       .allergen-icons/.aicon exactly (background: var(--parchment), i.e.
+       our --bg, not --surface-2). */
+    .allergen-icons { display: flex; align-items: center; gap: 7px; margin-bottom: 12px; }
+    .aicon {
+        width: 22px; height: 22px; border-radius: 50%; background: var(--bg);
+        display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0;
+    }
+    .aicon-more { font-size: 10px; font-weight: 700; color: var(--fg-2); background: none; }
+
+    /* Hero kicker/CTA — carta-estilo's .cta-explore is a small filled wine
+       button (not a text link), positioned above h1 in the markup (moved
+       there in the twig). Kept as an <a href="#cat-tabs"> so the
+       smooth-scroll behavior is unchanged; only styling differs from the
+       other 8 themes' larger .hero-kicker pill in this same slot. */
+    .cta-explore {
+        display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px; margin: 0;
+        background: var(--cp); color: #fff; border: none; border-radius: 100px;
+        font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-decoration: none;
+        transition: background 0.2s;
+    }
+    .cta-explore:hover { background: var(--wine-soft); }
+    .cta-explore i { font-size: 12px; }
+    .hero { padding: 22px 20px 26px; }
+    /* Base 43px, not the shared 46px other sizes use — an almost
+       imperceptible +1px over the original 42px, scaled down further by
+       --font-scale like everything else. Kept separate deliberately: the
+       restaurant name needs to actually fit in ~1-2 lines at 390px, unlike
+       the other sizes here which just needed "a touch bigger". */
+    .hero-name { font-size: calc(43px * var(--font-scale)); font-weight: 500; letter-spacing: -0.01em; margin: 16px 0 10px; text-shadow: none; }
+    /* Tagline — only painted when restaurant.tagline has a value (see the
+       twig guard); admins fill it in via Ajustes > Información del
+       restaurante, it's never inferred or defaulted here. */
+    .tagline { font-size: calc(14.5px * var(--font-scale)); font-weight: 400; color: var(--fg-2); line-height: 1.5; max-width: 82%; }
+
+    /* Chef's-recommendation banner — carta-premium-completa.html's .banner,
+       adapted to this app's tokens (--accent for its --wine, --surface for
+       its --ivory; color-mix replaces its literal wine-tinted background/
+       border since we don't have a raw wine rgb triplet to mix by hand).
+       Only ever in the DOM when the twig found a tagged dish (see
+       show.html.twig) — no empty/placeholder state to style. */
+    .banner {
+        margin: 16px 0 0; display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+        border-radius: var(--radius); cursor: pointer;
+        background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+        border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+    }
+    .bicon {
+        width: 34px; height: 34px; border-radius: var(--radius); flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center; background: var(--accent); color: #fff;
+    }
+    .bicon svg { width: 16px; height: 16px; }
+    .btext { flex: 1; min-width: 0; }
+    .blabel { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cf-hborder); margin-bottom: 2px; }
+    .bhead {
+        font-family: var(--font-display); font-weight: 500; font-size: calc(15px * var(--font-scale)); line-height: 1.2; color: var(--fg);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .bsub {
+        font-size: calc(12.5px * var(--font-scale)); color: var(--fg-2); margin-top: 2px;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* Header — carta-estilo's header{padding:16px 20px 14px}, logo an
+       ivory circle with a brass ring (not a solid wine fill), brand name
+       at weight 500. */
+    .header { padding: 16px 20px 14px; }
+    .logo { border-radius: 50%; background: var(--surface); border: 1px solid var(--cf-hborder); box-shadow: none; color: var(--accent); }
+    /* Default logo (no restaurant.logo uploaded) — a filled (not outline)
+       cutlery mark, redrawn from carta-premium-completa.html's stroke
+       version: a thin stroke anti-aliases soft at 24px, a solid fill reads
+       crisp at that size regardless of display density. Sized/colored via
+       .logo's own flex-centering and `color: var(--accent)` above (the
+       svg's fill="currentColor" inherits it — no separate color rule
+       needed). Not the letter-avatar fallback the other 8 themes use. */
+    .logo svg { width: 24px; height: 24px; }
+    .resto-name { font-weight: 500; }
+    .nav-dd-trigger { padding: 7px 11px; border-width: 1px; border-radius: 100px; }
+
+    /* Card badges — carta-estilo's single .badge treatment (dark
+       translucent chip, cream small-caps text) applied to all 3 overlay
+       badges (featured tag / spicy / popular); still 3 separate
+       elements/logic, look only. The twig only ever renders one of the
+       three per card (recommended > popular > spicy priority — see
+       maisonBadge in show.html.twig), so all three share the same
+       top-left slot (carta-estilo .badges{top:10px;left:10px}) rather
+       than each keeping its own base-layout corner. */
+    .dish-pill, .spicy-badge, .popular-badge {
+        top: 0.625rem; right: auto; bottom: auto; left: 0.625rem;
+        background: rgba(20,14,11,0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+        color: #f6eee2; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+        padding: 4px 8px; border-radius: 2px; font-weight: 600; border: none; box-shadow: none;
+    }
+
+    /* Allergy/diet filter button — matches carta-estilo .allergy exactly:
+       ivory fill, thin line border, ESPRESSO text (only the icon is
+       wine), trailing arrow, brass hover border. Overrides the other
+       themes' hardcoded red/pink fill (that base rule sets literal hex,
+       not a var, so it's the same flat color on every theme — maison is
+       the first to override it). */
+    .diet-allergy-btn {
+        background: var(--surface); border: 1px solid var(--b1); border-radius: var(--radius);
+        color: var(--fg); box-shadow: none; font-weight: 400; gap: 10px; padding: 12px 15px;
+    }
+    .diet-allergy-btn:hover { border-color: var(--cf-hborder); box-shadow: none; }
+    .diet-allergy-btn.has-active { border-color: var(--accent); }
+    .diet-allergy-btn i { color: var(--accent); }
+    .allergy-arrow { margin-left: auto; color: var(--fg-2); }
+
+    /* Rhythm from the category tabs down through the allergy filter to the
+       first section header (see conversation 2026-09-02: the previous
+       0/2rem split left the button glued to the tabs, then a dead gap
+       before "Carpaccios"). Matches carta-estilo: 16px between tabs and
+       the allergy button (.allergy{margin:16px 20px 0}), then a uniform
+       26px from there to every section title (.sec-head{padding:26px 20px
+       10px}), including the gap between one section's cards and the
+       next section's title. */
+    .diet-allergy-row { padding: 16px 0 0; }
+    .cat-section { padding-top: 26px; }
+
+    /* Search — a hairline underline instead of a bordered/filled box, with
+       the magnifier icon sitting inline to its left (carta-estilo
+       .search-field: icon + input as flex siblings, border-bottom on the
+       shared wrapper rather than on the input alone). The 20px gap above
+       the strip is a margin, not padding — align-items:center centers
+       flex children against the *content* box, so any padding here (the
+       original 20px/4px split) pulls that content box off-center inside
+       the visible band even though the children stay centered against
+       each other. Zero padding on the wrap means the band's height comes
+       only from .search-input's own symmetric 9px/9px padding, so there's
+       nothing left to be off-center against — padding-top must be reset
+       explicitly here, not just omitted: the base layout's own
+       .search-wrap{padding-top:24px} (standard/show.html.twig) targets the
+       same selector and isn't cleared just because this rule doesn't
+       mention it, so leaving it out silently stacked a 24px padding under
+       this rule's 20px margin instead of replacing it. */
+    .search-wrap {
+        display: flex; align-items: center; gap: 11px; margin-top: 20px; padding: 0;
+        border-bottom: 1px solid var(--line-soft); transition: border-color 0.22s;
+    }
+    .search-wrap:focus-within { border-color: var(--in-focus-border); }
+    .search-icon {
+        position: static; top: auto; left: auto; display: block; flex-shrink: 0;
+        font-size: 15px; color: var(--fg-3); pointer-events: none;
+    }
+    .search-input {
+        flex: 1; min-width: 0; border: 0; border-radius: 0; background: transparent;
+        padding: 9px 2px; box-shadow: none;
+    }
+    .search-input:focus { box-shadow: none; }
+    .search-input::placeholder { color: var(--fg-3); font-style: italic; }
+
+    /* Unified 20px side gutter (see conversation 2026-09-02) — .ui-wrap and
+       .content are separate sibling wrappers that already carried identical
+       padding (18px / 24px≥768px) so nothing inside them was ever actually
+       misaligned against anything else in the *other* wrapper; this just
+       moves both from that shared base-layout value to carta-estilo's
+       literal 20px, at every width, in one place. Every element the brief
+       calls out (search line, tabs, allergy button, section header, rows)
+       stays at padding/margin 0 of its own and inherits this alone, so the
+       single change here is what keeps all of them flush by construction. */
+    .ui-wrap, .content { padding-left: 20px; padding-right: 20px; }
+    @media (min-width: 768px) { .ui-wrap, .content { padding-left: 20px; padding-right: 20px; } }
+</style>

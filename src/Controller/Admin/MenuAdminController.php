@@ -24,17 +24,22 @@ use App\Service\ProductAllergenResolver;
 use App\Service\ProductTranslationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin', name: 'admin_')]
 #[IsGranted('ROLE_STAFF')]
 class MenuAdminController extends AbstractController
 {
+    private const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    private const MAX_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
+
     public function __construct(
         private readonly TranslatorInterface $translator,
         private readonly AllergenRepository $allergenRepository,
@@ -401,6 +406,60 @@ class MenuAdminController extends AbstractController
         ]);
     }
 
+    /**
+     * Separate from saveProduct() on purpose: that route takes a JSON body,
+     * and a file needs multipart/form-data, so the dish editor calls this
+     * only after saveProduct() has returned the product's id (a brand-new
+     * dish doesn't have one yet to upload against).
+     */
+    #[Route('/products/{id}/image', name: 'product_image_upload', methods: ['POST'])]
+    public function uploadProductImage(Product $product, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): JsonResponse
+    {
+        $this->assertOwner($product->getCategory()->getRestaurant());
+
+        $file = $request->files->get('image');
+        if (!$file || !$file->isValid()) {
+            return $this->json(['error' => $this->translator->trans('error.image_invalid', domain: 'admin_menu')], 400);
+        }
+        if (!in_array($file->getMimeType(), self::ALLOWED_IMAGE_MIME_TYPES, true)) {
+            return $this->json(['error' => $this->translator->trans('error.image_unsupported_type', domain: 'admin_menu')], 400);
+        }
+        if ($file->getSize() > self::MAX_IMAGE_SIZE_BYTES) {
+            return $this->json(['error' => $this->translator->trans('error.image_too_large', domain: 'admin_menu')], 400);
+        }
+
+        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeFilename      = $slugger->slug($originalFilename);
+        $newFilename        = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/products';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        try {
+            $file->move($uploadDir, $newFilename);
+        } catch (FileException) {
+            return $this->json(['error' => $this->translator->trans('error.image_upload_failed', domain: 'admin_menu')], 500);
+        }
+
+        // Old file is orphaned on disk once the column no longer points to
+        // it — clean it up now that the new one is safely in place.
+        $oldImage = $product->getImage();
+        if ($oldImage) {
+            $oldPath = $uploadDir . '/' . $oldImage;
+            if (is_file($oldPath)) {
+                unlink($oldPath);
+            }
+        }
+
+        $product->setImage($newFilename);
+        $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
+        $em->flush();
+
+        return $this->json(['image' => $newFilename]);
+    }
+
     #[Route('/products/save', name: 'product_save', methods: ['POST'])]
     public function saveProduct(Request $request, EntityManagerInterface $em): JsonResponse
     {
@@ -429,6 +488,16 @@ class MenuAdminController extends AbstractController
             $product = new Product();
             $product->setCategory($category);
             $product->setActive(true);
+            // Persisted immediately, not just before the final flush: the
+            // ingredients/allergen-overrides blocks below each flush() early
+            // (to sequence their own deletes before re-inserts — see their
+            // comments), and Product's OneToMany relations only cascade
+            // persist outward from an already-managed Product. Without this,
+            // that first intermediate flush() throws
+            // ORMInvalidArgumentException on a brand-new product's
+            // translations/ingredients/overrides ("not configured to
+            // cascade persist").
+            $em->persist($product);
 
             // Menu-category dishes always belong to a section (see
             // MenuSection's class docblock) — "+ Añadir plato" inside the
@@ -654,6 +723,13 @@ class MenuAdminController extends AbstractController
                 $product->removeAllergenOverride($existing);
                 $em->remove($existing);
             }
+            // Flush the removals before adding anything back — same
+            // Doctrine insertions-before-deletions ordering issue as the
+            // ingredient links above: a re-save that keeps the same
+            // (product_id, allergen_id) pair would otherwise INSERT the new
+            // override row before the DELETE of the old one runs, violating
+            // unique_product_allergen_override.
+            $em->flush();
 
             foreach ($data['allergenOverrides'] as $ovData) {
                 $allergen = $em->getRepository(Allergen::class)->find($ovData['allergenId'] ?? 0);

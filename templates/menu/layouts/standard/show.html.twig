@@ -4,7 +4,7 @@
 {% import 'menu/_set_menu.html.twig' as setMenuMacro %}
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); background-attachment: var(--bg-attach, scroll); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.5; }
+    body { font-family: var(--font-body, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif); background: var(--bg); background-attachment: var(--bg-attach, scroll); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.5; }
 
     /* ── Header ── */
     .header { position: sticky; top: 0; z-index: 200; background: var(--hdr-bg); backdrop-filter: var(--hdr-blur); -webkit-backdrop-filter: var(--hdr-blur); border-bottom: 1px solid var(--hdr-border); padding: 14px 22px; box-shadow: 0 8px 24px -18px rgba(0,0,0,0.28); }
@@ -12,7 +12,7 @@
     .logo-wrap { display: flex; align-items: center; gap: 12px; }
     .logo { width: 40px; height: 40px; border-radius: 12px; background: var(--logo-bg); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 800; flex-shrink: 0; overflow: hidden; box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 14px -3px rgba(0,0,0,0.32); }
     .logo img { width: 100%; height: 100%; object-fit: cover; }
-    .resto-name { font-size: 16px; font-weight: 700; color: var(--fg); letter-spacing: -0.4px; }
+    .resto-name { font-family: var(--font-display, inherit); font-size: 16px; font-weight: 700; color: var(--fg); letter-spacing: -0.4px; }
 
     /* ── Language / currency selectors — custom <details> dropdowns, not
        native <select>, so the trigger pill and the open menu can both be
@@ -47,7 +47,7 @@
     .hero-inner { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; }
     .hero-kicker { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; color: var(--cp); background: var(--cbg); border: 1px solid var(--cbc); padding: 6px 14px; border-radius: 999px; margin-bottom: 16px; }
     .hero-kicker i { font-size: 12px; }
-    .hero-name { font-size: 44px; font-weight: 800; color: var(--hero-fg, var(--fg)); letter-spacing: -1.8px; line-height: 1.03; text-shadow: 0 2px 24px rgba(0,0,0,0.05); }
+    .hero-name { font-family: var(--font-display, inherit); font-size: 44px; font-weight: 800; color: var(--hero-fg, var(--fg)); letter-spacing: -1.8px; line-height: 1.03; text-shadow: 0 2px 24px rgba(0,0,0,0.05); }
 
     /* ── UI wrapper ── */
     .ui-wrap { padding: 0 18px; }
@@ -144,7 +144,7 @@
     @media (min-width: 768px) { .content { padding: 0 24px 120px; max-width: 980px; margin: 0 auto; } }
 
     .cat-section { padding-top: 50px; }
-    .cat-title { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; font-size: 11px; font-weight: 800; color: var(--cat-title); text-transform: uppercase; letter-spacing: 0.15em; }
+    .cat-title { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; font-family: var(--font-display, inherit); font-size: 11px; font-weight: 800; color: var(--cat-title); text-transform: uppercase; letter-spacing: 0.15em; }
     .cat-title::before { content: ''; width: 3px; height: 14px; border-radius: 2px; background: var(--tab-act-bg); flex-shrink: 0; opacity: 0.8; }
     .cat-title::after { content: ''; flex: 1; height: 1px; background: var(--cat-sep, transparent); }
     .no-results { display: none; text-align: center; padding: 80px 20px; color: var(--fg-3); font-size: 15px; }
@@ -249,7 +249,7 @@
        sized here for this layout's density ── */
     .cat-tab-menu { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); }
     .set-menu-header { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
-    .set-menu-name { font-size: 22px; font-weight: 800; color: var(--cn); letter-spacing: -0.5px; }
+    .set-menu-name { font-family: var(--font-display, inherit); font-size: 22px; font-weight: 800; color: var(--cn); letter-spacing: -0.5px; }
     .set-menu-price { font-size: 22px; font-weight: 800; color: var(--cp); font-variant-numeric: tabular-nums; white-space: nowrap; }
     .set-menu-desc { font-size: 13px; color: var(--fg-3); line-height: 1.55; margin-top: 6px; }
     .set-menu-group { margin-top: 26px; }
@@ -321,7 +321,7 @@
 
     /* Info strip below the photo — name, one-line description, price. */
     .dish-card .front-info { padding: 1.125rem 1.125rem 1.125rem; display: flex; flex-direction: column; gap: 0.5rem; }
-    .dish-card .front-name { font-size: 1.0625rem; font-weight: 600; color: var(--cn); letter-spacing: -0.1px; line-height: 1.4; white-space: normal; overflow-wrap: break-word; }
+    .dish-card .front-name { font-family: var(--font-display, inherit); font-size: 1.0625rem; font-weight: 600; color: var(--cn); letter-spacing: -0.1px; line-height: 1.4; white-space: normal; overflow-wrap: break-word; }
     .front-desc { font-size: 0.8125rem; font-weight: 400; color: var(--fg-2); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .dish-bottom { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.375rem; }
 
@@ -357,7 +357,7 @@
        purpose, this padding just keeps the last section (calories, etc.)
        from rendering underneath it. */
     .dish-modal-body { padding: 1.25rem 1.25rem 6rem; display: flex; flex-direction: column; gap: 0.9375rem; }
-    .dish-detail-name { font-size: 1.375rem; font-weight: 700; letter-spacing: -0.4px; color: var(--bn); line-height: 1.25; }
+    .dish-detail-name { font-family: var(--font-display, inherit); font-size: 1.375rem; font-weight: 700; letter-spacing: -0.4px; color: var(--bn); line-height: 1.25; }
     .dish-detail-price { display: inline-flex; align-self: flex-start; align-items: center; background: var(--cp, #c0341d); color: #fff; font-size: 1rem; font-weight: 500; letter-spacing: -0.2px; padding: 0.4375rem 0.9375rem; border-radius: 1.875rem; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 6px 16px -7px rgba(0,0,0,0.5); }
     .dish-detail-price .price-item-label, .dish-detail-price .price-item-value { color: #fff; }
     .dish-detail-desc { font-size: 0.9375rem; font-weight: 400; color: var(--bdesc); line-height: 1.6; }
@@ -369,7 +369,7 @@
     <div class="header-row">
         <div class="logo-wrap">
             <div class="logo">
-                {% if restaurant.logo %}<img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}" alt="">{% else %}{{ restaurant.name|slice(0,1)|upper }}{% endif %}
+                {% if restaurant.logo %}<img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}" alt="">{% elseif theme == 'maison' %}<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.3" y="2" width="1.3" height="7" rx="0.65"/><rect x="8.35" y="2" width="1.3" height="7" rx="0.65"/><rect x="10.4" y="2" width="1.3" height="7" rx="0.65"/><path d="M6.1 8c0 1.9 1.3 3.4 2.9 3.4s2.9-1.5 2.9-3.4H6.1z"/><rect x="8.25" y="11" width="1.5" height="11" rx="0.75"/><path d="M15.3 2c-.3 0-.5.3-.5 1 0 2.6.3 5.6 1.1 8.7.2.8.5 1.5.8 2 .3-.5.6-1.2.8-2 .8-3.1 1.1-6.1 1.1-8.7 0-.7-.2-1-.5-1z"/><rect x="16" y="13.8" width="1.4" height="8.2" rx="0.7"/></svg>{% else %}{{ restaurant.name|slice(0,1)|upper }}{% endif %}
             </div>
             <div class="resto-name">{{ restaurant.name }}</div>
         </div>
@@ -422,8 +422,49 @@
     {% if restaurant.logo %}<img class="hero-bg-img" src="{{ asset('uploads/banners/' ~ restaurant.logo) }}" alt="">{% endif %}
     <div class="hero-overlay-el"></div>
     <div class="hero-inner">
-        <div class="hero-kicker"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> {{ 'hero.subtitle'|trans({}, 'menu_public', locale) }}</div>
-        <div class="hero-name">{{ restaurant.name }}</div>
+        {% if theme == 'maison' %}
+            <a href="#cat-tabs" class="cta-explore"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> {{ 'hero.subtitle'|trans({}, 'menu_public', locale) }}</a>
+            <div class="hero-name">{{ restaurant.name }}</div>
+            {% if restaurant.tagline is defined and restaurant.tagline %}<p class="tagline">{{ restaurant.tagline }}</p>{% endif %}
+            {# Chef's-recommendation banner — no DB field, no admin toggle:
+               it exists only when at least one dish already carries the
+               'recommended' tag (the same tag the dish-card badge uses).
+               First match wins, set-menu categories skipped since their
+               dishes use the flip-card modal, not openDishModal/.dish-tpl. #}
+            {% set recommendedProduct = null %}
+            {% set recommendedProductT = null %}
+            {% set recommendedTag = null %}
+            {% for bCat in categories %}
+                {% if not recommendedProduct and not bCat.isFixedPriceMenu %}
+                    {% for bProduct in bCat.activeProductsSorted %}
+                        {% if not recommendedProduct %}
+                            {% set bTag = bProduct.tags|filter(t => t.code == 'recommended')|first %}
+                            {% if bTag %}
+                                {% set recommendedProduct = bProduct %}
+                                {% set recommendedTag = bTag %}
+                                {% set bT = bProduct.getTranslation(locale) %}
+                                {% if not bT %}{% set bT = bProduct.getTranslation(restaurant.defaultLanguage) %}{% endif %}
+                                {% if not bT %}{% set bT = bProduct.translations.first %}{% endif %}
+                                {% set recommendedProductT = bT %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+            {% if recommendedProduct and recommendedProductT and tagNames[recommendedTag.id] is defined %}
+                <div class="banner" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ recommendedProduct.id }} + '\']'))" role="button" tabindex="0">
+                    <div class="bicon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.2 6.8.9-4.9 4.9 1.2 6.8L12 17.8l-6 3 1.2-6.8-4.9-4.9 6.8-.9z"/></svg></div>
+                    <div class="btext">
+                        <div class="blabel">{{ tagNames[recommendedTag.id] }}</div>
+                        <div class="bhead">{{ recommendedProductT.name }}</div>
+                        <div class="bsub">{% if recommendedProductT.description %}{{ recommendedProductT.description }}{% else %}{{ priceMacro.price(recommendedProduct, currency, true, currencyDisplay) }}{% endif %}</div>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="hero-kicker"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> {{ 'hero.subtitle'|trans({}, 'menu_public', locale) }}</div>
+            <div class="hero-name">{{ restaurant.name }}</div>
+        {% endif %}
     </div>
 </div>
 
@@ -447,6 +488,7 @@
             <button type="button" class="diet-allergy-btn" id="filters-btn" onclick="openFiltersPanel()" aria-haspopup="true">
                 <i class="ti ti-shield-check" aria-hidden="true"></i>
                 <span id="filters-btn-label" data-i18n-cta="{{ 'filters.cta_label'|trans({}, 'menu_public', locale) }}">{{ 'filters.cta_label'|trans({}, 'menu_public', locale) }}</span>
+                {% if theme == 'maison' %}<span class="allergy-arrow" aria-hidden="true">→</span>{% endif %}
             </button>
         </div>
     {% endif %}
@@ -540,7 +582,7 @@
                 {% if category.isFixedPriceMenu %}
                     {{ setMenuMacro.section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens) }}
                 {% else %}
-                <div class="cat-title">{{ catT.name }}</div>
+                <div class="cat-title">{{ catT.name }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(category.activeProductsSorted|length) }}</span>{% endif %}</div>
                 <div class="cards-grid">
                     {% for product in category.activeProductsSorted %}
                         {% set pT = product.getTranslation(locale) %}
@@ -549,28 +591,66 @@
                         {% if pT %}
                             {% set featuredTag = product.tags|filter(t => t.code == 'recommended')|first %}
                             {% set isDrink = category.type is defined and category.type and category.type.value == 'drink' %}
-                            <div class="dish-card" onclick="openDishModal(this)" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': pT.name}, 'menu_public', locale) }}" data-product-id="{{ product.id }}" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}" data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
+                            {# Maison shows at most one corner badge per card (recommended >
+                               popular > spicy priority) instead of stacking all that apply —
+                               the other themes' stacking behavior is untouched. #}
+                            {% set maisonBadge = null %}
+                            {% if theme == 'maison' %}
+                                {% if featuredTag and tagNames[featuredTag.id] is defined %}
+                                    {% set maisonBadge = 'featured' %}
+                                {% elseif product.id in popularProductIds %}
+                                    {% set maisonBadge = 'popular' %}
+                                {% elseif product.spicyLevel > 0 %}
+                                    {% set maisonBadge = 'spicy' %}
+                                {% endif %}
+                            {% endif %}
+                            {% set maisonRow = theme == 'maison' and not product.image %}
+                            <div class="dish-card{{ maisonRow ? ' dish-row' : '' }}" onclick="openDishModal(this)" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': pT.name}, 'menu_public', locale) }}" data-product-id="{{ product.id }}" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}" data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
+                                {% if maisonRow %}
+                                    {# No photo, maison: a plain text row (see conversation
+                                       2026-09-02) instead of a card with an empty image frame —
+                                       no .front-img at all, just name+price/description/"Ver más"
+                                       straight on the section background. #}
+                                    <div class="row-head">
+                                        <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }} {{ currencyDisplay }}</span>{% endif %}</div>
+                                        <div class="row-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
+                                    </div>
+                                    {% if pT.description %}<div class="front-desc">{{ pT.description }}</div>{% endif %}
+                                    <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
+                                {% else %}
                                 <div class="front-img">
                                     {% if product.image %}
                                         <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">
                                     {% else %}
                                         <div class="dish-placeholder"><i class="ti {{ isDrink ? 'ti-glass' : 'ti-tools-kitchen-2' }}" aria-hidden="true"></i><span>{{ pT.name }}</span></div>
                                     {% endif %}
-                                    {% if featuredTag and tagNames[featuredTag.id] is defined %}<span class="dish-pill">{{ featuredTag.icon }} {{ tagNames[featuredTag.id] }}</span>{% endif %}
-                                    {% if product.spicyLevel > 0 %}<div class="spicy-badge">{% if product.spicyLevel <= 2 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% elseif product.spicyLevel <= 4 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% else %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% endif %}</div>{% endif %}
-                                    {% if product.id in popularProductIds %}<div class="popular-badge">🔥 {{ 'dish.popular'|trans({}, 'menu_public', locale) }}</div>{% endif %}
+                                    {% if theme == 'maison' ? maisonBadge == 'featured' : (featuredTag and tagNames[featuredTag.id] is defined) %}<span class="dish-pill">{{ featuredTag.icon }} {{ tagNames[featuredTag.id] }}</span>{% endif %}
+                                    {% if theme == 'maison' ? maisonBadge == 'spicy' : product.spicyLevel > 0 %}<div class="spicy-badge">{% if product.spicyLevel <= 2 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% elseif product.spicyLevel <= 4 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% else %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% endif %}</div>{% endif %}
+                                    {% if theme == 'maison' ? maisonBadge == 'popular' : product.id in popularProductIds %}<div class="popular-badge">🔥 {{ 'dish.popular'|trans({}, 'menu_public', locale) }}</div>{% endif %}
                                 </div>
                                 <div class="front-info">
                                     <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }} {{ currencyDisplay }}</span>{% endif %}</div>
                                     {% if pT.description %}<div class="front-desc">{{ pT.description }}</div>{% endif %}
+                                    {% if theme == 'maison' %}
+                                        {% set cardAllergens = productAllergens[product.id]|default([])|filter(a => a.presence != 'free_from') %}
+                                        {% if cardAllergens|length > 0 %}
+                                            <div class="allergen-icons">
+                                                {% for a in cardAllergens|slice(0, 4) %}<span class="aicon" title="{{ a.name }}">{{ a.icon }}</span>{% endfor %}
+                                                {% if cardAllergens|length > 4 %}<span class="aicon aicon-more">+{{ cardAllergens|length - 4 }}</span>{% endif %}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
                                     <div class="dish-bottom">
                                         <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
                                         <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
                                     </div>
                                 </div>
+                                {% endif %}
                                 <template class="dish-tpl">
                                     {% if product.image %}
                                         <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">
+                                    {% elseif theme == 'maison' %}
+                                        <div class="dish-placeholder"><span>{{ restaurant.name }}</span></div>
                                     {% else %}
                                         <div class="dish-placeholder"><i class="ti {{ isDrink ? 'ti-glass' : 'ti-tools-kitchen-2' }}" aria-hidden="true"></i><span>{{ pT.name }}</span></div>
                                     {% endif %}

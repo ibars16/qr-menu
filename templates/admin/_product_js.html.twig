@@ -122,6 +122,7 @@
                 });
                 if (variantsActive) revealPriceVariants();
                 setVal('p-calories', data.calories ?? '');
+                renderProductImage(data.image);
 
                 document.querySelectorAll('.tag-pill').forEach(p =>
                     p.classList.toggle('on', data.tags.includes(parseInt(p.dataset.tagId)))
@@ -310,6 +311,13 @@
 
         const data = await apiFetch('/admin/products/save', payload);
         if (data.error) { showToast(data.error, 'error'); return; }
+
+        const imageFile = panelEl('p-img-input')?.files?.[0];
+        if (imageFile) {
+            const imgData = await uploadProductImage(data.id, imageFile);
+            if (imgData.error) showToast(imgData.error, 'error');
+        }
+
         showToast(S.productId ? MSG_PRODUCT_SAVED : MSG_PRODUCT_CREATED, 'success');
         ProductUI.closeProduct();
         setTimeout(() => location.reload(), 700);
@@ -758,7 +766,11 @@
     document.addEventListener('click', closeAllHelp);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllHelp(); });
 
-    // ── Image preview ──────────────────────────────────────────────────────────
+    // ── Image preview / upload ───────────────────────────────────────────────
+    // previewImage() only shows the picked file locally — the actual upload
+    // happens in saveProduct(), once a product id exists to attach it to (see
+    // uploadProductImage()). A brand-new dish has no id until the main save
+    // round-trips, so the file just sits in the <input> until then.
     function previewImage(input) {
         if (!input.files?.length) return;
         const area = panelEl('img-upload-area');
@@ -767,6 +779,54 @@
         if (!img) { img = document.createElement('img'); area.appendChild(img); }
         img.src = url;
         area.querySelector('.img-upload-hint').style.display = 'none';
+    }
+
+    // Renders the dish's already-saved photo (openEditProduct) — same
+    // add/reuse-<img> logic as previewImage(), just from a URL instead of a
+    // local file, and cleared back to the hint when the dish has none.
+    function renderProductImage(imagePath) {
+        document.querySelectorAll('[id="img-upload-area"]').forEach(area => {
+            let img = area.querySelector('img');
+            if (imagePath) {
+                if (!img) { img = document.createElement('img'); area.appendChild(img); }
+                img.src = `/uploads/products/${imagePath}`;
+                area.querySelector('.img-upload-hint').style.display = 'none';
+            } else {
+                img?.remove();
+                area.querySelector('.img-upload-hint').style.display = '';
+            }
+        });
+    }
+
+    // Drag-and-drop onto the upload area — mirrors the click-to-browse path:
+    // the dropped file is handed to the same hidden <input> (via DataTransfer,
+    // since a FileList can't be built by hand) so both paths share one preview.
+    function handleImageDrop(event, area) {
+        event.preventDefault();
+        area.classList.remove('drag-over');
+        const file = event.dataTransfer?.files?.[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        const input = panelEl('p-img-input');
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        previewImage(input);
+    }
+
+    // Separate request from saveProduct() on purpose: that one is JSON, this
+    // needs multipart/form-data for the file. Called only after saveProduct()
+    // has a product id to attach the image to.
+    async function uploadProductImage(productId, file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const res  = await fetch(`/admin/products/${productId}/image`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!res.ok) return { error: data?.error || MSG_UNEXPECTED_ERROR };
+            return data;
+        } catch (e) {
+            return { error: MSG_UNEXPECTED_ERROR };
+        }
     }
 
     // ── Reset ──────────────────────────────────────────────────────────────────
@@ -816,6 +876,10 @@
             const hint = area.querySelector('.img-upload-hint');
             if (hint) hint.style.display = '';
         });
+        // Clear any picked-but-not-yet-uploaded file too — otherwise it
+        // stays in the <input> and saveProduct() would silently attach the
+        // previous dish's photo to whichever dish is opened next.
+        document.querySelectorAll('[id="p-img-input"]').forEach(el => { el.value = ''; });
         S.productId=null; S.categoryId=null; S.menuSectionId=null; S.spicy=0;
         // Reset steps visibility
         ['product-modal-steps','product-sheet-steps'].forEach(id => {

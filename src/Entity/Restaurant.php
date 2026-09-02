@@ -27,6 +27,10 @@ class Restaurant
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $logo = null;
 
+    /** Short line shown under the restaurant name on the public menu hero (theme-dependent whether it renders). */
+    #[ORM\Column(length: 160, nullable: true)]
+    private ?string $tagline = null;
+
     #[ORM\Column(length: 20)]
     private string $primaryColor = '#000000';
 
@@ -128,6 +132,16 @@ class Restaurant
     public function setLogo(?string $logo): void
     {
         $this->logo = $logo;
+    }
+
+    public function getTagline(): ?string
+    {
+        return $this->tagline;
+    }
+
+    public function setTagline(?string $tagline): void
+    {
+        $this->tagline = $tagline;
     }
 
     public function getPrimaryColor(): string

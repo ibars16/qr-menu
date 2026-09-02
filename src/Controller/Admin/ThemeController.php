@@ -93,6 +93,15 @@ class ThemeController extends AbstractController
             'preview_fg'       => '#281308',
             'preview_radius'   => '13px',
         ],
+        'maison' => [
+            'icon'             => '🍷',
+            'preview_bg'       => '#f2ebdf',
+            'preview_accent'   => '#7a1e28',
+            'preview_surface'  => '#fbf8f1',
+            'preview_border'   => '#e4d8c4',
+            'preview_fg'       => '#241c17',
+            'preview_radius'   => '6px',
+        ],
     ];
 
     #[Route('/theme', name: 'theme')]

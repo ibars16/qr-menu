@@ -72,3 +72,6 @@ theme:
     terra:
         name: Terra
         desc: Mediterrane Terrakotta. Ideal für Tapas, Pintxos und lässige Küche.
+    maison:
+        name: Maison
+        desc: Pergament, Elfenbein und Weinrot mit editorialer Serifenschrift. Gehobene Gastronomie und Raffinesse.

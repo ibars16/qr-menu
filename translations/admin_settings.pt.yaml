@@ -8,6 +8,8 @@ section:
 field:
     name: Nome
     name_placeholder: Nome do seu restaurante
+    tagline: Lema
+    tagline_placeholder: 'Ex: Cozinha mediterrânica de época'
     menu_url: URL do seu cardápio digital
     logo: Logo do restaurante
     primary_color: Cor principal
@@ -24,6 +26,7 @@ action:
 
 hint:
     logo_format: 'PNG ou JPG, máx. 2 MB'
+    tagline: Mostrado sob o nome do restaurante em alguns temas do cardápio público.
     primary_color: Usada em todo o cardápio digital
     menu_language: O idioma em que você insere os nomes e descrições dos pratos.
     admin_language: O idioma deste painel de gestão. Não afeta o cardápio visto pelos seus clientes.

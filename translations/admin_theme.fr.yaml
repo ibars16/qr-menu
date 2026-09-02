@@ -72,3 +72,6 @@ theme:
     terra:
         name: Terra
         desc: Terracotta méditerranéenne. Idéal pour tapas, pintxos et cuisine informelle.
+    maison:
+        name: Maison
+        desc: Parchemin, ivoire et lie-de-vin, typographie serif éditoriale. Gastronomie et raffinement.

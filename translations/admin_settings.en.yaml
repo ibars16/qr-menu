@@ -8,6 +8,8 @@ section:
 field:
     name: Name
     name_placeholder: "Your restaurant's name"
+    tagline: Tagline
+    tagline_placeholder: "E.g. Seasonal Mediterranean cuisine"
     menu_url: Your digital menu URL
     logo: Restaurant logo
     primary_color: Primary color
@@ -24,6 +26,7 @@ action:
 
 hint:
     logo_format: 'PNG or JPG, max. 2 MB'
+    tagline: Shown under the restaurant name on some public menu themes.
     primary_color: Used throughout your digital menu
     menu_language: The language you use to enter dish names and descriptions.
     admin_language: The language of this management panel. It doesn't affect the menu your customers see.

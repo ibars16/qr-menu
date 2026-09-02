@@ -155,6 +155,16 @@
                                required>
                     </div>
 
+                    <div class="field">
+                        <label for="tagline">{{ 'field.tagline'|trans({}, 'admin_settings') }}</label>
+                        <input type="text"
+                               id="tagline" name="tagline"
+                               value="{{ restaurant.tagline }}"
+                               placeholder="{{ 'field.tagline_placeholder'|trans({}, 'admin_settings') }}"
+                               maxlength="160">
+                        <span class="field-hint">{{ 'hint.tagline'|trans({}, 'admin_settings') }}</span>
+                    </div>
+
                     {# URL pública de la carta #}
                     <div class="field">
                         <label>{{ 'field.menu_url'|trans({}, 'admin_settings') }}</label>
@@ -198,7 +208,14 @@
                                     <button type="button" class="remove-logo-btn" onclick="removeLogo()">
                                         <i class="ti ti-trash" aria-hidden="true"></i> {{ 'action.remove_logo'|trans({}, 'admin_settings') }}
                                     </button>
-                                    <input type="hidden" name="removeLogo" id="remove-logo-input" value="0">
+                                    {# Must not be named "removeLogo" — a form field with that
+                                       name becomes accessible as the bare identifier
+                                       "removeLogo" inside this form's inline onclick handlers
+                                       (via the legacy with(form){...} scope browsers use for
+                                       intrinsic event attributes), shadowing the removeLogo()
+                                       function below and breaking the button with "removeLogo
+                                       is not a function". #}
+                                    <input type="hidden" name="removeLogoFlag" id="remove-logo-input" value="0">
                                 {% endif %}
                                 <span class="field-hint">{{ 'hint.logo_format'|trans({}, 'admin_settings') }}</span>
                             </div>

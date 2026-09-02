@@ -1,0 +1,149 @@
+<style>
+:root {
+    /* ── Identity: Maison — fine-dining editorial. Parchment, ivory and
+       wine, serif display type, sharp-ish corners. Ninth theme, additive
+       only — no existing theme's tokens are touched. ── */
+    --card-radius: 6px;
+    --badge-radius: 2px;
+    --tab-radius: 24px;
+    --search-radius: 6px;
+    --accent-line-h: 1px;
+    --card-lift: -2px;
+    /* --radius: matches carta-estilo.css's own --radius token (4px) — used
+       for the smaller chrome (allergy button, badges) that the design
+       system deliberately keeps sharper than the 6px dish-card corner. */
+    --radius: 4px;
+
+    /* ── Typography — maison-only tokens. The other 8 themes never set
+       these, so every var(--font-display/--font-body, …) reference in the
+       shared layout CSS falls back to its existing behaviour untouched. ── */
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    /* Global type-size multiplier for the hand-picked sizes in
+       overrides.html.twig (hero name, section titles, dish names/prices/
+       descriptions, tabs, tagline, banner) — each is written as
+       calc(<Npx> * var(--font-scale)) with N already the current target
+       size, so --font-scale: 1 would be a no-op; nudging this one number
+       scales all of them together for a future "a touch bigger/smaller"
+       pass without hunting down each rule. Weight/family/line-height are
+       untouched by this var on purpose — only size moves.
+       0.94 (2026-09-02): the initial +1..+4px pass read too big/coarse —
+       this softens all of it back down at once, landing each size about
+       a point above the pre-bump original rather than the full bump.
+       .hero-name is the one exception, based on 43px instead of the
+       shared 46px (see its own rule) since 46*0.94≈43 alone would still
+       wrap the restaurant name to two heavy lines at 390px. */
+    --font-scale: 0.94;
+
+    /* ── Palette ── */
+    --bg: #F2EBDF;
+    --bg-attach: scroll;
+    --surface: #FBF8F1;
+    --surface-2: #E9DFCD;
+    --fg: #241C17;
+    --fg-2: #736354;
+    --fg-3: #A99B8A;
+    --accent: #7A1E28;
+    --b1: rgba(36,28,23,0.14);
+    --b2: rgba(36,28,23,0.24);
+
+    /* ── Maison-only extras, consumed only by
+       menu/themes/maison/overrides.html.twig (the "Ver más" hover tint and
+       the hero CTA hover fill) ── */
+    --wine-soft: #9A3742;
+    --line-soft: rgba(36,28,23,0.08);
+
+    /* ── Header ── */
+    --hdr-bg: rgba(242,235,223,0.95);
+    --hdr-border: rgba(36,28,23,0.14);
+    --hdr-blur: blur(20px);
+
+    /* ── Hero ── */
+    --hero-bg: radial-gradient(120% 90% at 85% 0%, rgba(176,137,76,0.14), transparent 60%), linear-gradient(180deg, #E9DFCD, #F2EBDF);
+    --hero-border: rgba(36,28,23,0.08);
+
+    /* ── Search input ── */
+    --in-bg: #FBF8F1;
+    --in-border: rgba(36,28,23,0.14);
+    --in-focus-border: #7A1E28;
+    --in-focus-shadow: 0 0 0 3px rgba(122,30,40,0.08);
+    --in-text: #241C17;
+    --in-ph: #A99B8A;
+
+    /* ── Tabs & filters ── */
+    --tab-bg: #FBF8F1;
+    --tab-border: rgba(36,28,23,0.14);
+    --tab-text: #736354;
+    --tab-hbg: #E9DFCD;
+    --tab-htext: #241C17;
+    --tab-act-bg: #7A1E28;
+    --tab-act-border: #7A1E28;
+    --tab-act-text: #ffffff;
+    --tab-act-shadow: 0 4px 16px rgba(122,30,40,0.28);
+
+    /* ── Card front ── */
+    --cf-bg: #FBF8F1;
+    --cf-border: rgba(36,28,23,0.08);
+    --cf-hborder: #B0894C;
+    --cf-hshadow: 0 4px 8px rgba(36,28,23,0.05), 0 12px 28px rgba(36,28,23,0.08);
+    --cf-img: #E9DFCD;
+    --cf-accent: linear-gradient(90deg, transparent 0%, #B0894C 40%, transparent 100%);
+    --cf-accent-op: 0.55;
+    --card-shadow: 0 1px 2px rgba(36,28,23,0.04), 0 3px 10px rgba(36,28,23,0.04);
+    --card-hover-shadow: 0 4px 8px rgba(36,28,23,0.05), 0 12px 28px rgba(36,28,23,0.08);
+
+    /* ── Card content ── */
+    --cn: #241C17;
+    --cd: #736354;
+    --cp: #7A1E28;
+    --cbg: #E9DFCD;
+    --cbc: rgba(36,28,23,0.14);
+    --cbt: #736354;
+    --hint: rgba(36,28,23,0.2);
+    --hint-h: rgba(122,30,40,0.55);
+
+    /* ── Card back / modal ── */
+    --cb-bg: #F2EBDF;
+    --cb-border: rgba(36,28,23,0.08);
+    --bn: #241C17;
+    --bp: #7A1E28;
+    --close-bg: #E9DFCD;
+    --close-b: rgba(36,28,23,0.14);
+    --close-t: #736354;
+    --close-hbg: #DDD0BA;
+    --close-ht: #241C17;
+    --bdiv: rgba(36,28,23,0.08);
+    --btt: #A99B8A;
+    --bdesc: #736354;
+    --fade: #F2EBDF;
+    --cue-bg: rgba(122,30,40,0.08);
+    --cue-text: rgba(122,30,40,0.55);
+
+    /* ── Compact-layout rows ── */
+    --row-border: rgba(36,28,23,0.08);
+    --row-hover: #F8F3EA;
+    --num: rgba(36,28,23,0.14);
+    --num-h: #A99B8A;
+
+    /* ── Category titles ── */
+    --cat-title: #736354;
+    --cat-sep: rgba(36,28,23,0.08);
+    --sep-bg: rgba(36,28,23,0.08);
+
+    /* ── Logo ── */
+    --logo-bg: #7A1E28;
+
+    /* ── Label colours ── */
+    --lg: #3E8018; --lg-bg: rgba(59,109,17,0.09); --lg-b: rgba(99,153,34,0.16);
+    --lo: #7A1E28; --lo-bg: rgba(122,30,40,0.08); --lo-b: rgba(122,30,40,0.16);
+
+    /* ── Ingredient chips ── */
+    --ing-bg: #E9DFCD; --ing-b: rgba(36,28,23,0.14); --ing-t: #736354;
+
+    /* ── Nutrition ── */
+    --nut-bg: #E9DFCD; --nut-b: rgba(36,28,23,0.14); --nut-v: #241C17; --nut-u: #A99B8A;
+
+    /* ── Spicy ── */
+    --dot-on: #7A1E28; --dot-off: rgba(36,28,23,0.14); --spicy-t: #A99B8A;
+}
+</style>
