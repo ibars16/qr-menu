@@ -445,7 +445,13 @@ class MenuController extends AbstractController
         // row still carrying a layout the app no longer renders (e.g. a
         // deleted one, or a future migration that doesn't get run in time).
         $layout        = in_array($restaurant->getLayout(), $validLayouts, true) ? $restaurant->getLayout() : 'standard';
-        $theme         = $restaurant->getTheme();
+        // Same belt-and-suspenders as $layout above — a theme this app no
+        // longer has templates for (e.g. one removed after a restaurant's
+        // row was set) falls back to the entity's own default rather than
+        // 500ing: standard/show.html.twig's vars.html.twig include for the
+        // theme has no `ignore missing`, so an unknown value there is a
+        // hard error, not a silently-blank page.
+        $theme         = in_array($restaurant->getTheme(), $validThemes, true) ? $restaurant->getTheme() : 'classic-dark';
         $isPreview     = false;
 
         $previewLayout = $request->query->get('preview_layout');
