@@ -47,7 +47,18 @@ function openDishModal(card) {
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
-    overlay.querySelector('.dish-modal').scrollTop = 0;
+    // .dish-modal is the scroll box on most themes; maison instead scrolls
+    // an inner .dish-modal-scroll so the × can stay fixed in the chrome
+    // above it (see overrides.html.twig) — reset whichever one actually
+    // scrolls.
+    const modalBox  = overlay.querySelector('.dish-modal');
+    const scrollBox = modalBox.querySelector('.dish-modal-scroll');
+    (scrollBox || modalBox).scrollTop = 0;
+    // New content (a different dish, possibly a different length) just
+    // replaced the old — recompute the bottom fade for it. No-op on
+    // layouts/themes without .dish-modal-scroll (updateDishScrollFade
+    // itself no-ops too, but this skips the call entirely there).
+    if (scrollBox) updateDishScrollFade(scrollBox);
 }
 function closeDishModal() {
     const overlay = document.getElementById('dish-modal-overlay');
@@ -57,6 +68,35 @@ function closeDishModal() {
     document.body.style.overflow = '';
 }
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDishModal(); });
+
+// Bottom scroll fade + chevron hint on the maison dish-detail sheet
+// (.dish-modal-scroll / .dish-modal-fade / .dish-modal-scroll-hint, all
+// maison-only markup — see standard/show.html.twig) — a purely visual
+// "there's more below" affordance, not a filtering/state concern. Both are
+// hidden whenever the content doesn't actually overflow. The fade itself
+// stays up until scroll is within 8px of the true bottom (so it's never
+// sitting over a clean "Cerrar"); the chevron is more eager to get out of
+// the way — it disappears the moment ANY scrolling happens (scrollTop > 2),
+// since its job is just "here, scroll" and it shouldn't linger once that's
+// been acted on, while the fade's job (softening where content ends)
+// keeps being useful all the way down. One function, one listener drives
+// both — see the single addEventListener below. The .dish-modal-scroll
+// element is static (part of the one shared modal shell, not per-product),
+// so this listener is attached once rather than re-bound on every
+// openDishModal() call.
+function updateDishScrollFade(scrollBox) {
+    const fade = scrollBox.parentElement.querySelector('.dish-modal-fade');
+    if (!fade) return;
+    const hint = fade.querySelector('.dish-modal-scroll-hint');
+    const overflowing = scrollBox.scrollHeight > scrollBox.clientHeight + 1;
+    const nearBottom   = scrollBox.scrollHeight - scrollBox.scrollTop - scrollBox.clientHeight <= 8;
+    fade.classList.toggle('visible', overflowing && !nearBottom);
+    if (hint) hint.classList.toggle('visible', overflowing && !nearBottom && scrollBox.scrollTop <= 2);
+}
+const dishScrollBox = document.querySelector('.dish-modal-scroll');
+if (dishScrollBox) {
+    dishScrollBox.addEventListener('scroll', () => updateDishScrollFade(dishScrollBox));
+}
 document.addEventListener('keydown', function(e) {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     const card = e.target.closest ? e.target.closest('.dish-card') : null;
@@ -114,7 +154,11 @@ const searchInput = document.getElementById('menu-search');
 const noResults   = document.getElementById('no-results');
 const sections    = document.querySelectorAll('.cat-section');
 const catTabs     = document.querySelectorAll('.cat-tab');
-const dietFilters = document.querySelectorAll('.diet-filter');
+// :not(.allergen-filter-option) excludes maison's allergen chip buttons —
+// they reuse the .diet-filter class purely for its visual styling (pill,
+// active-state tint) but are driven by activeAllergens/onAllergenFilterChange()
+// below instead of activeTags, and must not double-handle clicks here too.
+const dietFilters = document.querySelectorAll('.diet-filter:not(.allergen-filter-option)');
 // Multi-select: every checked diet/allergy/other tag chip must match (AND,
 // not OR) — these are restrictions (allergies/diets), not preferences, so
 // combining them any looser than an intersection would be a food-safety
@@ -179,9 +223,14 @@ function toggleAllergenFilterPanel() {
 }
 
 function onAllergenFilterChange() {
-    activeAllergens = new Set(
-        Array.from(document.querySelectorAll('.allergen-filter-option input:checked')).map(el => el.value)
-    );
+    // Two markup variants feed the same activeAllergens set: legacy layouts
+    // use a native checkbox (read via :checked/value), maison uses a chip
+    // button (read via .active/data-allergen — see standard/show.html.twig's
+    // theme == 'maison' branch). A given render only ever has one variant in
+    // the DOM, so reading both selectors is safe and never double-counts.
+    const checked  = Array.from(document.querySelectorAll('.allergen-filter-option input:checked')).map(el => el.value);
+    const activeBt = Array.from(document.querySelectorAll('.allergen-filter-option.active[data-allergen]')).map(el => el.dataset.allergen);
+    activeAllergens = new Set([...checked, ...activeBt]);
     if (allergenFilterBadge) {
         allergenFilterBadge.textContent = String(activeAllergens.size);
         allergenFilterBadge.style.display = activeAllergens.size > 0 ? '' : 'none';
@@ -193,8 +242,25 @@ function onAllergenFilterChange() {
 
 function clearAllergenFilters() {
     document.querySelectorAll('.allergen-filter-option input:checked').forEach(el => { el.checked = false; });
+    document.querySelectorAll('.allergen-filter-option.active[data-allergen]').forEach(el => {
+        el.classList.remove('active');
+        el.setAttribute('aria-pressed', 'false');
+    });
     onAllergenFilterChange();
 }
+
+// Chip-button variant of the allergen filter (maison theme only — see
+// standard/show.html.twig). Toggles the same activeAllergens set that the
+// checkbox variant drives elsewhere; filtering itself (applyFilters) never
+// knows which markup produced the set.
+document.querySelectorAll('.allergen-filter-option[data-allergen]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const nowActive = !btn.classList.contains('active');
+        btn.classList.toggle('active', nowActive);
+        btn.setAttribute('aria-pressed', String(nowActive));
+        onAllergenFilterChange();
+    });
+});
 
 document.addEventListener('click', e => {
     if (!allergenFilterPanel || allergenFilterPanel.hidden) return;
@@ -258,10 +324,11 @@ dietFilters.forEach(btn => btn.addEventListener('click', () => {
         // "Todo" — the reset action, not a selectable chip: clears every
         // active diet/allergy/other tag rather than toggling itself.
         activeTags.clear();
-        dietFilters.forEach(x => x.classList.remove('active'));
+        dietFilters.forEach(x => { x.classList.remove('active'); x.setAttribute('aria-pressed', 'false'); });
     } else {
         const nowActive = !btn.classList.contains('active');
         btn.classList.toggle('active', nowActive);
+        btn.setAttribute('aria-pressed', String(nowActive));
         if (nowActive) activeTags.add(btn.dataset.tag); else activeTags.delete(btn.dataset.tag);
     }
     // On layouts where "Todo" is its own visible chip (compact/grid), show
@@ -270,14 +337,16 @@ dietFilters.forEach(btn => btn.addEventListener('click', () => {
     // the multi-select set itself.
     document.querySelectorAll('.diet-filter[data-tag="all"]').forEach(all => {
         all.classList.toggle('active', activeTags.size === 0);
+        all.setAttribute('aria-pressed', String(activeTags.size === 0));
     });
     applyFilters();
     updateFiltersButtonBadge();
 }));
 
 typeFilters.forEach(btn => btn.addEventListener('click', () => {
-    typeFilters.forEach(x => x.classList.remove('active'));
+    typeFilters.forEach(x => { x.classList.remove('active'); x.setAttribute('aria-pressed', 'false'); });
     btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
     activeType = btn.dataset.type;
     applyFilters();
     updateFiltersButtonBadge();

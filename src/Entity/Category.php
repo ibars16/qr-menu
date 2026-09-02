@@ -245,10 +245,11 @@ class Category
         $this->products->removeElement($product);
     }
 
+    /** The public menu's view of this category's dishes — active AND, see Product::isSafeToDisplay(), not a €0 dish. */
     public function getActiveProductsSorted(): array
     {
         $products = $this->products
-            ->filter(fn($p) => $p->isActive())
+            ->filter(fn($p) => $p->isActive() && $p->isSafeToDisplay())
             ->toArray();
 
         usort($products, fn($a, $b) => $a->getPosition() <=> $b->getPosition());

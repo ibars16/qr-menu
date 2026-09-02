@@ -2,6 +2,13 @@
 {% include 'menu/themes/' ~ theme ~ '/vars.html.twig' %}
 {% import 'menu/_price.html.twig' as priceMacro %}
 {% import 'menu/_set_menu.html.twig' as setMenuMacro %}
+{# Filters-panel chip icon (diet/allergy/other/evitar chips below). Icons are
+   free-text data (Tag::$icon / Allergen::$icon, admin-set, usually an emoji)
+   — there's no fixed key to map to a monoline SVG set, so maison contains
+   the emoji as-is in a parchment disc (.aicon, already used for the dish-card
+   allergen row) instead of inventing an icon lookup. Other themes/layouts
+   keep the original bare "icon + space + name" text exactly. #}
+{% macro chipIcon(icon, theme) %}{% if theme == 'maison' %}<span class="aicon">{{ icon }}</span>{% else %}{{ icon }} {% endif %}{% endmacro %}
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: var(--font-body, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif); background: var(--bg); background-attachment: var(--bg-attach, scroll); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.5; }
@@ -203,6 +210,12 @@
     .price-row { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 8px; }
     .price-item-label { grid-column: 1; min-width: 0; font-size: 0.7em; font-weight: 600; color: var(--fg-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .price-item-value { grid-column: 2; white-space: nowrap; }
+    /* Currency suffix — a dedicated span (see menu/_price.html.twig's price()
+       macro) instead of a bare trailing space, so a theme can restyle it
+       precisely (size/color/exact gap — see maison's override) without
+       fighting inter-word whitespace. This is the theme-agnostic default,
+       replicating the plain-space look every non-maison theme had before. */
+    .price-currency { margin-left: 0.25em; }
 
     /* ── Scroll area with gradient fade ── */
     .back-scroll { position: relative; flex: 1; min-height: 0; overflow: hidden; }
@@ -521,7 +534,7 @@
                 {% endif %}
                 {% if tags|length > 0 %}
                     <div class="filters-section">
-                        <div class="filters-section-title">{{ 'filters.diet_title'|trans({}, 'menu_public', locale) }}</div>
+                        <div class="filters-section-title">{{ 'filters.diet_title'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(dietaTags|length) }}</span>{% endif %}</div>
                         <div class="diet-filters">
                             {# Not shown — "Todo" is a category concept and already lives in the
                                category row above; showing it again here just confused things.
@@ -529,36 +542,49 @@
                                for the diet-filter group: clearAllFilters() in _search_js.html.twig
                                clicks it programmatically, which works on a hidden element. #}
                             <button class="diet-filter active" data-tag="all" style="display:none" aria-hidden="true" tabindex="-1">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</button>
-                            {% for tag in dietaTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
+                            {% for tag in dietaTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, theme) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
                         </div>
                     </div>
                 {% endif %}
                 {% if alergiaTags|length > 0 %}
                     <div class="filters-section">
-                        <div class="filters-section-title">{{ 'filters.allergy_title'|trans({}, 'menu_public', locale) }}</div>
+                        <div class="filters-section-title">{{ 'filters.allergy_title'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(alergiaTags|length) }}</span>{% endif %}</div>
                         <div class="diet-filters">
-                            {% for tag in alergiaTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
+                            {% for tag in alergiaTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, theme) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
                         </div>
                     </div>
                 {% endif %}
                 {% if menuAllergens|length > 0 %}
                     <div class="filters-section">
-                        <div class="filters-section-title">{{ 'allergen.avoid'|trans({}, 'menu_public', locale) }}</div>
-                        <div class="allergen-filter-options">
-                            {% for a in menuAllergens %}
-                                <label class="allergen-filter-option">
-                                    <input type="checkbox" value="{{ a.code }}" onchange="onAllergenFilterChange()">
-                                    <span>{{ a.icon }} {{ a.name }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
+                        <div class="filters-section-title">{{ 'allergen.avoid'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(menuAllergens|length) }}</span>{% endif %}</div>
+                        {% if theme == 'maison' %}
+                            {# Chip pattern (button + aria-pressed), matching the diet/type
+                               chips above — no native checkboxes in this theme. See
+                               _search_js.html.twig's onAllergenFilterChange()/clearAllergenFilters()
+                               for the click handling; other layouts keep the checkbox markup
+                               below untouched. #}
+                            <div class="diet-filters">
+                                {% for a in menuAllergens %}
+                                    <button type="button" class="diet-filter allergen-filter-option" data-allergen="{{ a.code }}" aria-pressed="false">{{ _self.chipIcon(a.icon, theme) }}{{ a.name }}</button>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="allergen-filter-options">
+                                {% for a in menuAllergens %}
+                                    <label class="allergen-filter-option">
+                                        <input type="checkbox" value="{{ a.code }}" onchange="onAllergenFilterChange()">
+                                        <span>{{ a.icon }} {{ a.name }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                 {% endif %}
                 {% if otrosTags|length > 0 %}
                     <div class="filters-section">
-                        <div class="filters-section-title">{{ 'filters.other_title'|trans({}, 'menu_public', locale) }}</div>
+                        <div class="filters-section-title">{{ 'filters.other_title'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(otrosTags|length) }}</span>{% endif %}</div>
                         <div class="diet-filters">
-                            {% for tag in otrosTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ tag.icon }} {{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
+                            {% for tag in otrosTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, theme) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
                         </div>
                     </div>
                 {% endif %}
@@ -658,14 +684,31 @@
                                     <div class="dish-detail-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
                                     {% if pT.description %}<p class="dish-detail-desc">{{ pT.description }}</p>{% endif %}
                                     {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.spicy'|trans({}, 'menu_public', locale) }}</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}{{ 'dish.spice_1'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 2 %}{{ 'dish.spice_2'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 3 %}{{ 'dish.spice_3'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 4 %}{{ 'dish.spice_4'|trans({}, 'menu_public', locale) }}{% else %}{{ 'dish.spice_5'|trans({}, 'menu_public', locale) }}{% endif %}</span></div></div>{% endif %}
-                                    {% set ingredientNames = product.getIngredientNames(locale, restaurant.defaultLanguage) %}{% if ingredientNames|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.ingredients'|trans({}, 'menu_public', locale) }}</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>{% endif %}
-                                    {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.tags'|trans({}, 'menu_public', locale) }}</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>{% endif %}
+                                    {% set ingredientNames = product.getIngredientNames(locale, restaurant.defaultLanguage) %}{% if ingredientNames|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.ingredients'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(ingredientNames|length) }}</span>{% endif %}</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>{% endif %}
+                                    {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.tags'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(product.tags|length) }}</span>{% endif %}</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}{% if theme == 'maison' %}<span class="chip">{{ _self.chipIcon(tag.icon, theme) }}{{ tagNames[tag.id] }}</span>{% else %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endif %}{% endfor %}</div></div>{% endif %}
                                     {% if productAllergens[product.id]|default([])|length > 0 %}
-                                        <div class="dish-allergen-box">
-                                            <div class="bsec-title">{{ 'dish.allergens'|trans({}, 'menu_public', locale) }}</div>
-                                            <div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="' ~ ('allergen.more_info'|trans({}, 'menu_public', locale)|e('html_attr')) ~ '" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ {{ 'allergen.free_from'|trans({}, 'menu_public', locale) }} {{ a.name }}{{ noteBtn|raw }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · {{ 'allergen.traces'|trans({}, 'menu_public', locale) }}{{ noteBtn|raw }}</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}{{ noteBtn|raw }}</div>{% endif %}{% endfor %}</div>
-                                            <div class="allergen-disclaimer">{{ 'allergen.disclaimer'|trans({}, 'menu_public', locale) }}</div>
-                                        </div>
+                                        {% if theme == 'maison' %}
+                                            {# Flattened — no nested bordered/tinted box, same loose
+                                               label+chips+disclaimer rhythm as every other .bsec here.
+                                               The chip still carries the a.presence severity (contains/
+                                               may_contain/free_from) as a modifier class instead of a
+                                               generic look — see .chip-contains/.chip-may_contain/
+                                               .chip-free_from in overrides.html.twig: this is a real
+                                               food-safety distinction, not decorative category color,
+                                               so it's retoned to the theme palette rather than flattened
+                                               away like the tag chips above. #}
+                                            <div class="bsec">
+                                                <div class="bsec-title">{{ 'dish.allergens'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(productAllergens[product.id]|length) }}</span></div>
+                                                <div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="' ~ ('allergen.more_info'|trans({}, 'menu_public', locale)|e('html_attr')) ~ '" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<span class="chip chip-free_from">✓ {{ 'allergen.free_from'|trans({}, 'menu_public', locale) }} {{ a.name }}{{ noteBtn|raw }}</span>{% elseif a.presence == 'may_contain' %}<span class="chip chip-may_contain">{{ _self.chipIcon(a.icon, theme) }}{{ a.name }} · {{ 'allergen.traces'|trans({}, 'menu_public', locale) }}{{ noteBtn|raw }}</span>{% else %}<span class="chip chip-contains">{{ _self.chipIcon(a.icon, theme) }}{{ a.name }}{{ noteBtn|raw }}</span>{% endif %}{% endfor %}</div>
+                                                <div class="allergen-disclaimer">{{ 'allergen.disclaimer'|trans({}, 'menu_public', locale) }}</div>
+                                            </div>
+                                        {% else %}
+                                            <div class="dish-allergen-box">
+                                                <div class="bsec-title">{{ 'dish.allergens'|trans({}, 'menu_public', locale) }}</div>
+                                                <div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="' ~ ('allergen.more_info'|trans({}, 'menu_public', locale)|e('html_attr')) ~ '" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ {{ 'allergen.free_from'|trans({}, 'menu_public', locale) }} {{ a.name }}{{ noteBtn|raw }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · {{ 'allergen.traces'|trans({}, 'menu_public', locale) }}{{ noteBtn|raw }}</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}{{ noteBtn|raw }}</div>{% endif %}{% endfor %}</div>
+                                                <div class="allergen-disclaimer">{{ 'allergen.disclaimer'|trans({}, 'menu_public', locale) }}</div>
+                                            </div>
+                                        {% endif %}
                                     {% endif %}
                                     {% if product.calories %}<div class="bsec"><div class="bsec-title">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</div><div class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
                                 </template>
@@ -683,9 +726,43 @@
 
 <div class="dish-modal-overlay" id="dish-modal-overlay" aria-hidden="true" onclick="if(event.target===this) closeDishModal()">
     <div class="dish-modal" role="dialog" aria-modal="true" aria-label="{{ 'dish.modal_aria'|trans({}, 'menu_public', locale) }}">
+        {# The × lives directly in .dish-modal (the fixed chrome) for every
+           theme, but only maison also wraps the scrolling content in
+           .dish-modal-scroll below — that split is what keeps the × pinned
+           in place while the content scrolls under it (persistent close,
+           see overrides.html.twig). Other themes keep .dish-modal itself as
+           the single scrolling box, unchanged. #}
         <button type="button" class="dish-modal-close" onclick="closeDishModal()" aria-label="{{ 'common.close'|trans({}, 'menu_public', locale) }}"><i class="ti ti-x"></i></button>
-        <div class="dish-modal-photo" id="dish-modal-photo"></div>
-        <div class="dish-modal-body" id="dish-modal-body"></div>
+        {% if theme == 'maison' %}
+            <div class="dish-modal-scroll">
+                <div class="sheet-grip" aria-hidden="true"></div>
+                <div class="dish-modal-photo" id="dish-modal-photo"></div>
+                <div class="dish-modal-body" id="dish-modal-body"></div>
+                {# Static footer, not part of the cloned <template class="dish-tpl">
+                   content — identical every time (just closes the modal), so no
+                   need to re-render it per product. Secondary exit only — the
+                   × above is the primary one now that it's always visible; this
+                   is not sticky, it's just the last thing in the scroll area. #}
+                <div class="dish-modal-footer">
+                    <button type="button" class="filters-apply-btn" onclick="closeDishModal()">{{ 'common.close'|trans({}, 'menu_public', locale) }}</button>
+                </div>
+            </div>
+            {# Bottom scroll fade — purely visual (pointer-events:none), toggled
+               by updateDishScrollFade() in _search_js.html.twig on open and on
+               scroll of .dish-modal-scroll. Sibling of .dish-modal-scroll (not
+               inside it) so it's pinned to the sheet's own bottom edge instead
+               of scrolling away with the content — see overrides.html.twig for
+               why .dish-modal already has position:relative to anchor this. The
+               chevron is a child of the fade on purpose (not a sibling with its
+               own class): the SAME .visible toggle that shows/hides the fade
+               shows/hides the chevron too, no second handler needed. #}
+            <div class="dish-modal-fade" aria-hidden="true">
+                <i class="ti ti-chevron-down dish-modal-scroll-hint"></i>
+            </div>
+        {% else %}
+            <div class="dish-modal-photo" id="dish-modal-photo"></div>
+            <div class="dish-modal-body" id="dish-modal-body"></div>
+        {% endif %}
     </div>
 </div>
 

@@ -17,10 +17,14 @@ use Doctrine\ORM\Mapping as ORM;
  * System tags ($isSystem = true) are the small, app-curated set seeded from
  * config/preset_tags.yaml (see DefaultTagSeeder) — the current EU dietary
  * labels, plus "Chef's Recommendation". Their $code is the one thing code
- * elsewhere is allowed to depend on: it is fixed at construction, has no
- * setter, and is `readonly` at the PHP language level, so nothing — not a
- * future controller change, not a bug — can alter a system tag's code
- * after creation. A restaurant owner can still fully customize a system
+ * elsewhere is allowed to depend on: it is fixed at construction and has no
+ * setter, so nothing — not a future controller change, not a bug — can
+ * alter a system tag's code after creation. (Not PHP `readonly`: Doctrine's
+ * hydrator re-touches every field when a fetch-joined to-many association —
+ * e.g. ProductTagRepository::warmTranslations()'s join on `translations` —
+ * produces more than one result row for the same tag, which throws on a
+ * true readonly property even though the value being re-assigned is
+ * identical.) A restaurant owner can still fully customize a system
  * tag's display name (via translations), icon, and colour, and can still
  * choose which products carry it; only its identity and its existence are
  * protected (see TagsController::delete()).
@@ -45,15 +49,15 @@ class ProductTag
 
     #[ORM\ManyToOne(targetEntity: Restaurant::class, inversedBy: 'productTags')]
     #[ORM\JoinColumn(nullable: false)]
-    private readonly Restaurant $restaurant;
+    private Restaurant $restaurant;
 
     /** Stable natural key. Immutable — see the class-level docblock. */
     #[ORM\Column(length: 100)]
-    private readonly string $code;
+    private string $code;
 
     /** True only for the app-curated tags seeded from config/preset_tags.yaml. Immutable — see the class-level docblock. */
     #[ORM\Column]
-    private readonly bool $isSystem;
+    private bool $isSystem;
 
     #[ORM\Column(length: 50)]
     private string $icon = '';

@@ -60,7 +60,7 @@ final class MenuContextBuilder
         $allProducts = [];
         foreach ($categories as $category) {
             foreach ($category->getProducts() as $product) {
-                if ($product->isActive()) {
+                if ($product->isActive() && $product->isSafeToDisplay()) {
                     $allProducts[] = $product;
                 }
             }
@@ -104,7 +104,7 @@ final class MenuContextBuilder
             }
 
             $products = $category->getProducts()
-                ->filter(fn (Product $p) => $p->isActive())
+                ->filter(fn (Product $p) => $p->isActive() && $p->isSafeToDisplay())
                 ->toArray();
             usort($products, fn (Product $a, Product $b) => $a->getPosition() <=> $b->getPosition());
 

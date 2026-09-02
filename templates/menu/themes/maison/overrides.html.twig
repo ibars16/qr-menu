@@ -54,6 +54,13 @@
         color: var(--fg-2); font-family: var(--font-body); font-size: 0.7em; letter-spacing: 0.04em;
     }
     .dish-price .price-item-value, .dish-detail-price .price-item-value { color: var(--cn); }
+    /* Currency suffix — small and muted instead of matching the price's own
+       serif/size, so "22.17 USD" reads as one price with a quiet unit, not
+       two equal-weight numbers. See _price.html.twig's price() macro (all
+       3 layouts, both card front/back) for the .price-currency span this
+       targets — wrapping it there is unconditional/theme-agnostic, only
+       this rule gives it any visual treatment. */
+    .price-currency { font-size: calc(12px * var(--font-scale)); color: var(--fg-3); font-family: var(--font-body); margin-left: 3px; }
 
     /* "Ver más" — discreet text link; the arrow slides on hover instead of
        the pill filling solid (the base layout's default treatment). */
@@ -124,6 +131,14 @@
         font-size: calc(13.5px * var(--font-scale)); color: var(--fg-2); line-height: 1.5; margin: 6px 0 10px;
         white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
+
+    /* Dish-detail sheet's own description (.dish-detail-desc, distinct from
+       the card-front .front-desc above) — already rendered whenever
+       pT.description is non-empty (see standard/show.html.twig's <template
+       class="dish-tpl">, untouched here) and already themed via --bdesc;
+       only the size needed pulling down to this sheet's 13.5px body scale
+       from the base layout's 15px. */
+    .dish-detail-desc { font-size: calc(13.5px * var(--font-scale)); }
 
     /* Allergen icon row on the card front — capped at 4 + "+N" overflow
        (markup only rendered when theme == 'maison'). Matches carta-estilo
@@ -289,4 +304,403 @@
        single change here is what keeps all of them flush by construction. */
     .ui-wrap, .content { padding-left: 20px; padding-right: 20px; }
     @media (min-width: 768px) { .ui-wrap, .content { padding-left: 20px; padding-right: 20px; } }
+
+    /* Filters bottom sheet ("¿Qué necesitas?") — the base layout's version
+       of this panel is a plain form (sans title, grey labels, bright-red
+       apply button, native checkboxes for "evitar alérgenos") which reads
+       as off-brand next to the rest of this theme. Everything below only
+       restyles filters-overlay/filters-panel/filters-section markup that
+       already exists in standard/show.html.twig — no new DOM, no filtering
+       logic touched (see _search_js.html.twig for the one additive JS
+       change: the allergen chip variant this theme uses instead of
+       checkboxes). */
+    .filters-panel-title {
+        font-family: var(--font-display); font-weight: 500; color: var(--fg);
+        font-size: calc(22px * var(--font-scale));
+    }
+    .filters-panel-title::after {
+        content: ''; display: block; width: 32px; height: 2px; margin-top: 10px;
+        background: var(--cf-hborder);
+    }
+    /* Whisper of the hero's own radial glow (see vars.html.twig --hero-bg) at
+       the top of the sheet, so it reads as the same material as the rest of
+       the page instead of a plain generic dialog. Painted on the header only
+       (not the whole panel) — the header never scrolls, so this never has to
+       fight the body's own overflow/scroll box. */
+    .filters-panel-header {
+        background: radial-gradient(140% 160% at 100% 0%, rgba(176,137,76,0.10), transparent 65%);
+    }
+    /* Unscoped — this is the same close-button element/class used by both
+       the filters sheet and the dish-detail sheet (see further down this
+       file), and both want the identical ivory-disc treatment. */
+    .dish-modal-close {
+        background: var(--surface); border: 1px solid var(--b1); box-shadow: none; color: var(--fg-2);
+    }
+    .dish-modal-close:hover { background: var(--surface); border-color: var(--cf-hborder); color: var(--fg); }
+
+    /* Section label — wine uppercase + a hairline filling the rest of the
+       row, matching .cat-title's own label+rule rhythm on the public menu
+       (::after here plays the same role as .cat-title::after there). The
+       optional count span (see standard/show.html.twig — only rendered when
+       the backing tag/allergen array is non-empty, never invented) reuses
+       .cat-title .count's brass/body-font treatment. */
+    .filters-section-title {
+        color: var(--accent); letter-spacing: 0.18em; font-weight: 600;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .filters-section-title::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
+    .filters-section-title .count {
+        font-family: var(--font-body); font-size: 10px; font-weight: 600;
+        letter-spacing: 0.2em; color: var(--cf-hborder);
+    }
+    .filters-panel-body { gap: 1.5rem; }
+    .filters-panel .allergen-disclaimer i { color: var(--cf-hborder); }
+    /* Clearance for the sticky footer below (see .filters-panel-footer):
+       sticky pins it over whatever body content is still scrolled behind it,
+       so the last section (the disclaimer) needs enough reserved space to
+       clear the footer's full rendered height (~149px measured: padding +
+       button + the base layout's 6rem bottom padding reserved for the Smart
+       Waiter bubble) *plus* a clean margin, or the disclaimer's last line
+       ends up half-hidden behind the footer band instead of just fading
+       under its gradient. 11rem (176px) clears the measured 149px with
+       ~27px to spare — must clear regardless of how many lines the
+       disclaimer wraps to at a given width. */
+    .filters-panel-body { padding-bottom: 11rem; }
+
+    /* Chip icons — Tag::$icon / Allergen::$icon are free-text (admin-set,
+       usually an emoji), not a fixed key, so there's no reliable emoji→SVG
+       map to build without inventing one. Containing the emoji in the same
+       parchment disc (.aicon) the dish-card allergen row already uses (see
+       further up this file) reads as a deliberate icon system instead of
+       raw emoji, at zero data-model cost — see standard/show.html.twig's
+       chipIcon() macro for where this disc gets added, maison-only. */
+    .filters-panel .diet-filter,
+    .filters-panel .type-filter {
+        gap: 8px;
+    }
+
+    /* Chip geometry — sharp .aicon-style corners instead of the tab pill,
+       tighter and uniform padding instead of the min-height-driven sizing
+       (so a one-word and a two-word chip read as the same size of object,
+       not just the same height). Colors/border already come from the
+       --tab-* tokens (ivory/line) set in vars.html.twig — only shape and
+       shadow change here; .active below is a separate, louder state. */
+    .filters-panel .diet-filter,
+    .filters-panel .type-filter {
+        border-radius: var(--radius); padding: 0.75rem 0.8125rem; min-height: 2.5rem; box-shadow: none;
+    }
+    /* Keyboard focus ring — :focus-visible only (never on a mouse click).
+       Brass, not wine: the .active chip below is already wine border +
+       wine-tinted fill, so a wine ring there would sit right on top of an
+       existing wine border and read as barely-there. Brass reads clearly
+       against both the ivory resting chip and the wine-tinted active one,
+       and against the dark .filters-apply-btn — one color, every target. */
+    .filters-panel .diet-filter:focus-visible,
+    .filters-panel .type-filter:focus-visible,
+    .dish-modal-close:focus-visible,
+    .filters-apply-btn:focus-visible,
+    .filters-panel .filters-clear-link:focus-visible {
+        outline: 2px solid var(--cf-hborder); outline-offset: 2px;
+    }
+
+    /* Diet/type/allergen chips already share one component (.diet-filter /
+       .type-filter, themed via the --tab-* vars elsewhere in this file) —
+       only the *selected* state gets a filters-panel-specific treatment
+       here: a wine tint + brass mark instead of the solid wine fill those
+       classes use as category tabs (heavier than this panel's chip density
+       calls for). A dot, not a check — this same state also drives
+       "evitar alérgenos", where a check mark would misread as "I want
+       this" rather than "hide dishes with this". Scoped to .filters-panel
+       so the category-tab row and other layouts keep the solid-fill look. */
+    .filters-panel .diet-filter.active,
+    .filters-panel .type-filter.active {
+        background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+        border-color: var(--accent); color: var(--accent); box-shadow: none; font-weight: 600;
+    }
+    .filters-panel .diet-filter.active::before,
+    .filters-panel .type-filter.active::before {
+        content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+        background: var(--cf-hborder); margin-right: 7px; flex-shrink: 0;
+    }
+
+    /* Footer — sticky espresso CTA with a soft fade above it (::before) so
+       scrolled content visually dissolves into the footer band instead of
+       being cut by a hard edge; the footer's own background stays solid
+       (border-top + fade both use --line-soft/--cb-bg, same tokens as the
+       rest of the sheet). */
+    .filters-panel-footer {
+        position: sticky; bottom: 0; background: var(--cb-bg); border-top: 1px solid var(--line-soft);
+    }
+    .filters-panel-footer::before {
+        content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 28px;
+        background: linear-gradient(transparent, var(--cb-bg)); pointer-events: none;
+    }
+    .filters-apply-btn {
+        background: var(--fg); color: var(--surface); border-radius: var(--radius);
+        font-weight: 500; letter-spacing: 0.05em; box-shadow: none;
+    }
+    .filters-apply-btn:hover { opacity: 0.92; }
+    .filters-clear-link { color: var(--accent); }
+
+    /* ── Dish-detail sheet (.dish-modal) ──────────────────────────────────
+       Brings the same material as the filters sheet above (chip, section
+       hairline+count, sticky espresso footer) to the ficha de plato — the
+       two bottom sheets in this theme should read as one system, not two
+       different ones. See standard/show.html.twig's <template class=
+       "dish-tpl"> (theme == 'maison' branches only) for the markup this
+       targets; nothing here changes what data renders, only how. */
+
+    /* Read-only chip — visually the same object as .filters-panel's
+       .diet-filter/.type-filter (disc icon via the shared chipIcon() macro,
+       .aicon-radius geometry, no shadow) but a DIFFERENT class on purpose:
+       these are informational (product tags, allergens), never toggled, so
+       they must never be reachable by the filters panel's own
+       querySelectorAll('.diet-filter…') click-wiring — see the backlog note
+       left in the filters-panel work about that exact class-as-behavior-hook
+       collision. A shared class here would risk repeating it the moment
+       this markup gets cloned into the live DOM by openDishModal().
+
+       Scaled down from the filters panel's own chip on purpose — that one
+       is tactile (44px+ tap target, bold label) because it's something you
+       press; this one is read-only metadata (ingredients/tags/allergens)
+       competing for attention with the actual sales copy (.dish-detail-desc)
+       above it, so it should read as quieter supporting detail, not another
+       interactive-looking control. Material stays identical (disc, radius,
+       border, palette, the 3 allergen states below) — only weight/size/
+       padding move, min-height is dropped entirely since there's no tap
+       target to protect here. */
+    .chip {
+        display: inline-flex; align-items: center; gap: 6px; font-size: calc(12px * var(--font-scale)); font-weight: 400;
+        color: var(--fg); background: var(--surface); border: 1px solid var(--b1);
+        border-radius: var(--radius); padding: 0.5rem 0.625rem; line-height: 1;
+    }
+    /* Allergen presence — a real food-safety distinction (contains / may
+       contain traces / free from), not decorative category color, so it's
+       retoned to the palette rather than flattened to the plain .chip above
+       like the tag chips are. Border/text carry the distinction; background
+       stays the same neutral ivory as every other chip in this theme. */
+    .chip.chip-contains { border-color: var(--accent); color: var(--accent); }
+    .chip.chip-may_contain { border-style: dashed; border-color: var(--cf-hborder); color: var(--cf-hborder); }
+    .chip.chip-free_from { color: var(--fg-3); }
+
+    /* Section headers inside the sheet (.bsec-title) — same wine-uppercase
+       + hairline-fill rhythm as .filters-section-title, applied globally
+       since every section in this modal (tags, allergens, ingredients,
+       spicy, calories) uses this one class; the optional .count (only
+       rendered when a real backing array exists — see standard/show.html.twig)
+       reuses .cat-title .count's brass treatment. The hairline replaces the
+       old divider border between sections (.bsec + .bsec below), so two
+       separators don't stack. */
+    .bsec-title {
+        color: var(--accent); letter-spacing: 0.18em; font-weight: 600; font-size: 11px;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .bsec-title::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
+    .bsec-title .count {
+        font-family: var(--font-body); font-size: 10px; font-weight: 600;
+        letter-spacing: 0.2em; color: var(--cf-hborder);
+    }
+    .bsec + .bsec { border-top: none; padding-top: 22px; }
+
+    /* Chrome vs. scroll split — .dish-modal becomes the fixed shell (holds
+       the × below, clips corners via overflow:hidden, never itself
+       scrolls); .dish-modal-scroll is the one thing inside it that does
+       (grip + photo + body + footer — see standard/show.html.twig's
+       theme == 'maison' branch). This is what makes the × persistent: it's
+       no longer a descendant of the element that scrolls, so content
+       passes underneath it instead of carrying it away. Other layouts/
+       themes don't render .dish-modal-scroll at all and keep .dish-modal
+       itself as the scroll box (its own overflow-y:auto from the base
+       layout, untouched). */
+    .dish-modal {
+        display: flex; flex-direction: column; overflow: hidden;
+        /* Scoped bump: only the sheet's own reading type (name, price,
+           description, chips, "kcal" — everything already wired to
+           calc(Npx * var(--font-scale)) for exactly this reason) grows.
+           Custom properties cascade, so this shadows vars.html.twig's root
+           --font-scale: 0.94 for every descendant here without touching a
+           single calc() — the listing/hero/tabs outside the sheet never
+           see this value. Independent from the root number: 0.98 still
+           read small, bumped again to 1.06 — safe to keep tuning this one
+           number (e.g. 1.12) without risking the hero's own wrap outside
+           the sheet. */
+        --font-scale: 1.06;
+    }
+    .dish-modal-scroll { position: relative; flex: 1; min-height: 0; overflow-y: auto; }
+
+    /* × — persistent, solid, legible over both the photo and the parchment
+       body it ends up floating over once scrolled (see the chrome split
+       above). The button's own box stays the base layout's 44px tap
+       target; the *visible* disc is a smaller, daintier ~40px circle via
+       ::before so it reads as refined rather than bulky, without shrinking
+       what's actually tappable. z-index is already 3 on the base rule,
+       comfortably above .dish-modal-scroll's un-indexed content. */
+    .dish-modal-close {
+        background: none; border: none; box-shadow: none; color: var(--fg);
+    }
+    .dish-modal-close::before {
+        content: ''; position: absolute; inset: 2px; border-radius: 50%;
+        background: var(--surface); border: 1px solid var(--cf-hborder);
+        box-shadow: 0 2px 10px rgba(20,14,11,0.22);
+    }
+    .dish-modal-close:hover { color: var(--accent); }
+    .dish-modal-close:hover::before { border-color: var(--accent); }
+    .dish-modal-close i { position: relative; }
+
+    /* Drag grip — now an overlay on the photo itself (position:absolute
+       against .dish-modal-scroll, which the photo sits flush at the top
+       of) instead of its own flow strip above it — that strip was exactly
+       the odd border/gap the photo used to have before it could reach the
+       sheet's own rounded top corners. Semi-transparent so it reads as a
+       hint over the photo, not a UI chrome piece; the shadow gives it edge
+       definition even over the flatter no-photo placeholder background. */
+    .sheet-grip {
+        position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 2;
+        width: 36px; height: 4px; border-radius: 2px;
+        background: rgba(255,255,255,0.7); box-shadow: 0 1px 3px rgba(20,14,11,0.25);
+    }
+
+    /* Photo — bigger (was reading too small at the base layout's 230px)
+       and now genuinely full-bleed to the sheet's own top edge: with
+       .dish-modal-scroll's flush layout above and .dish-modal's own
+       overflow:hidden clipping to its border-radius, the photo needs no
+       radius of its own — the chrome's rounded corner does the clipping.
+       Top scrim guarantees the grip (and, lower down the page, whatever
+       the × is currently floating over) reads on any photo brightness; the
+       bottom fade dissolves the photo into the parchment body instead of
+       cutting in a hard line. */
+    .dish-modal-photo { position: relative; height: 300px; }
+    .dish-modal-photo::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5rem;
+        background: linear-gradient(rgba(20,14,11,0.35), transparent); pointer-events: none;
+    }
+    .dish-modal-photo::after {
+        content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4.5rem;
+        background: linear-gradient(transparent, var(--cb-bg)); pointer-events: none;
+    }
+    /* No-photo fallback (.dish-placeholder, already themed further up this
+       file as a flat --surface-2 block + restaurant name, no icon — a past,
+       deliberate call, see conversation, not re-opened here) is width:100%/
+       height:100% of this same element (base layout rule), so it grows
+       with the photo above automatically — nothing to add here. */
+
+    /* Bottom scroll fade — "there's more below". Sibling of .dish-modal-
+       scroll, not a pseudo-element inside it: a pseudo would be generated
+       as the scrolling content's own last child and scroll away with
+       everything else, instead of staying pinned to the sheet's bottom
+       edge like the × stays pinned to its top. Toggled by
+       updateDishScrollFade() in _search_js.html.twig (on open and on
+       scroll) — hidden by default (opacity:0) so a short, non-overflowing
+       ficha never shows it at all. z-index sits above the scrolling
+       content but below the × (z-index:3 on the base .dish-modal-close
+       rule), and pointer-events:none is load-bearing: this must never
+       swallow a tap meant for a chip or the × underneath it.
+
+       60px (was 88px, and 52px before that), reaching full --cb-bg opacity
+       only in the last ~10% of its own height instead of holding a solid
+       band for a third of it — a wide solid band read as a bar cutting the
+       content off rather than dissolving it. The chevron (below) is now
+       the actual "there's more" signal; this only needs to be a quiet
+       texture that softens where the content ends, not carry that job on
+       its own. */
+    .dish-modal-fade {
+        position: absolute; left: 0; right: 0; bottom: 0; height: 3.75rem; z-index: 2;
+        background: linear-gradient(transparent, var(--cb-bg) 90%);
+        display: flex; align-items: flex-end; justify-content: center; padding-bottom: 0.625rem;
+        pointer-events: none; opacity: 0; transition: opacity 0.2s ease;
+    }
+    .dish-modal-fade.visible { opacity: 1; }
+
+    /* Chevron — a child of .dish-modal-fade (sits on top of it, same
+       stacking/pointer-events-none context) but toggled by its OWN
+       .visible class, not just inherited from the parent's opacity:
+       updateDishScrollFade() dismisses it the moment any scrolling starts
+       (scrollTop > 2), stricter than the fade's own "near bottom" rule —
+       see that function's comment in _search_js.html.twig for why. Same
+       function, same single listener either way. Static — no bounce/pulse
+       animation, that reads as a consumer-app nag rather than a quiet
+       "there's more" cue, which is the whole point of doing this with a
+       fade in the first place. */
+    .dish-modal-scroll-hint {
+        color: var(--fg-3); font-size: 1.0625rem; line-height: 1; pointer-events: none;
+        opacity: 0; transition: opacity 0.2s ease;
+    }
+    .dish-modal-scroll-hint.visible { opacity: 1; }
+
+    /* Name + price header — more editorial presence: bigger serif name,
+       price pulled up close under it (one cohesive title cluster, not
+       evenly spaced like the detail sections below), then a hairline
+       before the first section — whichever of price/description actually
+       ends up immediately before it (description is conditional on real
+       data, see standard/show.html.twig), so the divider appears in both
+       cases without duplicating it. */
+    .dish-detail-name {
+        font-size: calc(26px * var(--font-scale)); font-weight: 500; letter-spacing: -0.02em; line-height: 1.05;
+        /* Fraunces is a variable font (opsz 9..144, see fonts.html.twig) —
+           forcing a high optical size here overrides the browser's own
+           size-based auto-selection (which at a modest 26px would default
+           toward the text/low-opsz cut) so the name gets the finer,
+           higher-contrast display carving regardless of its rendered size. */
+        font-variation-settings: 'opsz' 144;
+    }
+    .dish-detail-price { margin-top: -6px; }
+    .dish-detail-desc { line-height: 1.6; }
+    /* Generous side margins (fine dining = air) and a bottom padding reset
+       — the base layout's own 6rem bottom padding exists to clear the
+       fixed Smart Waiter bubble from the *last* element in the scroll
+       area; that job now belongs to .dish-modal-footer (the true last
+       element, see below) instead, so left as inherited it'd just be a
+       large dead gap between the last section and the footer's hairline. */
+    .dish-modal-body { gap: 1.25rem; padding: 1.5rem 1.5rem; }
+    .dish-detail-price + .bsec,
+    .dish-detail-desc + .bsec {
+        border-top: 1px solid var(--line-soft); margin-top: 0.5rem; padding-top: 1.75rem;
+    }
+
+    /* Spicy-level dots — already on-palette via --dot-on/--dot-off/--spicy-t
+       (vars.html.twig: wine filled, line-colored empty, muted label); only
+       size/gap needed refining to read as deliberate rather than a generic
+       progress indicator. */
+    .spicy-row { gap: 6px; }
+    .dot { width: 8px; height: 8px; }
+    .spicy-txt { margin-left: 2px; }
+
+    /* Calories — was the one section still in a filled/bordered pill
+       (.nut, --nut-bg/--nut-b — already palette-correct tokens, just the
+       wrong *shape* for this sheet). Every other section here is label +
+       hairline + loose content; unboxing this one number brings it into
+       that same language instead of reading as a leftover data-chip. */
+    .nut { background: none; border: none; padding: 0; border-radius: 0; gap: 6px; }
+    .nut-v { font-family: var(--font-display); font-weight: 500; font-size: calc(22px * var(--font-scale)); color: var(--cn); }
+    .nut-u { font-family: var(--font-body); font-size: calc(12px * var(--font-scale)); color: var(--fg-3); }
+
+    /* Ingredient names are free-text (Product::getIngredientNames(), admin
+       entered) with no capitalization guarantee — "huevo poche trufado"
+       next to "Huevos de corral". Presentation-only fix, data untouched:
+       ::first-letter uppercases just the leading character. Deliberately
+       NOT text-transform:capitalize (would upper-case every word — "Huevo
+       Poche Trufado") and NOT Twig's |capitalize filter (also lower-cases
+       the rest of the string, which would mangle a name with an
+       intentional internal capital). .ing's own content is plain text
+       (no icon/nested markup, unlike .chip), so ::first-letter targets it
+       directly with no wrapper span needed. */
+    .ing::first-letter { text-transform: uppercase; }
+
+    /* Footer — flows at the natural end of the content now (no
+       position:sticky): in a dish sheet the action is read-then-close, not
+       confirm-a-selection like the filters sheet above, so a floating fixed
+       button here read as "scroll is broken" and covered the tags section.
+       Border-top is now just a quiet separator, not a fade-cover — nothing
+       scrolls underneath it any more. Bottom padding still clears the fixed
+       Smart Waiter bubble (see .filters-panel-footer's own comment) since
+       this footer is now genuinely the last thing in the scroll area. */
+    .dish-modal-footer {
+        background: var(--cb-bg); border-top: 1px solid var(--line-soft);
+        padding: 1.25rem 1.5rem 6rem; margin-top: 0.5rem;
+    }
+    /* Sheet grows with its content up to the base layout's own
+       max-height:88vh cap; past that it scrolls normally and this footer
+       is simply the last thing reached — no artificial clearance needed
+       on #dish-modal-body any more (that was only for the old sticky
+       footer's overlap). */
 </style>

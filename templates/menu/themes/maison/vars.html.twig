@@ -30,7 +30,15 @@
        0.94 (2026-09-02): the initial +1..+4px pass read too big/coarse —
        this softens all of it back down at once, landing each size about
        a point above the pre-bump original rather than the full bump.
-       .hero-name is the one exception, based on 43px instead of the
+       A later same-day round briefly bumped this to 0.98 theme-wide, but
+       that request turned out to mean the dish-detail sheet specifically,
+       not the whole theme — reverted here; see .dish-modal's own
+       --font-scale: 0.98 override in overrides.html.twig, which shadows
+       this root value for everything inside the sheet only (custom
+       properties cascade, so every calc(Npx * var(--font-scale)) rule
+       automatically picks up whichever value is in scope — nothing
+       per-element to touch when re-tuning either number). .hero-name is
+       the one exception to the shared value, based on 43px instead of the
        shared 46px (see its own rule) since 46*0.94≈43 alone would still
        wrap the restaurant name to two heavy lines at 390px. */
     --font-scale: 0.94;

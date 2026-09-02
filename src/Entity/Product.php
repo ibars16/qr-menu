@@ -361,6 +361,26 @@ class Product
         $this->active = $active;
     }
 
+    /**
+     * Safety net against a dish reaching the public menu priced at €0 —
+     * almost always a data-entry slip (a blank price field defaulting to
+     * 0, a half-finished AI import row) rather than an intentional free
+     * item, so it's held back rather than risk a customer seeing, or
+     * ordering, a €0.00 dish. Checked in addition to $active everywhere
+     * the public menu (and Smart Waiter, which must never offer a dish the
+     * menu itself wouldn't show) lists a category's dishes — see
+     * Category::getActiveProductsSorted().
+     *
+     * $menuSection !== null is exempt: a fixed-price-menu dish is
+     * legitimately priced at 0 (its cost is covered by the menu's own
+     * price — see $menuSection's docblock), so this only ever gates a
+     * normal, individually-priced dish.
+     */
+    public function isSafeToDisplay(): bool
+    {
+        return $this->menuSection !== null || $this->basePrice > 0;
+    }
+
     public function getPosition(): int
     {
         return $this->position;
