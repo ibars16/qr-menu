@@ -322,9 +322,11 @@
     }
     /* Whisper of the hero's own radial glow (see vars.html.twig --hero-bg) at
        the top of the sheet, so it reads as the same material as the rest of
-       the page instead of a plain generic dialog. Painted on the header only
-       (not the whole panel) — the header never scrolls, so this never has to
-       fight the body's own overflow/scroll box. */
+       the page instead of a plain generic dialog. Painted on the header
+       only (not the whole scroll area) so it doesn't repeat/tile awkwardly
+       further down — it scrolls away with the rest of the body, same as
+       the dish name does in the ficha; only the × stays put (see
+       .filters-panel/.filters-panel-scroll below). */
     .filters-panel-header {
         background: radial-gradient(140% 160% at 100% 0%, rgba(176,137,76,0.10), transparent 65%);
     }
@@ -335,6 +337,31 @@
         background: var(--surface); border: 1px solid var(--b1); box-shadow: none; color: var(--fg-2);
     }
     .dish-modal-close:hover { background: var(--surface); border-color: var(--cf-hborder); color: var(--fg); }
+
+    /* Chrome vs. scroll split, same reasoning and mechanism as .dish-modal/
+       .dish-modal-scroll further down: .filters-panel becomes the fixed
+       shell (holds the × below, clips corners via overflow:hidden, never
+       itself scrolls) so the × stays persistent — visible over both the
+       header's ivory and whatever filter section has scrolled up behind
+       it — instead of being carried away with the content like before.
+       Other themes don't render .filters-panel-scroll at all and keep
+       .filters-panel itself as the scroll box (its own overflow-y:auto
+       from the base layout, untouched).
+
+       --font-scale: 1.06 brings this sheet to the same type scale as the
+       ficha's own .dish-modal override (root stays 0.94 — see
+       vars.html.twig) — every filters-panel rule already written as
+       calc(Npx * var(--font-scale)) picks this up automatically. The
+       interactive chips (.diet-filter/.type-filter) are unaffected on
+       purpose: their font-size is a plain 12px in the base layout, never
+       wired to this variable, so they keep their tap-target size
+       regardless of the sheet's reading-type scale — deliberately not
+       the same 12px the read-only .chip in the ficha scales up from. */
+    .filters-panel {
+        display: flex; flex-direction: column; overflow: hidden;
+        --font-scale: 1.06;
+    }
+    .filters-panel-scroll { position: relative; flex: 1; min-height: 0; overflow-y: auto; }
 
     /* Section label — wine uppercase + a hairline filling the rest of the
        row, matching .cat-title's own label+rule rhythm on the public menu
@@ -421,17 +448,32 @@
         background: var(--cf-hborder); margin-right: 7px; flex-shrink: 0;
     }
 
-    /* Footer — sticky espresso CTA with a soft fade above it (::before) so
-       scrolled content visually dissolves into the footer band instead of
-       being cut by a hard edge; the footer's own background stays solid
-       (border-top + fade both use --line-soft/--cb-bg, same tokens as the
-       rest of the sheet). */
+    /* Footer — sticky espresso CTA (stays sticky here on purpose: this is a
+       confirm action, not a read-then-close one like the ficha's "Cerrar",
+       so a floating fixed button is the expected, not confusing, pattern —
+       see the ficha's own comment on why it went the other way). Soft fade
+       above it (::before) so scrolled content visually dissolves into the
+       footer band instead of being cut by a hard edge; the footer's own
+       background stays solid (border-top + fade both use
+       --line-soft/--cb-bg, same tokens as the rest of the sheet).
+
+       Same calibration as the ficha's .dish-modal-fade: 60px, reaching
+       full --cb-bg only in the last ~10% of its own height rather than
+       holding a solid band for a third of it — a wide solid band read as a
+       bar cutting the content off rather than dissolving it. No visibility
+       toggle here (unlike the ficha's fade/chevron, which hide once
+       there's nothing left to scroll) — this footer is always sticky
+       whenever there's overflow, so the fade is always meaningful right
+       above it; nothing here to disappear to. The ficha's chevron isn't
+       ported at all: the sticky footer + chips peeking out from under it
+       are already the "more below" signal on their own, and a chevron
+       this close to the button risked reading as part of it. */
     .filters-panel-footer {
         position: sticky; bottom: 0; background: var(--cb-bg); border-top: 1px solid var(--line-soft);
     }
     .filters-panel-footer::before {
-        content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 28px;
-        background: linear-gradient(transparent, var(--cb-bg)); pointer-events: none;
+        content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 3.75rem;
+        background: linear-gradient(transparent, var(--cb-bg) 90%); pointer-events: none;
     }
     .filters-apply-btn {
         background: var(--fg); color: var(--surface); border-radius: var(--radius);

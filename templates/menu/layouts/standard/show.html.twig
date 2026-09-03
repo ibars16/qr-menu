@@ -523,7 +523,17 @@
     {% set otrosTags = tags|filter(t => t.code not in dietTagCodes and t.code|slice(0, 9) != 'contains-') %}
     <div class="filters-overlay" id="filters-overlay" aria-hidden="true" onclick="if(event.target===this) closeFiltersPanel()">
         <div class="filters-panel" role="dialog" aria-modal="true" aria-label="{{ 'filters.title'|trans({}, 'menu_public', locale) }}">
+            {# The × lives directly in .filters-panel (the fixed chrome) for
+               every theme, but only maison also wraps everything else in
+               .filters-panel-scroll below — same persistent-× split as
+               .dish-modal/.dish-modal-scroll (see overrides.html.twig).
+               Opening/closing tags of that wrapper are two separate
+               {% if theme == 'maison' %} blocks rather than one that
+               duplicates this whole (long) body for the {% else %} branch —
+               still balanced, valid HTML per branch, just written this way
+               to avoid a ~90-line twin. #}
             <button type="button" class="dish-modal-close" onclick="closeFiltersPanel()" aria-label="{{ 'common.close'|trans({}, 'menu_public', locale) }}"><i class="ti ti-x"></i></button>
+            {% if theme == 'maison' %}<div class="filters-panel-scroll">{% endif %}
             <div class="filters-panel-header">
                 <div class="filters-panel-title">{{ 'filters.title'|trans({}, 'menu_public', locale) }}</div>
             </div>
@@ -605,6 +615,7 @@
                     data-i18n-empty="{{ 'filters.no_results'|trans({}, 'menu_public', locale)|e('html_attr') }}"
                     onclick="applyFiltersPanel()">{{ 'filters.apply'|trans({}, 'menu_public', locale) }}</button>
             </div>
+            {% if theme == 'maison' %}</div>{% endif %}
         </div>
     </div>
 {% endif %}
