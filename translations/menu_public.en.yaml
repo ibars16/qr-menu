@@ -57,6 +57,7 @@ nav:
     next: "Next"
     up: "Up"
     down: "Down"
+    go_to_item: "Go to dish %n%"
 common:
     close: "Close"
 chat:

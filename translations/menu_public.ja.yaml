@@ -57,6 +57,7 @@ nav:
     next: "次へ"
     up: "上へ"
     down: "下へ"
+    go_to_item: "%n%品目の料理へ移動"
 common:
     close: "閉じる"
 chat:

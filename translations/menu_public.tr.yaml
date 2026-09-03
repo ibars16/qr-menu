@@ -57,6 +57,7 @@ nav:
     next: "İleri"
     up: "Yukarı"
     down: "Aşağı"
+    go_to_item: "%n%. yemeğe git"
 common:
     close: "Kapat"
 chat:

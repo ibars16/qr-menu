@@ -57,6 +57,7 @@ nav:
     next: "Berikutnya"
     up: "Naik"
     down: "Turun"
+    go_to_item: "Ke hidangan %n%"
 common:
     close: "Tutup"
 chat:

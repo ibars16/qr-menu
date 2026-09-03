@@ -57,6 +57,7 @@ nav:
     next: "다음"
     up: "위로"
     down: "아래로"
+    go_to_item: "%n%번째 요리로 이동"
 common:
     close: "닫기"
 chat:

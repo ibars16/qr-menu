@@ -57,6 +57,7 @@ nav:
     next: "Nästa"
     up: "Upp"
     down: "Ner"
+    go_to_item: "Gå till rätt %n%"
 common:
     close: "Stäng"
 chat:

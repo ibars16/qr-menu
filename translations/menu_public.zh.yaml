@@ -57,6 +57,7 @@ nav:
     next: "下一个"
     up: "向上"
     down: "向下"
+    go_to_item: "转到第%n%道菜"
 common:
     close: "关闭"
 chat:

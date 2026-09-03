@@ -57,6 +57,7 @@ nav:
     next: "Tiếp theo"
     up: "Lên"
     down: "Xuống"
+    go_to_item: "Đi tới món %n%"
 common:
     close: "Đóng"
 chat:

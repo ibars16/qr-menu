@@ -57,6 +57,7 @@ nav:
     next: "ถัดไป"
     up: "ขึ้น"
     down: "ลง"
+    go_to_item: "ไปที่จาน %n%"
 common:
     close: "ปิด"
 chat:

@@ -451,36 +451,75 @@
             {# Chef's-recommendation banner — no DB field, no admin toggle:
                it exists only when at least one dish already carries the
                'recommended' tag (the same tag the dish-card badge uses).
-               First match wins, set-menu categories skipped since their
+               Collects ALL matches now (not just the first), in the same
+               order they appear in the menu (category order, then
+               activeProductsSorted within it), so 2+ can be paged through
+               as a carousel below. Set-menu categories skipped since their
                dishes use the flip-card modal, not openDishModal/.dish-tpl. #}
-            {% set recommendedProduct = null %}
-            {% set recommendedProductT = null %}
-            {% set recommendedTag = null %}
+            {% set recommendedItems = [] %}
             {% for bCat in categories %}
-                {% if not recommendedProduct and not bCat.isFixedPriceMenu %}
+                {% if not bCat.isFixedPriceMenu %}
                     {% for bProduct in bCat.activeProductsSorted %}
-                        {% if not recommendedProduct %}
-                            {% set bTag = bProduct.tags|filter(t => t.code == 'recommended')|first %}
-                            {% if bTag %}
-                                {% set recommendedProduct = bProduct %}
-                                {% set recommendedTag = bTag %}
-                                {% set bT = bProduct.getTranslation(locale) %}
-                                {% if not bT %}{% set bT = bProduct.getTranslation(restaurant.defaultLanguage) %}{% endif %}
-                                {% if not bT %}{% set bT = bProduct.translations.first %}{% endif %}
-                                {% set recommendedProductT = bT %}
+                        {% set bTag = bProduct.tags|filter(t => t.code == 'recommended')|first %}
+                        {% if bTag and tagNames[bTag.id] is defined %}
+                            {% set bT = bProduct.getTranslation(locale) %}
+                            {% if not bT %}{% set bT = bProduct.getTranslation(restaurant.defaultLanguage) %}{% endif %}
+                            {% if not bT %}{% set bT = bProduct.translations.first %}{% endif %}
+                            {% if bT %}
+                                {% set recommendedItems = recommendedItems|merge([{
+                                    product: bProduct,
+                                    t: bT,
+                                    tagName: tagNames[bTag.id],
+                                }]) %}
                             {% endif %}
                         {% endif %}
                     {% endfor %}
                 {% endif %}
             {% endfor %}
-            {% if recommendedProduct and recommendedProductT and tagNames[recommendedTag.id] is defined %}
-                <div class="banner" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ recommendedProduct.id }} + '\']'))" role="button" tabindex="0">
+            {% if recommendedItems|length == 1 %}
+                {% set ri = recommendedItems[0] %}
+                <div class="banner" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ ri.product.id }} + '\']'))" role="button" tabindex="0">
                     <div class="bicon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.2 6.8.9-4.9 4.9 1.2 6.8L12 17.8l-6 3 1.2-6.8-4.9-4.9 6.8-.9z"/></svg></div>
                     <div class="btext">
-                        <div class="blabel">{{ tagNames[recommendedTag.id] }}</div>
-                        <div class="bhead">{{ recommendedProductT.name }}</div>
-                        <div class="bsub">{% if recommendedProductT.description %}{{ recommendedProductT.description }}{% else %}{{ priceMacro.price(recommendedProduct, currency, true, currencyDisplay) }}{% endif %}</div>
+                        <div class="blabel">{{ ri.tagName }}</div>
+                        <div class="bhead">{{ ri.t.name }}</div>
+                        <div class="bsub">{% if ri.t.description %}{{ ri.t.description }}{% else %}{{ priceMacro.price(ri.product, currency, true, currencyDisplay) }}{% endif %}</div>
                     </div>
+                </div>
+            {% elseif recommendedItems|length > 1 %}
+                {# Carousel variant — same per-slide material as the single-dish
+                   .banner above (see .banner-slide in overrides.html.twig),
+                   plus a nav bar (prev/dots/next) that's a DOM sibling of the
+                   slides, never a descendant, so its clicks can't bubble into
+                   a slide's own onclick — event.stopPropagation() below is
+                   defensive, not load-bearing. All carousel state (active
+                   slide, swipe, arrow keys) lives in bannerGoTo/bannerNav in
+                   _search_js.html.twig. #}
+                <div class="banner-multi" id="banner-carousel" role="group" aria-roledescription="carousel" aria-label="{{ recommendedItems[0].tagName }}">
+                    <div class="banner-viewport">
+                        <div class="banner-track" id="banner-track">
+                            {% for ri in recommendedItems %}
+                                <div class="banner-slide{{ loop.first ? ' active' : '' }}" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ ri.product.id }} + '\']'))" role="button" tabindex="{{ loop.first ? '0' : '-1' }}" aria-hidden="{{ loop.first ? 'false' : 'true' }}">
+                                    <div class="bicon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.2 6.8.9-4.9 4.9 1.2 6.8L12 17.8l-6 3 1.2-6.8-4.9-4.9 6.8-.9z"/></svg></div>
+                                    <div class="btext">
+                                        <div class="blabel">{{ ri.tagName }}</div>
+                                        <div class="bhead">{{ ri.t.name }}</div>
+                                        <div class="bsub">{% if ri.t.description %}{{ ri.t.description }}{% else %}{{ priceMacro.price(ri.product, currency, true, currencyDisplay) }}{% endif %}</div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="banner-nav">
+                        <button type="button" class="banner-nav-btn banner-prev" onclick="event.stopPropagation(); bannerNav(-1);" aria-label="{{ 'nav.back'|trans({}, 'menu_public', locale) }}"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+                        <div class="banner-dots" id="banner-dots">
+                            {% for ri in recommendedItems %}
+                                <button type="button" class="banner-dot{{ loop.first ? ' active' : '' }}" onclick="event.stopPropagation(); bannerGoTo({{ loop.index0 }});" aria-label="{{ 'nav.go_to_item'|trans({'%n%': loop.index}, 'menu_public', locale) }}" aria-current="{{ loop.first ? 'true' : 'false' }}"></button>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="banner-nav-btn banner-next" onclick="event.stopPropagation(); bannerNav(1);" aria-label="{{ 'nav.next'|trans({}, 'menu_public', locale) }}"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+                    </div>
+                    <div class="sr-only" aria-live="polite" id="banner-announce"></div>
                 </div>
             {% endif %}
         {% else %}

@@ -57,6 +57,7 @@ nav:
     next: "अगला"
     up: "ऊपर"
     down: "नीचे"
+    go_to_item: "व्यंजन %n% पर जाएँ"
 common:
     close: "बंद करें"
 chat:

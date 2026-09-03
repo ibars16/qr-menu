@@ -202,6 +202,40 @@
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
 
+    /* Chef's-recommendation carousel — same slide material as .banner above,
+       used only when 2+ dishes carry 'recommended' (see show.html.twig's
+       recommendedItems). .banner-viewport clips the sliding .banner-track;
+       .banner-nav (prev/dots/next) sits below it, outside the clip, so it's
+       never affected by the track's transform. */
+    .banner-multi { margin: 16px 0 0; }
+    .banner-viewport { overflow: hidden; border-radius: var(--radius); }
+    .banner-track { display: flex; transition: transform 0.28s ease; }
+    .banner-slide {
+        flex: 0 0 100%; width: 100%; min-width: 0; box-sizing: border-box; cursor: pointer;
+        display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+        background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+        border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+    }
+    .banner-nav { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
+    .banner-nav-btn {
+        width: 26px; height: 26px; border-radius: 50%; border: none; flex-shrink: 0; padding: 0;
+        background: var(--cue-bg); color: var(--cue-text); display: flex; align-items: center; justify-content: center;
+        font-size: 13px; cursor: pointer; transition: background 0.18s, color 0.18s;
+    }
+    .banner-nav-btn:hover:not(:disabled) { background: var(--accent); color: #fff; }
+    .banner-nav-btn:disabled { opacity: 0.35; cursor: default; }
+    .banner-dots { display: flex; align-items: center; gap: 6px; }
+    .banner-dot {
+        width: 6px; height: 6px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
+        background: color-mix(in srgb, var(--accent) 30%, transparent);
+        transition: background 0.18s, width 0.18s;
+    }
+    .banner-dot.active { background: var(--accent); width: 16px; border-radius: 3px; }
+    .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+
     /* Header — carta-estilo's header{padding:16px 20px 14px}, logo an
        ivory circle with a brass ring (not a solid wine fill), brand name
        at weight 500. */

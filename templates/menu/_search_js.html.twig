@@ -484,4 +484,71 @@ function lbClose() {
     document.body.style.overflow = '';
 }
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') lbClose(); });
+
+// Chef's-recommendation carousel (maison, 2+ 'recommended'-tagged dishes —
+// see show.html.twig's recommendedItems/.banner-multi). No-op everywhere
+// else since getElementById returns null. No auto-play, no wraparound:
+// bannerGoTo() clamps to [0, slides.length-1], same as the disabled state
+// on the prev/next buttons at either end.
+(function () {
+    var track = document.getElementById('banner-track');
+    var carousel = document.getElementById('banner-carousel');
+    if (!track || !carousel) return;
+    var slides   = Array.prototype.slice.call(track.querySelectorAll('.banner-slide'));
+    var dots     = Array.prototype.slice.call(document.querySelectorAll('#banner-dots .banner-dot'));
+    var announce = document.getElementById('banner-announce');
+    var prevBtn  = carousel.querySelector('.banner-prev');
+    var nextBtn  = carousel.querySelector('.banner-next');
+    var index    = 0;
+
+    function render() {
+        track.style.transform = 'translateX(-' + (index * 100) + '%)';
+        slides.forEach(function (slide, i) {
+            var active = i === index;
+            slide.classList.toggle('active', active);
+            slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+            slide.setAttribute('tabindex', active ? '0' : '-1');
+        });
+        dots.forEach(function (dot, i) {
+            var active = i === index;
+            dot.classList.toggle('active', active);
+            dot.setAttribute('aria-current', active ? 'true' : 'false');
+        });
+        if (prevBtn) prevBtn.disabled = index === 0;
+        if (nextBtn) nextBtn.disabled = index === slides.length - 1;
+        if (announce) {
+            var head = slides[index].querySelector('.bhead');
+            announce.textContent = head ? head.textContent : '';
+        }
+    }
+
+    window.bannerGoTo = function (i) {
+        index = Math.max(0, Math.min(slides.length - 1, i));
+        render();
+    };
+    window.bannerNav = function (delta) { window.bannerGoTo(index + delta); };
+
+    carousel.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft')  { e.preventDefault(); window.bannerNav(-1); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); window.bannerNav(1); }
+    });
+
+    // Swipe — a mostly-horizontal drag past a small threshold pages the
+    // carousel; a mostly-vertical one is left alone so page scroll still works.
+    var touchStartX = null, touchStartY = null;
+    track.addEventListener('touchstart', function (e) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    track.addEventListener('touchend', function (e) {
+        if (touchStartX === null) return;
+        var dx = e.changedTouches[0].clientX - touchStartX;
+        var dy = e.changedTouches[0].clientY - touchStartY;
+        touchStartX = touchStartY = null;
+        if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+        window.bannerNav(dx < 0 ? 1 : -1);
+    });
+
+    render();
+})();
 </script>

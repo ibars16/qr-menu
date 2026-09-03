@@ -57,6 +57,7 @@ nav:
     next: "Siguiente"
     up: "Subir"
     down: "Bajar"
+    go_to_item: "Ir al plato %n%"
 common:
     close: "Cerrar"
 chat:

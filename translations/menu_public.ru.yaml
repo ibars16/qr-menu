@@ -57,6 +57,7 @@ nav:
     next: "Далее"
     up: "Вверх"
     down: "Вниз"
+    go_to_item: "Перейти к блюду %n%"
 common:
     close: "Закрыть"
 chat:
