@@ -553,7 +553,16 @@
         font-weight: 500; letter-spacing: 0.05em; box-shadow: none;
     }
     .filters-apply-btn:hover { opacity: 0.92; }
-    .filters-clear-link { color: var(--accent); }
+    /* Outlined, not filled — stays clearly secondary to .filters-apply-btn's
+       solid espresso fill (the actual primary action) while still reading
+       as a real, tappable control instead of the bare text link the base
+       layout gives every other theme. Same wine as .diet-filter.active's
+       border/text, so it doesn't introduce a third accent color here. */
+    .filters-clear-link {
+        color: var(--accent); border: 1px solid var(--accent); border-radius: var(--radius);
+        padding: 0.5rem 0.9375rem; background: none;
+    }
+    .filters-clear-link:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
 
     /* ── Dish-detail sheet (.dish-modal) ──────────────────────────────────
        Brings the same material as the filters sheet above (chip, section
