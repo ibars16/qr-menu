@@ -1,0 +1,34 @@
+# Append-only history of preset tag translations, one entry per past
+# retext — used by app:tags:resync-preset-translations to tell "this
+# restaurant's translation still says what the preset used to say" (safe
+# to update to the new preset text) apart from "the owner renamed this tag
+# themselves" (never touch without --force).
+#
+# When you change a preset's translations in config/preset_tags.yaml, ADD
+# (never edit or remove) an entry here first, with the translations map
+# exactly as it read *before* your edit — then run the resync command.
+# Never rewrite this file's existing entries: an owner's custom text might
+# coincidentally match an older-still preset wording, and the command
+# checks every listed past version, not just the most recent one.
+history:
+  recommended:
+    - en: Chef's Recommendation
+      es: Recomendación del chef
+      fr: Recommandation du chef
+      de: Empfehlung des Kochs
+      it: Consiglio dello chef
+      pt: Recomendação do chef
+      nl: Aanbeveling van de chef
+      ru: Рекомендация шеф-повара
+      zh: 主厨推荐
+      ja: シェフのおすすめ
+      ko: 셰프 추천
+      th: แนะนำโดยเชฟ
+      ar: توصية الشيف
+      hi: शेफ की सिफारिश
+      tr: Şefin Önerisi
+      vi: Đề xuất của đầu bếp
+      id: Rekomendasi Chef
+      pl: Polecane przez szefa kuchni
+      sv: Kockens rekommendation
+      no: Kokkens anbefaling

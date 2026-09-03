@@ -42,6 +42,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Command\ResyncPresetTagTranslationsCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     App\Command\GenerateGlobalIngredientsDatasetCommand:
         arguments:
             $projectDir: '%kernel.project_dir%'
