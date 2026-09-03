@@ -303,6 +303,31 @@
     .ui-wrap, .content { padding-left: 20px; padding-right: 20px; }
     @media (min-width: 768px) { .ui-wrap, .content { padding-left: 20px; padding-right: 20px; } }
 
+    /* Smart Waiter FAB (menu/_smart_waiter.html.twig, shared markup/JS
+       across every theme — not touched here, only its visibility) — hidden
+       for as long as either bottom sheet below is open. The FAB is fixed
+       at z-index:2000, above both sheets' own 1000, so while a sheet is
+       open it was sitting on top of "Ver resultados"/"Cerrar" with only a
+       few px to spare, which is what forced those buttons' padding to
+       reserve real clearance for it (see .filters-panel-footer/
+       .dish-modal-footer below) even though nothing was actually colliding
+       — the FAB simply had no reason to still be reachable while a sheet
+       has the customer's attention. :has() rather than a JS toggle: no
+       logic to keep in sync, the sheets' own existing .open class (already
+       toggled by openFiltersPanel()/openDishModal(), untouched) is the
+       only thing driving this. display:none also correctly pulls the FAB
+       (and its chat panel, if it happened to be open — same element,
+       .sw-panel lives inside .sw-widget) out of the tab order while a
+       sheet has it hidden; nothing about the chat's own open/closed state
+       is touched, so it reappears exactly as it was once the sheet closes.
+       Scoped to maison simply by virtue of living in this file — the
+       other 8 themes never load this rule, so their FAB behaves exactly
+       as before. */
+    body:has(.filters-overlay.open) .sw-widget,
+    body:has(.dish-modal-overlay.open) .sw-widget {
+        display: none;
+    }
+
     /* Filters bottom sheet ("¿Qué necesitas?") — the base layout's version
        of this panel is a plain form (sans title, grey labels, bright-red
        apply button, native checkboxes for "evitar alérgenos") which reads
@@ -383,13 +408,13 @@
     /* Clearance for the sticky footer below (see .filters-panel-footer):
        sticky pins it over whatever body content is still scrolled behind it,
        so the last section (the disclaimer) needs enough reserved space to
-       clear the footer's full rendered height (~149px measured: padding +
-       button + the base layout's 6rem bottom padding reserved for the Smart
-       Waiter bubble) *plus* a clean margin, or the disclaimer's last line
-       ends up half-hidden behind the footer band instead of just fading
-       under its gradient. 11rem (176px) clears the measured 149px with
-       ~27px to spare — must clear regardless of how many lines the
-       disclaimer wraps to at a given width. */
+       clear the footer's full rendered height plus a clean margin, or the
+       disclaimer's last line ends up half-hidden behind the footer band
+       instead of just fading under its gradient. 11rem (176px) is generous
+       now that the footer's own padding shrank (it no longer reserves room
+       for the Smart Waiter FAB — see that rule near the top of this file),
+       but left as-is: still correctly safe, and there's no defect to fix
+       by tightening a number that isn't causing one. */
     .filters-panel-body { padding-bottom: 11rem; }
 
     /* Chip icons — Tag::$icon / Allergen::$icon are free-text (admin-set,
@@ -471,26 +496,19 @@
 
        Padding — overrides the base layout's own 0.25rem/1.25rem/6rem
        (standard/show.html.twig; left as-is there, since the other 8 themes
-       share that rule and their own footer isn't sticky — same 6rem still
-       protects THEM from the Smart Waiter FAB once scrolled to the natural
-       end). Here the 6rem bottom read as a dead parchment strip: sticky
-       pins the button at a fixed spot, so that padding was pure visible
-       gap below it, not just extra scroll room. Root cause was the number
-       itself, not the fade/border/background (those were already
-       correct) — 6rem (96px) was a round-number buffer well past what's
-       actually needed. The FAB is a fixed 56px circle with an 18px margin
-       (menu/_smart_waiter.html.twig, z-index:2000 — above this sheet's own
-       1000, so it really does sit on top and needs real clearance, not
-       just a nicety): 56+18 = 74px is the true minimum. Measured that exact
-       74px against the real FAB rect and it landed flush — zero gap, touching
-       edge-to-edge — so this pads to 5rem (80px) instead, a clean ~6px
-       breathing margin rather than a knife-edge minimum, with
-       env(safe-area-inset-bottom) added on top of it (not replacing it)
-       for the iOS gesture bar. Top/sides are a plain comfortable pad, no
-       longer needing to double as FAB clearance. */
+       share that rule and their own footer isn't sticky, and — unlike
+       here — their FAB is never hidden, so they still need that 6rem to
+       clear it once scrolled to the natural end). That 6rem was originally
+       ported here too and briefly bumped to 5rem after measuring the FAB's
+       real footprint (56px circle + 18px margin) — both were reserving
+       space for a collision that no longer exists now that the FAB is
+       hidden outright while this sheet is open (see the Smart Waiter rule
+       above). With the actual conflict removed instead of padded around,
+       this is just a plain comfortable pad plus env(safe-area-inset-bottom)
+       for the iOS gesture bar — nothing left reserving room for anything. */
     .filters-panel-footer {
         position: sticky; bottom: 0; background: var(--cb-bg); border-top: 1px solid var(--line-soft);
-        padding: 0.875rem 1.25rem calc(5rem + env(safe-area-inset-bottom));
+        padding: 0.875rem 1.25rem calc(0.875rem + env(safe-area-inset-bottom));
     }
     .filters-panel-footer::before {
         content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 3.75rem;
@@ -752,12 +770,14 @@
        confirm-a-selection like the filters sheet above, so a floating fixed
        button here read as "scroll is broken" and covered the tags section.
        Border-top is now just a quiet separator, not a fade-cover — nothing
-       scrolls underneath it any more. Bottom padding still clears the fixed
-       Smart Waiter bubble (see .filters-panel-footer's own comment) since
-       this footer is now genuinely the last thing in the scroll area. */
+       scrolls underneath it any more. Bottom padding no longer needs to
+       clear the Smart Waiter FAB (used to be 6rem for exactly that) — the
+       FAB is hidden outright while this sheet is open (see that rule near
+       the top of this file), so there's nothing left to reserve room for;
+       just env(safe-area-inset-bottom) for the iOS gesture bar. */
     .dish-modal-footer {
         background: var(--cb-bg); border-top: 1px solid var(--line-soft);
-        padding: 1.25rem 1.5rem 6rem; margin-top: 0.5rem;
+        padding: 1.25rem 1.5rem calc(1.25rem + env(safe-area-inset-bottom)); margin-top: 0.5rem;
     }
     /* Sheet grows with its content up to the base layout's own
        max-height:88vh cap; past that it scrolls normally and this footer
