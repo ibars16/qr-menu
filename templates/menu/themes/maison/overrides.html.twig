@@ -553,16 +553,31 @@
         font-weight: 500; letter-spacing: 0.05em; box-shadow: none;
     }
     .filters-apply-btn:hover { opacity: 0.92; }
-    /* Outlined, not filled — stays clearly secondary to .filters-apply-btn's
-       solid espresso fill (the actual primary action) while still reading
-       as a real, tappable control instead of the bare text link the base
-       layout gives every other theme. Same wine as .diet-filter.active's
-       border/text, so it doesn't introduce a third accent color here. */
+    /* Filled wine, white text — visible without competing with
+       .filters-apply-btn's solid espresso fill: role stays clear from
+       size (small, inline pill vs. the big sticky footer button) and
+       position (top of the panel vs. bottom), not from color alone.
+       White-on-#7A1E28 is ~10:1 contrast, well past AA. Contrast ratio
+       computed against --accent's actual hex, not eyeballed — see the
+       hover swap to --wine-soft below, a lighter wine that still clears
+       AA on its own (kept for the hover state only, not the resting
+       fill, since it reads slightly less "wine" than --accent at rest). */
     .filters-clear-link {
-        color: var(--accent); border: 1px solid var(--accent); border-radius: var(--radius);
-        padding: 0.5rem 0.9375rem; background: none;
+        color: #fff; background: var(--accent); border: 1px solid var(--accent); border-radius: var(--radius);
+        padding: 0.5rem 0.9375rem;
     }
-    .filters-clear-link:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+    .filters-clear-link:hover { background: var(--wine-soft); border-color: var(--wine-soft); }
+    /* Anchored snug under the title's accent hairline instead of floating
+       in the wide empty flex-end row below it (the "dead space" this was
+       reported as sitting in) — tightened vertical gap only, same
+       right-alignment as before (near the persistent ×). Deliberately
+       NOT moved onto the title's own line: several locales' filters.title
+       run long enough (French "De quoi avez-vous besoin ?", ~27 chars) to
+       collide with a same-line button at 390px regardless of restaurant
+       content, so staying on its own row below avoids that risk for every
+       language rather than only the short ones. */
+    .filters-panel-header { padding-bottom: 0.5rem; }
+    .filters-panel-clear-row { padding: 0.25rem 1.25rem 0; }
 
     /* ── Dish-detail sheet (.dish-modal) ──────────────────────────────────
        Brings the same material as the filters sheet above (chip, section
