@@ -221,23 +221,23 @@ preset_tags:
     color: "#D4AF37"
     position: 8
     translations:
-      en: Chef's Recommendation
-      es: Recomendación del chef
-      fr: Recommandation du chef
-      de: Empfehlung des Kochs
-      it: Consiglio dello chef
-      pt: Recomendação do chef
-      nl: Aanbeveling van de chef
-      ru: Рекомендация шеф-повара
-      zh: 主厨推荐
-      ja: シェフのおすすめ
-      ko: 셰프 추천
-      th: แนะนำโดยเชฟ
-      ar: توصية الشيف
-      hi: शेफ की सिफारिश
-      tr: Şefin Önerisi
-      vi: Đề xuất của đầu bếp
-      id: Rekomendasi Chef
-      pl: Polecane przez szefa kuchni
-      sv: Kockens rekommendation
-      no: Kokkens anbefaling
+      en: Our Recommendation
+      es: Nuestra recomendación
+      fr: Notre recommandation
+      de: Unsere Empfehlung
+      it: Il nostro consiglio
+      pt: Nossa recomendação
+      nl: Onze aanbeveling
+      ru: Наша рекомендация
+      zh: 我们的推荐
+      ja: 私たちのおすすめ
+      ko: 우리의 추천
+      th: คำแนะนำของเรา
+      ar: توصيتنا
+      hi: हमारी सिफारिश
+      tr: Önerimiz
+      vi: Đề xuất của chúng tôi
+      id: Rekomendasi Kami
+      pl: Nasza rekomendacja
+      sv: Vår rekommendation
+      no: Vår anbefaling
