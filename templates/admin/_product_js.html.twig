@@ -276,8 +276,17 @@
         const name = getVal('p-name'), desc = getVal('p-desc');
         if (name) translations[LOCALE] = { name, description: desc || null };
 
-        const tags = [...document.querySelectorAll('.tag-pill.on')].map(t => parseInt(t.dataset.tagId));
-        document.querySelectorAll('[id="p-recommended"]:checked').forEach(cb => tags.push(parseInt(cb.dataset.tagId)));
+        // Every form field id here exists twice in the DOM (desktop modal +
+        // mobile sheet — see _admin_js_utils.html.twig's activePanel() doc).
+        // getVal()/panelEl() already scope reads to the open panel; these two
+        // didn't, so a tag/recommended toggle made in the open panel could be
+        // masked by its untouched duplicate in the closed one still matching
+        // the unscoped :checked/.on query — turning a tag ON worked (only the
+        // open panel's copy was ever true), turning one back OFF silently
+        // didn't (the closed panel's copy, set true at load, was still there).
+        const panel = activePanel();
+        const tags = [...panel.querySelectorAll('.tag-pill.on')].map(t => parseInt(t.dataset.tagId));
+        panel.querySelectorAll('[id="p-recommended"]:checked').forEach(cb => tags.push(parseInt(cb.dataset.tagId)));
 
         // Owner-typed free text, never blocking save if a row is left half-filled —
         // a row missing either half is simply dropped rather than shown as an error.
