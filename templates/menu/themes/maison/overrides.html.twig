@@ -467,9 +467,30 @@
        above it; nothing here to disappear to. The ficha's chevron isn't
        ported at all: the sticky footer + chips peeking out from under it
        are already the "more below" signal on their own, and a chevron
-       this close to the button risked reading as part of it. */
+       this close to the button risked reading as part of it.
+
+       Padding — overrides the base layout's own 0.25rem/1.25rem/6rem
+       (standard/show.html.twig; left as-is there, since the other 8 themes
+       share that rule and their own footer isn't sticky — same 6rem still
+       protects THEM from the Smart Waiter FAB once scrolled to the natural
+       end). Here the 6rem bottom read as a dead parchment strip: sticky
+       pins the button at a fixed spot, so that padding was pure visible
+       gap below it, not just extra scroll room. Root cause was the number
+       itself, not the fade/border/background (those were already
+       correct) — 6rem (96px) was a round-number buffer well past what's
+       actually needed. The FAB is a fixed 56px circle with an 18px margin
+       (menu/_smart_waiter.html.twig, z-index:2000 — above this sheet's own
+       1000, so it really does sit on top and needs real clearance, not
+       just a nicety): 56+18 = 74px is the true minimum. Measured that exact
+       74px against the real FAB rect and it landed flush — zero gap, touching
+       edge-to-edge — so this pads to 5rem (80px) instead, a clean ~6px
+       breathing margin rather than a knife-edge minimum, with
+       env(safe-area-inset-bottom) added on top of it (not replacing it)
+       for the iOS gesture bar. Top/sides are a plain comfortable pad, no
+       longer needing to double as FAB clearance. */
     .filters-panel-footer {
         position: sticky; bottom: 0; background: var(--cb-bg); border-top: 1px solid var(--line-soft);
+        padding: 0.875rem 1.25rem calc(5rem + env(safe-area-inset-bottom));
     }
     .filters-panel-footer::before {
         content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 3.75rem;
