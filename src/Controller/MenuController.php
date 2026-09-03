@@ -51,7 +51,7 @@ class MenuController extends AbstractController
      * Shared prefix for every menu-content cache entry this request might
      * read or write (see ProductRepository::warmMenuCollections(),
      * CategoryRepository/ProductTagRepository::warmTranslations(),
-     * ProductAllergenResolver::resolveForRestaurant()) — each of those
+     * ProductAllergenResolver::resolveForProducts()) — each of those
      * appends its own suffix. Folding Restaurant::$menuContentVersion in
      * here is the entire invalidation mechanism: bumping it changes every
      * key built from it, so old entries are simply never read again rather
@@ -386,9 +386,24 @@ class MenuController extends AbstractController
         $productTranslationService->resolveForMenu($restaurant, $allProducts, $locale);
         $categoryTranslationService->resolveForMenu($restaurant, $allActiveCategories, $locale, $cacheKeyPrefix);
 
-        // Tags — sorted + resolved names (with lazy-dispatch fallback for missing locales)
-        $tags     = $restaurant->getProductTags()->toArray();
+        // Tags — sorted + resolved names (with lazy-dispatch fallback for missing locales),
+        // then pruned to the ones actually carried by a product on this menu — offering a
+        // filter chip that can never match anything (e.g. "Halal" when no dish has it) is
+        // worse than not offering it. One pass over $allProducts' already-warmed tags
+        // collection (see warmMenuCollections() above the category loop) rather than a
+        // query per product. Every consumer of $tags below (the filters panel's diet/
+        // allergy/other chip groups, in this same layout — the only one left, see
+        // MenuController's $validLayouts) inherits the pruned set for free; nothing here
+        // changes what a chip does once shown, only whether it's offered at all.
+        $availableTagIds = [];
+        foreach ($allProducts as $product) {
+            foreach ($product->getTags() as $tag) {
+                $availableTagIds[$tag->getId()] = true;
+            }
+        }
+        $tags = $restaurant->getProductTags()->toArray();
         usort($tags, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
+        $tags = array_values(array_filter($tags, fn($tag) => isset($availableTagIds[$tag->getId()])));
         $tagNames = $tagTranslationService->resolveForMenu($restaurant, $locale, $cacheKeyPrefix);
 
         // Allergens — computed once for the whole menu (see
@@ -399,6 +414,14 @@ class MenuController extends AbstractController
         // a customer would ever want to "avoid") to drive the customer
         // allergen filter — a restaurant with no allergen data configured
         // simply gets no filter button at all, rather than an empty one.
+        // resolveForProducts($allProducts, ...) rather than
+        // resolveForRestaurant($restaurant, ...) — the latter scans every
+        // product the restaurant has ever created (inactive/hidden/no
+        // longer on the menu included), which used to let an allergen from
+        // a dish nobody can currently order show up in "Evitar alérgenos".
+        // $allProducts is the exact same available-dish set already built
+        // by the category loop above (active + safe-to-display for normal
+        // categories, active sections for set menus).
         $resolveAllergenName = static function ($allergen) use ($locale, $restaurant) {
             $t = $allergen->getTranslation($locale)
                 ?? $allergen->getTranslation($restaurant->getDefaultLanguage())
@@ -409,7 +432,7 @@ class MenuController extends AbstractController
 
         $productAllergens   = [];
         $menuAllergensByCode = [];
-        foreach ($allergenResolver->resolveForRestaurant($restaurant, $cacheKeyPrefix) as $productId => $entries) {
+        foreach ($allergenResolver->resolveForProducts($allProducts, $cacheKeyPrefix) as $productId => $entries) {
             $serialized = [];
             foreach ($entries as $entry) {
                 $allergen = $entry['allergen'];

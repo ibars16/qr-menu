@@ -590,7 +590,7 @@
                         </div>
                     </div>
                 {% endif %}
-                {% if tags|length > 0 %}
+                {% if dietaTags|length > 0 %}
                     <div class="filters-section">
                         <div class="filters-section-title">{{ 'filters.diet_title'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(dietaTags|length) }}</span>{% endif %}</div>
                         <div class="diet-filters">
