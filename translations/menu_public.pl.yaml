@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Popularne"
     view_more: "Zobacz więcej"
+    contains_line: "Zawiera: %list%"
     view_detail_aria: "Zobacz szczegóły %name%"
     modal_aria: "Szczegóły dania"
     name_label: "Danie"

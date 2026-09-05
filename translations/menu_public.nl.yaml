@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Populair"
     view_more: "Meer bekijken"
+    contains_line: "Bevat: %list%"
     view_detail_aria: "Details van %name% bekijken"
     modal_aria: "Gerechtdetails"
     name_label: "Gerecht"

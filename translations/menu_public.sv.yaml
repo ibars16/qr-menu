@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Populär"
     view_more: "Visa mer"
+    contains_line: "Innehåller: %list%"
     view_detail_aria: "Visa detaljer för %name%"
     modal_aria: "Rättdetaljer"
     name_label: "Rätt"

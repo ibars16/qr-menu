@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Populer"
     view_more: "Lihat selengkapnya"
+    contains_line: "Mengandung: %list%"
     view_detail_aria: "Lihat detail %name%"
     modal_aria: "Detail hidangan"
     name_label: "Hidangan"

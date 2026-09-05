@@ -38,6 +38,7 @@ results:
 dish:
     popular: "ยอดนิยม"
     view_more: "ดูเพิ่มเติม"
+    contains_line: "มี: %list%"
     view_detail_aria: "ดูรายละเอียดของ %name%"
     modal_aria: "รายละเอียดเมนู"
     name_label: "เมนู"

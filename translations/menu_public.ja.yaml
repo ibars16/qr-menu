@@ -38,6 +38,7 @@ results:
 dish:
     popular: "人気"
     view_more: "詳しく見る"
+    contains_line: "含む: %list%"
     view_detail_aria: "%name% の詳細を見る"
     modal_aria: "料理の詳細"
     name_label: "料理名"

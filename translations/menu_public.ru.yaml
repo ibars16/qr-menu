@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Популярное"
     view_more: "Подробнее"
+    contains_line: "Содержит: %list%"
     view_detail_aria: "Подробнее о %name%"
     modal_aria: "Информация о блюде"
     name_label: "Блюдо"

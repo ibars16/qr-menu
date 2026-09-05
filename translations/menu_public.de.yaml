@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Beliebt"
     view_more: "Mehr erfahren"
+    contains_line: "Enthält: %list%"
     view_detail_aria: "Details zu %name% ansehen"
     modal_aria: "Gerichtdetails"
     name_label: "Gericht"

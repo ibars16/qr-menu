@@ -693,17 +693,31 @@
                                 {% endif %}
                             {% endif %}
                             {% set maisonRow = theme == 'maison' and not product.image %}
+                            {# Allergens shown on the card front (maison only): the same
+                               productAllergens entries the detail sheet uses, already
+                               translated to the active locale server-side, minus
+                               free_from (a card teases what to watch for, not what's
+                               safe — that nuance stays in the detail sheet's 3-state
+                               list). Rendered as a "Contiene: X, Y" text line (see
+                               .dish-contains in maison/overrides.html.twig) rather than
+                               the old bare icon-only row, and shared by both the photo
+                               card and the no-photo .dish-row for the same reason the
+                               description/"Ver más" treatment is shared below: one card,
+                               two layouts. #}
+                            {% set cardAllergens = theme == 'maison' ? productAllergens[product.id]|default([])|filter(a => a.presence != 'free_from') : [] %}
                             <div class="dish-card{{ maisonRow ? ' dish-row' : '' }}" onclick="openDishModal(this)" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': pT.name}, 'menu_public', locale) }}" data-product-id="{{ product.id }}" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}" data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
                                 {% if maisonRow %}
                                     {# No photo, maison: a plain text row (see conversation
                                        2026-09-02) instead of a card with an empty image frame —
-                                       no .front-img at all, just name+price/description/"Ver más"
-                                       straight on the section background. #}
+                                       no .front-img at all, just name+price/"Contiene…"/"Ver más"
+                                       straight on the section background. Description dropped
+                                       from the card front (2026-09-05): it stays in the detail
+                                       sheet only, same as the photo card below. #}
                                     <div class="row-head">
                                         <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }} {{ currencyDisplay }}</span>{% endif %}</div>
                                         <div class="row-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
                                     </div>
-                                    {% if pT.description %}<div class="front-desc">{{ pT.description }}</div>{% endif %}
+                                    {% if cardAllergens|length > 0 %}<div class="dish-contains">{{ 'dish.contains_line'|trans({'%list%': cardAllergens|map(a => a.name)|join(', ')}, 'menu_public', locale) }}</div>{% endif %}
                                     <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
                                 {% else %}
                                 <div class="front-img">
@@ -718,16 +732,11 @@
                                 </div>
                                 <div class="front-info">
                                     <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }} {{ currencyDisplay }}</span>{% endif %}</div>
-                                    {% if pT.description %}<div class="front-desc">{{ pT.description }}</div>{% endif %}
-                                    {% if theme == 'maison' %}
-                                        {% set cardAllergens = productAllergens[product.id]|default([])|filter(a => a.presence != 'free_from') %}
-                                        {% if cardAllergens|length > 0 %}
-                                            <div class="allergen-icons">
-                                                {% for a in cardAllergens|slice(0, 4) %}<span class="aicon" title="{{ a.name }}">{{ a.icon }}</span>{% endfor %}
-                                                {% if cardAllergens|length > 4 %}<span class="aicon aicon-more">+{{ cardAllergens|length - 4 }}</span>{% endif %}
-                                            </div>
-                                        {% endif %}
-                                    {% endif %}
+                                    {# Description dropped from the maison card front (2026-09-05,
+                                       see conversation) — it stays in the detail sheet only.
+                                       Other themes keep showing it here unchanged. #}
+                                    {% if pT.description and theme != 'maison' %}<div class="front-desc">{{ pT.description }}</div>{% endif %}
+                                    {% if cardAllergens|length > 0 %}<div class="dish-contains">{{ 'dish.contains_line'|trans({'%list%': cardAllergens|map(a => a.name)|join(', ')}, 'menu_public', locale) }}</div>{% endif %}
                                     <div class="dish-bottom">
                                         <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
                                         <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
