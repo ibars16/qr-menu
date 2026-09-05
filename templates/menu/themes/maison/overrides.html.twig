@@ -223,8 +223,25 @@
         transition: background 0.2s;
     }
     .cta-explore:hover { background: var(--wine-soft); }
+    .cta-explore:focus-visible { outline: 2px solid var(--cf-hborder); outline-offset: 2px; }
     .cta-explore i { font-size: 12px; }
-    .hero { padding: 22px 20px 26px; }
+    /* Hero — restructured so restaurant-supplied photography never sits under
+       text: the photo (when present) is its own edge-to-edge band, and
+       .hero-name/.tagline/.cta-explore/.banner always paint on solid
+       --surface-2, never on the photo. No photo → .hero-photo-band is absent
+       from the DOM (twig guard) and .hero-inner sits directly on --hero-bg,
+       still fully legible — this is the more-common case until a real
+       header-photo field exists (see the TODO in show.html.twig). */
+    .hero { padding: 0; }
+    .hero-photo-band {
+        height: 200px;
+        overflow: hidden;
+        border-bottom: 1px solid var(--cf-hborder);
+    }
+    .hero-photo-band img {
+        display: block; width: 100%; height: 100%; object-fit: cover; object-position: center;
+    }
+    .hero-inner { background: var(--surface-2); padding: 22px 20px 26px; }
     /* Base 43px, not the shared 46px other sizes use — an almost
        imperceptible +1px over the original 42px, scaled down further by
        --font-scale like everything else. Kept separate deliberately: the
@@ -233,8 +250,11 @@
     .hero-name { font-size: calc(43px * var(--font-scale)); font-weight: 500; letter-spacing: -0.01em; margin: 16px 0 10px; text-shadow: none; }
     /* Tagline — only painted when restaurant.tagline has a value (see the
        twig guard); admins fill it in via Ajustes > Información del
-       restaurante, it's never inferred or defaulted here. */
-    .tagline { font-size: calc(14.5px * var(--font-scale)); font-weight: 400; color: var(--fg-2); line-height: 1.5; max-width: 82%; }
+       restaurante, it's never inferred or defaulted here. Color is --fg, not
+       the --fg-2 used elsewhere for secondary text: on the solid --surface-2
+       hero panel, --fg-2 measures 4.37:1 (fails the 4.5:1 AA floor for
+       normal-size text by a hair) while --fg clears it at 12.69:1. */
+    .tagline { font-size: calc(14.5px * var(--font-scale)); font-weight: 400; color: var(--fg); line-height: 1.5; max-width: 82%; }
 
     /* Chef's-recommendation banner — carta-premium-completa.html's .banner,
        adapted to this app's tokens (--accent for its --wine, --surface for
