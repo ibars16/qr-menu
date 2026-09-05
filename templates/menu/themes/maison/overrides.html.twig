@@ -173,40 +173,39 @@
         display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0;
     }
 
-    /* "🛡 Contiene: X, Y" — the card-front allergen tease, replacing the old
-       icon-per-allergen .allergen-icons/.aicon row (2026-09-05, see
-       conversation): bare icons with only a native title="" tooltip were
-       illegible on touch, so this reuses the same productAllergens entries
-       (already translated to the active locale, minus free_from) as one
-       discreet text line instead. A single shield glyph anchors it — the
-       exact same `ti-shield-check` the "¿Alergias o dietas?" button already
-       uses (standard/show.html.twig, .diet-allergy-btn i), not a new icon.
-       Flex row so only the allergen *list* (.dish-contains-list) truncates
-       with an ellipsis on overflow — the icon and "Contiene:" label always
-       stay fully visible, never getting clipped mid-word. Not the full
-       safety list (that stays in the detail sheet's .bsec with its 3-state
-       chips) — a tease. Only rendered when the dish actually has allergens
-       (see the Twig `cardAllergens|length > 0` guard, macro dishContains())
-       — never an empty "Contiene:" and nothing invented.
+    /* "[shield] Gluten, Crustáceos, Huevos" — the card-front allergen tease,
+       replacing the old icon-per-allergen .allergen-icons/.aicon row
+       (2026-09-05, see conversation): bare icons with only a native
+       title="" tooltip were illegible on touch, so this reuses the same
+       productAllergens entries (already translated to the active locale,
+       minus free_from) as one discreet line instead. A single shield glyph
+       anchors it — the exact same `ti-shield-check` the "¿Alergias o
+       dietas?" button already uses (standard/show.html.twig, .diet-allergy-
+       btn i), not a new icon. Flex row so only the allergen list
+       (.dish-contains-list) truncates with an ellipsis on overflow — the
+       icon never gets clipped. Not the full safety list (that stays in the
+       detail sheet's .bsec with its 3-state chips) — a tease. Only
+       rendered when the dish actually has allergens (see the Twig
+       `cardAllergens|length > 0` guard, macro dishContains()) — never an
+       empty line and nothing invented.
 
-       Contrast note: --cf-hborder (brass, #B0894C) measures ~3.03:1 against
-       both --cf-bg and --bg here — clears the 3:1 non-text-contrast bar for
-       the decorative icon, but fails the 4.5:1 AA text bar at this
-       metadata size. So brass is used for the icon only; the "Contiene:"
-       label gets its typographic distinction from case/weight/tracking
-       (uppercase, 600, +0.05em) on --fg-2 instead of color, which measures
-       ~5.4:1 — comfortably AA. */
+       No visible text label any more (2026-09-06, see conversation — the
+       "CONTIENE:" kicker from the previous round was dropped): the shield
+       carries that meaning instead, via `role="img"` + a translated
+       `aria-label` on the `<i>` itself (see the macro in
+       standard/show.html.twig) rather than a second DOM node here. Its
+       *visual* color stays --cf-hborder (brass, ~3.03:1 against --cf-bg/
+       --bg) — a decorative glyph only needs the 3:1 non-text-contrast bar,
+       which it clears; there's no longer any label text at this size for
+       the earlier 4.5:1 AA-text shortfall to apply to. Allergen names stay
+       --fg-2 (~5.4:1, comfortably AA). */
     .dish-contains {
-        display: flex; align-items: baseline; gap: 0.375rem;
+        display: flex; align-items: center; gap: 0.375rem;
         font-family: var(--font-body); font-size: calc(12.5px * var(--font-scale));
         overflow: hidden; max-width: 100%;
     }
     .dish-contains-icon {
-        color: var(--cf-hborder); font-size: 0.8125rem; align-self: center; flex-shrink: 0;
-    }
-    .dish-contains-label {
-        color: var(--fg-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
-        flex-shrink: 0;
+        color: var(--cf-hborder); font-size: 0.8125rem; flex-shrink: 0;
     }
     .dish-contains-list {
         color: var(--fg-2); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;

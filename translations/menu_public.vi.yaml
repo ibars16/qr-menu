@@ -38,7 +38,6 @@ results:
 dish:
     popular: "Phổ biến"
     view_more: "Xem thêm"
-    contains_line: "Chứa:"
     view_detail_aria: "Xem chi tiết %name%"
     modal_aria: "Chi tiết món ăn"
     name_label: "Món ăn"

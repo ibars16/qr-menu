@@ -38,7 +38,6 @@ results:
 dish:
     popular: "लोकप्रिय"
     view_more: "और देखें"
-    contains_line: "इसमें शामिल है:"
     view_detail_aria: "%name% का विवरण देखें"
     modal_aria: "व्यंजन का विवरण"
     name_label: "व्यंजन"

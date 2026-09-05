@@ -38,7 +38,6 @@ results:
 dish:
     popular: "Popular"
     view_more: "View more"
-    contains_line: "Contains:"
     view_detail_aria: "View details for %name%"
     modal_aria: "Dish details"
     name_label: "Dish"
