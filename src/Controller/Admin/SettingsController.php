@@ -70,12 +70,24 @@ class SettingsController extends AbstractController
                     mkdir($uploadDir, 0755, true);
                 }
 
+                $oldLogo = $restaurant->getLogo();
+
                 try {
                     $logoFile->move($uploadDir, $result->safeFilename);
                     $restaurant->setLogo($result->safeFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', $translator->trans('flash.logo_upload_error', domain: 'admin_settings'));
                     return $this->redirectToRoute('admin_settings');
+                }
+
+                // Old file is orphaned on disk once the column no longer
+                // points to it — clean it up now that the new one is safely
+                // in place.
+                if ($oldLogo) {
+                    $oldPath = $uploadDir . '/' . $oldLogo;
+                    if (is_file($oldPath)) {
+                        unlink($oldPath);
+                    }
                 }
             }
 
