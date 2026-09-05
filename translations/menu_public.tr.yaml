@@ -38,7 +38,7 @@ results:
 dish:
     popular: "Popüler"
     view_more: "Daha fazla gör"
-    contains_line: "İçerir: %list%"
+    contains_line: "İçerir:"
     view_detail_aria: "%name% detayını gör"
     modal_aria: "Yemek detayı"
     name_label: "Yemek"

@@ -38,7 +38,7 @@ results:
 dish:
     popular: "Populær"
     view_more: "Se mer"
-    contains_line: "Inneholder: %list%"
+    contains_line: "Inneholder:"
     view_detail_aria: "Se detaljer for %name%"
     modal_aria: "Rettdetaljer"
     name_label: "Rett"

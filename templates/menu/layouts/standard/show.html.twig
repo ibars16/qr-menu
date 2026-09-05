@@ -9,6 +9,12 @@
    allergen row) instead of inventing an icon lookup. Other themes/layouts
    keep the original bare "icon + space + name" text exactly. #}
 {% macro chipIcon(icon, theme) %}{% if theme == 'maison' %}<span class="aicon">{{ icon }}</span>{% else %}{{ icon }} {% endif %}{% endmacro %}
+{# Card-front "Contiene: X, Y" allergen tease (maison only, both .dish-card
+   and .dish-row — see cardAllergens above the dish-card div below). One
+   shared macro so the shield icon/label/list markup isn't duplicated across
+   the two front-face branches. Renders nothing at all when cardAllergens is
+   empty — no icon, no label, no invented content. #}
+{% macro dishContains(cardAllergens, locale) %}{% if cardAllergens|length > 0 %}<div class="dish-contains"><i class="ti ti-shield-check dish-contains-icon" aria-hidden="true"></i><span class="dish-contains-label">{{ 'dish.contains_line'|trans({}, 'menu_public', locale) }}</span><span class="dish-contains-list">{{ cardAllergens|map(a => a.name)|join(', ') }}</span></div>{% endif %}{% endmacro %}
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: var(--font-body, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif); background: var(--bg); background-attachment: var(--bg-attach, scroll); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.5; }
@@ -717,7 +723,7 @@
                                         <div class="front-name">{{ pT.name }}{% if product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }} {{ currencyDisplay }}</span>{% endif %}</div>
                                         <div class="row-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
                                     </div>
-                                    {% if cardAllergens|length > 0 %}<div class="dish-contains">{{ 'dish.contains_line'|trans({'%list%': cardAllergens|map(a => a.name)|join(', ')}, 'menu_public', locale) }}</div>{% endif %}
+                                    {{ _self.dishContains(cardAllergens, locale) }}
                                     <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
                                 {% else %}
                                 <div class="front-img">
@@ -736,7 +742,7 @@
                                        see conversation) — it stays in the detail sheet only.
                                        Other themes keep showing it here unchanged. #}
                                     {% if pT.description and theme != 'maison' %}<div class="front-desc">{{ pT.description }}</div>{% endif %}
-                                    {% if cardAllergens|length > 0 %}<div class="dish-contains">{{ 'dish.contains_line'|trans({'%list%': cardAllergens|map(a => a.name)|join(', ')}, 'menu_public', locale) }}</div>{% endif %}
+                                    {{ _self.dishContains(cardAllergens, locale) }}
                                     <div class="dish-bottom">
                                         <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
                                         <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>

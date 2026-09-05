@@ -38,7 +38,7 @@ results:
 dish:
     popular: "الأكثر طلبًا"
     view_more: "عرض المزيد"
-    contains_line: "يحتوي على: %list%"
+    contains_line: "يحتوي على:"
     view_detail_aria: "عرض تفاصيل %name%"
     modal_aria: "تفاصيل الطبق"
     name_label: "الطبق"

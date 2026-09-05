@@ -83,16 +83,21 @@
     .more-hint i { transition: transform 0.25s ease; }
     .dish-card:hover .more-hint i { transform: translateX(3px); }
 
-    /* Photo frame — up from the original 150px (2026-09-05, see
-       conversation) for more presence in the listing; still shorter than
-       the base layout's own clamp(190–200px) default since maison's
-       parchment/ivory cards read intentionally compact. aspect-ratio stays
-       auto (the fixed height alone already sets both dimensions — see the
-       base layout's own comment on this same trade-off above .dish-card
-       .front-img). Markup only renders this photo branch when theme ==
-       'maison'; the no-photo case is .dish-row instead, see
-       menu/layouts/standard/show.html.twig and .dish-row further down. */
-    .dish-card .front-img { height: 210px; aspect-ratio: auto; }
+    /* Photo frame — 150px → 210px (2026-09-05) → 240px (2026-09-06, one more
+       notch of presence). .dish-card has no fixed height/overflow-y of its
+       own (its `overflow: hidden` above only clips the border-radius), so
+       there is no internal card scrollbar to worry about at any height —
+       growing the photo just pushes name/allergens/price further down the
+       *page*, which is the thing actually verified at 390px each bump.
+       Still shorter than the base layout's own clamp(190–200px) default
+       since maison's parchment/ivory cards read intentionally compact.
+       aspect-ratio stays auto (the fixed height alone already sets both
+       dimensions — see the base layout's own comment on this same
+       trade-off above .dish-card .front-img). Markup only renders this
+       photo branch when theme == 'maison'; the no-photo case is .dish-row
+       instead, see menu/layouts/standard/show.html.twig and .dish-row
+       further down. */
+    .dish-card .front-img { height: 240px; aspect-ratio: auto; }
     .dish-card { box-shadow: none; }
     /* Dish name, photo card only — .dish-row .front-name below sets its
        own size for the no-photo row variant; both selectors match a row's
@@ -168,20 +173,43 @@
         display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0;
     }
 
-    /* "Contiene: X, Y" — the card-front allergen tease, replacing the old
-       icon-only .allergen-icons/.aicon row (2026-09-05, see conversation):
-       bare icons with only a native title="" tooltip were illegible on
-       touch, so this reuses the same productAllergens entries (already
-       translated to the active locale, minus free_from) as one discreet
-       text line instead. Metadata-scale body type, --fg-2 (muted), single
-       line with ellipsis truncation rather than wrapping — a tease, not
-       the full safety list (that stays in the detail sheet's .bsec with
-       its 3-state chips). Only rendered when the dish actually has
-       allergens (see the Twig `cardAllergens|length > 0` guard) — never an
-       empty "Contiene:" and nothing invented. */
+    /* "🛡 Contiene: X, Y" — the card-front allergen tease, replacing the old
+       icon-per-allergen .allergen-icons/.aicon row (2026-09-05, see
+       conversation): bare icons with only a native title="" tooltip were
+       illegible on touch, so this reuses the same productAllergens entries
+       (already translated to the active locale, minus free_from) as one
+       discreet text line instead. A single shield glyph anchors it — the
+       exact same `ti-shield-check` the "¿Alergias o dietas?" button already
+       uses (standard/show.html.twig, .diet-allergy-btn i), not a new icon.
+       Flex row so only the allergen *list* (.dish-contains-list) truncates
+       with an ellipsis on overflow — the icon and "Contiene:" label always
+       stay fully visible, never getting clipped mid-word. Not the full
+       safety list (that stays in the detail sheet's .bsec with its 3-state
+       chips) — a tease. Only rendered when the dish actually has allergens
+       (see the Twig `cardAllergens|length > 0` guard, macro dishContains())
+       — never an empty "Contiene:" and nothing invented.
+
+       Contrast note: --cf-hborder (brass, #B0894C) measures ~3.03:1 against
+       both --cf-bg and --bg here — clears the 3:1 non-text-contrast bar for
+       the decorative icon, but fails the 4.5:1 AA text bar at this
+       metadata size. So brass is used for the icon only; the "Contiene:"
+       label gets its typographic distinction from case/weight/tracking
+       (uppercase, 600, +0.05em) on --fg-2 instead of color, which measures
+       ~5.4:1 — comfortably AA. */
     .dish-contains {
-        font-family: var(--font-body); font-size: calc(12.5px * var(--font-scale)); color: var(--fg-2);
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+        display: flex; align-items: baseline; gap: 0.375rem;
+        font-family: var(--font-body); font-size: calc(12.5px * var(--font-scale));
+        overflow: hidden; max-width: 100%;
+    }
+    .dish-contains-icon {
+        color: var(--cf-hborder); font-size: 0.8125rem; align-self: center; flex-shrink: 0;
+    }
+    .dish-contains-label {
+        color: var(--fg-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+        flex-shrink: 0;
+    }
+    .dish-contains-list {
+        color: var(--fg-2); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
     /* Hero kicker/CTA — carta-estilo's .cta-explore is a small filled wine

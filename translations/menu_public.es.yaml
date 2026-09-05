@@ -38,7 +38,7 @@ results:
 dish:
     popular: "Popular"
     view_more: "Ver más"
-    contains_line: "Contiene: %list%"
+    contains_line: "Contiene:"
     view_detail_aria: "Ver detalle de %name%"
     modal_aria: "Detalle del plato"
     name_label: "Plato"

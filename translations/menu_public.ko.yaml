@@ -38,7 +38,7 @@ results:
 dish:
     popular: "인기"
     view_more: "더 보기"
-    contains_line: "포함: %list%"
+    contains_line: "포함:"
     view_detail_aria: "%name% 상세 보기"
     modal_aria: "메뉴 상세 정보"
     name_label: "메뉴"
