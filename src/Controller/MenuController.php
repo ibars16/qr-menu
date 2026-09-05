@@ -462,7 +462,7 @@ class MenuController extends AbstractController
 
         // Layout + theme (with preview support)
         $validLayouts  = ['standard'];
-        $validThemes   = ['classic-dark', 'classic-warm', 'glass', 'ocean', 'noir', 'forest', 'terra', 'warm-cream', 'maison'];
+        $validThemes   = ['classic-dark', 'classic-warm', 'glass', 'ocean', 'noir', 'forest', 'terra', 'maison'];
         // Same whitelist check as the preview-query guard below, applied to
         // the stored value too — belt and suspenders against any restaurant
         // row still carrying a layout the app no longer renders (e.g. a
