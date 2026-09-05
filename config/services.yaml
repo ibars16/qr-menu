@@ -46,6 +46,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Command\CleanOrphanLogosCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     App\Command\GenerateGlobalIngredientsDatasetCommand:
         arguments:
             $projectDir: '%kernel.project_dir%'
