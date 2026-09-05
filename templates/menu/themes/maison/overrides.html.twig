@@ -148,7 +148,33 @@
        below — it stays in the detail sheet only. .dish-contains fills the
        gap it left; .more-hint keeps its own row-scale sizing. */
     .dish-row .dish-contains { margin: 5px 0 0; }
-    .dish-row .more-hint { font-size: 11.5px; margin-top: 8px; }
+
+    /* "Ver más" in .dish-row — a wine text link with a trailing arrow,
+       not the filled pill .dish-card/.banner keep (2026-09-06, see
+       conversation): the pill repeated on every row of a long list pulled
+       the eye away from the row's own name/price and burned the wine
+       accent this theme otherwise spends sparingly. Markup is shared with
+       .dish-card (same <div class="more-hint">…<i class="ti
+       ti-chevron-right">…, standard/show.html.twig) — this is a pure CSS
+       reskin, no new markup, no new icon. Text reuses --accent (~8.7:1 on
+       --bg, comfortably past AA text contrast) rather than a new token;
+       hover swaps to --wine-soft, the exact tint the pill's own hover
+       already uses, just applied as text color instead of a fill. Both
+       selectors below match the same specificity as the shared pill's own
+       :hover rule above (.dish-card:hover .more-hint) — per this file's
+       header comment, equal-specificity rules win by source order alone,
+       so appearing after it here is what makes these win for .dish-row,
+       no !important needed. .more-hint stays non-focusable on purpose
+       (the whole .dish-row, sharing .dish-card's role="button"/
+       tabindex="0"/aria-label, is still the one accessible tap/keyboard
+       target — see the comment above .dish-card:focus-visible .more-hint)
+       — that shared outline rule already rings this smaller text+icon
+       exactly as it rang the pill, unchanged. */
+    .dish-row .more-hint {
+        background: none; border: none; color: var(--accent); padding: 0;
+        font-size: 11.5px; margin-top: 8px;
+    }
+    .dish-row:hover .more-hint { background: none; border-color: transparent; color: var(--wine-soft); }
 
     /* Card-front description (.front-desc) removed for maison (2026-09-05,
        see conversation) — no rule needed here any more, it never renders in
