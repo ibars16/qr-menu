@@ -133,3 +133,6 @@ services:
 
     App\Service\BatchProcessingTriggerInterface:
         alias: App\Service\ProcessSpawningBatchProcessingTrigger
+
+    App\Service\Upload\ContentModerationInterface:
+        alias: App\Service\Upload\NullContentModeration
