@@ -16,6 +16,7 @@ upload:
         too_many_files: 'Please upload %max% photos or fewer at a time.'
         invalid_file: '"%name%" couldn''t be uploaded — please try again.'
         unsupported_type: '"%name%" isn''t a supported photo type. Please use JPEG, PNG, or WebP.'
+        too_large: '"%name%" is too large (max 15 MB).'
         storage_failed: '"%name%" couldn''t be saved — please try again.'
 
 status:

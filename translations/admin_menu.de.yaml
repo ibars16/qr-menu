@@ -163,6 +163,8 @@ error:
     image_invalid: Kein gültiges Bild ausgewählt.
     image_unsupported_type: Bildformat wird nicht unterstützt. Bitte JPEG, PNG oder WebP verwenden.
     image_too_large: Das Bild ist zu groß (max. 8 MB).
+    image_dimensions_too_small: Das Bild ist zu klein (mind. 400x400 px).
+    image_dimensions_too_large: Das Bild ist zu groß (max. 5000x5000 px).
     image_upload_failed: Das Bild konnte nicht hochgeladen werden. Bitte versuche es erneut.
     unexpected: Etwas ist schiefgelaufen. Bitte versuche es erneut.
 

@@ -35,6 +35,10 @@ hint:
 flash:
     name_required: Il nome del ristorante è obbligatorio.
     logo_upload_error: Errore durante il caricamento del logo.
+    logo_unsupported_type: Formato immagine non supportato. Usa JPEG, PNG o WebP.
+    logo_too_large: Il logo è troppo grande (max 2 MB).
+    logo_dimensions_too_small: L'immagine è troppo piccola (min. 100x100 px).
+    logo_dimensions_too_large: L'immagine è troppo grande (max. 2000x2000 px).
     saved: Impostazioni salvate correttamente.
 
 toast:

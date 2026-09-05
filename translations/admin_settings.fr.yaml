@@ -35,6 +35,10 @@ hint:
 flash:
     name_required: Le nom du restaurant est obligatoire.
     logo_upload_error: Erreur lors du téléchargement du logo.
+    logo_unsupported_type: Format d'image non pris en charge. Utilisez JPEG, PNG ou WebP.
+    logo_too_large: Le logo est trop volumineux (max. 2 Mo).
+    logo_dimensions_too_small: L'image est trop petite (min. 100x100 px).
+    logo_dimensions_too_large: L'image est trop grande (max. 2000x2000 px).
     saved: Paramètres enregistrés avec succès.
 
 toast:

@@ -7,6 +7,9 @@ use App\Entity\MenuImportPage;
 use App\Entity\Restaurant;
 use App\Enum\MenuImportBatchStatus;
 use App\Service\BatchProcessingTriggerInterface;
+use App\Service\Upload\UploadProfile;
+use App\Service\Upload\UploadValidationError;
+use App\Service\Upload\UploadValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -16,7 +19,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -31,12 +33,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_STAFF')]
 class MenuImportController extends AbstractController
 {
-    private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
     private const MAX_FILES_PER_UPLOAD = 30;
 
     public function __construct(
         private readonly TranslatorInterface $translator,
         private readonly BatchProcessingTriggerInterface $processingTrigger,
+        private readonly UploadValidator $uploadValidator,
     ) {}
 
     private function restaurant(): Restaurant
@@ -57,7 +59,7 @@ class MenuImportController extends AbstractController
     }
 
     #[Route('/upload', name: 'upload', methods: ['POST'])]
-    public function upload(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
+    public function upload(Request $request, EntityManagerInterface $em): Response
     {
         $restaurant = $this->restaurant();
 
@@ -74,15 +76,17 @@ class MenuImportController extends AbstractController
             return $this->redirectToRoute('admin_menu_import_new');
         }
 
+        // Validate every file up front — before the batch is even created —
+        // so a bad file in the middle of a multi-file upload never leaves a
+        // half-populated batch behind.
+        $validatedFiles = [];
         foreach ($files as $file) {
-            if (!$file->isValid()) {
-                $this->addFlash('error', $this->translator->trans('upload.error.invalid_file', ['%name%' => $file->getClientOriginalName()], domain: 'admin_menu_import'));
+            $result = $this->uploadValidator->validate($file, UploadProfile::MenuImportPage);
+            if (!$result->isValid) {
+                $this->addFlash('error', $this->translator->trans($this->importErrorKey($result->error), ['%name%' => $file->getClientOriginalName()], domain: 'admin_menu_import'));
                 return $this->redirectToRoute('admin_menu_import_new');
             }
-            if (!in_array($file->getMimeType(), self::ALLOWED_MIME_TYPES, true)) {
-                $this->addFlash('error', $this->translator->trans('upload.error.unsupported_type', ['%name%' => $file->getClientOriginalName()], domain: 'admin_menu_import'));
-                return $this->redirectToRoute('admin_menu_import_new');
-            }
+            $validatedFiles[] = [$file, $result];
         }
 
         $batch = new MenuImportBatch($restaurant);
@@ -95,10 +99,8 @@ class MenuImportController extends AbstractController
             mkdir($uploadDir, 0755, true);
         }
 
-        foreach (array_values($files) as $position => $file) {
-            $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-            $safeFilename = $slugger->slug($originalFilename);
-            $newFilename = $position . '-' . $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+        foreach ($validatedFiles as $position => [$file, $result]) {
+            $newFilename = $result->safeFilename;
             $imageHash = hash_file('sha256', $file->getPathname());
 
             try {
@@ -194,5 +196,17 @@ class MenuImportController extends AbstractController
             MenuImportBatchStatus::COMPLETED,
             MenuImportBatchStatus::FAILED,
         ], true);
+    }
+
+    private function importErrorKey(UploadValidationError $error): string
+    {
+        return match ($error) {
+            UploadValidationError::UnsupportedType => 'upload.error.unsupported_type',
+            UploadValidationError::TooLarge => 'upload.error.too_large',
+            UploadValidationError::InvalidFile,
+            UploadValidationError::DimensionsTooSmall,
+            UploadValidationError::DimensionsTooLarge,
+            UploadValidationError::Rejected => 'upload.error.invalid_file',
+        };
     }
 }

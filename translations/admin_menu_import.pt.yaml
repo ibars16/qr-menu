@@ -16,6 +16,7 @@ upload:
         too_many_files: 'Carregue no máximo %max% fotos de cada vez.'
         invalid_file: '"%name%" não pôde ser carregada — tente novamente.'
         unsupported_type: '"%name%" não é um tipo de foto suportado. Use JPEG, PNG ou WebP.'
+        too_large: '"%name%" é demasiado grande (máx. 15 MB).'
         storage_failed: '"%name%" não pôde ser guardada — tente novamente.'
 
 status:

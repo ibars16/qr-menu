@@ -4,6 +4,9 @@ namespace App\Controller\Admin;
 
 use App\Entity\Restaurant;
 use App\Service\AdminLocaleResolver;
+use App\Service\Upload\UploadProfile;
+use App\Service\Upload\UploadValidationError;
+use App\Service\Upload\UploadValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -11,7 +14,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin', name: 'admin_')]
@@ -22,7 +24,7 @@ class SettingsController extends AbstractController
     public function settings(
         Request $request,
         EntityManagerInterface $em,
-        SluggerInterface $slugger,
+        UploadValidator $uploadValidator,
         AdminLocaleResolver $adminLocaleResolver,
         TranslatorInterface $translator,
     ): Response {
@@ -57,9 +59,11 @@ class SettingsController extends AbstractController
             // Handle logo upload
             $logoFile = $request->files->get('logo');
             if ($logoFile) {
-                $originalFilename = pathinfo($logoFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename     = $slugger->slug($originalFilename);
-                $newFilename      = $safeFilename . '-' . uniqid() . '.' . $logoFile->guessExtension();
+                $result = $uploadValidator->validate($logoFile, UploadProfile::Logo);
+                if (!$result->isValid) {
+                    $this->addFlash('error', $translator->trans($this->logoErrorKey($result->error), domain: 'admin_settings'));
+                    return $this->redirectToRoute('admin_settings');
+                }
 
                 $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logos';
                 if (!is_dir($uploadDir)) {
@@ -67,8 +71,8 @@ class SettingsController extends AbstractController
                 }
 
                 try {
-                    $logoFile->move($uploadDir, $newFilename);
-                    $restaurant->setLogo($newFilename);
+                    $logoFile->move($uploadDir, $result->safeFilename);
+                    $restaurant->setLogo($result->safeFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', $translator->trans('flash.logo_upload_error', domain: 'admin_settings'));
                     return $this->redirectToRoute('admin_settings');
@@ -97,5 +101,16 @@ class SettingsController extends AbstractController
             'currencies'   => $currencies,
             'adminLocales' => $adminLocaleResolver->getLocales(),
         ]);
+    }
+
+    private function logoErrorKey(UploadValidationError $error): string
+    {
+        return match ($error) {
+            UploadValidationError::UnsupportedType => 'flash.logo_unsupported_type',
+            UploadValidationError::TooLarge => 'flash.logo_too_large',
+            UploadValidationError::DimensionsTooSmall => 'flash.logo_dimensions_too_small',
+            UploadValidationError::DimensionsTooLarge => 'flash.logo_dimensions_too_large',
+            UploadValidationError::InvalidFile, UploadValidationError::Rejected => 'flash.logo_upload_error',
+        };
     }
 }

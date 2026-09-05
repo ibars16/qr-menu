@@ -22,6 +22,9 @@ use App\Repository\AllergenRepository;
 use App\Service\CategoryTranslationService;
 use App\Service\ProductAllergenResolver;
 use App\Service\ProductTranslationService;
+use App\Service\Upload\UploadProfile;
+use App\Service\Upload\UploadValidationError;
+use App\Service\Upload\UploadValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -30,22 +33,19 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin', name: 'admin_')]
 #[IsGranted('ROLE_STAFF')]
 class MenuAdminController extends AbstractController
 {
-    private const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-    private const MAX_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
-
     public function __construct(
         private readonly TranslatorInterface $translator,
         private readonly AllergenRepository $allergenRepository,
         private readonly ProductAllergenResolver $allergenResolver,
         private readonly ProductTranslationService $productTranslationService,
         private readonly CategoryTranslationService $categoryTranslationService,
+        private readonly UploadValidator $uploadValidator,
     ) {
     }
 
@@ -413,24 +413,21 @@ class MenuAdminController extends AbstractController
      * dish doesn't have one yet to upload against).
      */
     #[Route('/products/{id}/image', name: 'product_image_upload', methods: ['POST'])]
-    public function uploadProductImage(Product $product, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): JsonResponse
+    public function uploadProductImage(Product $product, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
 
         $file = $request->files->get('image');
-        if (!$file || !$file->isValid()) {
+        if (!$file) {
             return $this->json(['error' => $this->translator->trans('error.image_invalid', domain: 'admin_menu')], 400);
         }
-        if (!in_array($file->getMimeType(), self::ALLOWED_IMAGE_MIME_TYPES, true)) {
-            return $this->json(['error' => $this->translator->trans('error.image_unsupported_type', domain: 'admin_menu')], 400);
-        }
-        if ($file->getSize() > self::MAX_IMAGE_SIZE_BYTES) {
-            return $this->json(['error' => $this->translator->trans('error.image_too_large', domain: 'admin_menu')], 400);
+
+        $result = $this->uploadValidator->validate($file, UploadProfile::DishImage);
+        if (!$result->isValid) {
+            return $this->json(['error' => $this->translator->trans($this->productImageErrorKey($result->error), domain: 'admin_menu')], 400);
         }
 
-        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $safeFilename      = $slugger->slug($originalFilename);
-        $newFilename        = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+        $newFilename = $result->safeFilename;
 
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/products';
         if (!is_dir($uploadDir)) {
@@ -458,6 +455,17 @@ class MenuAdminController extends AbstractController
         $em->flush();
 
         return $this->json(['image' => $newFilename]);
+    }
+
+    private function productImageErrorKey(UploadValidationError $error): string
+    {
+        return match ($error) {
+            UploadValidationError::UnsupportedType => 'error.image_unsupported_type',
+            UploadValidationError::TooLarge => 'error.image_too_large',
+            UploadValidationError::DimensionsTooSmall => 'error.image_dimensions_too_small',
+            UploadValidationError::DimensionsTooLarge => 'error.image_dimensions_too_large',
+            UploadValidationError::InvalidFile, UploadValidationError::Rejected => 'error.image_invalid',
+        };
     }
 
     #[Route('/products/save', name: 'product_save', methods: ['POST'])]
