@@ -27,6 +27,19 @@ class Restaurant
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $logo = null;
 
+    /**
+     * Header/hero photo shown on the public menu (theme-dependent whether it
+     * renders — currently only maison's .hero-photo-band). Deliberately its
+     * own field, not a reuse of $logo: a logo is brand-mark art (can be
+     * square, marginned, low-res), not the atmospheric wide photography a
+     * hero band wants. Stored in public/uploads/heroes/, a directory
+     * app:logos:clean-orphans never scans (it's hardcoded to
+     * public/uploads/logos/ and only ever queries this entity's $logo
+     * column) — so that command can't touch these files.
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $heroImage = null;
+
     /** Short line shown under the restaurant name on the public menu hero (theme-dependent whether it renders). */
     #[ORM\Column(length: 160, nullable: true)]
     private ?string $tagline = null;
@@ -132,6 +145,16 @@ class Restaurant
     public function setLogo(?string $logo): void
     {
         $this->logo = $logo;
+    }
+
+    public function getHeroImage(): ?string
+    {
+        return $this->heroImage;
+    }
+
+    public function setHeroImage(?string $heroImage): void
+    {
+        $this->heroImage = $heroImage;
     }
 
     public function getTagline(): ?string
