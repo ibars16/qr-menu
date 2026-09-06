@@ -58,6 +58,7 @@ nav:
     up: "Naik"
     down: "Turun"
     go_to_item: "Ke hidangan %n%"
+    categories: "Kategori"
 common:
     close: "Tutup"
 chat:

@@ -58,6 +58,7 @@ nav:
     up: "أعلى"
     down: "أسفل"
     go_to_item: "الانتقال إلى الطبق %n%"
+    categories: "الفئات"
 common:
     close: "إغلاق"
 chat:

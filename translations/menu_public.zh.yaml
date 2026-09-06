@@ -58,6 +58,7 @@ nav:
     up: "向上"
     down: "向下"
     go_to_item: "转到第%n%道菜"
+    categories: "分类"
 common:
     close: "关闭"
 chat:

@@ -58,6 +58,7 @@ nav:
     up: "Upp"
     down: "Ner"
     go_to_item: "Gå till rätt %n%"
+    categories: "Kategorier"
 common:
     close: "Stäng"
 chat:

@@ -58,6 +58,7 @@ nav:
     up: "Omhoog"
     down: "Omlaag"
     go_to_item: "Ga naar gerecht %n%"
+    categories: "Categorieën"
 common:
     close: "Sluiten"
 chat:

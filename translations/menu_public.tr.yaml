@@ -58,6 +58,7 @@ nav:
     up: "Yukarı"
     down: "Aşağı"
     go_to_item: "%n%. yemeğe git"
+    categories: "Kategoriler"
 common:
     close: "Kapat"
 chat:

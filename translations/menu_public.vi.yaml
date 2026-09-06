@@ -58,6 +58,7 @@ nav:
     up: "Lên"
     down: "Xuống"
     go_to_item: "Đi tới món %n%"
+    categories: "Danh mục"
 common:
     close: "Đóng"
 chat:

@@ -58,6 +58,7 @@ nav:
     up: "ऊपर"
     down: "नीचे"
     go_to_item: "व्यंजन %n% पर जाएँ"
+    categories: "श्रेणियाँ"
 common:
     close: "बंद करें"
 chat:

@@ -58,6 +58,7 @@ nav:
     up: "Subir"
     down: "Bajar"
     go_to_item: "Ir al plato %n%"
+    categories: "Categorías"
 common:
     close: "Cerrar"
 chat:

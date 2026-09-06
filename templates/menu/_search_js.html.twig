@@ -357,9 +357,25 @@ document.addEventListener('keydown', e => {
 // already reflect it — same reasoning as the task's own "N refleja ambos".
 searchInput?.addEventListener('input', () => { applyFilters(); updateFiltersButtonBadge(); });
 
-catTabs.forEach(tab => tab.addEventListener('click', () => {
-    catTabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
+// .cat-tab is an <a href="#cat-{id}"> (accessibility pass, 2026-09-07) so
+// Tab+Enter and screen readers get a real, focusable, named control with a
+// working no-JS fallback (plain anchor jump, nothing hidden) — see the
+// comment on the "Todo" tab's markup in show.html.twig. With JS, this
+// handler always takes over instead: it preventDefault()s unconditionally
+// because JS already decides the resulting behavior either way (a smooth
+// scrollIntoView for a real category, or deliberately no scroll at all for
+// "Todo" — letting the native jump through for "Todo" would scroll to
+// #cat-tabs itself, a jump this control never made before).
+function setActiveTab(tab) {
+    catTabs.forEach(t => {
+        const isActive = t === tab;
+        t.classList.toggle('active', isActive);
+        t.setAttribute('aria-current', isActive ? 'true' : 'false');
+    });
+}
+catTabs.forEach(tab => tab.addEventListener('click', e => {
+    e.preventDefault();
+    setActiveTab(tab);
     applyFilters();
     const cat = tab.dataset.cat;
     if (cat !== 'all') document.getElementById(cat)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -402,7 +418,8 @@ const obs = new IntersectionObserver(entries => {
     const vis = entries.find(e => e.isIntersecting);
     if (!vis) return;
     const id = vis.target.dataset.section;
-    catTabs.forEach(t => t.classList.toggle('active', t.dataset.cat === id));
+    const match = [...catTabs].find(t => t.dataset.cat === id);
+    if (match) setActiveTab(match);
 }, { threshold: 0.3 });
 sections.forEach(s => obs.observe(s));
 

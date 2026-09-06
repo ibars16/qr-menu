@@ -28,7 +28,7 @@
     {% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
     {% if not t %}{% set t = category.translations.first %}{% endif %}
     {% if t %}
-        <span class="cat-tab cat-tab-menu" data-cat="cat-{{ category.id }}">{{ t.name }} · {{ (category.convertedMenuPrice / 100)|number_format(2) }} {{ currencyDisplay }}</span>
+        <a href="#cat-{{ category.id }}" class="cat-tab cat-tab-menu" data-cat="cat-{{ category.id }}">{{ t.name }} · {{ (category.convertedMenuPrice / 100)|number_format(2) }} {{ currencyDisplay }}</a>
     {% endif %}
 {% endmacro %}
 

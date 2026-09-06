@@ -128,10 +128,22 @@
        the split. */
     @media (min-width: 768px) { .cat-tabs { max-width: 980px; margin-left: auto; margin-right: auto; padding-left: 24px; padding-right: 24px; } }
     .cat-tabs::-webkit-scrollbar { display: none; }
-    .cat-tab { font-size: 13px; font-weight: 600; padding: 0 20px; min-height: 2.75rem; display: inline-flex; align-items: center; border-radius: var(--tab-radius, 24px); border: 1.5px solid var(--tab-border); background: var(--tab-bg); color: var(--tab-text); white-space: nowrap; flex-shrink: 0; cursor: pointer; line-height: 1; letter-spacing: 0.01em; transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s; user-select: none; }
+    /* .cat-tab is an <a href="#cat-{id}"> now (2026-09-07, accessibility
+       pass) — text-decoration/color reset because unstyled links default to
+       underlined/blue, which nothing below overrides on purpose (the whole
+       point of these two properties is to erase that default so .cat-tab
+       reads exactly as it did as a <span>). */
+    .cat-tab { font-size: 13px; font-weight: 600; padding: 0 20px; min-height: 2.75rem; display: inline-flex; align-items: center; border-radius: var(--tab-radius, 24px); border: 1.5px solid var(--tab-border); background: var(--tab-bg); color: var(--tab-text); text-decoration: none; white-space: nowrap; flex-shrink: 0; cursor: pointer; line-height: 1; letter-spacing: 0.01em; transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s; user-select: none; }
     .cat-tab:hover { background: var(--tab-hbg); color: var(--tab-htext); transform: translateY(-1px); }
     .cat-tab:active { transform: scale(0.97); }
     .cat-tab.active { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); box-shadow: var(--tab-act-shadow); }
+    /* Never focusable before this pass (a bare <span>) — this is the shared
+       default for the 8 themes without their own override. --in-focus-border
+       is reused rather than invented: every theme already defines it
+       specifically to mark "this is focused" (see .search-input:focus
+       above), so a .cat-tab ring in the same color reads consistently with
+       the rest of each theme's own focus language. */
+    .cat-tab:focus-visible { outline: 2px solid var(--in-focus-border); outline-offset: 2px; }
 
     /* "¿Alergias o dietas?" — its own row below the categories, opens the
        filters bottom sheet. Deliberately fixed, literal colors (not theme
@@ -593,16 +605,24 @@
    own horizontal padding to keep the same gutter as everything above/
    below it — see .cat-tabs in this file's own <style> block and its
    maison override, both updated alongside this split. #}
-<div class="cat-tabs" id="cat-tabs">
-    <span class="cat-tab active" data-cat="all">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</span>
+<nav class="cat-tabs" id="cat-tabs" aria-label="{{ 'nav.categories'|trans({}, 'menu_public', locale) }}">
+    {# href="#cat-tabs" on "Todo" (rather than nothing, or "#") gives it a
+       real same-page target for the no-JS fallback instead of an empty
+       anchor that would jump to the very top of the document; with JS,
+       the click handler in _search_js.html.twig always preventDefault()s
+       so this native jump never actually fires. aria-current is set here
+       only for the tab that's active on first render — from then on, the
+       click handler and the scroll-spy IntersectionObserver keep it in
+       sync (see _search_js.html.twig). #}
+    <a href="#cat-tabs" class="cat-tab active" data-cat="all" aria-current="true">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</a>
     {% for category in categories %}
         {% if category.isFixedPriceMenu %}
             {{ setMenuMacro.pill(category, locale, restaurant, currencyDisplay) }}
         {% else %}
-            {% set t = category.getTranslation(locale) %}{% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if not t %}{% set t = category.translations.first %}{% endif %}{% if t %}<span class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</span>{% endif %}
+            {% set t = category.getTranslation(locale) %}{% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}{% if not t %}{% set t = category.translations.first %}{% endif %}{% if t %}<a href="#cat-{{ category.id }}" class="cat-tab" data-cat="cat-{{ category.id }}">{{ t.name }}</a>{% endif %}
         {% endif %}
     {% endfor %}
-</div>
+</nav>
 {% if showTypeFilter or tags|length > 0 or menuAllergens|length > 0 %}
     <div class="ui-wrap">
         <div class="diet-allergy-row">

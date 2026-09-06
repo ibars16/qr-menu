@@ -58,6 +58,7 @@ nav:
     up: "Hoch"
     down: "Runter"
     go_to_item: "Zu Gericht %n% wechseln"
+    categories: "Kategorien"
 common:
     close: "Schließen"
 chat:

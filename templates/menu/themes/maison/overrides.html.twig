@@ -63,6 +63,17 @@
     }
     .cat-tab:hover { background: none; color: var(--fg); transform: none; }
     .cat-tab:active { transform: none; }
+    /* Own brass ring (2026-09-07) instead of the shared layout's
+       --in-focus-border default — matches every other :focus-visible in
+       this file (.cta-explore, the filters-panel buttons below), all
+       --cf-hborder. Needs its own outline-offset (not the shared rule's
+       2px): .cat-tab here has no padding box of its own to sit inside
+       (background:none, padding is vertical-only for the underline's
+       sake), so the ring would otherwise hug the glyphs with no room to
+       breathe. border-radius rounds the ring's corners to match the
+       theme's general softness — a bare text link has no box radius of
+       its own for the outline to inherit. */
+    .cat-tab:focus-visible { outline: 2px solid var(--cf-hborder); outline-offset: 3px; border-radius: 2px; }
     /* Active tab "lights up" via color alone (2026-09-07) — --fg (near-black,
        same as inactive text darkened by :hover) barely distinguished active
        from hover at a glance; --accent is the one color in this bar that
