@@ -26,6 +26,7 @@ action:
     change_hero_image: Cambia foto di intestazione
     upload_hero_image: Carica foto di intestazione
     remove_hero_image: Rimuovi foto di intestazione
+    upload_anyway: Carica comunque
     save: Salva modifiche
 
 hint:
@@ -49,6 +50,8 @@ flash:
     hero_image_too_large: La foto di intestazione è troppo grande (max 8 MB).
     hero_image_dimensions_too_small: "L'immagine è troppo piccola. Caricane una di almeno %min% px di larghezza e altezza."
     hero_image_dimensions_too_large: L'immagine è troppo grande (max. 5000x5000 px).
+    hero_image_warning_dimensions: Questa immagine è piccola e potrebbe apparire sfocata su schermi grandi.
+    hero_image_warning_portrait: È molto verticale, l'hero ritaglierà i lati.
     saved: Impostazioni salvate correttamente.
 
 toast:

@@ -26,6 +26,7 @@ action:
     change_hero_image: Alterar foto de cabeçalho
     upload_hero_image: Enviar foto de cabeçalho
     remove_hero_image: Remover foto de cabeçalho
+    upload_anyway: Enviar mesmo assim
     save: Guardar alterações
 
 hint:
@@ -49,6 +50,8 @@ flash:
     hero_image_too_large: A foto de cabeçalho é demasiado grande (máx. 8 MB).
     hero_image_dimensions_too_small: 'A imagem é demasiado pequena. Envie uma com pelo menos %min% px de largura e altura.'
     hero_image_dimensions_too_large: A imagem é demasiado grande (máx. 5000x5000 px).
+    hero_image_warning_dimensions: Esta imagem é pequena e pode ficar desfocada em ecrãs grandes.
+    hero_image_warning_portrait: É muito vertical e o hero vai cortar as laterais.
     saved: Configurações guardadas com sucesso.
 
 toast:

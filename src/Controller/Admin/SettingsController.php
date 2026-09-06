@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Restaurant;
 use App\Service\AdminLocaleResolver;
 use App\Service\Upload\UploadProfile;
+use App\Service\Upload\UploadQualityWarning;
 use App\Service\Upload\UploadValidationError;
 use App\Service\Upload\UploadValidator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -105,13 +106,31 @@ class SettingsController extends AbstractController
             // dish photo meant to be cropped square/tall.
             $heroImageFile = $request->files->get('heroImage');
             if ($heroImageFile) {
-                $result = $uploadValidator->validate($heroImageFile, UploadProfile::HeroImage);
-                if (!$result->isValid) {
+                // Only ever lets a QUALITY warning (small/portrait) through —
+                // see UploadValidator::validate()'s own docblock for why this
+                // can't reach the security checks above it.
+                $heroQualityConfirmed = $request->request->get('heroImageQualityConfirmed') === '1';
+                $result = $uploadValidator->validate($heroImageFile, UploadProfile::HeroImage, qualityWarningsConfirmed: $heroQualityConfirmed);
+
+                if (!$result->isValid && $result->error !== null) {
+                    // Fatal — a real UploadValidationError, never overridable.
                     $this->addFlash('error', $translator->trans(
                         $this->heroImageErrorKey($result->error),
                         $this->heroImageErrorParams($result->error),
                         domain: 'admin_settings'
                     ));
+                    return $this->redirectToRoute('admin_settings');
+                }
+
+                if (!$result->isValid) {
+                    // error === null here: quality warnings only, not yet
+                    // confirmed. Nothing is saved — not even the other
+                    // fields in this same submission, same as any other
+                    // early-return above — the owner re-submits (ticking
+                    // "upload anyway", see settings.html.twig) to proceed.
+                    foreach ($result->warnings as $warning) {
+                        $this->addFlash('warning', $translator->trans($this->heroImageWarningKey($warning), domain: 'admin_settings'));
+                    }
                     return $this->redirectToRoute('admin_settings');
                 }
 
@@ -158,10 +177,11 @@ class SettingsController extends AbstractController
         }
 
         return $this->render('admin/settings.html.twig', [
-            'restaurant'   => $restaurant,
-            'languages'    => $languages,
-            'currencies'   => $currencies,
-            'adminLocales' => $adminLocaleResolver->getLocales(),
+            'restaurant'            => $restaurant,
+            'languages'             => $languages,
+            'currencies'            => $currencies,
+            'adminLocales'          => $adminLocaleResolver->getLocales(),
+            'heroImageMinDimension' => UploadValidator::minDimension(UploadProfile::HeroImage),
         ]);
     }
 
@@ -199,6 +219,14 @@ class SettingsController extends AbstractController
         return match ($error) {
             UploadValidationError::DimensionsTooSmall => ['%min%' => UploadValidator::minDimension(UploadProfile::HeroImage)],
             default => [],
+        };
+    }
+
+    private function heroImageWarningKey(UploadQualityWarning $warning): string
+    {
+        return match ($warning) {
+            UploadQualityWarning::DimensionsBelowRecommended => 'flash.hero_image_warning_dimensions',
+            UploadQualityWarning::PortraitAspectRatio => 'flash.hero_image_warning_portrait',
         };
     }
 }

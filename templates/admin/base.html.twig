@@ -194,6 +194,11 @@
         .flash { padding: 10px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         .flash-success { background: rgba(40,80,10,0.2); border: 1px solid rgba(99,153,34,0.3); color: #7aad40; }
         .flash-error   { background: rgba(193,68,14,0.15); border: 1px solid rgba(193,68,14,0.3); color: #F0997B; }
+        /* Distinct from flash-error on purpose: a quality warning (see
+           SettingsController's hero-image "needs confirmation" branch) is
+           not a rejection — amber, not red, so it doesn't read as something
+           broken. */
+        .flash-warning { background: rgba(193,150,14,0.15); border: 1px solid rgba(193,150,14,0.3); color: #E0B84D; }
 
         .toast {
             position: fixed; bottom: 80px; left: 50%;
@@ -337,6 +342,9 @@
             {% endfor %}
             {% for message in app.flashes('error') %}
                 <div class="flash flash-error"><i class="ti ti-alert-circle" aria-hidden="true"></i> {{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('warning') %}
+                <div class="flash flash-warning"><i class="ti ti-alert-triangle" aria-hidden="true"></i> {{ message }}</div>
             {% endfor %}
             {% block body %}{% endblock %}
         </div>

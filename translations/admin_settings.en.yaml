@@ -26,6 +26,7 @@ action:
     change_hero_image: Change hero photo
     upload_hero_image: Upload hero photo
     remove_hero_image: Remove hero photo
+    upload_anyway: Upload anyway
     save: Save changes
 
 hint:
@@ -49,6 +50,8 @@ flash:
     hero_image_too_large: The hero photo is too large (max 8 MB).
     hero_image_dimensions_too_small: "The image is too small. Upload one that's at least %min% px wide and tall."
     hero_image_dimensions_too_large: The image is too large (max 5000x5000 px).
+    hero_image_warning_dimensions: This image is small and may look blurry on large screens.
+    hero_image_warning_portrait: It's very vertical and the hero will crop the sides.
     saved: Settings saved successfully.
 
 toast:

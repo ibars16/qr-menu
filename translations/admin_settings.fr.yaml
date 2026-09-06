@@ -26,6 +26,7 @@ action:
     change_hero_image: "Changer la photo d'en-tête"
     upload_hero_image: "Ajouter une photo d'en-tête"
     remove_hero_image: "Supprimer la photo d'en-tête"
+    upload_anyway: Ajouter quand même
     save: Enregistrer les modifications
 
 hint:
@@ -49,6 +50,8 @@ flash:
     hero_image_too_large: "La photo d'en-tête est trop volumineuse (max. 8 Mo)."
     hero_image_dimensions_too_small: "L'image est trop petite. Ajoutez-en une d'au moins %min% px de large et de haut."
     hero_image_dimensions_too_large: L'image est trop grande (max. 5000x5000 px).
+    hero_image_warning_dimensions: "Cette image est petite et pourrait paraître floue sur un grand écran."
+    hero_image_warning_portrait: "Elle est très verticale, le hero recadrera les côtés."
     saved: Paramètres enregistrés avec succès.
 
 toast:

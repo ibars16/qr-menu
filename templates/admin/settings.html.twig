@@ -88,6 +88,43 @@
         }
         .remove-logo-btn:hover { color: #F0997B; }
 
+        /* Hero-image quality warning — amber, matches .flash-warning's
+           palette (base.html.twig) so a returning-visitor's eye already
+           reads this color as "heads up, not broken". The confirm control
+           is a real checkbox (native focus/keyboard/screen-reader support)
+           visually styled as a button — see .quality-warning-confirm below
+           — rather than a div with an onclick and only a color to signal
+           state, which is neither focusable nor announced as interactive. */
+        .quality-warning {
+            margin-top: 12px; padding: 12px 14px; border-radius: 8px;
+            background: rgba(193,150,14,0.12); border: 1px solid rgba(193,150,14,0.3);
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        /* [hidden] and .quality-warning both carry (0,1,0) specificity, so
+           without this the class's own `display: flex` — declared after the
+           UA stylesheet's `[hidden]{display:none}` — would win by source
+           order and defeat `el.hidden = true`, showing the box empty on
+           every page load regardless of whether a warning actually fired. */
+        .quality-warning[hidden] { display: none; }
+        .quality-warning-messages { display: flex; flex-direction: column; gap: 4px; }
+        .quality-warning-messages p { margin: 0; font-size: 13px; color: #E0B84D; line-height: 1.4; }
+        .quality-warning-confirm {
+            display: inline-flex; align-items: center; gap: 8px; align-self: flex-start;
+            padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            border: 1px solid rgba(193,150,14,0.45); background: rgba(193,150,14,0.18); color: #E0B84D;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .quality-warning-confirm:hover { background: rgba(193,150,14,0.28); }
+        .quality-warning-confirm input[type="checkbox"] {
+            width: 16px; height: 16px; margin: 0; accent-color: #E0B84D;
+        }
+        /* :focus-visible on the checkbox itself (not the label) so the ring
+           tracks real keyboard focus, matching this app's other
+           :focus-visible-only conventions (never on a mouse click). */
+        .quality-warning-confirm:has(input:focus-visible) {
+            outline: 2px solid #E0B84D; outline-offset: 2px;
+        }
+
         /* Save button */
         .settings-footer {
             display: flex; justify-content: flex-end; gap: 10px;
@@ -244,7 +281,8 @@
                                 </label>
                                 <input type="file" id="hero-image-input" name="heroImage"
                                        accept="image/*" style="display:none"
-                                       onchange="previewHeroImage(this)">
+                                       data-min-dimension="{{ heroImageMinDimension }}"
+                                       onchange="previewHeroImage(this); checkHeroImageQuality(this)">
                                 {% if restaurant.heroImage %}
                                     <button type="button" class="remove-logo-btn" onclick="removeHeroImage()">
                                         <i class="ti ti-trash" aria-hidden="true"></i> {{ 'action.remove_hero_image'|trans({}, 'admin_settings') }}
@@ -255,6 +293,23 @@
                                 {% endif %}
                                 <span class="field-hint">{{ 'hint.hero_image_format'|trans({}, 'admin_settings') }}</span>
                             </div>
+                        </div>
+
+                        {# Quality-only warning (small/portrait, see UploadQualityWarning)
+                           — hidden until JS finds a reason to show it (checkHeroImageQuality()).
+                           The checkbox is the real, always-functional accessible control:
+                           native, keyboard/focus-operable, works with zero JS (SettingsController
+                           itself renders the same warning as a server-side flash + leaves this
+                           box available if the file is resubmitted unconfirmed). JS only makes it
+                           nicer: styled as a button (see CSS) and auto-submits on check. #}
+                        <div class="quality-warning" id="hero-quality-warning" hidden role="alert">
+                            <div class="quality-warning-messages" id="hero-quality-warning-messages"></div>
+                            <label class="quality-warning-confirm">
+                                <input type="checkbox" name="heroImageQualityConfirmed"
+                                       id="hero-quality-confirmed" value="1"
+                                       onchange="confirmHeroQualityAndSubmit(this)">
+                                {{ 'action.upload_anyway'|trans({}, 'admin_settings') }}
+                            </label>
                         </div>
                     </div>
 
@@ -352,6 +407,12 @@
         const MSG_LOGO_REMOVED       = "{{ 'toast.logo_removed'|trans({}, 'admin_settings')|e('js') }}";
         const MSG_HERO_IMAGE_REMOVED = "{{ 'toast.hero_image_removed'|trans({}, 'admin_settings')|e('js') }}";
         const MSG_URL_COPIED         = "{{ 'toast.url_copied'|trans({}, 'admin_settings')|e('js') }}";
+        // Same wording SettingsController flashes server-side for the exact
+        // same UploadQualityWarning cases (its own no-JS fallback path) —
+        // kept in sync by both sourcing the 'flash.hero_image_warning_*'
+        // keys, never a JS-only string that could drift from that copy.
+        const MSG_HERO_WARNING_DIMENSIONS = "{{ 'flash.hero_image_warning_dimensions'|trans({}, 'admin_settings')|e('js') }}";
+        const MSG_HERO_WARNING_PORTRAIT   = "{{ 'flash.hero_image_warning_portrait'|trans({}, 'admin_settings')|e('js') }}";
 
         // ── Color sync ──
         function syncColor(val) {
@@ -424,6 +485,74 @@
             }
             showToast(MSG_HERO_IMAGE_REMOVED, 'info');
         }
+
+        // ── Hero image quality warning — client-side mirror of
+        // UploadQualityWarning (UploadValidator.php). Purely advisory: the
+        // server re-decodes and re-checks the real uploaded file from
+        // scratch regardless of what runs here, so this can only ever make
+        // the UX nicer (catch it before a round-trip), never weaker — a
+        // disabled/broken/bypassed script just falls through to the
+        // server's own "needs confirmation" flash + the same checkbox. ──
+        function checkHeroImageQuality(input) {
+            const warningBox = document.getElementById('hero-quality-warning');
+            const messagesEl = document.getElementById('hero-quality-warning-messages');
+            const confirmBox = document.getElementById('hero-quality-confirmed');
+            const minDimension = parseInt(input.dataset.minDimension, 10);
+
+            const reset = () => { warningBox.hidden = true; messagesEl.innerHTML = ''; confirmBox.checked = false; };
+
+            if (!input.files?.length) { reset(); return; }
+
+            const url = URL.createObjectURL(input.files[0]);
+            const img = new Image();
+            img.onload = function () {
+                const w = img.naturalWidth, h = img.naturalHeight;
+                const messages = [];
+                if (w < minDimension || h < minDimension) messages.push(MSG_HERO_WARNING_DIMENSIONS);
+                if (w < h) messages.push(MSG_HERO_WARNING_PORTRAIT);
+
+                if (messages.length) {
+                    messagesEl.innerHTML = '';
+                    messages.forEach(function (text) {
+                        const p = document.createElement('p');
+                        p.textContent = text;
+                        messagesEl.appendChild(p);
+                    });
+                    warningBox.hidden = false;
+                    confirmBox.checked = false;
+                } else {
+                    reset();
+                }
+                URL.revokeObjectURL(url);
+            };
+            img.onerror = function () { URL.revokeObjectURL(url); };
+            img.src = url;
+        }
+
+        // Checking the box IS "Subir de todas formas" — a real checkbox so
+        // it's focusable/keyboard-operable/announced by a screen reader on
+        // its own (see .quality-warning-confirm in the CSS above), styled
+        // to look like a button. Ticking it immediately resubmits the form;
+        // the server trusts heroImageQualityConfirmed=1 for the quality
+        // warnings ONLY — see UploadValidator::validate()'s own guard.
+        function confirmHeroQualityAndSubmit(checkbox) {
+            if (checkbox.checked) {
+                checkbox.closest('form').requestSubmit();
+            }
+        }
+
+        // No-op unless a pending, unconfirmed hero-image warning is showing:
+        // moves focus to the confirm checkbox instead of letting a plain
+        // "Guardar cambios" click silently round-trip to the server just to
+        // get the same warning back as a flash.
+        document.querySelector('form[method="post"]').addEventListener('submit', function (e) {
+            const warningBox = document.getElementById('hero-quality-warning');
+            const confirmBox = document.getElementById('hero-quality-confirmed');
+            if (warningBox && !warningBox.hidden && confirmBox && !confirmBox.checked) {
+                e.preventDefault();
+                confirmBox.focus();
+            }
+        });
 
         // ── Copy URL ──
         function copyUrl() {

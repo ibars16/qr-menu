@@ -26,6 +26,7 @@ action:
     change_hero_image: Header-Foto ändern
     upload_hero_image: Header-Foto hochladen
     remove_hero_image: Header-Foto entfernen
+    upload_anyway: Trotzdem hochladen
     save: Änderungen speichern
 
 hint:
@@ -49,6 +50,8 @@ flash:
     hero_image_too_large: Das Header-Foto ist zu groß (max. 8 MB).
     hero_image_dimensions_too_small: 'Das Bild ist zu klein. Lade eines mit mindestens %min% px Breite und Höhe hoch.'
     hero_image_dimensions_too_large: Das Bild ist zu groß (max. 5000x5000 px).
+    hero_image_warning_dimensions: Dieses Bild ist klein und könnte auf großen Bildschirmen unscharf wirken.
+    hero_image_warning_portrait: Es ist sehr hochformatig — der Hero-Bereich schneidet die Seiten ab.
     saved: Einstellungen erfolgreich gespeichert.
 
 toast:

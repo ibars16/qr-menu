@@ -26,6 +26,7 @@ action:
     change_hero_image: Cambiar foto de cabecera
     upload_hero_image: Subir foto de cabecera
     remove_hero_image: Eliminar foto de cabecera
+    upload_anyway: Subir de todas formas
     save: Guardar cambios
 
 hint:
@@ -49,6 +50,8 @@ flash:
     hero_image_too_large: La foto de cabecera es demasiado grande (máx. 8 MB).
     hero_image_dimensions_too_small: 'La imagen es demasiado pequeña. Sube una de al menos %min% px de ancho y alto.'
     hero_image_dimensions_too_large: La imagen es demasiado grande (máx. 5000x5000 px).
+    hero_image_warning_dimensions: Esta imagen es pequeña y puede verse borrosa en pantallas grandes.
+    hero_image_warning_portrait: Es muy vertical y el hero recortará los lados.
     saved: Configuración guardada correctamente.
 
 toast:
