@@ -267,20 +267,33 @@
     .hero-photo-band img {
         display: block; width: 100%; height: 100%; object-fit: cover; object-position: center;
     }
-    .hero-inner { background: var(--surface-2); padding: 22px 20px 26px; }
+    /* Padding-top trimmed from 22px to 14px (2026-09-07): with a heroImage,
+       the photo band's own bottom border already reads as a hard edge, so
+       22px of flat --surface-2 on top of .hero-name's own margin-top read as
+       one oversized gap between photo and name. See .hero-name's margin
+       below for the other half of that gap. */
+    .hero-inner { background: var(--surface-2); padding: 14px 20px 26px; }
     /* Base 43px, not the shared 46px other sizes use — an almost
        imperceptible +1px over the original 42px, scaled down further by
        --font-scale like everything else. Kept separate deliberately: the
        restaurant name needs to actually fit in ~1-2 lines at 390px, unlike
-       the other sizes here which just needed "a touch bigger". */
-    .hero-name { font-size: calc(43px * var(--font-scale)); font-weight: 500; letter-spacing: -0.01em; margin: 16px 0 10px; text-shadow: none; }
+       the other sizes here which just needed "a touch bigger".
+       margin 2026-09-07: top 16px→8px (paired with .hero-inner's
+       padding-top drop above, halves the photo→name gap from 38px to
+       ~22px at 390px); bottom 10px→12px so .tagline still reads as a
+       distinct line under the name now that the block above it is tighter. */
+    .hero-name { font-size: calc(43px * var(--font-scale)); font-weight: 500; letter-spacing: -0.01em; margin: 8px 0 12px; text-shadow: none; }
     /* Tagline — only painted when restaurant.tagline has a value (see the
        twig guard); admins fill it in via Ajustes > Información del
        restaurante, it's never inferred or defaulted here. Color is --fg, not
        the --fg-2 used elsewhere for secondary text: on the solid --surface-2
        hero panel, --fg-2 measures 4.37:1 (fails the 4.5:1 AA floor for
-       normal-size text by a hair) while --fg clears it at 12.69:1. */
-    .tagline { font-size: calc(14.5px * var(--font-scale)); font-weight: 400; color: var(--fg); line-height: 1.5; max-width: 82%; }
+       normal-size text by a hair) while --fg clears it at 12.69:1.
+       margin 2026-09-07: was 0 (inherits the shared *{margin:0} reset), which
+       let .tagline sit flush against both .hero-name above and .cta-explore
+       below (0px gap, confirmed in devtools). Added 6px/14px so the tagline
+       block breathes without needing a change to either of those neighbors. */
+    .tagline { font-size: calc(14.5px * var(--font-scale)); font-weight: 400; color: var(--fg); line-height: 1.5; max-width: 82%; margin: 6px 0 14px; }
 
     /* Chef's-recommendation banner — carta-premium-completa.html's .banner,
        adapted to this app's tokens (--accent for its --wine, --surface for
