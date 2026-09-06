@@ -17,7 +17,27 @@
        everything else — so gap/vertical padding are copied literally (18px
        top, matching the reference exactly), side padding is left at 0 to
        keep the shared gutter single-sourced. */
-    .cat-tabs { gap: 24px; padding: 18px 0 2px; }
+    /* Sticky category bar (2026-09-07). top/scroll-margin below use
+       --header-h, not a hardcoded px: .header's height isn't constant —
+       .resto-name has no nowrap/max-width, so a long restaurant name wraps
+       to several lines and the header grows well past its short-name
+       height (measured 71px for "David Test" vs 127px for a 4-line-wrap
+       name). --header-h is measured live off the actual .header box by the
+       script at the end of this file and kept in sync via ResizeObserver,
+       so this stays correct regardless of name length, locale (each string
+       wraps differently) or viewport width. The 71px fallback in each
+       var(--header-h, 71px) only matters for the brief instant before that
+       script's first measurement lands. */
+    .cat-tabs {
+        gap: 24px; padding: 18px 0 2px;
+        position: sticky; top: var(--header-h, 71px); z-index: 150;
+        background: var(--bg); border-bottom: 1px solid var(--cf-hborder);
+    }
+    /* Target of the hero CTA's native `href="#cat-tabs"` jump — without
+       this, the browser would scroll as if landing at y:0 (unaware the bar
+       is sticky and can't actually go above --header-h), overshooting by
+       --header-h worth of extra scroll. */
+    #cat-tabs { scroll-margin-top: var(--header-h, 71px); }
     .cat-tab {
         background: none; border: none; border-radius: 0; padding: 0 0 9px; min-height: auto;
         color: var(--tab-text); font-weight: 400; font-size: calc(14.5px * var(--font-scale)); box-shadow: none; position: relative;
@@ -412,7 +432,14 @@
        10px}), including the gap between one section's cards and the
        next section's title. */
     .diet-allergy-row { padding: 16px 0 0; }
-    .cat-section { padding-top: 26px; }
+    /* scroll-margin-top clears both sticky bars (.header + the now-sticky
+       .cat-tabs, 44px including its new border-bottom) when a category tab's
+       click handler does scrollIntoView() against this section — otherwise
+       the section (and its title, 26px further in via the padding-top
+       below) would land right under them, half-hidden. 44px is
+       .cat-tabs' own height, measured live and stable (unlike --header-h,
+       nothing in the tabs row wraps or varies in height) — safe to hardcode. */
+    .cat-section { padding-top: 26px; scroll-margin-top: calc(var(--header-h, 71px) + 44px); }
 
     /* Search — a hairline underline instead of a bordered/filled box, with
        the magnifier icon sitting inline to its left (carta-estilo
@@ -454,9 +481,17 @@
        literal 20px, at every width, in one place. Every element the brief
        calls out (search line, tabs, allergy button, section header, rows)
        stays at padding/margin 0 of its own and inherits this alone, so the
-       single change here is what keeps all of them flush by construction. */
-    .ui-wrap, .content { padding-left: 20px; padding-right: 20px; }
-    @media (min-width: 768px) { .ui-wrap, .content { padding-left: 20px; padding-right: 20px; } }
+       single change here is what keeps all of them flush by construction.
+
+       .cat-tabs joined this list on 2026-09-07: it used to be a *child* of
+       .ui-wrap and inherited this gutter for free, but the sticky-bar split
+       (show.html.twig — see the comment on .menu-body there) made it a
+       *sibling* instead, with no parent left to inherit from. Its own
+       padding-left/right below (the sticky-bar rule) would otherwise fall
+       back to the base layout's plain 18px/24px, breaking the "flush by
+       construction" property this comment describes. */
+    .ui-wrap, .content, .cat-tabs { padding-left: 20px; padding-right: 20px; }
+    @media (min-width: 768px) { .ui-wrap, .content, .cat-tabs { padding-left: 20px; padding-right: 20px; } }
 
     /* Smart Waiter FAB (menu/_smart_waiter.html.twig, shared markup/JS
        across every theme — not touched here, only its visibility) — hidden
@@ -964,3 +999,26 @@
        on #dish-modal-body any more (that was only for the old sticky
        footer's overlap). */
 </style>
+<script>
+    /* Keeps --header-h (used by .cat-tabs' sticky top and the scroll-margin
+       rules above) in sync with .header's real rendered height, which is
+       NOT constant — see the comment on .cat-tabs. ResizeObserver re-fires
+       whenever the header's box actually changes size (name wrapping
+       differently after a font swap/load, viewport resize/rotation, etc.);
+       a plain load-time measurement wouldn't catch those. Guarded for
+       browsers without ResizeObserver: they get one correct measurement at
+       DOMContentLoaded instead of live updates, falling back further to
+       each rule's own var(--header-h, 71px) default if even that can't run
+       in time. */
+    document.addEventListener('DOMContentLoaded', function () {
+        var header = document.querySelector('.header');
+        if (!header) return;
+        var syncHeaderHeight = function () {
+            document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+        };
+        syncHeaderHeight();
+        if ('ResizeObserver' in window) {
+            new ResizeObserver(syncHeaderHeight).observe(header);
+        }
+    });
+</script>
