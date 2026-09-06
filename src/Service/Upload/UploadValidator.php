@@ -44,6 +44,23 @@ final class UploadValidator
             'maxWidth'        => 5000,
             'maxHeight'       => 5000,
         ],
+        /**
+         * Own profile, deliberately separate from dish_image even though it
+         * used to just borrow it: a hero band is a wide, short strip — the
+         * upload just needs to not be tiny, not clear the same bar as a
+         * dish photo meant to be cropped square/tall too. Lower minimum,
+         * same size/max-dimension ceiling otherwise. Whoever uploads this is
+         * the restaurant owner, not a designer — 300px is "not a thumbnail",
+         * not a print-quality bar.
+         */
+        'hero_image' => [
+            'maxSizeBytes'    => 8 * 1024 * 1024,
+            'checkDimensions' => true,
+            'minWidth'        => 300,
+            'minHeight'       => 300,
+            'maxWidth'        => 5000,
+            'maxHeight'       => 5000,
+        ],
         'menu_import_page' => [
             'maxSizeBytes'    => 15 * 1024 * 1024,
             'checkDimensions' => false,
@@ -53,6 +70,19 @@ final class UploadValidator
     public function __construct(
         private readonly ContentModerationInterface $moderation,
     ) {
+    }
+
+    /**
+     * The minimum width/height a profile's dimension check enforces (they're
+     * always equal — every profile here checks a square-ish floor, not an
+     * aspect ratio) — for callers building a "too small" error message that
+     * tells the person what number would actually pass, instead of hard-
+     * coding it in translation strings that would silently drift out of
+     * sync with this class.
+     */
+    public static function minDimension(UploadProfile $profile): int
+    {
+        return self::LIMITS[$profile->value]['minWidth'];
     }
 
     public function validate(UploadedFile $file, UploadProfile $profile): UploadValidationResult

@@ -30,7 +30,7 @@ action:
 
 hint:
     logo_format: 'PNG o JPG, máx. 2 MB'
-    hero_image_format: 'PNG, JPG o WebP, máx. 8 MB (mín. 400x400 px, máx. 5000x5000 px)'
+    hero_image_format: 'PNG, JPG o WebP, máx. 8 MB (mín. 300x300 px, máx. 5000x5000 px)'
     tagline: Aparece bajo el nombre del restaurante en algunos temas de la carta pública.
     primary_color: Se usará en toda la carta digital
     menu_language: El idioma en que introduces los nombres y descripciones de los platos.
@@ -47,7 +47,7 @@ flash:
     hero_image_upload_error: Error al subir la foto de cabecera.
     hero_image_unsupported_type: Formato de imagen no compatible. Usa JPEG, PNG o WebP.
     hero_image_too_large: La foto de cabecera es demasiado grande (máx. 8 MB).
-    hero_image_dimensions_too_small: La imagen es demasiado pequeña (mín. 400x400 px).
+    hero_image_dimensions_too_small: 'La imagen es demasiado pequeña. Sube una de al menos %min% px de ancho y alto.'
     hero_image_dimensions_too_large: La imagen es demasiado grande (máx. 5000x5000 px).
     saved: Configuración guardada correctamente.
 

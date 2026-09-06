@@ -30,7 +30,7 @@ action:
 
 hint:
     logo_format: 'PNG or JPG, max. 2 MB'
-    hero_image_format: 'PNG, JPG, or WebP, max. 8 MB (min 400x400 px, max 5000x5000 px)'
+    hero_image_format: 'PNG, JPG, or WebP, max. 8 MB (min 300x300 px, max 5000x5000 px)'
     tagline: Shown under the restaurant name on some public menu themes.
     primary_color: Used throughout your digital menu
     menu_language: The language you use to enter dish names and descriptions.
@@ -47,7 +47,7 @@ flash:
     hero_image_upload_error: Error uploading the hero photo.
     hero_image_unsupported_type: Unsupported image format. Please use JPEG, PNG, or WebP.
     hero_image_too_large: The hero photo is too large (max 8 MB).
-    hero_image_dimensions_too_small: The image is too small (min 400x400 px).
+    hero_image_dimensions_too_small: "The image is too small. Upload one that's at least %min% px wide and tall."
     hero_image_dimensions_too_large: The image is too large (max 5000x5000 px).
     saved: Settings saved successfully.
 

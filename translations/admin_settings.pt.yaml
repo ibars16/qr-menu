@@ -30,7 +30,7 @@ action:
 
 hint:
     logo_format: 'PNG ou JPG, máx. 2 MB'
-    hero_image_format: 'PNG, JPG ou WebP, máx. 8 MB (mín. 400x400 px, máx. 5000x5000 px)'
+    hero_image_format: 'PNG, JPG ou WebP, máx. 8 MB (mín. 300x300 px, máx. 5000x5000 px)'
     tagline: Mostrado sob o nome do restaurante em alguns temas do cardápio público.
     primary_color: Usada em todo o cardápio digital
     menu_language: O idioma em que você insere os nomes e descrições dos pratos.
@@ -47,7 +47,7 @@ flash:
     hero_image_upload_error: Erro ao enviar a foto de cabeçalho.
     hero_image_unsupported_type: Formato de imagem não suportado. Use JPEG, PNG ou WebP.
     hero_image_too_large: A foto de cabeçalho é demasiado grande (máx. 8 MB).
-    hero_image_dimensions_too_small: A imagem é demasiado pequena (mín. 400x400 px).
+    hero_image_dimensions_too_small: 'A imagem é demasiado pequena. Envie uma com pelo menos %min% px de largura e altura.'
     hero_image_dimensions_too_large: A imagem é demasiado grande (máx. 5000x5000 px).
     saved: Configurações guardadas com sucesso.
 

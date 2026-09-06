@@ -98,14 +98,20 @@ class SettingsController extends AbstractController
 
             // Handle hero image upload — same validate/move/delete-old
             // pattern as the logo above, but its own directory (never
-            // scanned by app:logos:clean-orphans) and the DishImage upload
-            // profile (8MB, 400-5000px) rather than Logo's tighter limits:
-            // a hero band wants real photography, not a small brand mark.
+            // scanned by app:logos:clean-orphans) and its own upload
+            // profile (8MB, 300-5000px): lower minimum than dish photos on
+            // purpose (see UploadProfile::HeroImage's own comment) — a hero
+            // band just needs a not-tiny image, not the same bar as a
+            // dish photo meant to be cropped square/tall.
             $heroImageFile = $request->files->get('heroImage');
             if ($heroImageFile) {
-                $result = $uploadValidator->validate($heroImageFile, UploadProfile::DishImage);
+                $result = $uploadValidator->validate($heroImageFile, UploadProfile::HeroImage);
                 if (!$result->isValid) {
-                    $this->addFlash('error', $translator->trans($this->heroImageErrorKey($result->error), domain: 'admin_settings'));
+                    $this->addFlash('error', $translator->trans(
+                        $this->heroImageErrorKey($result->error),
+                        $this->heroImageErrorParams($result->error),
+                        domain: 'admin_settings'
+                    ));
                     return $this->redirectToRoute('admin_settings');
                 }
 
@@ -178,6 +184,21 @@ class SettingsController extends AbstractController
             UploadValidationError::DimensionsTooSmall => 'flash.hero_image_dimensions_too_small',
             UploadValidationError::DimensionsTooLarge => 'flash.hero_image_dimensions_too_large',
             UploadValidationError::InvalidFile, UploadValidationError::Rejected => 'flash.hero_image_upload_error',
+        };
+    }
+
+    /**
+     * Only the "too small" message is actionable with a number — it tells
+     * the owner what to do (upload one at least this big), not just what
+     * failed. The number comes from UploadValidator::minDimension(), never
+     * hardcoded here or in the translation string, so it can't drift out of
+     * sync with the profile's actual limit.
+     */
+    private function heroImageErrorParams(UploadValidationError $error): array
+    {
+        return match ($error) {
+            UploadValidationError::DimensionsTooSmall => ['%min%' => UploadValidator::minDimension(UploadProfile::HeroImage)],
+            default => [],
         };
     }
 }
