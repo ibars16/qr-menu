@@ -28,11 +28,30 @@
        wraps differently) or viewport width. The 71px fallback in each
        var(--header-h, 71px) only matters for the brief instant before that
        script's first measurement lands. */
+    /* Background/blur match .header's own (--hdr-bg + --hdr-blur) exactly,
+       not the flat --bg used before (2026-09-07) — the two bars sit stacked
+       once both are stuck, and a flat opaque tone one shade off from the
+       header's translucent+blurred one read as two mismatched strips
+       instead of one continuous top zone. Matching the exact treatment
+       (not just the color) means both read as the same material. */
     .cat-tabs {
         gap: 24px; padding: 18px 0 2px;
         position: sticky; top: var(--header-h, 71px); z-index: 150;
-        background: var(--bg); border-bottom: 1px solid var(--cf-hborder);
+        background: var(--hdr-bg);
+        backdrop-filter: var(--hdr-blur); -webkit-backdrop-filter: var(--hdr-blur);
     }
+    /* Shadow only while actually stuck (2026-09-07) — a shadow at the bar's
+       natural resting spot under the hero reads as a stray line floating
+       over the hero art for no reason; it only makes sense once the bar has
+       left its flow position and content is passing underneath it. .is-stuck
+       is toggled by the sentinel + IntersectionObserver at the end of this
+       file (JS-only DOM node, not part of the server-rendered markup, so
+       this stays maison-only without touching the shared layout template).
+       Replaces the old border-bottom: 1px solid var(--cf-hborder) hairline,
+       which read as a hard, fully-saturated brass line the full width of
+       the screen — the harshest thing about the bar. rgba(36,28,23,...) is
+       --fg's own rgb triplet at low opacity, not a new color. */
+    .cat-tabs.is-stuck { box-shadow: 0 4px 12px rgba(36,28,23,0.06); }
     /* Target of the hero CTA's native `href="#cat-tabs"` jump — without
        this, the browser would scroll as if landing at y:0 (unaware the bar
        is sticky and can't actually go above --header-h), overshooting by
@@ -1012,9 +1031,47 @@
        in time. */
     document.addEventListener('DOMContentLoaded', function () {
         var header = document.querySelector('.header');
+        var catTabs = document.querySelector('.cat-tabs');
         if (!header) return;
+
+        /* Stuck-state detection for .cat-tabs.is-stuck's shadow (see that
+           rule's comment) — the standard sentinel + IntersectionObserver
+           recipe for telling a position:sticky element's "stuck" state
+           apart from its normal flow state, since CSS has no selector for
+           this. A 1px sentinel is inserted right before #cat-tabs, in
+           normal flow, so it sits exactly where the bar's own top would be
+           if it weren't sticky. rootMargin shrinks the observed area by
+           headerH from the top, so the callback actually fires at the
+           scroll position where the bar starts sticking (y:headerH), not
+           only at the full-viewport-exit default (y:0). The callback then
+           reads the sentinel's real boundingClientRect (unaffected by
+           rootMargin) against headerH directly: comfortably above it means
+           stuck, at-or-below means still in flow — correct from the very
+           first, page-load callback (sentinel starts far down the page,
+           nowhere near headerH), so the bar never shows the shadow before
+           the user has actually scrolled it into its stuck position. */
+        var setupStuckDetection = function (headerH) {
+            if (!catTabs || !('IntersectionObserver' in window)) return;
+            var sentinel = setupStuckDetection.sentinel;
+            if (!sentinel) {
+                sentinel = document.createElement('div');
+                sentinel.setAttribute('aria-hidden', 'true');
+                sentinel.style.cssText = 'height:1px;';
+                catTabs.parentNode.insertBefore(sentinel, catTabs);
+                setupStuckDetection.sentinel = sentinel;
+            }
+            if (setupStuckDetection.observer) setupStuckDetection.observer.disconnect();
+            var observer = new IntersectionObserver(function (entries) {
+                catTabs.classList.toggle('is-stuck', entries[0].boundingClientRect.top < headerH);
+            }, { rootMargin: '-' + headerH + 'px 0px 0px 0px', threshold: [0, 1] });
+            observer.observe(sentinel);
+            setupStuckDetection.observer = observer;
+        };
+
         var syncHeaderHeight = function () {
-            document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+            var headerH = header.offsetHeight;
+            document.documentElement.style.setProperty('--header-h', headerH + 'px');
+            setupStuckDetection(headerH);
         };
         syncHeaderHeight();
         if ('ResizeObserver' in window) {
