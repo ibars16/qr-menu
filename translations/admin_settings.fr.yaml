@@ -12,6 +12,7 @@ field:
     tagline_placeholder: 'Ex. Cuisine méditerranéenne de saison'
     menu_url: URL de votre carte numérique
     logo: Logo du restaurant
+    hero_image: "Photo d'en-tête"
     primary_color: Couleur principale
     menu_language: Langue principale de la carte
     admin_language: "Langue du panneau d'administration"
@@ -22,10 +23,14 @@ action:
     change_logo: Changer le logo
     upload_logo: Ajouter un logo
     remove_logo: Supprimer le logo
+    change_hero_image: "Changer la photo d'en-tête"
+    upload_hero_image: "Ajouter une photo d'en-tête"
+    remove_hero_image: "Supprimer la photo d'en-tête"
     save: Enregistrer les modifications
 
 hint:
     logo_format: 'PNG ou JPG, 2 Mo max.'
+    hero_image_format: 'PNG, JPG ou WebP, 8 Mo max. (min. 400x400 px, max. 5000x5000 px)'
     tagline: "Affiché sous le nom du restaurant sur certains thèmes de la carte publique."
     primary_color: Utilisée dans toute la carte numérique
     menu_language: La langue dans laquelle vous saisissez les noms et descriptions des plats.
@@ -39,8 +44,14 @@ flash:
     logo_too_large: Le logo est trop volumineux (max. 2 Mo).
     logo_dimensions_too_small: L'image est trop petite (min. 100x100 px).
     logo_dimensions_too_large: L'image est trop grande (max. 2000x2000 px).
+    hero_image_upload_error: "Erreur lors du téléchargement de la photo d'en-tête."
+    hero_image_unsupported_type: Format d'image non pris en charge. Utilisez JPEG, PNG ou WebP.
+    hero_image_too_large: "La photo d'en-tête est trop volumineuse (max. 8 Mo)."
+    hero_image_dimensions_too_small: L'image est trop petite (min. 400x400 px).
+    hero_image_dimensions_too_large: L'image est trop grande (max. 5000x5000 px).
     saved: Paramètres enregistrés avec succès.
 
 toast:
     logo_removed: "Logo supprimé à l'enregistrement"
+    hero_image_removed: "Photo d'en-tête supprimée à l'enregistrement"
     url_copied: 'URL copiée ✓'

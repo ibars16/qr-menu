@@ -11,13 +11,16 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
- * Functional coverage for the logo-replacement path in
+ * Functional coverage for the logo- and hero-image-replacement paths in
  * SettingsController::settings. Written after a9b46c2/8ea147a found that,
  * unlike MenuAdminController::uploadProductImage, replacing a restaurant's
  * logo left the previous file on disk in public/uploads/logos/ — an
  * accumulating, URL-reachable orphan. These tests pin down that the old
  * file is now deleted on a real replacement, and that the two edge cases
- * (no previous logo, previous file already missing from disk) don't crash.
+ * (no previous logo/hero image, previous file already missing from disk)
+ * don't crash. Restaurant::$heroImage (see conversation) replicates the
+ * exact same validate/move/delete-old logic in its own public/uploads/heroes/
+ * directory, so its tests mirror the logo ones one-for-one.
  *
  * NOTE: not run in this environment — the project's DATABASE_URL targets
  * pdo_pgsql, which isn't installed here. Verified instead via a standalone
@@ -30,12 +33,16 @@ final class SettingsControllerTest extends WebTestCase
     private EntityManagerInterface $em;
     private UserPasswordHasherInterface $hasher;
     private string $logoDir;
+    private string $heroImageDir;
 
     /** @var int[] restaurant ids, not entities — logging in via loginUser() can detach the original object */
     private array $restaurantIdsToRemove = [];
 
     /** @var string[] logo filenames created during a test, cleaned up regardless of pass/fail */
     private array $logoFilesToRemove = [];
+
+    /** @var string[] hero image filenames created during a test, cleaned up regardless of pass/fail */
+    private array $heroImageFilesToRemove = [];
 
     protected function setUp(): void
     {
@@ -44,12 +51,20 @@ final class SettingsControllerTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
         $this->hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
         $this->logoDir = static::getContainer()->getParameter('kernel.project_dir') . '/public/uploads/logos';
+        $this->heroImageDir = static::getContainer()->getParameter('kernel.project_dir') . '/public/uploads/heroes';
     }
 
     protected function tearDown(): void
     {
         foreach ($this->logoFilesToRemove as $filename) {
             $path = $this->logoDir . '/' . $filename;
+            if (is_file($path)) {
+                unlink($path);
+            }
+        }
+
+        foreach ($this->heroImageFilesToRemove as $filename) {
+            $path = $this->heroImageDir . '/' . $filename;
             if (is_file($path)) {
                 unlink($path);
             }
@@ -123,6 +138,32 @@ final class SettingsControllerTest extends WebTestCase
         self::assertResponseRedirects('/admin/settings');
     }
 
+    /** DishImage profile requires >=400x400 (unlike Logo's >=100x100), so this is deliberately bigger than logoUpload()'s. */
+    private function heroImageUpload(string $originalName = 'hero.png'): UploadedFile
+    {
+        $image = imagecreatetruecolor(500, 500);
+        imagefill($image, 0, 0, imagecolorallocate($image, 30, 20, 10));
+
+        $path = tempnam(sys_get_temp_dir(), 'settings_hero_image_test_');
+        imagepng($image, $path);
+        imagedestroy($image);
+
+        return new UploadedFile($path, $originalName, 'image/png', null, true);
+    }
+
+    private function submitHeroImage(Restaurant $restaurant, UploadedFile $heroImage): void
+    {
+        $this->client->request('POST', '/admin/settings', [
+            'name'            => $restaurant->getName(),
+            'primaryColor'    => '#000000',
+            'currency'        => 'EUR',
+            'defaultLanguage' => 'es',
+        ], [
+            'heroImage' => $heroImage,
+        ]);
+        self::assertResponseRedirects('/admin/settings');
+    }
+
     public function testReplacingTheLogoDeletesThePreviousFileFromDisk(): void
     {
         $restaurant = $this->makeRestaurant('Logo Cleanup Test');
@@ -181,5 +222,65 @@ final class SettingsControllerTest extends WebTestCase
 
         self::assertNotSame($firstLogo, $secondLogo);
         self::assertFileExists($this->logoDir . '/' . $secondLogo);
+    }
+
+    public function testReplacingTheHeroImageDeletesThePreviousFileFromDisk(): void
+    {
+        $restaurant = $this->makeRestaurant('Hero Image Cleanup Test');
+        $owner = $this->makeOwner($restaurant);
+        $this->client->loginUser($owner);
+
+        $this->submitHeroImage($restaurant, $this->heroImageUpload());
+        $this->em->refresh($restaurant);
+        $firstHeroImage = $restaurant->getHeroImage();
+        $this->heroImageFilesToRemove[] = $firstHeroImage;
+        self::assertNotNull($firstHeroImage);
+        self::assertFileExists($this->heroImageDir . '/' . $firstHeroImage);
+
+        $this->submitHeroImage($restaurant, $this->heroImageUpload());
+        $this->em->refresh($restaurant);
+        $secondHeroImage = $restaurant->getHeroImage();
+        $this->heroImageFilesToRemove[] = $secondHeroImage;
+
+        self::assertNotSame($firstHeroImage, $secondHeroImage);
+        self::assertFileDoesNotExist($this->heroImageDir . '/' . $firstHeroImage, 'previous hero image file should be deleted after replacement');
+        self::assertFileExists($this->heroImageDir . '/' . $secondHeroImage);
+    }
+
+    public function testUploadingAFirstHeroImageDoesNotAttemptToDeleteAnything(): void
+    {
+        $restaurant = $this->makeRestaurant('First Hero Image Test');
+        $owner = $this->makeOwner($restaurant);
+        $this->client->loginUser($owner);
+
+        self::assertNull($restaurant->getHeroImage());
+
+        $this->submitHeroImage($restaurant, $this->heroImageUpload());
+        $this->em->refresh($restaurant);
+        $heroImage = $restaurant->getHeroImage();
+        $this->heroImageFilesToRemove[] = $heroImage;
+
+        self::assertNotNull($heroImage);
+        self::assertFileExists($this->heroImageDir . '/' . $heroImage);
+    }
+
+    public function testReplacingAHeroImageWhoseFileIsAlreadyMissingFromDiskDoesNotError(): void
+    {
+        $restaurant = $this->makeRestaurant('Missing Old Hero Image File Test');
+        $owner = $this->makeOwner($restaurant);
+        $this->client->loginUser($owner);
+
+        $this->submitHeroImage($restaurant, $this->heroImageUpload());
+        $this->em->refresh($restaurant);
+        $firstHeroImage = $restaurant->getHeroImage();
+        unlink($this->heroImageDir . '/' . $firstHeroImage); // simulate an already-orphaned/removed file
+
+        $this->submitHeroImage($restaurant, $this->heroImageUpload());
+        $this->em->refresh($restaurant);
+        $secondHeroImage = $restaurant->getHeroImage();
+        $this->heroImageFilesToRemove[] = $secondHeroImage;
+
+        self::assertNotSame($firstHeroImage, $secondHeroImage);
+        self::assertFileExists($this->heroImageDir . '/' . $secondHeroImage);
     }
 }

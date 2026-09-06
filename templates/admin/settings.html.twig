@@ -222,6 +222,42 @@
                         </div>
                     </div>
 
+                    {# Foto de cabecera (hero) — same upload/preview/remove pattern as
+                       the logo above, its own field/directory (Restaurant::$heroImage,
+                       public/uploads/heroes/), only consumed today by maison's
+                       .hero-photo-band (menu/layouts/standard/show.html.twig). #}
+                    <div class="field">
+                        <label>{{ 'field.hero_image'|trans({}, 'admin_settings') }}</label>
+                        <div class="logo-area">
+                            <div class="logo-preview hero-image-preview" id="hero-image-preview">
+                                {% if restaurant.heroImage %}
+                                    <img src="{{ asset('uploads/heroes/' ~ restaurant.heroImage) }}"
+                                         alt="{{ restaurant.name }}" id="hero-image-img">
+                                {% else %}
+                                    <i class="ti ti-photo" aria-hidden="true"></i>
+                                {% endif %}
+                            </div>
+                            <div class="logo-actions">
+                                <label class="upload-btn" for="hero-image-input">
+                                    <i class="ti ti-upload" aria-hidden="true"></i>
+                                    {{ restaurant.heroImage ? 'action.change_hero_image'|trans({}, 'admin_settings') : 'action.upload_hero_image'|trans({}, 'admin_settings') }}
+                                </label>
+                                <input type="file" id="hero-image-input" name="heroImage"
+                                       accept="image/*" style="display:none"
+                                       onchange="previewHeroImage(this)">
+                                {% if restaurant.heroImage %}
+                                    <button type="button" class="remove-logo-btn" onclick="removeHeroImage()">
+                                        <i class="ti ti-trash" aria-hidden="true"></i> {{ 'action.remove_hero_image'|trans({}, 'admin_settings') }}
+                                    </button>
+                                    {# Same naming trap as removeLogoFlag above — must not be
+                                       named "removeHeroImage", see the comment there. #}
+                                    <input type="hidden" name="removeHeroImageFlag" id="remove-hero-image-input" value="0">
+                                {% endif %}
+                                <span class="field-hint">{{ 'hint.hero_image_format'|trans({}, 'admin_settings') }}</span>
+                            </div>
+                        </div>
+                    </div>
+
                     {# Color principal #}
                     <div class="field">
                         <label>{{ 'field.primary_color'|trans({}, 'admin_settings') }}</label>
@@ -313,8 +349,9 @@
 
 {% block javascripts %}
     <script>
-        const MSG_LOGO_REMOVED = "{{ 'toast.logo_removed'|trans({}, 'admin_settings')|e('js') }}";
-        const MSG_URL_COPIED   = "{{ 'toast.url_copied'|trans({}, 'admin_settings')|e('js') }}";
+        const MSG_LOGO_REMOVED       = "{{ 'toast.logo_removed'|trans({}, 'admin_settings')|e('js') }}";
+        const MSG_HERO_IMAGE_REMOVED = "{{ 'toast.hero_image_removed'|trans({}, 'admin_settings')|e('js') }}";
+        const MSG_URL_COPIED         = "{{ 'toast.url_copied'|trans({}, 'admin_settings')|e('js') }}";
 
         // ── Color sync ──
         function syncColor(val) {
@@ -352,6 +389,40 @@
             if (img)   img.remove();
             if (letter) letter.style.display = '';
             showToast(MSG_LOGO_REMOVED, 'info');
+        }
+
+        // ── Hero image preview — same pattern as the logo above, but its
+        // empty-state fallback is a plain icon (no restaurant-initial letter
+        // makes sense for a header photo), so the fallback element toggled
+        // here is that <i>, not a <span>. ──
+        function previewHeroImage(input) {
+            if (!input.files?.length) return;
+            const url     = URL.createObjectURL(input.files[0]);
+            const preview = document.getElementById('hero-image-preview');
+            let img       = document.getElementById('hero-image-img');
+            const icon    = preview.querySelector('i');
+            if (!img) {
+                img = document.createElement('img');
+                img.id = 'hero-image-img';
+                preview.appendChild(img);
+            }
+            img.src = url;
+            if (icon) icon.style.display = 'none';
+        }
+
+        function removeHeroImage() {
+            const input = document.getElementById('remove-hero-image-input');
+            const img   = document.getElementById('hero-image-img');
+            if (input) input.value = '1';
+            if (img) {
+                img.remove();
+                const preview = document.getElementById('hero-image-preview');
+                const icon = document.createElement('i');
+                icon.className = 'ti ti-photo';
+                icon.setAttribute('aria-hidden', 'true');
+                preview.appendChild(icon);
+            }
+            showToast(MSG_HERO_IMAGE_REMOVED, 'info');
         }
 
         // ── Copy URL ──

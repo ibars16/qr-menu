@@ -12,6 +12,7 @@ field:
     tagline_placeholder: "E.g. Seasonal Mediterranean cuisine"
     menu_url: Your digital menu URL
     logo: Restaurant logo
+    hero_image: Hero photo
     primary_color: Primary color
     menu_language: Menu's main language
     admin_language: Admin Panel language
@@ -22,10 +23,14 @@ action:
     change_logo: Change logo
     upload_logo: Upload logo
     remove_logo: Remove logo
+    change_hero_image: Change hero photo
+    upload_hero_image: Upload hero photo
+    remove_hero_image: Remove hero photo
     save: Save changes
 
 hint:
     logo_format: 'PNG or JPG, max. 2 MB'
+    hero_image_format: 'PNG, JPG, or WebP, max. 8 MB (min 400x400 px, max 5000x5000 px)'
     tagline: Shown under the restaurant name on some public menu themes.
     primary_color: Used throughout your digital menu
     menu_language: The language you use to enter dish names and descriptions.
@@ -39,8 +44,14 @@ flash:
     logo_too_large: The logo is too large (max 2 MB).
     logo_dimensions_too_small: The image is too small (min 100x100 px).
     logo_dimensions_too_large: The image is too large (max 2000x2000 px).
+    hero_image_upload_error: Error uploading the hero photo.
+    hero_image_unsupported_type: Unsupported image format. Please use JPEG, PNG, or WebP.
+    hero_image_too_large: The hero photo is too large (max 8 MB).
+    hero_image_dimensions_too_small: The image is too small (min 400x400 px).
+    hero_image_dimensions_too_large: The image is too large (max 5000x5000 px).
     saved: Settings saved successfully.
 
 toast:
     logo_removed: Logo will be removed on save
+    hero_image_removed: Hero photo will be removed on save
     url_copied: 'URL copied ✓'

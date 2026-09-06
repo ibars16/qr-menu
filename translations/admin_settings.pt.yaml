@@ -12,6 +12,7 @@ field:
     tagline_placeholder: 'Ex: Cozinha mediterrânica de época'
     menu_url: URL do seu cardápio digital
     logo: Logo do restaurante
+    hero_image: Foto de cabeçalho
     primary_color: Cor principal
     menu_language: Idioma principal do cardápio
     admin_language: Idioma do Painel de Administração
@@ -22,10 +23,14 @@ action:
     change_logo: Alterar logo
     upload_logo: Enviar logo
     remove_logo: Remover logo
+    change_hero_image: Alterar foto de cabeçalho
+    upload_hero_image: Enviar foto de cabeçalho
+    remove_hero_image: Remover foto de cabeçalho
     save: Guardar alterações
 
 hint:
     logo_format: 'PNG ou JPG, máx. 2 MB'
+    hero_image_format: 'PNG, JPG ou WebP, máx. 8 MB (mín. 400x400 px, máx. 5000x5000 px)'
     tagline: Mostrado sob o nome do restaurante em alguns temas do cardápio público.
     primary_color: Usada em todo o cardápio digital
     menu_language: O idioma em que você insere os nomes e descrições dos pratos.
@@ -39,8 +44,14 @@ flash:
     logo_too_large: O logo é demasiado grande (máx. 2 MB).
     logo_dimensions_too_small: A imagem é demasiado pequena (mín. 100x100 px).
     logo_dimensions_too_large: A imagem é demasiado grande (máx. 2000x2000 px).
+    hero_image_upload_error: Erro ao enviar a foto de cabeçalho.
+    hero_image_unsupported_type: Formato de imagem não suportado. Use JPEG, PNG ou WebP.
+    hero_image_too_large: A foto de cabeçalho é demasiado grande (máx. 8 MB).
+    hero_image_dimensions_too_small: A imagem é demasiado pequena (mín. 400x400 px).
+    hero_image_dimensions_too_large: A imagem é demasiado grande (máx. 5000x5000 px).
     saved: Configurações guardadas com sucesso.
 
 toast:
     logo_removed: Logo será removido ao guardar
+    hero_image_removed: Foto de cabeçalho será removida ao guardar
     url_copied: 'URL copiado ✓'

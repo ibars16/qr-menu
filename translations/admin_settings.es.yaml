@@ -12,6 +12,7 @@ field:
     tagline_placeholder: 'Ej: Cocina mediterránea de temporada'
     menu_url: URL de tu carta digital
     logo: Logo del restaurante
+    hero_image: Foto de cabecera
     primary_color: Color principal
     menu_language: Idioma principal del menú
     admin_language: Idioma del Panel de Administración
@@ -22,10 +23,14 @@ action:
     change_logo: Cambiar logo
     upload_logo: Subir logo
     remove_logo: Eliminar logo
+    change_hero_image: Cambiar foto de cabecera
+    upload_hero_image: Subir foto de cabecera
+    remove_hero_image: Eliminar foto de cabecera
     save: Guardar cambios
 
 hint:
     logo_format: 'PNG o JPG, máx. 2 MB'
+    hero_image_format: 'PNG, JPG o WebP, máx. 8 MB (mín. 400x400 px, máx. 5000x5000 px)'
     tagline: Aparece bajo el nombre del restaurante en algunos temas de la carta pública.
     primary_color: Se usará en toda la carta digital
     menu_language: El idioma en que introduces los nombres y descripciones de los platos.
@@ -39,8 +44,14 @@ flash:
     logo_too_large: El logo es demasiado grande (máx. 2 MB).
     logo_dimensions_too_small: La imagen es demasiado pequeña (mín. 100x100 px).
     logo_dimensions_too_large: La imagen es demasiado grande (máx. 2000x2000 px).
+    hero_image_upload_error: Error al subir la foto de cabecera.
+    hero_image_unsupported_type: Formato de imagen no compatible. Usa JPEG, PNG o WebP.
+    hero_image_too_large: La foto de cabecera es demasiado grande (máx. 8 MB).
+    hero_image_dimensions_too_small: La imagen es demasiado pequeña (mín. 400x400 px).
+    hero_image_dimensions_too_large: La imagen es demasiado grande (máx. 5000x5000 px).
     saved: Configuración guardada correctamente.
 
 toast:
     logo_removed: Logo eliminado al guardar
+    hero_image_removed: Foto de cabecera eliminada al guardar
     url_copied: 'URL copiada ✓'

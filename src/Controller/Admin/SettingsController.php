@@ -96,7 +96,51 @@ class SettingsController extends AbstractController
                 $restaurant->setLogo(null);
             }
 
-            // name/tagline/logo/primaryColor/currency/defaultLanguage all
+            // Handle hero image upload — same validate/move/delete-old
+            // pattern as the logo above, but its own directory (never
+            // scanned by app:logos:clean-orphans) and the DishImage upload
+            // profile (8MB, 400-5000px) rather than Logo's tighter limits:
+            // a hero band wants real photography, not a small brand mark.
+            $heroImageFile = $request->files->get('heroImage');
+            if ($heroImageFile) {
+                $result = $uploadValidator->validate($heroImageFile, UploadProfile::DishImage);
+                if (!$result->isValid) {
+                    $this->addFlash('error', $translator->trans($this->heroImageErrorKey($result->error), domain: 'admin_settings'));
+                    return $this->redirectToRoute('admin_settings');
+                }
+
+                $heroUploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/heroes';
+                if (!is_dir($heroUploadDir)) {
+                    mkdir($heroUploadDir, 0755, true);
+                }
+
+                $oldHeroImage = $restaurant->getHeroImage();
+
+                try {
+                    $heroImageFile->move($heroUploadDir, $result->safeFilename);
+                    $restaurant->setHeroImage($result->safeFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', $translator->trans('flash.hero_image_upload_error', domain: 'admin_settings'));
+                    return $this->redirectToRoute('admin_settings');
+                }
+
+                // Old file is orphaned on disk once the column no longer
+                // points to it — clean it up now that the new one is safely
+                // in place.
+                if ($oldHeroImage) {
+                    $oldHeroPath = $heroUploadDir . '/' . $oldHeroImage;
+                    if (is_file($oldHeroPath)) {
+                        unlink($oldHeroPath);
+                    }
+                }
+            }
+
+            // Handle hero image removal
+            if ($request->request->get('removeHeroImageFlag') === '1') {
+                $restaurant->setHeroImage(null);
+            }
+
+            // name/tagline/logo/heroImage/primaryColor/currency/defaultLanguage all
             // appear on the public menu; adminLocale is the only field here
             // that doesn't. One flush covers all of them, so bump
             // unconditionally rather than trying to detect which fields
@@ -123,6 +167,17 @@ class SettingsController extends AbstractController
             UploadValidationError::DimensionsTooSmall => 'flash.logo_dimensions_too_small',
             UploadValidationError::DimensionsTooLarge => 'flash.logo_dimensions_too_large',
             UploadValidationError::InvalidFile, UploadValidationError::Rejected => 'flash.logo_upload_error',
+        };
+    }
+
+    private function heroImageErrorKey(UploadValidationError $error): string
+    {
+        return match ($error) {
+            UploadValidationError::UnsupportedType => 'flash.hero_image_unsupported_type',
+            UploadValidationError::TooLarge => 'flash.hero_image_too_large',
+            UploadValidationError::DimensionsTooSmall => 'flash.hero_image_dimensions_too_small',
+            UploadValidationError::DimensionsTooLarge => 'flash.hero_image_dimensions_too_large',
+            UploadValidationError::InvalidFile, UploadValidationError::Rejected => 'flash.hero_image_upload_error',
         };
     }
 }

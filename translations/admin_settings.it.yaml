@@ -12,6 +12,7 @@ field:
     tagline_placeholder: 'Es: Cucina mediterranea di stagione'
     menu_url: URL del tuo menu digitale
     logo: Logo del ristorante
+    hero_image: Foto di intestazione
     primary_color: Colore principale
     menu_language: Lingua principale del menu
     admin_language: Lingua del pannello di amministrazione
@@ -22,10 +23,14 @@ action:
     change_logo: Cambia logo
     upload_logo: Carica logo
     remove_logo: Rimuovi logo
+    change_hero_image: Cambia foto di intestazione
+    upload_hero_image: Carica foto di intestazione
+    remove_hero_image: Rimuovi foto di intestazione
     save: Salva modifiche
 
 hint:
     logo_format: 'PNG o JPG, max. 2 MB'
+    hero_image_format: 'PNG, JPG o WebP, max. 8 MB (min. 400x400 px, max. 5000x5000 px)'
     tagline: Mostrato sotto il nome del ristorante in alcuni temi del menu pubblico.
     primary_color: Utilizzato in tutto il menu digitale
     menu_language: La lingua in cui inserisci nomi e descrizioni dei piatti.
@@ -39,8 +44,14 @@ flash:
     logo_too_large: Il logo è troppo grande (max 2 MB).
     logo_dimensions_too_small: L'immagine è troppo piccola (min. 100x100 px).
     logo_dimensions_too_large: L'immagine è troppo grande (max. 2000x2000 px).
+    hero_image_upload_error: Errore durante il caricamento della foto di intestazione.
+    hero_image_unsupported_type: Formato immagine non supportato. Usa JPEG, PNG o WebP.
+    hero_image_too_large: La foto di intestazione è troppo grande (max 8 MB).
+    hero_image_dimensions_too_small: L'immagine è troppo piccola (min. 400x400 px).
+    hero_image_dimensions_too_large: L'immagine è troppo grande (max. 5000x5000 px).
     saved: Impostazioni salvate correttamente.
 
 toast:
     logo_removed: Logo rimosso al salvataggio
+    hero_image_removed: Foto di intestazione rimossa al salvataggio
     url_copied: 'URL copiato ✓'

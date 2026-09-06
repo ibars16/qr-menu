@@ -12,6 +12,7 @@ field:
     tagline_placeholder: 'z. B. Saisonale mediterrane Küche'
     menu_url: URL Ihrer digitalen Speisekarte
     logo: Restaurant-Logo
+    hero_image: Header-Foto
     primary_color: Primärfarbe
     menu_language: Hauptsprache der Speisekarte
     admin_language: Sprache des Admin-Panels
@@ -22,10 +23,14 @@ action:
     change_logo: Logo ändern
     upload_logo: Logo hochladen
     remove_logo: Logo entfernen
+    change_hero_image: Header-Foto ändern
+    upload_hero_image: Header-Foto hochladen
+    remove_hero_image: Header-Foto entfernen
     save: Änderungen speichern
 
 hint:
     logo_format: 'PNG oder JPG, max. 2 MB'
+    hero_image_format: 'PNG, JPG oder WebP, max. 8 MB (mind. 400x400 px, max. 5000x5000 px)'
     tagline: Wird bei manchen Designs unter dem Restaurantnamen in der öffentlichen Speisekarte angezeigt.
     primary_color: Wird in der gesamten digitalen Speisekarte verwendet
     menu_language: Die Sprache, in der Sie Gerichtnamen und -beschreibungen eingeben.
@@ -39,8 +44,14 @@ flash:
     logo_too_large: Das Logo ist zu groß (max. 2 MB).
     logo_dimensions_too_small: Das Bild ist zu klein (mind. 100x100 px).
     logo_dimensions_too_large: Das Bild ist zu groß (max. 2000x2000 px).
+    hero_image_upload_error: Fehler beim Hochladen des Header-Fotos.
+    hero_image_unsupported_type: Bildformat wird nicht unterstützt. Bitte JPEG, PNG oder WebP verwenden.
+    hero_image_too_large: Das Header-Foto ist zu groß (max. 8 MB).
+    hero_image_dimensions_too_small: Das Bild ist zu klein (mind. 400x400 px).
+    hero_image_dimensions_too_large: Das Bild ist zu groß (max. 5000x5000 px).
     saved: Einstellungen erfolgreich gespeichert.
 
 toast:
     logo_removed: Logo wird beim Speichern entfernt
+    hero_image_removed: Header-Foto wird beim Speichern entfernt
     url_copied: 'URL kopiert ✓'
