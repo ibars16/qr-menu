@@ -35,7 +35,7 @@
        instead of one continuous top zone. Matching the exact treatment
        (not just the color) means both read as the same material. */
     .cat-tabs {
-        gap: 24px; padding: 18px 0 2px;
+        gap: 24px; padding: 18px 0 10px;
         position: sticky; top: var(--header-h, 71px); z-index: 150;
         background: var(--hdr-bg);
         backdrop-filter: var(--hdr-blur); -webkit-backdrop-filter: var(--hdr-blur);
@@ -452,13 +452,14 @@
        next section's title. */
     .diet-allergy-row { padding: 16px 0 0; }
     /* scroll-margin-top clears both sticky bars (.header + the now-sticky
-       .cat-tabs, 44px including its new border-bottom) when a category tab's
-       click handler does scrollIntoView() against this section — otherwise
-       the section (and its title, 26px further in via the padding-top
-       below) would land right under them, half-hidden. 44px is
-       .cat-tabs' own height, measured live and stable (unlike --header-h,
-       nothing in the tabs row wraps or varies in height) — safe to hardcode. */
-    .cat-section { padding-top: 26px; scroll-margin-top: calc(var(--header-h, 71px) + 44px); }
+       .cat-tabs) when a category tab's click handler does scrollIntoView()
+       against this section — otherwise the section (and its title, 26px
+       further in via the padding-top below) would land right under them,
+       half-hidden. 51px is .cat-tabs' own height (measured live; last
+       updated 2026-09-07 when its padding-bottom grew from 2px to 10px —
+       nothing in the tabs row wraps or varies in height otherwise, so this
+       is stable and safe to hardcode, unlike --header-h). */
+    .cat-section { padding-top: 26px; scroll-margin-top: calc(var(--header-h, 71px) + 51px); }
 
     /* Search — a hairline underline instead of a bordered/filled box, with
        the magnifier icon sitting inline to its left (carta-estilo
