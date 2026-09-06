@@ -458,17 +458,15 @@
 
 <div class="hero">
     {% if theme == 'maison' %}
-        {# TODO(section 8): prototype only — reusing restaurant.logo as the hero
-           band image to validate this layout pattern. The definitive source will
-           be a dedicated header-photo field (heroImage), separate from the logo,
-           not yet modeled on Restaurant/added to admin. Swap the src here once
-           that field exists; the markup/CSS structure shouldn't need to change.
-           A logo isn't atmospheric photography (can be square, marginned,
-           low-res) — object-fit: cover just keeps it from looking broken,
-           it doesn't make it the right asset. #}
-        {% if restaurant.logo %}
+        {# Hero band image: Restaurant::$heroImage, its own field/directory
+           (public/uploads/heroes/), separate from $logo — a logo is brand
+           mark art (can be square, marginned, low-res), not the atmospheric
+           wide photography this band wants. No fallback to $logo when empty:
+           the band simply isn't in the DOM, and the hero falls back cleanly
+           to solid parchment (see .hero-inner below), exactly as designed. #}
+        {% if restaurant.heroImage %}
             <div class="hero-photo-band">
-                <img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}" alt="">
+                <img src="{{ asset('uploads/heroes/' ~ restaurant.heroImage) }}" alt="{{ restaurant.name }}">
             </div>
         {% endif %}
     {% else %}
