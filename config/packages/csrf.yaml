@@ -4,8 +4,13 @@ framework:
         csrf_protection:
             token_id: submit
 
+    # 'authenticate' excluded: the login form has no JS to set the
+    # double-submit cookie required for stateless validation, so a session
+    # that ever recorded double-submit usage gets permanently stuck failing
+    # CSRF on every login attempt (Symfony blocks downgrading to a weaker
+    # method once one has been used). Session-based CSRF for login has no
+    # such failure mode.
     csrf_protection:
         stateless_token_ids:
             - submit
-            - authenticate
             - logout
