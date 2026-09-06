@@ -52,14 +52,27 @@ final class UploadValidator
          * same size/max-dimension ceiling otherwise. Whoever uploads this is
          * the restaurant owner, not a designer — 300px is "not a thumbnail",
          * not a print-quality bar.
+         *
+         * qualityWarningsEnabled: the only profile, for now, where being
+         * below minWidth/minHeight or portrait-oriented is a non-fatal
+         * *warning* (see validate()) rather than an outright rejection —
+         * a hero photo is décor, not a menu item people order off of or a
+         * brand mark that has to render crisply everywhere, so a slightly
+         * soft or oddly-cropped one is the owner's call, not ours to block.
+         * dish_image and logo don't opt in: keeping dish photos sharp is a
+         * real commercial concern (a blurry photo of the food itself hurts
+         * the product), and a logo's constraints are about how the mark
+         * actually renders, not friendliness — neither shares the reasoning
+         * that motivated relaxing this one.
          */
         'hero_image' => [
-            'maxSizeBytes'    => 8 * 1024 * 1024,
-            'checkDimensions' => true,
-            'minWidth'        => 300,
-            'minHeight'       => 300,
-            'maxWidth'        => 5000,
-            'maxHeight'       => 5000,
+            'maxSizeBytes'          => 8 * 1024 * 1024,
+            'checkDimensions'       => true,
+            'minWidth'              => 300,
+            'minHeight'             => 300,
+            'maxWidth'              => 5000,
+            'maxHeight'             => 5000,
+            'qualityWarningsEnabled' => true,
         ],
         'menu_import_page' => [
             'maxSizeBytes'    => 15 * 1024 * 1024,
@@ -85,7 +98,19 @@ final class UploadValidator
         return self::LIMITS[$profile->value]['minWidth'];
     }
 
-    public function validate(UploadedFile $file, UploadProfile $profile): UploadValidationResult
+    /**
+     * $qualityWarningsConfirmed: the uploader has already seen this
+     * profile's non-fatal quality warnings (see UploadQualityWarning) and
+     * chose to continue anyway. It ONLY ever affects whether a quality
+     * warning blocks the upload — every check above the warnings section
+     * below (file validity, real MIME, max size, max dimensions) and the
+     * content-moderation check after it are security-relevant and run
+     * completely unconditionally, with their own `return failure(...)`
+     * before this parameter is ever read. There is no code path by which
+     * this flag can suppress any of those — a caller cannot construct one
+     * by passing true, only skip the *needsConfirmation* branch below.
+     */
+    public function validate(UploadedFile $file, UploadProfile $profile, bool $qualityWarningsConfirmed = false): UploadValidationResult
     {
         if (!$file->isValid()) {
             return UploadValidationResult::failure(UploadValidationError::InvalidFile);
@@ -104,6 +129,8 @@ final class UploadValidator
             return UploadValidationResult::failure(UploadValidationError::TooLarge);
         }
 
+        $warnings = [];
+
         if ($limits['checkDimensions']) {
             $dimensions = @getimagesize($file->getPathname());
             if ($dimensions === false) {
@@ -111,21 +138,42 @@ final class UploadValidator
             }
 
             [$width, $height] = $dimensions;
+            $qualityWarningsEnabled = $limits['qualityWarningsEnabled'] ?? false;
+
             if ($width < $limits['minWidth'] || $height < $limits['minHeight']) {
-                return UploadValidationResult::failure(UploadValidationError::DimensionsTooSmall);
+                if ($qualityWarningsEnabled) {
+                    $warnings[] = UploadQualityWarning::DimensionsBelowRecommended;
+                } else {
+                    return UploadValidationResult::failure(UploadValidationError::DimensionsTooSmall);
+                }
             }
+            // Oversized stays a hard rejection everywhere, hero included —
+            // this is about the max-dimension ceiling (decode cost/abuse),
+            // not aesthetics, so it never becomes a warning.
             if ($width > $limits['maxWidth'] || $height > $limits['maxHeight']) {
                 return UploadValidationResult::failure(UploadValidationError::DimensionsTooLarge);
             }
+            if ($qualityWarningsEnabled && $width < $height) {
+                $warnings[] = UploadQualityWarning::PortraitAspectRatio;
+            }
         }
 
+        // SECURITY — content moderation. Evaluated unconditionally, after
+        // warnings are collected but BEFORE they're ever acted on: a file
+        // that both looks quality-questionable and fails moderation must
+        // come back as a hard Rejected failure, never as "needs
+        // confirmation", regardless of $qualityWarningsConfirmed.
         $moderation = $this->moderation->moderate($file->getPathname(), $mimeType);
         if (!$moderation->isAllowed) {
             return UploadValidationResult::failure(UploadValidationError::Rejected);
         }
 
+        if ($warnings !== [] && !$qualityWarningsConfirmed) {
+            return UploadValidationResult::needsConfirmation($warnings);
+        }
+
         $safeFilename = bin2hex(random_bytes(16)) . '.' . self::ALLOWED_EXTENSIONS_BY_MIME[$mimeType];
 
-        return UploadValidationResult::success($safeFilename, $mimeType);
+        return UploadValidationResult::success($safeFilename, $mimeType, $warnings);
     }
 }
