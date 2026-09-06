@@ -63,10 +63,20 @@
     }
     .cat-tab:hover { background: none; color: var(--fg); transform: none; }
     .cat-tab:active { transform: none; }
-    .cat-tab.active { background: none; color: var(--fg); font-weight: 500; box-shadow: none; }
+    /* Active tab "lights up" via color alone (2026-09-07) — --fg (near-black,
+       same as inactive text darkened by :hover) barely distinguished active
+       from hover at a glance; --accent is the one color in this bar that
+       means "this is the selected one" instead of "you're pointing at this
+       one". Contrast checked: --accent on the bar's parchment background is
+       ~8.7:1, comfortably past the 4.5:1 AA floor for this text size. The
+       underline was already 2px — switched from --cp to --accent below for
+       the same reason (both are #7A1E28 today, but --accent is the token
+       that actually means brand wine; --cp is "card price," a coincidence
+       of value, not intent). */
+    .cat-tab.active { background: none; color: var(--accent); font-weight: 500; box-shadow: none; }
     .cat-tab.active::after {
         content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 2px;
-        background: var(--cp); border-radius: 2px;
+        background: var(--accent); border-radius: 2px;
     }
 
     /* Section header — serif, sentence case, no uppercase/left accent bar */
@@ -447,19 +457,28 @@
        0/2rem split left the button glued to the tabs, then a dead gap
        before "Carpaccios"). Matches carta-estilo: 16px between tabs and
        the allergy button (.allergy{margin:16px 20px 0}), then a uniform
-       26px from there to every section title (.sec-head{padding:26px 20px
-       10px}), including the gap between one section's cards and the
-       next section's title. */
+       gap from there to every section title, including the gap between one
+       section's cards and the next section's title — see .cat-section's
+       own padding-top below for that shared number (originally carta-
+       estilo's literal 26px; bumped 2026-09-07, see that rule's comment). */
     .diet-allergy-row { padding: 16px 0 0; }
-    /* scroll-margin-top clears both sticky bars (.header + the now-sticky
-       .cat-tabs) when a category tab's click handler does scrollIntoView()
-       against this section — otherwise the section (and its title, 26px
-       further in via the padding-top below) would land right under them,
-       half-hidden. 51px is .cat-tabs' own height (measured live; last
-       updated 2026-09-07 when its padding-bottom grew from 2px to 10px —
-       nothing in the tabs row wraps or varies in height otherwise, so this
-       is stable and safe to hardcode, unlike --header-h). */
-    .cat-section { padding-top: 26px; scroll-margin-top: calc(var(--header-h, 71px) + 51px); }
+    /* padding-top 26px→38px (2026-09-07): each section used to read as
+       "one more row" rather than a new part of the menu. Space alone is the
+       lever here (no new color/weight/rule) — 38px keeps the uniform-gap
+       property described above (still the single number for both
+       allergy-row→first-title and cards→next-title) while landing clearly
+       past the tabs' own 16px/18px rhythm, so it reads as its own beat
+       rather than one more increment of the same spacing scale.
+
+       scroll-margin-top is unaffected by this — it exists purely to clear
+       the two sticky bars above (.header + .cat-tabs) when scrollIntoView()
+       lands on this section, which has nothing to do with the section's own
+       internal padding. Still verified live after this change: 51px is
+       .cat-tabs' own height (measured live; last updated 2026-09-07 when
+       its padding-bottom grew from 2px to 10px — nothing in the tabs row
+       wraps or varies in height otherwise, so this is stable and safe to
+       hardcode, unlike --header-h). */
+    .cat-section { padding-top: 38px; scroll-margin-top: calc(var(--header-h, 71px) + 51px); }
 
     /* Search — a hairline underline instead of a bordered/filled box, with
        the magnifier icon sitting inline to its left (carta-estilo
