@@ -52,6 +52,42 @@
        the screen — the harshest thing about the bar. rgba(36,28,23,...) is
        --fg's own rgb triplet at low opacity, not a new color. */
     .cat-tabs.is-stuck { box-shadow: 0 4px 12px rgba(36,28,23,0.06); }
+    /* Scroll-affordance fades (2026-09-07) — .cat-tabs has no visual hint
+       that it overflows horizontally, so an edge tab (e.g. "Asados y
+       guisos") just gets hard-clipped by the scroll container with no cue
+       there's more. Two pseudo-elements, shown/hidden by
+       .has-more-left/.has-more-right (toggled by the scroll listener at
+       the end of this file, alongside the existing .is-stuck one — same
+       pattern as .dish-modal-fade's scroll listener in _search_js.html.twig,
+       just horizontal and maison-only instead of vertical and shared).
+       Both stay position:absolute so they're removed from the flex flow
+       (no extra flex item) and pinned to .cat-tabs' own box rather than its
+       scrolled content — .cat-tabs is already the nearest positioned
+       ancestor (position:sticky), so no extra wrapper is needed.
+       Color is var(--hdr-bg) — the exact same token .cat-tabs' own
+       background already paints, unconditionally, in both the resting and
+       .is-stuck states (see that rule above and its comment: both were
+       deliberately unified to one token so the bar reads as one continuous
+       material either way) — so one gradient already matches both states,
+       no .is-stuck-specific fade color needed. z-index:1 sits above the
+       plain (z-index:auto) tab links so the fade actually visually softens
+       them, but pointer-events:none keeps it purely visual — clicks and
+       drag-scroll pass straight through to the tab/scroll container
+       beneath. See .cat-tab:focus-visible below for why a focused tab still
+       needs its own z-index to ring clearly through this.
+       Logic (scrollLeft/scrollWidth-based, not an LTR "right = more"
+       assumption) lives in the script below — this app has no dir="rtl"
+       today, but the classes themselves stay meaningful either way: a
+       future RTL pass would only need to swap which physical edge each
+       class paints on, not touch the JS that sets them. */
+    .cat-tabs::before, .cat-tabs::after {
+        content: ''; position: absolute; top: 0; bottom: 0; width: 32px;
+        pointer-events: none; z-index: 1; opacity: 0; transition: opacity 0.15s;
+    }
+    .cat-tabs::before { left: 0; background: linear-gradient(to right, var(--hdr-bg), transparent); }
+    .cat-tabs::after { right: 0; background: linear-gradient(to left, var(--hdr-bg), transparent); }
+    .cat-tabs.has-more-left::before { opacity: 1; }
+    .cat-tabs.has-more-right::after { opacity: 1; }
     /* Target of the hero CTA's native `href="#cat-tabs"` jump — without
        this, the browser would scroll as if landing at y:0 (unaware the bar
        is sticky and can't actually go above --header-h), overshooting by
@@ -72,8 +108,11 @@
        sake), so the ring would otherwise hug the glyphs with no room to
        breathe. border-radius rounds the ring's corners to match the
        theme's general softness — a bare text link has no box radius of
-       its own for the outline to inherit. */
-    .cat-tab:focus-visible { outline: 2px solid var(--cf-hborder); outline-offset: 3px; border-radius: 2px; }
+       its own for the outline to inherit. z-index:2 (on top of .cat-tab's
+       own already-relative positioning) lifts a focused tab above the
+       scroll-fade pseudo-elements (z-index:1, see .cat-tabs::before/::after
+       above) so the ring never renders under a translucent fade edge. */
+    .cat-tab:focus-visible { outline: 2px solid var(--cf-hborder); outline-offset: 3px; border-radius: 2px; z-index: 2; }
     /* Active tab "lights up" via color alone (2026-09-07) — --fg (near-black,
        same as inactive text darkened by :hover) barely distinguished active
        from hover at a glance; --accent is the one color in this bar that
@@ -1111,6 +1150,32 @@
         syncHeaderHeight();
         if ('ResizeObserver' in window) {
             new ResizeObserver(syncHeaderHeight).observe(header);
+        }
+
+        /* Scroll-affordance fades for .cat-tabs (see .cat-tabs::before/
+           ::after above) — same shape as .dish-modal-scroll's fade listener
+           in _search_js.html.twig (one update function, called once up
+           front then re-run on scroll), just horizontal and driven by two
+           edges instead of one bottom edge. scrollLeft/scrollWidth are the
+           real measured values, not an assumed "right edge = more content"
+           — this app has no dir="rtl" today (see that file's own note), but
+           reading the actual scroll position rather than hardcoding an
+           edge means this keeps working unchanged if that ever changes; a
+           future RTL pass would only need to swap which class paints on
+           which physical side in the CSS above, not this logic. The 1px
+           tolerance absorbs sub-pixel scroll-position rounding that would
+           otherwise leave a fade faintly stuck on at a scroll extreme. */
+        if (catTabs) {
+            var updateCatTabsFade = function () {
+                var maxScroll = catTabs.scrollWidth - catTabs.clientWidth;
+                catTabs.classList.toggle('has-more-left', catTabs.scrollLeft > 1);
+                catTabs.classList.toggle('has-more-right', catTabs.scrollLeft < maxScroll - 1);
+            };
+            updateCatTabsFade();
+            catTabs.addEventListener('scroll', updateCatTabsFade, { passive: true });
+            if ('ResizeObserver' in window) {
+                new ResizeObserver(updateCatTabsFade).observe(catTabs);
+            }
         }
     });
 </script>
