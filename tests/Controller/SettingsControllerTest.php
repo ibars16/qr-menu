@@ -22,13 +22,19 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  * exact same validate/move/delete-old logic in its own public/uploads/heroes/
  * directory, so its tests mirror the logo ones one-for-one.
  *
- * NOTE: not run in this environment — the project's DATABASE_URL targets
- * pdo_pgsql, which isn't installed here. Verified instead via a standalone
- * simulation of the exact move/unlink logic (see task report) covering the
- * same three cases. Left here so it runs wherever pdo_pgsql is available.
+ * NOTE on this environment: pdo_pgsql is available (via the project's
+ * docker compose stack), but GD (imagecreatetruecolor) is not, so the
+ * replacement/cleanup tests above that synthesize images with GD still
+ * don't run here — verified instead via a standalone simulation of the
+ * exact move/unlink logic (see task report) covering the same three cases.
+ * The quality-warning HTTP tests below use static fixture files instead of
+ * GD (see UploadValidatorQualityWarningTest's own docblock for why those
+ * fixtures exist) and do run here.
  */
 final class SettingsControllerTest extends WebTestCase
 {
+    private const FIXTURES_DIR = __DIR__ . '/../fixtures';
+
     private KernelBrowser $client;
     private EntityManagerInterface $em;
     private UserPasswordHasherInterface $hasher;
@@ -149,6 +155,22 @@ final class SettingsControllerTest extends WebTestCase
         imagedestroy($image);
 
         return new UploadedFile($path, $originalName, 'image/png', null, true);
+    }
+
+    /**
+     * Copies a checked-in fixture to a disposable temp path before wrapping
+     * it in an UploadedFile: UploadedFile::move() in test mode (the `$test
+     * = true` 5th constructor arg, needed since these aren't real HTTP
+     * uploads) renames the *source* path rather than copying it — pointing
+     * it straight at a fixture under tests/fixtures/ would move the
+     * checked-in file out of the repo on any test run that reaches move().
+     */
+    private function fixtureUploadedFile(string $fixtureFilename, string $originalName, string $mimeType): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'settings_fixture_test_');
+        copy(self::FIXTURES_DIR . '/' . $fixtureFilename, $path);
+
+        return new UploadedFile($path, $originalName, $mimeType, null, true);
     }
 
     private function submitHeroImage(Restaurant $restaurant, UploadedFile $heroImage): void
@@ -282,5 +304,83 @@ final class SettingsControllerTest extends WebTestCase
 
         self::assertNotSame($firstHeroImage, $secondHeroImage);
         self::assertFileExists($this->heroImageDir . '/' . $secondHeroImage);
+    }
+
+    /**
+     * The end-to-end counterpart to
+     * UploadValidatorQualityWarningTest::testFakeMimeIsRejectedEvenWithQualityWarningsConfirmed —
+     * that test proves UploadValidator::validate() itself can't be tricked,
+     * but not that SettingsController's wiring actually rejects the request
+     * rather than, say, reading heroImageQualityConfirmed before validate()
+     * and skipping the call altogether. Posts the same spoofed-MIME fixture
+     * (real bytes are plain text; only the client-declared name/type claim
+     * .jpg/image/jpeg) through the real HTTP endpoint with the "upload
+     * anyway" checkbox set, and asserts nothing reaches disk or the DB.
+     */
+    public function testFakeMimeHeroImageIsRejectedOverHttpEvenWithQualityWarningsConfirmed(): void
+    {
+        $restaurant = $this->makeRestaurant('Fake Mime Hero Image Guard Test');
+        $owner = $this->makeOwner($restaurant);
+        $this->client->loginUser($owner);
+
+        self::assertNull($restaurant->getHeroImage());
+        $filesBefore = scandir($this->heroImageDir) ?: [];
+
+        $fakeImage = $this->fixtureUploadedFile('upload_fake_mime.png', 'fake.jpg', 'image/jpeg');
+
+        $this->client->request('POST', '/admin/settings', [
+            'name'                        => $restaurant->getName(),
+            'primaryColor'                => '#000000',
+            'currency'                    => 'EUR',
+            'defaultLanguage'             => 'es',
+            'heroImageQualityConfirmed'   => '1',
+        ], [
+            'heroImage' => $fakeImage,
+        ]);
+        self::assertResponseRedirects('/admin/settings');
+
+        $this->em->refresh($restaurant);
+        self::assertNull($restaurant->getHeroImage(), 'a security rejection must never persist a heroImage reference');
+
+        $filesAfter = scandir($this->heroImageDir) ?: [];
+        self::assertSame($filesBefore, $filesAfter, 'a security rejection must never leave a file behind on disk, confirmation flag or not');
+    }
+
+    /**
+     * Counterpart to the fixtures already covered by
+     * UploadValidatorQualityWarningTest::testCleanWideHeroImagePassesWithNoWarnings —
+     * confirms the same clean, above-minimum image goes straight through the
+     * real controller (no confirmation flag needed) and actually persists.
+     */
+    public function testCleanHeroImageAboveMinimumUploadsDirectlyOverHttp(): void
+    {
+        $restaurant = $this->makeRestaurant('Clean Hero Image Http Test');
+        $owner = $this->makeOwner($restaurant);
+        $this->client->loginUser($owner);
+
+        self::assertNull($restaurant->getHeroImage());
+
+        $goodImage = $this->fixtureUploadedFile('upload_hero_ok.jpg', 'hero.jpg', 'image/jpeg');
+
+        $this->client->request('POST', '/admin/settings', [
+            'name'            => $restaurant->getName(),
+            'primaryColor'    => '#000000',
+            'currency'        => 'EUR',
+            'defaultLanguage' => 'es',
+        ], [
+            'heroImage' => $goodImage,
+        ]);
+        self::assertResponseRedirects('/admin/settings');
+
+        $session = $this->client->getRequest()->getSession();
+        self::assertSame([], $session->getFlashBag()->peek('warning'), 'a clean above-minimum image must not raise a quality warning');
+        self::assertNotEmpty($session->getFlashBag()->peek('success'));
+
+        $this->em->refresh($restaurant);
+        $heroImage = $restaurant->getHeroImage();
+        $this->heroImageFilesToRemove[] = $heroImage;
+
+        self::assertNotNull($heroImage);
+        self::assertFileExists($this->heroImageDir . '/' . $heroImage);
     }
 }
