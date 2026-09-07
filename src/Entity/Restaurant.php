@@ -62,7 +62,7 @@ class Restaurant
     #[ORM\Column(length: 20)]
     private string $layout = 'standard';
 
-    /** Visual theme for the public menu: classic-dark | classic-warm | glass | ocean | noir */
+    /** Visual theme for the public menu: classic-dark | classic-warm | glass | ocean | noir | forest | terra | maison — see ThemeController::THEMES / MenuController::$validThemes. */
     #[ORM\Column(length: 20)]
     private string $theme = 'classic-dark';
 
