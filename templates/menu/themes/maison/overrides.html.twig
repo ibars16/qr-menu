@@ -207,18 +207,14 @@
        win there — see the padding-top gotcha noted near .search-wrap. */
     .dish-card .front-name { font-size: calc(19px * var(--font-scale)); }
 
-    /* No-photo panel — only ever reached now inside the dish-detail modal's
-       .dish-modal-photo (the front-card grid uses .dish-row instead, see
-       below): a single flat block, no logo/icon (a delivery-style glyph
-       doesn't belong on a restaurant menu). Just the restaurant name, small
-       and muted, centered — never the dish's own name, never a second
-       element. */
-    .dish-placeholder {
-        background: var(--surface-2); display: flex; align-items: center; justify-content: center; padding: 0.75rem;
-    }
-    .dish-placeholder span {
-        font-size: 11px; font-weight: 500; letter-spacing: 0.04em; color: var(--fg-2); text-align: center; -webkit-line-clamp: 1;
-    }
+    /* No-photo dish, front-card grid, uses .dish-row instead (see below) —
+       .dish-placeholder itself is never rendered for maison any more
+       (2026-09-07, product decision — see conversation and the template's
+       own comment in standard/show.html.twig): a no-photo dish used to open
+       into a 300px block of flat --surface-2 with just the restaurant name
+       centered in it, which read as an empty hole before the dish's own
+       name/price. See .dish-modal-photo:empty below for the other half of
+       this — collapsing the box now that nothing fills it. */
 
     /* No-photo dish, front-card grid: a plain text row instead of a card
        with an empty image frame — grid-column spans the full grid width so
@@ -964,11 +960,15 @@
         content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4.5rem;
         background: linear-gradient(transparent, var(--cb-bg)); pointer-events: none;
     }
-    /* No-photo fallback (.dish-placeholder, already themed further up this
-       file as a flat --surface-2 block + restaurant name, no icon — a past,
-       deliberate call, see conversation, not re-opened here) is width:100%/
-       height:100% of this same element (base layout rule), so it grows
-       with the photo above automatically — nothing to add here. */
+    /* No-photo collapse (2026-09-07) — openDishModal() (_search_js.html.twig)
+       leaves #dish-modal-photo childless for a no-photo maison dish (see the
+       template's own comment in standard/show.html.twig); :empty then drops
+       the box (and its ::before/::after scrims above, generated content of
+       an element that no longer takes up space) entirely, rather than a
+       300px block of flat color with nothing in it. .dish-modal-body's own
+       top padding (see further down) is what then gives the dish name its
+       breathing room under the grip/× — not anything here. */
+    .dish-modal-photo:empty { display: none; }
 
     /* Bottom scroll fade — "there's more below". Sibling of .dish-modal-
        scroll, not a pseudo-element inside it: a pseudo would be generated
@@ -1038,6 +1038,17 @@
        element, see below) instead, so left as inherited it'd just be a
        large dead gap between the last section and the footer's hairline. */
     .dish-modal-body { gap: 1.25rem; padding: 1.5rem 1.5rem; }
+    /* No-photo clearance (2026-09-07) — with .dish-modal-photo collapsed
+       (see that :empty rule above), .dish-modal-body's plain 1.5rem
+       padding-top isn't enough: the persistent × (position:absolute,
+       top:0.75rem, 44px tall — .dish-modal-close, base layout) used to
+       float safely over 300px of photo/placeholder; without it, the ×
+       physically overlapped the dish name's first line. 4.5rem clears the
+       ×'s bottom edge (0.75rem + 44px ≈ 3.5rem) with real breathing room
+       left over, not just the bare minimum. Only applies when the photo
+       box is actually gone — a real photo (or another theme entirely)
+       never matches :empty here, so this never touches those cases. */
+    .dish-modal-photo:empty + .dish-modal-body { padding-top: 4.5rem; }
     .dish-detail-price + .bsec,
     .dish-detail-desc + .bsec {
         border-top: 1px solid var(--line-soft); margin-top: 0.5rem; padding-top: 1.75rem;

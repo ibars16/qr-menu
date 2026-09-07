@@ -827,7 +827,14 @@
                                     {% if product.image %}
                                         <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">
                                     {% elseif theme == 'maison' %}
-                                        <div class="dish-placeholder"><span>{{ restaurant.name }}</span></div>
+                                        {# No placeholder at all for maison (2026-09-07, product decision —
+                                           see conversation): openDishModal() (_search_js.html.twig) looks
+                                           for `img, .dish-placeholder` inside this template and, finding
+                                           neither, leaves #dish-modal-photo empty — maison's own
+                                           .dish-modal-photo:empty rule (overrides.html.twig) then collapses
+                                           that box entirely, so a no-photo dish opens straight into its
+                                           name/price/etc. with no reserved image space. Other themes keep
+                                           their own icon+name placeholder below, untouched. #}
                                     {% else %}
                                         <div class="dish-placeholder"><i class="ti {{ isDrink ? 'ti-glass' : 'ti-tools-kitchen-2' }}" aria-hidden="true"></i><span>{{ pT.name }}</span></div>
                                     {% endif %}
