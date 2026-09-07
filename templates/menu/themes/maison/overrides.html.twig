@@ -96,11 +96,13 @@
 
     /* Dish count next to the section title — brass, small-caps spacing,
        body font (not the serif display font the title itself uses).
-       Matches carta-estilo .sec-head .count exactly; --cf-hborder is the
-       same brass hex as carta-estilo's --brass token. */
+       Matches carta-estilo .sec-head .count exactly. Color is
+       --cf-hborder-text, not --cf-hborder: at 11px/600 this is real text
+       (needs 4.5:1), and --cf-hborder itself only clears 2.71:1 here — see
+       --cf-hborder-text's own comment in vars.html.twig. */
     .cat-title .count {
         font-family: var(--font-body); font-size: 11px; font-weight: 600;
-        letter-spacing: 0.2em; color: var(--cf-hborder);
+        letter-spacing: 0.2em; color: var(--cf-hborder-text);
     }
 
     /* Price — fine display-serif typography, no filled pill */
@@ -633,7 +635,9 @@
        (::after here plays the same role as .cat-title::after there). The
        optional count span (see standard/show.html.twig — only rendered when
        the backing tag/allergen array is non-empty, never invented) reuses
-       .cat-title .count's brass/body-font treatment. */
+       .cat-title .count's brass/body-font treatment (--cf-hborder-text, see
+       that rule's comment — not --cf-hborder, which doesn't clear AA as
+       text). */
     .filters-section-title {
         color: var(--accent); letter-spacing: 0.18em; font-weight: 600;
         display: flex; align-items: center; gap: 10px;
@@ -641,7 +645,7 @@
     .filters-section-title::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
     .filters-section-title .count {
         font-family: var(--font-body); font-size: 10px; font-weight: 600;
-        letter-spacing: 0.2em; color: var(--cf-hborder);
+        letter-spacing: 0.2em; color: var(--cf-hborder-text);
     }
     .filters-panel-body { gap: 1.5rem; }
     .filters-panel .allergen-disclaimer i { color: var(--cf-hborder); }
@@ -841,7 +845,7 @@
     .bsec-title::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
     .bsec-title .count {
         font-family: var(--font-body); font-size: 10px; font-weight: 600;
-        letter-spacing: 0.2em; color: var(--cf-hborder);
+        letter-spacing: 0.2em; color: var(--cf-hborder-text);
     }
     .bsec + .bsec { border-top: none; padding-top: 22px; }
 

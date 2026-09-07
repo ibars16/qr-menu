@@ -49,7 +49,13 @@
     --surface: #FBF8F1;
     --surface-2: #E9DFCD;
     --fg: #241C17;
-    --fg-2: #736354;
+    /* --fg-2 (2026-09-07): darkened from #736354 — that value read 4.37:1 on
+       --surface-2 (the hero's deep parchment), just under the 4.5:1 AA floor
+       for normal text. #6D5D4E clears every background this token is used
+       against in maison: 4.78:1 on --surface-2, 5.33:1 on --bg, 5.95:1 on
+       --surface. Scoped to this file only — every theme defines its own
+       --fg-2 in its own vars.html.twig, so this doesn't touch the other 8. */
+    --fg-2: #6D5D4E;
     --fg-3: #A99B8A;
     --accent: #7A1E28;
     --b1: rgba(36,28,23,0.14);
@@ -93,6 +99,14 @@
     --cf-bg: #FBF8F1;
     --cf-border: rgba(36,28,23,0.08);
     --cf-hborder: #B0894C;
+    /* --cf-hborder-text (2026-09-07): --cf-hborder itself only clears the
+       3:1 non-text floor (2.71:1 on --bg as text) — fine for the card
+       border and the allergen-shield glyph it's also used for, not for the
+       three small ".count" labels (.cat-title/.filters-section-title/
+       .bsec-title) that paint real 10-11px text with it. This darker brass
+       is for those three uses only; --cf-hborder itself stays untouched so
+       the border/glyph identity color doesn't shift. 4.98:1 on --bg. */
+    --cf-hborder-text: #805E30;
     --cf-hshadow: 0 4px 8px rgba(36,28,23,0.05), 0 12px 28px rgba(36,28,23,0.08);
     --cf-img: #E9DFCD;
     --cf-accent: linear-gradient(90deg, transparent 0%, #B0894C 40%, transparent 100%);
