@@ -868,13 +868,24 @@
     /* Section headers inside the sheet (.bsec-title) — same wine-uppercase
        + hairline-fill rhythm as .filters-section-title, applied globally
        since every section in this modal (tags, allergens, ingredients,
-       spicy, calories) uses this one class; the optional .count (only
-       rendered when a real backing array exists — see standard/show.html.twig)
-       reuses .cat-title .count's brass treatment. The hairline replaces the
-       old divider border between sections (.bsec + .bsec below), so two
-       separators don't stack. */
+       spicy, calories) uses this one class — also .bsec-title inside a
+       fixed-price set menu's own detail view (_set_menu.html.twig, same
+       class, no separate override), by design: same rótulo, same editorial
+       language in both places. The optional .count (only rendered when a
+       real backing array exists — see standard/show.html.twig) reuses
+       .cat-title .count's brass treatment. The hairline replaces the old
+       divider border between sections (.bsec + .bsec below), so two
+       separators don't stack.
+       Letter-spacing/weight (2026-09-07): 0.18em/600 read closer to a form
+       field's all-caps label than an editorial kicker at this size — bumped
+       spacing to 0.22em and dropped weight to 500 (lighter, more assured)
+       for a "premium label" feel instead. Color stays --accent (~8.67:1 on
+       --cb-bg, already well past AA, not the reason this read as a form —
+       see conversation) and hairline/.count are untouched for the same
+       reason: the uniform *spacing* below is what actually reads as a
+       stack of identical form rows, not this line's own styling. */
     .bsec-title {
-        color: var(--accent); letter-spacing: 0.18em; font-weight: 600; font-size: 11px;
+        color: var(--accent); letter-spacing: 0.22em; font-weight: 500; font-size: 11px;
         display: flex; align-items: center; gap: 10px;
     }
     .bsec-title::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
@@ -882,7 +893,16 @@
         font-family: var(--font-body); font-size: 10px; font-weight: 600;
         letter-spacing: 0.2em; color: var(--cf-hborder-text);
     }
-    .bsec + .bsec { border-top: none; padding-top: 22px; }
+    /* 22px → 36px (2026-09-07): the main lever for the "form" feeling this
+       was a request to fix — four metadata blocks (picante/ingredientes/
+       etiquetas/calorías) packed at identical tight spacing read as ruled
+       form rows regardless of the label's own type treatment above. Total
+       visual gap from one block's content to the next block's label is
+       this padding-top plus .dish-modal-body's own 1.25rem flex gap
+       (20px) — 42px → 56px. The very first .bsec (right after price/
+       description) is untouched — it already gets its own larger
+       treatment (border-top + 1.75rem, see further down), not this rule. */
+    .bsec + .bsec { border-top: none; padding-top: 36px; }
 
     /* Chrome vs. scroll split — .dish-modal becomes the fixed shell (holds
        the × below, clips corners via overflow:hidden, never itself
