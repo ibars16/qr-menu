@@ -1091,6 +1091,28 @@
     .nut-v { font-family: var(--font-display); font-weight: 500; font-size: calc(22px * var(--font-scale)); color: var(--cn); }
     .nut-u { font-family: var(--font-body); font-size: calc(12px * var(--font-scale)); color: var(--fg-3); }
 
+    /* Nutrition panel (2026-09-08) — calories plus the four decimal(5,1)
+       fields (fat/protein/carbohydrates/sugars), grouped under one
+       "Información Nutricional" .bsec (see standard/show.html.twig's
+       theme == 'maison' branch). Reuses the .nut/.nut-v pairing above for
+       the number+unit rhythm, but does NOT reuse .nut-u's color: --fg-3
+       measures ~2.3:1 against this sheet's own background (--cb-bg), a
+       pre-existing shortfall on the single lone calories row this rule
+       already shipped with — fine to leave that one row alone (unrelated
+       to this task), but not fine to multiply it by five here. --fg-2
+       (~5.3:1 on --cb-bg) covers both the new unit text and the new
+       per-item labels below instead. Font-size trimmed to 20px (from the
+       lone number's 22px) so up to five stats sit comfortably in one
+       wrapping row without crowding. */
+    .nutrition-grid { display: flex; flex-wrap: wrap; gap: 18px 28px; }
+    .nutrition-item { display: flex; flex-direction: column; gap: 4px; min-width: 4.5rem; }
+    .nutrition-item .nut-v { font-size: calc(20px * var(--font-scale)); }
+    .nutrition-item .nut-u { color: var(--fg-2); }
+    .nutrition-label {
+        font-family: var(--font-body); font-size: 10px; font-weight: 600;
+        letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-2);
+    }
+
     /* Ingredient names are free-text (Product::getIngredientNames(), admin
        entered) with no capitalization guarantee — "huevo poche trufado"
        next to "Huevos de corral". Presentation-only fix, data untouched:

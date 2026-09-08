@@ -25,6 +25,16 @@
    "Alérgenos, Gluten, Crustáceos, Huevos" — equivalent meaning to the
    removed visible label, without re-adding a visible word. #}
 {% macro dishContains(cardAllergens, locale) %}{% if cardAllergens|length > 0 %}<div class="dish-contains"><i class="ti ti-shield-check dish-contains-icon" role="img" aria-label="{{ 'dish.allergens'|trans({}, 'menu_public', locale) }}"></i><span class="dish-contains-list">{{ cardAllergens|map(a => a.name)|join(', ') }}</span></div>{% endif %}{% endmacro %}
+{# Maison nutrition panel (dish-detail modal only) — presentation-only trim
+   of a whole-number decimal's trailing ".0" ("20.0" -> "20", "0.0" -> "0"),
+   never touching the stored value: fat/protein/carbohydrates/sugars are
+   Doctrine decimal(5,1) strings (Product::getFat() etc., see the
+   nutrition-fields migration) kept as strings end to end specifically so a
+   real fractional gram like "6.5" is never mangled — this macro only
+   shortens the "no real fraction typed" case so the public menu reads as
+   an editorial "20g" rather than a nutrition-label "20.0g". A value with an
+   actual fraction (anything not ending ".0") is printed byte-for-byte. #}
+{% macro nutritionValue(raw) %}{{- raw ends with '.0' ? raw|slice(0, -2) : raw -}}{% endmacro %}
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: var(--font-body, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif); background: var(--bg); background-attachment: var(--bg-attach, scroll); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.5; }
@@ -868,7 +878,37 @@
                                             </div>
                                         {% endif %}
                                     {% endif %}
-                                    {% if product.calories %}<div class="bsec"><div class="bsec-title">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</div><div class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
+                                    {% if theme == 'maison' %}
+                                        {# Nutrition panel (Fase 3 of the nutrition-fields project — see
+                                           project memory) — calories (pre-existing ?int) joins the four
+                                           decimal(5,1) fields (Fase 1) added by the owner in admin
+                                           (Fase 2), all five independently optional. hasNutritionFacts
+                                           gates the whole .bsec (title included) off entirely when none
+                                           are set — the vast majority of dishes until an owner fills
+                                           them in — same "absence renders nothing" rule as maison's own
+                                           no-photo case. Each row then re-checks its own field, exactly
+                                           like the shared {% if product.calories %} branch below does.
+                                           Truthiness is safe on the decimal strings here: NUMERIC(5,1)
+                                           always normalizes a real zero to "0.0" (never bare "0", the
+                                           one PHP string that's falsy), verified in the Fase 1
+                                           migration — so a real 0.0g never gets mistaken for "not
+                                           entered" the way a parsed 0 would. #}
+                                        {% set hasNutritionFacts = product.calories or product.fat or product.protein or product.carbohydrates or product.sugars %}
+                                        {% if hasNutritionFacts %}
+                                            <div class="bsec">
+                                                <div class="bsec-title">{{ 'dish.nutrition_facts'|trans({}, 'menu_public', locale) }}</div>
+                                                <div class="nutrition-grid">
+                                                    {% if product.calories %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></span></div>{% endif %}
+                                                    {% if product.fat %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.fat'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.fat) }}</span><span class="nut-u">g</span></span></div>{% endif %}
+                                                    {% if product.protein %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.protein'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.protein) }}</span><span class="nut-u">g</span></span></div>{% endif %}
+                                                    {% if product.carbohydrates %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.carbohydrates'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.carbohydrates) }}</span><span class="nut-u">g</span></span></div>{% endif %}
+                                                    {% if product.sugars %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.sugars'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.sugars) }}</span><span class="nut-u">g</span></span></div>{% endif %}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if product.calories %}<div class="bsec"><div class="bsec-title">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</div><div class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
+                                    {% endif %}
                                 </template>
                             </div>
                         {% endif %}
