@@ -31,6 +31,11 @@
             --tx-8:          #2a2a2a;
             --overlay:       rgba(0,0,0,0.75);
 
+            /* Secondary text that must stay readable (hints, URLs, quiet
+               buttons) — distinct from the --tx-6/--tx-7 decorative-label
+               rungs of the grayscale, which are not guaranteed AA. */
+            --tx-muted:      #7e7e7e;
+
             /* ── Type scale ── */
             --fs-xs:         11px;
             --fs-sm:         12px;
@@ -62,6 +67,9 @@
             --shadow-sm:     0 1px 2px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.24);
             --shadow-md:     0 8px 20px -6px rgba(0,0,0,0.45);
             --shadow-lg:     0 24px 64px -12px rgba(0,0,0,0.5);
+
+            /* ── Line-height ── */
+            --lh-body:       1.5;
         }
         html.light {
             --bg-page:       #f2f2f3;
@@ -84,6 +92,10 @@
             --tx-7:          #aaa;
             --tx-8:          #ccc;
             --overlay:       rgba(0,0,0,0.4);
+
+            /* Secondary text — same role as dark mode, recalibrated: the
+               dark-mode hex is too light to pass AA on white/near-white. */
+            --tx-muted:      #707070;
 
             /* ── Elevation — much lower opacity than dark mode: on a light
                    surface a dark-mode-strength shadow reads as a muddy
