@@ -122,6 +122,14 @@
                 });
                 if (variantsActive) revealPriceVariants();
                 setVal('p-calories', data.calories ?? '');
+                // fat/protein/carbohydrates/sugars come back as strings from
+                // the decimal(5,1) getters ("6.5", never a float) — dropped
+                // straight into the input as-is, no reformatting, so a
+                // saved "6.0" still shows "6.0" and not "6".
+                setVal('p-fat', data.fat ?? '');
+                setVal('p-protein', data.protein ?? '');
+                setVal('p-carbohydrates', data.carbohydrates ?? '');
+                setVal('p-sugars', data.sugars ?? '');
                 renderProductImage(data.image);
 
                 document.querySelectorAll('.tag-pill').forEach(p =>
@@ -257,6 +265,17 @@
     };
 
     // ── Product CRUD ───────────────────────────────────────────────────────────
+    // Grams field (fat/protein/carbohydrates/sugars, decimal(5,1)): empty is
+    // always valid (means "not entered"), matching NUMERIC(5,1)'s own range
+    // (4 integer digits + 1 decimal already caps this at 9999.9, so no
+    // separate range check is needed beyond the pattern itself). Mirrored
+    // server-side in MenuAdminController::isValidNutritionGrams() — keep
+    // both in sync if this ever changes.
+    const NUTRITION_GRAMS_PATTERN = /^\d{1,4}(\.\d)?$/;
+    function isValidNutritionGrams(v) {
+        return v === '' || NUTRITION_GRAMS_PATTERN.test(v);
+    }
+
     function validateProduct() {
         let ok = true;
         [['p-name','p-name-error'],['p-price','p-price-error']].forEach(([fid,eid]) => {
@@ -266,6 +285,19 @@
             panelEl(fid)?.classList.toggle('error', empty);
             if (empty) ok = false;
         });
+
+        // One shared error under the whole nutrition group rather than one
+        // per field — see #p-nutrition-error in _product_fields.html.twig.
+        const nutritionIds = ['p-fat', 'p-protein', 'p-carbohydrates', 'p-sugars'];
+        let nutritionInvalid = false;
+        nutritionIds.forEach(fid => {
+            const invalid = !isValidNutritionGrams(panelEl(fid)?.value?.trim() ?? '');
+            panelEl(fid)?.classList.toggle('error', invalid);
+            if (invalid) nutritionInvalid = true;
+        });
+        panelEl('p-nutrition-error')?.classList.toggle('show', nutritionInvalid);
+        if (nutritionInvalid) ok = false;
+
         return ok;
     }
 
@@ -310,6 +342,17 @@
             basePriceLabel: getVal('p-base-price-label') || null,
             priceVariants: priceVariants,
             calories:    parseInt(getVal('p-calories')) || null,
+            // Sent as the raw trimmed string, never parsed to a number —
+            // getVal(id) || null is safe here specifically because it's a
+            // string, not calories' parsed int above: "0"/"0.0" are
+            // non-empty strings (truthy in JS), so a real 0.0 g value
+            // survives, unlike calories' 0 kcal → null collapse (a
+            // pre-existing, out-of-scope quirk for that field only — see
+            // MenuAdminController::saveProduct()'s own note on it).
+            fat:            getVal('p-fat') || null,
+            protein:        getVal('p-protein') || null,
+            carbohydrates:  getVal('p-carbohydrates') || null,
+            sugars:         getVal('p-sugars') || null,
             spicyLevel:  S.spicy || null,
             active:      true,
             translations,
@@ -840,10 +883,10 @@
 
     // ── Reset ──────────────────────────────────────────────────────────────────
     function resetProduct() {
-        ['p-name','p-desc','p-price','p-supplement-price','p-base-price-label','p-calories'].forEach(id =>
+        ['p-name','p-desc','p-price','p-supplement-price','p-base-price-label','p-calories','p-fat','p-protein','p-carbohydrates','p-sugars'].forEach(id =>
             document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value=''; el.classList.remove('error'); })
         );
-        ['p-name-error','p-price-error'].forEach(id =>
+        ['p-name-error','p-price-error','p-nutrition-error'].forEach(id =>
             document.querySelectorAll('[id="' + id + '"]').forEach(el => el.classList.remove('show'))
         );
         document.querySelectorAll('[id="p-category"]').forEach(el => { el.selectedIndex = 0; });

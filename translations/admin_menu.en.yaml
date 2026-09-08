@@ -31,6 +31,11 @@ empty:
 
 field:
     calories: Calories
+    nutrition_facts: Nutrition facts
+    fat: Fat
+    protein: Protein
+    carbohydrates: Carbohydrates
+    sugars: Sugars
     category: Category
     description: Description
     description_placeholder: 'Briefly describe the dish, main ingredients, preparation style…'
@@ -171,6 +176,7 @@ error:
     image_dimensions_too_large: The image is too large (max 5000x5000 px).
     image_upload_failed: The image could not be uploaded. Please try again.
     unexpected: Something went wrong. Please try again.
+    nutrition_value_invalid: 'The value must be a number between 0 and 9999.9, with at most one decimal.'
 
 translations:
     title: AI translations

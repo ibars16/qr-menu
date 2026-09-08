@@ -31,6 +31,11 @@ empty:
 
 field:
     calories: Calories
+    nutrition_facts: Informations nutritionnelles
+    fat: Lipides
+    protein: Protéines
+    carbohydrates: Glucides
+    sugars: Sucres
     category: Catégorie
     description: Description
     description_placeholder: 'Décrivez brièvement le plat, les ingrédients principaux, le mode de préparation…'
@@ -171,6 +176,7 @@ error:
     image_dimensions_too_large: L'image est trop grande (max. 5000x5000 px).
     image_upload_failed: Impossible d'envoyer l'image. Veuillez réessayer.
     unexpected: Une erreur est survenue. Veuillez réessayer.
+    nutrition_value_invalid: 'La valeur doit être un nombre entre 0 et 9999.9, avec au maximum une décimale.'
 
 translations:
     title: Traductions IA

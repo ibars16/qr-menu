@@ -368,6 +368,10 @@ class MenuAdminController extends AbstractController
                 $product->getPriceVariants()->toArray()
             ),
             'calories'          => $product->getCalories(),
+            'fat'               => $product->getFat(),
+            'protein'           => $product->getProtein(),
+            'carbohydrates'     => $product->getCarbohydrates(),
+            'sugars'            => $product->getSugars(),
             'spicyLevel'        => $product->getSpicyLevel(),
             'active'            => $product->isActive(),
             'translations'      => $translations,
@@ -473,6 +477,52 @@ class MenuAdminController extends AbstractController
         return $this->json(['image' => $newFilename]);
     }
 
+    /**
+     * calories predates the nutrition-fields migration (?int, whole kcal).
+     * This only adds format validation in front of its existing setter —
+     * its persistence just below (`$data['calories'] ?: null`, which
+     * collapses a literal 0 to null) is a known, pre-existing, harmless
+     * quirk (0 kcal isn't a real dish value) and is deliberately left
+     * untouched here, out of scope for this task. Before this method
+     * existed, a non-numeric value (e.g. a direct API call sending "abc",
+     * unreachable through the form's own <input type="number">) reached
+     * Product::setCalories(?int) directly and threw an uncaught TypeError
+     * — a 500, not a clean error. Empty/null always passes ("not entered").
+     */
+    private function isValidCaloriesInput(mixed $value): bool
+    {
+        if ($value === null || $value === '') {
+            return true;
+        }
+        if (!is_int($value) && !is_float($value) && !is_string($value)) {
+            return false;
+        }
+
+        return is_numeric($value) && (int) $value == $value && (int) $value >= 0;
+    }
+
+    /**
+     * fat/protein/carbohydrates/sugars — decimal(5,1), grams, all
+     * independently nullable. Empty/null always passes ("not entered",
+     * persisted as null — never 0, see saveProduct()'s own handling right
+     * below). The 4-digit-before-the-point cap already bounds the value at
+     * 9999.9, matching the column's own precision/scale, so no separate
+     * range check is needed. Mirrored client-side in
+     * _product_js.html.twig's NUTRITION_GRAMS_PATTERN — keep both in sync
+     * if this ever changes.
+     */
+    private function isValidNutritionGramsInput(mixed $value): bool
+    {
+        if ($value === null || $value === '') {
+            return true;
+        }
+        if (!is_int($value) && !is_float($value) && !is_string($value)) {
+            return false;
+        }
+
+        return preg_match('/^\d{1,4}(\.\d)?$/', (string) $value) === 1;
+    }
+
     private function productImageErrorKey(UploadValidationError $error): string
     {
         return match ($error) {
@@ -556,7 +606,26 @@ class MenuAdminController extends AbstractController
                 ? trim((string) $data['basePriceLabel'])
                 : null);
         }
+        // Nutrition fields validated up front, before any setter runs and
+        // before this method's first flush() (the ingredients block further
+        // down) — an invalid value here returns a clean 400 with nothing
+        // ever written to the database, new product included (persist()
+        // above only registers it with the UnitOfWork; nothing is actually
+        // INSERTed until flush()).
+        if (array_key_exists('calories', $data) && !$this->isValidCaloriesInput($data['calories'])) {
+            return $this->json(['error' => $this->translator->trans('error.nutrition_value_invalid', domain: 'admin_menu')], 400);
+        }
+        foreach (['fat', 'protein', 'carbohydrates', 'sugars'] as $nutritionField) {
+            if (array_key_exists($nutritionField, $data) && !$this->isValidNutritionGramsInput($data[$nutritionField])) {
+                return $this->json(['error' => $this->translator->trans('error.nutrition_value_invalid', domain: 'admin_menu')], 400);
+            }
+        }
+
         if (array_key_exists('calories',   $data)) $product->setCalories($data['calories'] ?: null);
+        if (array_key_exists('fat',           $data)) $product->setFat($data['fat'] !== null && $data['fat'] !== '' ? (string) $data['fat'] : null);
+        if (array_key_exists('protein',       $data)) $product->setProtein($data['protein'] !== null && $data['protein'] !== '' ? (string) $data['protein'] : null);
+        if (array_key_exists('carbohydrates', $data)) $product->setCarbohydrates($data['carbohydrates'] !== null && $data['carbohydrates'] !== '' ? (string) $data['carbohydrates'] : null);
+        if (array_key_exists('sugars',        $data)) $product->setSugars($data['sugars'] !== null && $data['sugars'] !== '' ? (string) $data['sugars'] : null);
         if (array_key_exists('spicyLevel', $data)) $product->setSpicyLevel($data['spicyLevel'] ?: null);
         if (isset($data['active']))                 $product->setActive((bool) $data['active']);
 

@@ -31,6 +31,11 @@ empty:
 
 field:
     calories: Kalorien
+    nutrition_facts: Nährwertangaben
+    fat: Fett
+    protein: Eiweiß
+    carbohydrates: Kohlenhydrate
+    sugars: Zucker
     category: Kategorie
     description: Beschreibung
     description_placeholder: 'Beschreibe kurz das Gericht, die Hauptzutaten und die Zubereitungsart…'
@@ -171,6 +176,7 @@ error:
     image_dimensions_too_large: Das Bild ist zu groß (max. 5000x5000 px).
     image_upload_failed: Das Bild konnte nicht hochgeladen werden. Bitte versuche es erneut.
     unexpected: Etwas ist schiefgelaufen. Bitte versuche es erneut.
+    nutrition_value_invalid: 'Der Wert muss eine Zahl zwischen 0 und 9999.9 mit höchstens einer Dezimalstelle sein.'
 
 translations:
     title: KI-Übersetzungen
