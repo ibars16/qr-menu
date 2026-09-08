@@ -68,6 +68,42 @@ class Product
     #[ORM\Column(nullable: true)]
     private ?int $calories = null;
 
+    /**
+     * Nutritional facts, grams per dish — manually entered by the owner in
+     * admin (Fase 2, not yet built as of this migration), rendered only on
+     * the maison theme's dish detail (Fase 3, not yet built either). All
+     * four are nullable and independent of each other and of $calories: a
+     * dish can have any subset filled in, and the vast majority will have
+     * none of them set until an owner fills them in — "no data" must never
+     * render as a zero or an empty panel slot (see the maison no-photo
+     * precedent: absence renders nothing, not a placeholder).
+     * Unrelated to $allergenOverrides/$ingredients — those feed the
+     * separately computed allergen system (ProductAllergenResolver); these
+     * four are plain, uncomputed manual data entry, same category as
+     * $calories above.
+     *
+     * decimal (NUMERIC(5,1)), not float: these are typed-in-by-hand,
+     * displayed-verbatim values (nutrition-label style, always one fixed
+     * decimal), not arithmetic — decimal avoids float representation
+     * artifacts (6.5 rendering as 6.4999...) and Doctrine's decimal type
+     * intentionally returns a string, never a float, for exactly that
+     * reason. Keep it a string end to end (Fase 3 prints it as-is) rather
+     * than casting to float, which would silently reintroduce the problem
+     * this type was chosen to avoid. $calories above stays a plain ?int —
+     * whole kcal, no decimal, unaffected by this.
+     */
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 1, nullable: true)]
+    private ?string $fat = null;
+
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 1, nullable: true)]
+    private ?string $protein = null;
+
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 1, nullable: true)]
+    private ?string $carbohydrates = null;
+
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 1, nullable: true)]
+    private ?string $sugars = null;
+
     /** Spicy level from 0 (not spicy) to 5 (extremely spicy) */
     #[ORM\Column(nullable: true)]
     private ?int $spicyLevel = null;
@@ -339,6 +375,46 @@ class Product
     public function setCalories(?int $calories): void
     {
         $this->calories = $calories;
+    }
+
+    public function getFat(): ?string
+    {
+        return $this->fat;
+    }
+
+    public function setFat(?string $fat): void
+    {
+        $this->fat = $fat;
+    }
+
+    public function getProtein(): ?string
+    {
+        return $this->protein;
+    }
+
+    public function setProtein(?string $protein): void
+    {
+        $this->protein = $protein;
+    }
+
+    public function getCarbohydrates(): ?string
+    {
+        return $this->carbohydrates;
+    }
+
+    public function setCarbohydrates(?string $carbohydrates): void
+    {
+        $this->carbohydrates = $carbohydrates;
+    }
+
+    public function getSugars(): ?string
+    {
+        return $this->sugars;
+    }
+
+    public function setSugars(?string $sugars): void
+    {
+        $this->sugars = $sugars;
     }
 
     public function getSpicyLevel(): ?int
