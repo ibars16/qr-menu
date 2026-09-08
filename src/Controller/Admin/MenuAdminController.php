@@ -145,13 +145,29 @@ class MenuAdminController extends AbstractController
 
         $totalProducts = array_sum(array_map(fn(Category $c) => $c->getProducts()->count(), $categories));
 
+        // Carta-wide (this screen's own categories only, same scope as
+        // $totalProducts above — fixed-price Menús live on a separate
+        // screen/entity collection, see Admin\MenusController). Scoped to
+        // the active restaurant by construction: $categories already comes
+        // from $restaurant->getCategories(), never from a separate query,
+        // so there is no WHERE clause here that could leak another tenant's
+        // dishes into the count.
+        $missingPhotoCount = array_sum(array_map(
+            static fn(Category $c) => count(array_filter(
+                $c->getProducts()->toArray(),
+                static fn(Product $p) => !$p->getImage()
+            )),
+            $categories
+        ));
+
         return $this->render('admin/menu.html.twig', [
-            'restaurant'     => $restaurant,
-            'categories'     => $categories,
-            'languages'      => $languages,
-            'locale'         => $restaurant->getDefaultLanguage(),
-            'allergens'      => $this->allergenRepository->findAllOrdered(),
-            'totalProducts'  => $totalProducts,
+            'restaurant'         => $restaurant,
+            'categories'         => $categories,
+            'languages'          => $languages,
+            'locale'             => $restaurant->getDefaultLanguage(),
+            'allergens'          => $this->allergenRepository->findAllOrdered(),
+            'totalProducts'      => $totalProducts,
+            'missingPhotoCount'  => $missingPhotoCount,
         ]);
     }
 

@@ -123,6 +123,10 @@ modal:
         new_title: Neues Gericht
     close_aria: Schließen
 
+notice:
+    missing_photos_singular: '%count% Gericht ohne Foto in deiner Speisekarte'
+    missing_photos_plural: '%count% Gerichte ohne Foto in deiner Speisekarte'
+
 product:
     add_to_category: 'Gericht zu %category% hinzufügen'
     hidden: Ausgeblendet

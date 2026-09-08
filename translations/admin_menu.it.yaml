@@ -123,6 +123,10 @@ modal:
         new_title: Nuovo piatto
     close_aria: Chiudi
 
+notice:
+    missing_photos_singular: '%count% piatto senza foto nel tuo menu'
+    missing_photos_plural: '%count% piatti senza foto nel tuo menu'
+
 product:
     add_to_category: 'Aggiungi piatto a %category%'
     hidden: Nascosto

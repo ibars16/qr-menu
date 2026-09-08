@@ -123,6 +123,10 @@ modal:
         new_title: Nuevo plato
     close_aria: Cerrar
 
+notice:
+    missing_photos_singular: '%count% plato sin foto en tu carta'
+    missing_photos_plural: '%count% platos sin foto en tu carta'
+
 product:
     add_to_category: 'Añadir plato a %category%'
     hidden: Oculto

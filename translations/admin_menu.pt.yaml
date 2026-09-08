@@ -123,6 +123,10 @@ modal:
         new_title: Novo prato
     close_aria: Fechar
 
+notice:
+    missing_photos_singular: '%count% prato sem foto no seu cardápio'
+    missing_photos_plural: '%count% pratos sem foto no seu cardápio'
+
 product:
     add_to_category: 'Adicionar prato a %category%'
     hidden: Oculto
