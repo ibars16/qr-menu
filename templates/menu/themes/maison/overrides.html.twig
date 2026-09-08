@@ -184,16 +184,12 @@
     .more-hint i { transition: transform 0.25s ease; }
     .dish-card:hover .more-hint i { transform: translateX(3px); }
 
-    /* Photo frame — 150px → 210px (2026-09-05) → 240px (2026-09-06) → 280px
-       (2026-09-08, more air for the photo per product request — see the
-       .front-info padding/gap change right below, tightened in the same
-       pass so the text band doesn't just grow along with the photo).
-       .dish-card has no fixed height/overflow-y of its own (its
-       `overflow: hidden` above only clips the border-radius), so there is
-       no internal card scrollbar to worry about at any height — growing
-       the photo just pushes name/allergens/price further down the *page*,
-       which is the thing actually verified at 390px each bump, worst case
-       included (a two-line dish name + full allergen line + price row).
+    /* Photo frame — 150px → 210px (2026-09-05) → 240px (2026-09-06, one more
+       notch of presence). .dish-card has no fixed height/overflow-y of its
+       own (its `overflow: hidden` above only clips the border-radius), so
+       there is no internal card scrollbar to worry about at any height —
+       growing the photo just pushes name/allergens/price further down the
+       *page*, which is the thing actually verified at 390px each bump.
        Still shorter than the base layout's own clamp(190–200px) default
        since maison's parchment/ivory cards read intentionally compact.
        aspect-ratio stays auto (the fixed height alone already sets both
@@ -202,14 +198,8 @@
        photo branch when theme == 'maison'; the no-photo case is .dish-row
        instead, see menu/layouts/standard/show.html.twig and .dish-row
        further down. */
-    .dish-card .front-img { height: 280px; aspect-ratio: auto; }
+    .dish-card .front-img { height: 240px; aspect-ratio: auto; }
     .dish-card { box-shadow: none; }
-    /* Text band, photo card only (2026-09-08) — tightened from the base
-       layout's shared 18px/0.5rem (.dish-card .front-info in
-       standard/show.html.twig) to give the photo above relatively more
-       weight without shrinking type or touching .dish-row, the modal, or
-       any other theme. */
-    .dish-card .front-info { padding: 16px 16px 14px; gap: 0.4375rem; }
     /* Dish name, photo card only — .dish-row .front-name below sets its
        own size for the no-photo row variant; both selectors match a row's
        name equally (same specificity, two classes each), so the row rule
