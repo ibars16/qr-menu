@@ -5,7 +5,7 @@
     <label class="field-label">{{ 'field.category'|trans({}, 'admin_menu') }} <span class="req">*</span></label>
     <select id="p-category">
         {% for category in categories %}
-            {% set catT = category.getTranslation(locale) %}
+            {% set catT = category.getDisplayTranslation(locale) %}
             <option value="{{ category.id }}">{{ catT ? catT.name : 'common.unnamed'|trans({}, 'admin_menu') }}</option>
         {% endfor %}
     </select>

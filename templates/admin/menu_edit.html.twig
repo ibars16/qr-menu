@@ -1,7 +1,7 @@
 {#/home/david/gitProjects/qr-menu/templates/admin/menu_edit.html.twig#}
 {% extends 'admin/base.html.twig' %}
 
-{% set menuT = menu.getTranslation(locale) %}
+{% set menuT = menu.getDisplayTranslation(locale) %}
 {% set menuName = menuT ? menuT.name : 'common.unnamed'|trans({}, 'admin_menus') %}
 {% set categories = [menu] %}
 
@@ -178,7 +178,7 @@
 
                     <div class="section-dishes" data-section-id="{{ section.id }}">
                         {% for product in row.products %}
-                            {% set pT = product.getTranslation(locale) %}
+                            {% set pT = product.getDisplayTranslation(locale) %}
                             {% set pName = pT ? pT.name : 'common.unnamed'|trans({}, 'admin_menu') %}
                             {# product-row (in addition to dish-row) since toggleProduct()
                                in _product_js.html.twig — shared with the Carta screen —

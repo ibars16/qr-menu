@@ -163,7 +163,7 @@
         {% else %}
             <div id="menus-sortable">
                 {% for menu in menus %}
-                    {% set menuT = menu.getTranslation(locale) %}
+                    {% set menuT = menu.getDisplayTranslation(locale) %}
                     {% set menuName = menuT ? menuT.name : 'common.unnamed'|trans({}, 'admin_menus') %}
                     {% set dishCount = menu.products|length %}
 

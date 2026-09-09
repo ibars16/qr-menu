@@ -157,7 +157,7 @@
         {% else %}
             <div id="cats-sortable">
                 {% for category in categories %}
-                    {% set catT = category.getTranslation(locale) %}
+                    {% set catT = category.getDisplayTranslation(locale) %}
                     {% set catName = catT ? catT.name : '(sin nombre)' %}
                     {% set productCount = category.products|length %}
 

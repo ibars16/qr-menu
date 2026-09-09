@@ -526,6 +526,31 @@ class Product
         return null;
     }
 
+    /**
+     * Like getTranslation(), but for read-only display: falls back to any
+     * other translation this product has (preferring a human-authored one)
+     * rather than showing nothing when $preferredLocale is missing — e.g. the
+     * restaurant's default language was changed after import and no
+     * translation exists for it yet.
+     */
+    public function getDisplayTranslation(string $preferredLocale): ?ProductTranslation
+    {
+        $exact = $this->getTranslation($preferredLocale);
+        if ($exact !== null) {
+            return $exact;
+        }
+
+        $fallback = null;
+        foreach ($this->translations as $translation) {
+            if (!$translation->isAiGenerated()) {
+                return $translation;
+            }
+            $fallback ??= $translation;
+        }
+
+        return $fallback;
+    }
+
     public function getIngredientLinks(): Collection
     {
         return $this->ingredientLinks;

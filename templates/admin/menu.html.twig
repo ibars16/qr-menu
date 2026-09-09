@@ -185,7 +185,7 @@
 
             <div id="cats-list">
                 {% for category in categories %}
-                    {% set catT = category.getTranslation(locale) %}
+                    {% set catT = category.getDisplayTranslation(locale) %}
                     {% set catName = catT ? catT.name : 'common.unnamed'|trans({}, 'admin_menu') %}
 
                     <div class="cat-block" data-id="{{ category.id }}">
@@ -213,7 +213,7 @@
 
                         <div class="products-list" id="prods-{{ category.id }}">
                             {% for product in category.products %}
-                                {% set pT = product.getTranslation(locale) %}
+                                {% set pT = product.getDisplayTranslation(locale) %}
                                 {% set pName = pT ? pT.name : 'common.unnamed'|trans({}, 'admin_menu') %}
                                 <div class="product-row {{ not product.isActive ? 'inactive' : '' }}"
                                      data-id="{{ product.id }}"

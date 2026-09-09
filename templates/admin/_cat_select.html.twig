@@ -5,7 +5,7 @@
 
 <div class="cat-select-grid">
     {% for category in categories %}
-        {% set catT = category.getTranslation(locale) %}
+        {% set catT = category.getDisplayTranslation(locale) %}
         {% set prodCount = category.products|length %}
         <button class="cat-select-card cat-card"
                 data-cat-id="{{ category.id }}">
