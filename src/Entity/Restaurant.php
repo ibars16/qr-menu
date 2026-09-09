@@ -293,6 +293,17 @@ class Restaurant
         return $this->categories;
     }
 
+    public function hasFixedPriceMenus(): bool
+    {
+        foreach ($this->categories as $category) {
+            if ($category->isFixedPriceMenu()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function addCategory(Category $category): void
     {
         if (!$this->categories->contains($category)) {

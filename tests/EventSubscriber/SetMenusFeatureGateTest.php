@@ -109,9 +109,45 @@ final class SetMenusFeatureGateTest extends WebTestCase
         self::assertSelectorNotExists('a[href="/admin/menus"]');
     }
 
-    public function testSidebarShowsSetMenusLinkWhenFlagOn(): void
+    public function testSidebarHidesSetMenusLinkWhenFlagOnButNoMenusYet(): void
+    {
+        // Flag on but nothing created yet — nothing would show on the public
+        // menu, so the sidebar entry stays hidden until the first menu exists.
+        $this->restaurant->setSetMenusEnabled(true);
+        $this->em->flush();
+
+        $this->client->loginUser($this->user);
+        $this->client->request('GET', '/admin/menu');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href="/admin/menus"]');
+    }
+
+    public function testSidebarShowsSetMenusLinkOnMenusPageEvenWithNoMenusYet(): void
+    {
+        // The escape hatch: while actually on /admin/menus, the link stays
+        // visible (and highlighted) so a freshly-flagged restaurant with zero
+        // menus can still navigate there to create its first one.
+        $this->restaurant->setSetMenusEnabled(true);
+        $this->em->flush();
+
+        $this->client->loginUser($this->user);
+        $this->client->request('GET', '/admin/menus');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('a[href="/admin/menus"]');
+    }
+
+    public function testSidebarShowsSetMenusLinkWhenFlagOnAndMenuExists(): void
     {
         $this->restaurant->setSetMenusEnabled(true);
+
+        $category = new Category();
+        $this->restaurant->addCategory($category);
+        $category->setPosition(0);
+        $category->setActive(true);
+        $category->setMenuPrice(1500);
+        $this->em->persist($category);
         $this->em->flush();
 
         $this->client->loginUser($this->user);
