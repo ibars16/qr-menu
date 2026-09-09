@@ -85,7 +85,7 @@
         .cat-actions  { display:flex; gap:var(--sp-1); }
 
         .toggle {
-            width:32px; height:18px; border-radius:9px; background:var(--bg-tgl);
+            width:32px; height:18px; border-radius:var(--r-md); background:var(--bg-tgl);
             position:relative; cursor:pointer; transition:background 0.15s;
             border:none; padding:0; flex-shrink:0;
         }
@@ -94,8 +94,12 @@
             border-radius:50%; background:var(--tx-6); top:3px; left:3px;
             transition:left 0.15s, background 0.15s;
         }
-        .toggle.on { background:rgba(193,68,14,0.25); }
-        .toggle.on::after { left:17px; background:#C1440E; }
+        /* Category toggle: unchanged brand-orange "on" state. Product-row
+           toggle: its own color below (see .product-row .toggle.on) — same
+           .toggle component, scoped by ancestor so one can be recolored
+           without touching the other or the unrelated theme toggle. */
+        .cat-actions .toggle.on { background:rgba(193,68,14,0.25); }
+        .cat-actions .toggle.on::after { left:17px; background:#C1440E; }
         .toggle:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
 
         .icon-btn {
@@ -122,6 +126,12 @@
             transition:background 0.1s, border-color 0.1s; min-height:52px;
         }
         .product-row:hover { background:var(--bg-hover); border-color:var(--bd-1); }
+        /* Product-row toggle "on" state — success green, distinct from the
+           category toggle's brand orange, reusing the same green already
+           established for .flash-success/.toast.success so it reads as a
+           positive state rather than a second primary action. */
+        .product-row .toggle.on { background:rgba(99,153,34,0.25); }
+        .product-row .toggle.on::after { left:17px; background:#7aad40; }
         .product-drag { color:var(--tx-8); cursor:grab; font-size:var(--fs-md); flex-shrink:0; }
         .product-drag:active { cursor:grabbing; }
         .product-thumb {
@@ -133,7 +143,16 @@
         .product-info { flex:1; min-width:0; }
         .product-name { font-size:var(--fs-base); font-weight:500; color:var(--tx-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .product-meta { font-size:var(--fs-xs); color:var(--tx-muted); margin-top:2px; }
-        .product-price { font-size:var(--fs-base); font-weight:600; color:var(--tx-3); flex-shrink:0; min-width:58px; text-align:right; }
+        /* --tx-muted on --bg-page measures ~4.42:1 in light mode, just under
+           WCAG AA (4.5:1). Local override for this screen only — --tx-muted
+           itself stays untouched since tags.html.twig/users.html.twig share it. */
+        html.light .product-meta { color:#6b6b6b; }
+        .product-price {
+            display:flex; align-items:baseline; justify-content:flex-end; gap:3px;
+            flex-shrink:0; min-width:58px;
+        }
+        .price-amount { font-size:var(--fs-base); font-weight:600; color:var(--tx-1); }
+        .price-currency { font-size:var(--fs-xs); font-weight:500; color:var(--tx-5); }
         .product-row.inactive { opacity:0.4; }
 
         @media (max-width: 767px) {
@@ -141,7 +160,8 @@
             .product-thumb { width:44px; height:44px; font-size:20px; }
             .product-name { font-size:var(--fs-md); }
             .product-meta { font-size:var(--fs-sm); }
-            .product-price { font-size:var(--fs-md); }
+            .price-amount { font-size:var(--fs-md); }
+            .price-currency { font-size:var(--fs-sm); }
         }
 
         .add-row { padding:var(--sp-1) var(--sp-2) var(--sp-2); }
@@ -239,13 +259,14 @@
                                     <div class="product-info">
                                         <div class="product-name">{{ pName }}</div>
                                         <div class="product-meta">
-                                            {% if product.spicyLevel > 0 %}<span class="chili" style="font-size:12px">🌶</span> · {% endif %}
+                                            {% if product.spicyLevel > 0 %}<span class="chili" style="font-size:var(--fs-sm)">🌶</span> · {% endif %}
                                             {% if product.calories %}{{ product.calories }} kcal · {% endif %}
                                             <span class="product-status">{{ product.isActive ? 'product.visible'|trans({}, 'admin_menu') : 'product.hidden'|trans({}, 'admin_menu') }}</span>
                                         </div>
                                     </div>
                                     <div class="product-price">
-                                        {{ (product.basePrice / 100)|number_format(2) }} {{ restaurant.currency }}
+                                        <span class="price-amount">{{ (product.basePrice / 100)|number_format(2) }}</span>
+                                        <span class="price-currency">{{ restaurant.currency }}</span>
                                     </div>
                                     <button class="toggle {{ product.isActive ? 'on' : '' }}"
                                             onclick="event.stopPropagation(); toggleProduct({{ product.id }}, this)"
