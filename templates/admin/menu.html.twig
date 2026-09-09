@@ -94,12 +94,13 @@
             border-radius:50%; background:var(--tx-6); top:3px; left:3px;
             transition:left 0.15s, background 0.15s;
         }
-        /* Category toggle: unchanged brand-orange "on" state. Product-row
-           toggle: its own color below (see .product-row .toggle.on) — same
-           .toggle component, scoped by ancestor so one can be recolored
-           without touching the other or the unrelated theme toggle. */
-        .cat-actions .toggle.on { background:rgba(193,68,14,0.25); }
-        .cat-actions .toggle.on::after { left:17px; background:#C1440E; }
+        /* "On" state — same green for category and product-row toggles.
+           Both mean the same thing (visible/activo) so they get the same
+           color; --brand (orange) stays reserved for the primary "+ Nuevo
+           plato" action and destructive actions, not for state. Reuses the
+           green already established for .flash-success/.toast.success. */
+        .toggle.on { background:rgba(99,153,34,0.25); }
+        .toggle.on::after { left:17px; background:#7aad40; }
         .toggle:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
 
         .icon-btn {
@@ -126,12 +127,6 @@
             transition:background 0.1s, border-color 0.1s; min-height:52px;
         }
         .product-row:hover { background:var(--bg-hover); border-color:var(--bd-1); }
-        /* Product-row toggle "on" state — success green, distinct from the
-           category toggle's brand orange, reusing the same green already
-           established for .flash-success/.toast.success so it reads as a
-           positive state rather than a second primary action. */
-        .product-row .toggle.on { background:rgba(99,153,34,0.25); }
-        .product-row .toggle.on::after { left:17px; background:#7aad40; }
         .product-drag { color:var(--tx-8); cursor:grab; font-size:var(--fs-md); flex-shrink:0; }
         .product-drag:active { cursor:grabbing; }
         .product-thumb {
