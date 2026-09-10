@@ -123,9 +123,20 @@
 .product-tab.active { color:var(--tx-hi); border-bottom-color:var(--brand); }
 .product-tab:focus-visible { outline:2px solid var(--brand); outline-offset:2px; border-radius:4px; }
 
-.product-tab-panels { flex:1; min-height:0; overflow-y:auto; padding-top:15px; }
-.product-tab-panel { display:none; flex-direction:column; gap:15px; }
-.product-tab-panel.active { display:flex; }
+/* All 4 panels are always laid out, stacked in the same grid cell — the
+   grid sizes its row to the tallest of the 4 regardless of which is
+   .active, so the modal/sheet never grows or shrinks when switching tabs
+   (a short tab like Foto used to shrink-wrap the whole modal down with
+   it, via display:none on the rest). Only .active is visible/interactive
+   (visibility, not display:none, so it still counts toward the grid's
+   height and — same as display:none did — is removed from the tab order
+   and accessibility tree while hidden). */
+.product-tab-panels { flex:1; min-height:0; overflow-y:auto; padding-top:15px; display:grid; }
+.product-tab-panel {
+    grid-area:1/1; display:flex; flex-direction:column; gap:15px;
+    visibility:hidden; pointer-events:none;
+}
+.product-tab-panel.active { visibility:visible; pointer-events:auto; }
 
 @media (max-width: 767px) {
     .product-tabs { gap:14px; }
@@ -181,6 +192,18 @@
 .field textarea { resize:none; height:76px; line-height:1.55; }
 .field-row { display:flex; gap:10px; }
 .field-row .field { flex:1; }
+
+/* Category select — the one field on this tab that decides where the dish
+   lives, so it gets a visual weight none of the plain fields around it
+   have: an accent border/tint (same rgba(193,68,14,…) used for
+   .cat-select-card.selected above) instead of the neutral input styling. */
+.field-highlight {
+    padding:10px 12px 12px; border:1px solid rgba(193,68,14,0.4); border-radius:10px;
+    background:rgba(193,68,14,0.06);
+}
+.field-highlight .field-label { color:var(--tx-1); font-size:12px; }
+.field-highlight select { border-color:rgba(193,68,14,0.5); background:var(--bg-card); }
+.field-highlight select:focus { border-color:var(--brand); }
 
 /* Suplemento — subtle text link, direct reveal (no chooser). Clear
    margin-top separates it from the price list above (see

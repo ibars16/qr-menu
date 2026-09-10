@@ -43,8 +43,11 @@
         <div class="product-tab-panel active" role="tabpanel" data-tab="general"
              id="{{ tab_prefix }}-tabpanel-general" aria-labelledby="{{ tab_prefix }}-tab-general">
 
-            {# Categoría — siempre visible y editable #}
-            <div class="field">
+            {# Categoría — siempre visible y editable. Destacada respecto al resto
+               de campos (borde/fondo de acento) porque determina en qué
+               categoría vive el plato, a diferencia de todo lo demás en esta
+               pestaña. #}
+            <div class="field field-highlight">
                 <label class="field-label">{{ 'field.category'|trans({}, 'admin_menu') }} <span class="req">*</span></label>
                 <select id="p-category">
                     {% for category in categories %}
