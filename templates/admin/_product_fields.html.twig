@@ -127,7 +127,7 @@
                 <div class="extra-price-toggle price-variants-toggle" onclick="togglePriceVariants(this)" role="button" tabindex="0">
                     <i class="ti ti-plus" aria-hidden="true"></i> {{ 'field.price_variants_toggle'|trans({}, 'admin_menu') }}
                 </div>
-                <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
+                <p class="extra-price-hint" style="display:none">
                     {{ 'field.price_variants_toggle_hint'|trans({}, 'admin_menu') }}
                 </p>
                 <div class="price-variants-group" style="display:none">
@@ -155,7 +155,7 @@
                 <div class="extra-price-toggle" onclick="showSupplementField(this)" role="button" tabindex="0">
                     <i class="ti ti-plus" aria-hidden="true"></i> {{ 'field.supplement_toggle'|trans({}, 'admin_menu') }}
                 </div>
-                <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
+                <p class="extra-price-hint" style="display:none">
                     {{ 'field.supplement_hint'|trans({}, 'admin_menu') }}
                 </p>
                 <div class="field extra-price-field" style="display:none">

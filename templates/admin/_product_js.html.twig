@@ -663,17 +663,21 @@
     function showSupplementField(toggleEl) {
         const section = toggleEl.closest('.extra-price-section');
         toggleEl.style.display = 'none';
+        section.querySelector('.extra-price-hint').style.display = '';
         section.querySelector('.extra-price-field').style.display = '';
     }
     function hideSupplementField(removeEl) {
         const field = removeEl.closest('.extra-price-field');
         field.querySelector('input').value = '';
         field.style.display = 'none';
-        field.closest('.extra-price-section').querySelector('.extra-price-toggle').style.display = '';
+        const section = field.closest('.extra-price-section');
+        section.querySelector('.extra-price-toggle').style.display = '';
+        section.querySelector('.extra-price-hint').style.display = 'none';
     }
     function revealSupplementField() {
         document.querySelectorAll('.extra-price-section').forEach(section => {
             section.querySelector('.extra-price-toggle').style.display = 'none';
+            section.querySelector('.extra-price-hint').style.display = '';
             section.querySelector('.extra-price-field').style.display = '';
         });
     }
@@ -729,6 +733,7 @@
 
         if (expanding) {
             group.style.display = '';
+            section.querySelector('.extra-price-hint').style.display = '';
             baseRow.querySelector('.price-variant-base-label-field').style.display = '';
             rows.prepend(baseRow); // re-parent the real inputs, never duplicate them
             // Choosing "varios precios" already implies a second price —
@@ -742,6 +747,7 @@
             baseRow.querySelector('.price-variant-base-label-field').style.display = 'none';
             updatePriceVariantAddVisibility(section);
             group.style.display = 'none';
+            section.querySelector('.extra-price-hint').style.display = 'none';
         }
         setPriceVariantsToggleState(toggleEl, expanding);
     }
@@ -769,6 +775,7 @@
             if (!toggle) return;
             const baseRow = panel.querySelector('.price-variant-base-row');
             panel.querySelector('.price-variants-group').style.display = '';
+            toggle.closest('.price-variants-section').querySelector('.extra-price-hint').style.display = '';
             baseRow.querySelector('.price-variant-base-label-field').style.display = '';
             panel.querySelector('.price-variant-rows').prepend(baseRow);
             setPriceVariantsToggleState(toggle, true);
@@ -908,6 +915,7 @@
         renderAllergenOverrides();
         document.querySelectorAll('[id="p-private-ingredient-allergens-wrap"]').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.extra-price-toggle').forEach(el => el.style.display = '');
+        document.querySelectorAll('.extra-price-hint').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.extra-price-field').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.price-variants-group').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.price-variants-section').forEach(section => {

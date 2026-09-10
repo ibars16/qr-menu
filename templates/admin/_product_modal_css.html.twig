@@ -202,14 +202,27 @@
 /* Suplemento — subtle text link, direct reveal (no chooser). Clear
    margin-top separates it from the price list above (see
    .price-variants-section) so it never reads as part of that list.
-   See showSupplementField()/hideSupplementField(). */
+   See showSupplementField()/hideSupplementField(). Same treatment on
+   .price-variants-toggle (an additional class on the other section's
+   toggle, not a separate rule) so both read as the same kind of
+   secondary, optional action rather than a real field. */
 .extra-price-section { margin-top:22px; }
 .extra-price-toggle {
     display:inline-flex; align-items:center; gap:5px; margin-top:8px;
-    font-size:12px; color:var(--tx-6); cursor:pointer; user-select:none; transition:color 0.1s;
+    font-size:var(--fs-sm); color:var(--tx-muted); cursor:pointer; user-select:none; transition:color 0.1s;
 }
 .extra-price-toggle:hover { color:var(--tx-3); }
-.extra-price-toggle i { font-size:12px; }
+.extra-price-toggle:focus-visible { outline:2px solid var(--brand); outline-offset:2px; border-radius:4px; }
+.extra-price-toggle i { font-size:var(--fs-sm); }
+/* Hidden until the section is opened — previously an always-visible <p>,
+   which gave "un solo precio" (the common case) unwanted visual weight
+   below the base price. Shown/hidden alongside the group/field itself in
+   togglePriceVariants()/showSupplementField()/hideSupplementField() and
+   the two "load an already-saved dish" paths, revealPriceVariants()/
+   revealSupplementField() — and hidden again by resetProduct(). Shared
+   by both sections (their toggles are already the same class), so this
+   only needs one rule. */
+.extra-price-hint { font-size:var(--fs-sm); color:var(--tx-muted); margin-top:6px; line-height:1.5; }
 .extra-price-field { margin-top:12px; }
 .extra-price-field .field-label { display:flex; align-items:center; gap:6px; }
 .extra-price-remove {
