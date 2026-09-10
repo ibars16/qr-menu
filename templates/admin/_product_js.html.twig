@@ -889,8 +889,8 @@
     // original upload, no server-side thumbnail exists yet, so it can be
     // slow) — both show a spinner and fade the <img> in on its load event,
     // so a slow load reads as "loading", never as empty/broken. Also
-    // reveals "Cambiar foto" so the area still visibly invites a change
-    // once a photo is set, not just a plain picture with no affordance.
+    // reveals the "Cambiar foto" button below the photo (a sibling of
+    // #img-upload-area, not an overlay on top of it) once a photo is set.
     function showImageInArea(area, src) {
         let img = area.querySelector('img');
         if (!img) { img = document.createElement('img'); area.appendChild(img); }
@@ -899,7 +899,8 @@
         img.onload = () => { img.classList.add('loaded'); area.classList.remove('loading'); };
         img.src = src;
         area.querySelector('.img-upload-hint').style.display = 'none';
-        area.querySelector('.img-upload-edit').style.display = 'flex';
+        const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
+        if (changeBtn) changeBtn.style.display = '';
     }
 
     // previewImage() only shows the picked file locally — the actual upload
@@ -921,7 +922,8 @@
                 area.querySelector('img')?.remove();
                 area.classList.remove('loading');
                 area.querySelector('.img-upload-hint').style.display = '';
-                area.querySelector('.img-upload-edit').style.display = 'none';
+                const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
+                if (changeBtn) changeBtn.style.display = 'none';
             }
         });
     }
@@ -1004,8 +1006,8 @@
             area.classList.remove('loading');
             const hint = area.querySelector('.img-upload-hint');
             if (hint) hint.style.display = '';
-            const edit = area.querySelector('.img-upload-edit');
-            if (edit) edit.style.display = 'none';
+            const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
+            if (changeBtn) changeBtn.style.display = 'none';
         });
         // Clear any picked-but-not-yet-uploaded file too — otherwise it
         // stays in the <input> and saveProduct() would silently attach the

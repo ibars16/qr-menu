@@ -235,10 +235,14 @@
                         {{ 'upload.hint'|trans({}, 'admin_menu') }}
                     </div>
                     <div class="img-upload-spinner" aria-hidden="true"></div>
-                    <div class="img-upload-edit" style="display:none">
-                        <i class="ti ti-pencil" aria-hidden="true"></i> {{ 'upload.change'|trans({}, 'admin_menu') }}
-                    </div>
                 </div>
+                {# Below the photo, not over it — only shown once there's an
+                   image (previewImage()/renderProductImage() reveal it), the
+                   dropzone's own hint is the call to action until then. #}
+                <button type="button" class="btn img-upload-change-btn" style="display:none"
+                        onclick="document.getElementById('p-img-input').click()">
+                    <i class="ti ti-pencil" aria-hidden="true"></i> {{ 'upload.change'|trans({}, 'admin_menu') }}
+                </button>
                 <input type="file"
                        id="p-img-input"
                        accept="image/*"

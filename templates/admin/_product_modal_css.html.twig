@@ -301,16 +301,20 @@
 .img-upload.loading .img-upload-hint { display:none; }
 @keyframes img-upload-spin { to { transform:rotate(360deg); } }
 
-/* "Cambiar foto" — only shown once there's an image (previewImage()/
-   renderProductImage() toggle it opposite to .img-upload-hint), so the
-   whole clickable area still visibly invites a change instead of relying
-   on the owner guessing the photo itself is clickable. */
-.img-upload-edit {
-    position:absolute; z-index:2; left:50%; bottom:12px; transform:translateX(-50%);
-    align-items:center; gap:6px; padding:7px 14px; border-radius:var(--r-pill);
-    background:rgba(0,0,0,0.65); color:#fff; font-size:12px; font-weight:500;
+/* "Cambiar foto" — a real button below the photo, not an overlay on top
+   of it (tried that first, blocked the photo itself). Only shown once
+   there's an image (previewImage()/renderProductImage() reveal it,
+   opposite to .img-upload-hint) — the dropzone's own hint is the call to
+   action until then. Sized up from the base .btn (bigger padding/font,
+   full width) so it reads as a real action, not an afterthought. */
+.img-upload-change-btn {
+    width:100%; margin-top:10px; justify-content:center;
+    padding:11px; min-height:44px; font-size:14px;
 }
-.img-upload:hover .img-upload-edit { background:rgba(0,0,0,0.8); }
+
+@media (max-width: 767px) {
+    .img-upload-change-btn { min-height:48px; }
+}
 
 /* Spicy */
 .chili {
