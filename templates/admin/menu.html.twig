@@ -262,11 +262,13 @@
                                     </div>
                                     <div class="product-info">
                                         <div class="product-name">{{ pName }}</div>
-                                        <div class="product-meta">
-                                            {% if product.spicyLevel > 0 %}<span class="chili" style="font-size:var(--fs-sm)">🌶</span> · {% endif %}
-                                            {% if product.calories %}{{ product.calories }} kcal · {% endif %}
-                                            <span class="product-status">{{ product.isActive ? 'product.visible'|trans({}, 'admin_menu') : 'product.hidden'|trans({}, 'admin_menu') }}</span>
-                                        </div>
+                                        {% if product.spicyLevel > 0 or product.calories %}
+                                            <div class="product-meta">
+                                                {% if product.spicyLevel > 0 %}<span class="chili" style="font-size:var(--fs-sm)">🌶</span>{% endif %}
+                                                {% if product.spicyLevel > 0 and product.calories %} · {% endif %}
+                                                {% if product.calories %}{{ product.calories }} kcal{% endif %}
+                                            </div>
+                                        {% endif %}
                                     </div>
                                     <div class="product-price">
                                         <span class="price-amount">{{ (product.basePrice / 100)|number_format(2) }}</span>
