@@ -121,22 +121,31 @@
         }
 
         .products-list { padding:var(--sp-1); }
+        /* align-items:flex-start (not center) so a 2-line .product-name
+           doesn't push price/toggle to float at half-height — they anchor
+           to the first line instead. .product-drag/.product-thumb opt back
+           into vertical centering via align-self since they read better
+           centered against a variable-height row than pinned to the top. */
         .product-row {
-            display:flex; align-items:center; gap:var(--sp-2); padding:9px var(--sp-2);
+            display:flex; align-items:flex-start; gap:var(--sp-2); padding:9px var(--sp-2);
             border-radius:var(--r-sm); border:1px solid transparent; cursor:pointer;
             transition:background 0.1s, border-color 0.1s; min-height:52px;
         }
         .product-row:hover { background:var(--bg-hover); border-color:var(--bd-1); }
-        .product-drag { color:var(--tx-8); cursor:grab; font-size:var(--fs-md); flex-shrink:0; }
+        .product-drag { color:var(--tx-8); cursor:grab; font-size:var(--fs-md); flex-shrink:0; align-self:center; }
         .product-drag:active { cursor:grabbing; }
         .product-thumb {
             width:38px; height:38px; border-radius:var(--r-sm); background:var(--bd-1);
             border:1px solid var(--bd-3); display:flex; align-items:center;
             justify-content:center; font-size:18px; flex-shrink:0; overflow:hidden;
+            align-self:center;
         }
         .product-thumb img { width:100%; height:100%; object-fit:cover; }
         .product-info { flex:1; min-width:0; }
-        .product-name { font-size:var(--fs-base); font-weight:500; color:var(--tx-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .product-name {
+            font-size:var(--fs-base); font-weight:500; color:var(--tx-1); line-height:1.3;
+            display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden;
+        }
         .product-meta { font-size:var(--fs-xs); color:var(--tx-muted); margin-top:2px; }
         /* --tx-muted on --bg-page measures ~4.42:1 in light mode, just under
            WCAG AA (4.5:1). Local override for this screen only — --tx-muted
