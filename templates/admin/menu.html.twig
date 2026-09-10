@@ -13,11 +13,11 @@
     {% endif %}
     <button class="btn" onclick="UI.openAiImport()">
         <i class="ti ti-sparkles" aria-hidden="true"></i>
-        <span class="hide-mobile">{{ 'action.import_ai'|trans({}, 'admin_menu') }}</span>
+        {{ 'action.import_ai'|trans({}, 'admin_menu') }}
     </button>
     <button class="btn" onclick="UI.openNewCategory()">
         <i class="ti ti-folder-plus" aria-hidden="true"></i>
-        <span class="hide-mobile">{{ 'modal.category.new_title'|trans({}, 'admin_menu') }}</span>
+        {{ 'modal.category.new_title'|trans({}, 'admin_menu') }}
     </button>
     <button class="btn btn-primary" onclick="ProductUI.openNewProduct(null)">
         <i class="ti ti-plus" aria-hidden="true"></i>
