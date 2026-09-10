@@ -82,6 +82,28 @@
     .panel-footer .btn-danger { flex:0; min-width:48px; padding:0; }
 }
 
+/* "Eliminar plato" — deliberately de-emphasized: the same box/border
+   weight as "Guardar" read as two competing primary actions, when
+   deleting a dish is rare, destructive and irreversible. No new red
+   either — --brand already means something else here ("+ Nuevo
+   plato"/the save CTA); a second red would read as a conflicting kind of
+   emphasis. Discretion, not color, communicates "handle with care" — the
+   hover still uses #F0997B, the same danger accent .icon-btn.danger
+   already uses elsewhere in this admin, not a new one.
+   Scoped by id, not a .btn-danger override: that class is global
+   (base.html.twig) and reused as-is by the "eliminar todos" header
+   buttons and by the tags/users edit-modal footers on other screens —
+   both verified out of this file's reach (this partial is only included
+   by menu.html.twig/menu_edit.html.twig, and neither of those has any
+   other .btn-danger in a .panel-footer), untouched either way. See
+   deleteProduct() in _product_js.html.twig — logic/confirm dialog
+   unchanged. */
+#d-delete-btn, #m-delete-btn {
+    background:none; border-color:transparent; color:var(--tx-muted);
+}
+#d-delete-btn:hover, #m-delete-btn:hover { background:var(--bg-hover); color:#F0997B; }
+#d-delete-btn:focus-visible, #m-delete-btn:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
+
 /* Step body wrappers — must be flex containers so the constrained height from
    .sheet/.modal (max-height: 92/90vh) reaches .panel-body and enables scroll */
 #d-step1-body, #d-step2-body,
