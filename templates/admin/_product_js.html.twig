@@ -28,6 +28,8 @@
     const MSG_REMOVE_EXTRA_PRICE = "{{ 'field.remove_extra_price'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PRICE_VARIANTS_TOGGLE = "{{ 'field.price_variants_toggle'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PRICE_VARIANTS_COLLAPSE = "{{ 'field.price_variants_collapse'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_NUTRITION_TOGGLE = "{{ 'field.nutrition_toggle'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_NUTRITION_COLLAPSE = "{{ 'field.nutrition_collapse'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_CONFIRM_DELETE_PRODUCT = "{{ 'js.confirm_delete_product'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_DEFAULT_PRODUCT_NAME = "{{ 'js.default_product_name'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_NEW_INGREDIENT_LABEL = "{{ 'js.new_ingredient_label'|trans({}, 'admin_menu')|e('js') }}";
@@ -124,6 +126,9 @@
                 setVal('p-protein', data.protein ?? '');
                 setVal('p-carbohydrates', data.carbohydrates ?? '');
                 setVal('p-sugars', data.sugars ?? '');
+                if (data.calories != null || data.fat != null || data.protein != null || data.carbohydrates != null || data.sugars != null) {
+                    revealNutrition();
+                }
                 renderProductImage(data.image);
 
                 document.querySelectorAll('.tag-pill').forEach(p =>
@@ -298,6 +303,11 @@
         });
         panelEl('p-nutrition-error')?.classList.toggle('show', nutritionInvalid);
         if (nutritionInvalid) ok = false;
+
+        // The error must never be left hidden inside a collapsed toggle — force
+        // it open before showErrorTab() below scrolls/focuses into it, or the
+        // scroll would land on a field inside a display:none container.
+        if (nutritionInvalid) revealNutrition();
 
         if (errorTab) ProductUI.showErrorTab(errorTab, errorField);
 
@@ -782,6 +792,32 @@
         });
     }
 
+    // ── Nutrición — collapsed by default (least-filled, most tedious block in
+    // Detalles). Unlike Suplemento's showSupplementField()/hideSupplementField(),
+    // this is a single persistent 2-state toggle like Precios por variante: it
+    // only shows/hides the 5 fields, it never clears their values on collapse —
+    // they're independent and optional, plegar ≠ descartar. ──────────────────────
+    function setNutritionToggleState(toggleEl, expanded) {
+        toggleEl.querySelector('i').className = 'ti ' + (expanded ? 'ti-x' : 'ti-plus');
+        toggleEl.querySelector('.nutrition-toggle-text').textContent = expanded ? MSG_NUTRITION_COLLAPSE : MSG_NUTRITION_TOGGLE;
+    }
+    function toggleNutrition(toggleEl) {
+        const section = toggleEl.closest('.nutrition-section');
+        const fields = section.querySelector('.nutrition-fields');
+        const expanding = fields.style.display === 'none';
+        fields.style.display = expanding ? '' : 'none';
+        setNutritionToggleState(toggleEl, expanding);
+    }
+    // Load-time population (an existing product that already has nutrition
+    // data) — same "open if there's something to show" rule as
+    // revealPriceVariants()/revealSupplementField().
+    function revealNutrition() {
+        document.querySelectorAll('.nutrition-section').forEach(section => {
+            section.querySelector('.nutrition-fields').style.display = '';
+            setNutritionToggleState(section.querySelector('.nutrition-toggle'), true);
+        });
+    }
+
     // ── Advanced allergen accordion (collapsed by default) ──────────────────────
     function toggleAllergenAdvanced(toggleEl) {
         const body = toggleEl.nextElementSibling;
@@ -918,6 +954,10 @@
         document.querySelectorAll('.extra-price-hint').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.extra-price-field').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.price-variants-group').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.nutrition-section').forEach(section => {
+            section.querySelector('.nutrition-fields').style.display = 'none';
+            setNutritionToggleState(section.querySelector('.nutrition-toggle'), false);
+        });
         document.querySelectorAll('.price-variants-section').forEach(section => {
             // Move the base row home BEFORE wiping .price-variant-rows — it may
             // currently live inside there (re-parented by a previous expand),

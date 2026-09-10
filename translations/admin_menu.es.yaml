@@ -32,6 +32,8 @@ empty:
 field:
     calories: Calorías
     nutrition_facts: Información nutricional
+    nutrition_toggle: Mostrar información nutricional
+    nutrition_collapse: Ocultar información nutricional
     fat: Grasas
     protein: Proteínas
     carbohydrates: Carbohidratos

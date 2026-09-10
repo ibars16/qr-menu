@@ -322,6 +322,18 @@
 }
 .price-variant-add:hover { color:var(--tx-3); }
 
+/* Nutrición — collapsed by default (see toggleNutrition() in
+   _product_js.html.twig). .nutrition-section is a plain top-level block, not
+   a .field, so it gets the panel's own 15px gap from its siblings rather
+   than the tighter margin .extra-price-section uses to hug the price block
+   above it — nothing sits directly above this one anymore now that it's
+   last in Detalles. .nutrition-fields replicates the flex/gap a .field
+   would normally give its children automatically, since this wrapper is
+   deliberately not itself a .field (its own label + 5 sub-fields need more
+   room to breathe than .field's 5px gap gives a label+input pair). */
+.nutrition-fields { display:flex; flex-direction:column; gap:12px; margin-top:10px; }
+.nutrition-group-label { margin-bottom:-2px; }
+
 @media (max-width: 767px) {
     /* font-size:16px on all three prevents iOS Safari's auto-zoom on
        focus; min-height:48px (a tap-target size) is split out to skip

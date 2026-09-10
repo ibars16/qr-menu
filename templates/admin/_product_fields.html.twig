@@ -213,77 +213,17 @@
             </div>
         </div>
 
-        {# ═══ Detalles: nutrición, picante, etiquetas, recomendado ═══ #}
+        {# ═══ Detalles: recomendado, etiquetas, picante, nutrición — ordenado por
+           frecuencia de uso (lo más rellenado primero); ver _product_js.html.twig
+           para el porqué de este orden concreto. ═══ #}
         <div class="product-tab-panel" role="tabpanel" data-tab="details"
              id="{{ tab_prefix }}-tabpanel-details" aria-labelledby="{{ tab_prefix }}-tab-details">
 
-            {# Información nutricional — calorías (ya existía, ?int/kcal) agrupada junto
-               a los 4 campos añadidos en la migración de la Fase 1 (fat/protein/
-               carbohydrates/sugars, decimal(5,1)/gramos) bajo un único .field, mismo
-               patrón que "Alérgenos" usa para agrupar sus propios sub-bloques más abajo.
-               Todos opcionales e independientes entre sí — un plato puede tener
-               cualquier subconjunto relleno. .field-row ya existía en
-               _product_modal_css.html.twig sin usarse en este formulario; se reutiliza
-               aquí tal cual (colapsa a una columna en móvil). #}
-            <div class="field">
-                <label class="field-label">
-                    {{ 'field.nutrition_facts'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
-                </label>
-
-                <div class="field">
-                    <label class="field-label">{{ 'field.calories'|trans({}, 'admin_menu') }}</label>
-                    <input type="number"
-                           id="p-calories"
-                           min="0"
-                           placeholder="kcal"
-                           inputmode="numeric">
-                </div>
-
-                <div class="field-row">
-                    <div class="field">
-                        <label class="field-label">{{ 'field.fat'|trans({}, 'admin_menu') }}</label>
-                        <input type="number" id="p-fat" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
-                    </div>
-                    <div class="field">
-                        <label class="field-label">{{ 'field.protein'|trans({}, 'admin_menu') }}</label>
-                        <input type="number" id="p-protein" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
-                    </div>
-                </div>
-                <div class="field-row">
-                    <div class="field">
-                        <label class="field-label">{{ 'field.carbohydrates'|trans({}, 'admin_menu') }}</label>
-                        <input type="number" id="p-carbohydrates" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
-                    </div>
-                    <div class="field">
-                        <label class="field-label">{{ 'field.sugars'|trans({}, 'admin_menu') }}</label>
-                        <input type="number" id="p-sugars" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
-                    </div>
-                </div>
-
-                <div class="field-error" id="p-nutrition-error">{{ 'error.nutrition_value_invalid'|trans({}, 'admin_menu') }}</div>
-            </div>
-
-            {# Picante — opcional #}
-            <div class="field">
-                <label class="field-label">
-                    {{ 'field.spicy_level'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
-                </label>
-                <div class="spicy-row">
-                    {% for i in 1..5 %}
-                        <div class="spicy-pip"
-                             data-level="{{ i }}"
-                             onclick="setSpicy({{ i }})"
-                             role="button"
-                             tabindex="0"
-                             aria-label="{{ 'spicy.aria'|trans({'%level%': i}, 'admin_menu') }}"><span class="chili">🌶</span></div>
-                    {% endfor %}
-                    <span class="spicy-text">{{ 'spicy.none'|trans({}, 'admin_menu') }}</span>
-                </div>
-            </div>
-
-            {# Etiquetas — opcional. "recommended" (Smart Waiter) is deliberately excluded
-               from this generic list — it has its own dedicated section below so it's
-               never duplicated between the two controls. #}
+            {# Smart Waiter — the one signal the AI assistant is allowed to cite when a
+               customer asks what the restaurant recommends (see MenuContextBuilder /
+               SmartWaiterPromptBuilder). This checkbox only adds or removes the existing
+               "recommended" System Tag — same product_save "tags" payload as the pills
+               below, no new field or logic. #}
             {% set recommendedTag = null %}
             {% set genericTags = [] %}
             {% for tag in restaurant.productTags %}
@@ -294,6 +234,22 @@
                 {% endif %}
             {% endfor %}
 
+            {% if recommendedTag %}
+                <div class="field">
+                    <label class="field-label">{{ recommendedTag.icon }} {{ 'smart_waiter.section_title'|trans({}, 'admin_menu') }}</label>
+                    <label class="sw-recommend-box">
+                        <input type="checkbox" id="p-recommended" data-tag-id="{{ recommendedTag.id }}">
+                        <span class="sw-recommend-text">
+                            <span class="sw-recommend-label">{{ 'smart_waiter.recommended_label'|trans({}, 'admin_menu') }}</span>
+                            <span class="sw-recommend-hint">{{ 'smart_waiter.recommended_hint'|trans({}, 'admin_menu') }}</span>
+                        </span>
+                    </label>
+                </div>
+            {% endif %}
+
+            {# Etiquetas — opcional. "recommended" (Smart Waiter) is deliberately excluded
+               from this generic list — it has its own dedicated section above so it's
+               never duplicated between the two controls. #}
             {% if genericTags|length > 0 %}
                 <div class="field">
                     <label class="field-label">
@@ -326,23 +282,85 @@
                 </div>
             {% endif %}
 
-            {# Smart Waiter — the one signal the AI assistant is allowed to cite when a
-               customer asks what the restaurant recommends (see MenuContextBuilder /
-               SmartWaiterPromptBuilder). This checkbox only adds or removes the existing
-               "recommended" System Tag — same product_save "tags" payload as the pills
-               above, no new field or logic. #}
-            {% if recommendedTag %}
-                <div class="field">
-                    <label class="field-label">{{ recommendedTag.icon }} {{ 'smart_waiter.section_title'|trans({}, 'admin_menu') }}</label>
-                    <label class="sw-recommend-box">
-                        <input type="checkbox" id="p-recommended" data-tag-id="{{ recommendedTag.id }}">
-                        <span class="sw-recommend-text">
-                            <span class="sw-recommend-label">{{ 'smart_waiter.recommended_label'|trans({}, 'admin_menu') }}</span>
-                            <span class="sw-recommend-hint">{{ 'smart_waiter.recommended_hint'|trans({}, 'admin_menu') }}</span>
-                        </span>
-                    </label>
+            {# Picante — opcional #}
+            <div class="field">
+                <label class="field-label">
+                    {{ 'field.spicy_level'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
+                </label>
+                <div class="spicy-row">
+                    {% for i in 1..5 %}
+                        <div class="spicy-pip"
+                             data-level="{{ i }}"
+                             onclick="setSpicy({{ i }})"
+                             role="button"
+                             tabindex="0"
+                             aria-label="{{ 'spicy.aria'|trans({'%level%': i}, 'admin_menu') }}"><span class="chili">🌶</span></div>
+                    {% endfor %}
+                    <span class="spicy-text">{{ 'spicy.none'|trans({}, 'admin_menu') }}</span>
                 </div>
-            {% endif %}
+            </div>
+
+            {# Información nutricional — calorías (ya existía, ?int/kcal) agrupada junto
+               a los 4 campos añadidos en la migración de la Fase 1 (fat/protein/
+               carbohydrates/sugars, decimal(5,1)/gramos). Todos opcionales e
+               independientes entre sí — un plato puede tener cualquier subconjunto
+               relleno. .field-row ya existía en _product_modal_css.html.twig sin
+               usarse en este formulario; se reutiliza aquí tal cual (colapsa a una
+               columna en móvil).
+
+               Colapsado tras un toggle por defecto — el menos rellenado de los 4
+               bloques de Detalles, y el más tedioso de completar, así que no se le
+               da peso visual por delante de recomendado/etiquetas/picante. Mismo
+               patrón visual que "Añadir varios precios"/"Añadir suplemento"
+               (.extra-price-toggle, sin regla CSS propia), pero mismo modelo de
+               interacción que Variantes, no Suplemento: un toggle persistente de
+               2 estados que solo pliega/despliega la vista, sin borrar los 5
+               valores al colapsar (son independientes y opcionales — plegar no es
+               "no quiero esto", como sí lo es el × de Suplemento). Ver
+               toggleNutrition()/revealNutrition() y resetProduct() en
+               _product_js.html.twig; validateProduct() fuerza esta sección abierta
+               antes de saltar a un error dentro, para que nunca quede escondido. #}
+            <div class="nutrition-section">
+                <div class="extra-price-toggle nutrition-toggle" onclick="toggleNutrition(this)" role="button" tabindex="0">
+                    <i class="ti ti-plus" aria-hidden="true"></i>
+                    <span class="nutrition-toggle-text">{{ 'field.nutrition_toggle'|trans({}, 'admin_menu') }}</span>
+                </div>
+                <div class="nutrition-fields" style="display:none">
+                    <div class="field-label nutrition-group-label">{{ 'field.nutrition_facts'|trans({}, 'admin_menu') }}</div>
+
+                    <div class="field">
+                        <label class="field-label">{{ 'field.calories'|trans({}, 'admin_menu') }}</label>
+                        <input type="number"
+                               id="p-calories"
+                               min="0"
+                               placeholder="kcal"
+                               inputmode="numeric">
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="field-label">{{ 'field.fat'|trans({}, 'admin_menu') }}</label>
+                            <input type="number" id="p-fat" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">{{ 'field.protein'|trans({}, 'admin_menu') }}</label>
+                            <input type="number" id="p-protein" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="field-label">{{ 'field.carbohydrates'|trans({}, 'admin_menu') }}</label>
+                            <input type="number" id="p-carbohydrates" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">{{ 'field.sugars'|trans({}, 'admin_menu') }}</label>
+                            <input type="number" id="p-sugars" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
+                        </div>
+                    </div>
+
+                    <div class="field-error" id="p-nutrition-error">{{ 'error.nutrition_value_invalid'|trans({}, 'admin_menu') }}</div>
+                </div>
+            </div>
         </div>
 
         {# ═══ Alérgenos: ingredientes + alérgenos (calculados, de ingredientes,
