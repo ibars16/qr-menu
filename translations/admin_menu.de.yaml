@@ -151,6 +151,13 @@ step:
     category: Kategorie
     info: Details
 
+tab:
+    group_aria: Bereiche des Gerichts
+    general: Allgemein
+    photo: Foto
+    details: Details
+    allergens: Allergene
+
 tags:
     none_configured: 'Noch keine Etiketten konfiguriert — %link_start%erstelle welche unter Etiketten%link_end%, um Gerichte als Vegetarisch, Glutenfrei usw. zu kennzeichnen.'
 

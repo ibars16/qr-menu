@@ -58,7 +58,7 @@
         {% endif %}
         <div id="d-step2-body" {% if show_category_step %}style="display:none"{% endif %}>
             <div class="panel-body">
-                {% include 'admin/_product_fields.html.twig' %}
+                {% include 'admin/_product_fields.html.twig' with {tab_prefix: 'd'} %}
             </div>
             <div class="panel-footer">
                 <button class="btn btn-danger" id="d-delete-btn" onclick="deleteProduct()" style="display:none">
@@ -115,7 +115,7 @@
         {% endif %}
         <div id="m-step2-body" {% if show_category_step %}style="display:none"{% endif %}>
             <div class="panel-body">
-                {% include 'admin/_product_fields.html.twig' %}
+                {% include 'admin/_product_fields.html.twig' with {tab_prefix: 'm'} %}
             </div>
             <div class="panel-footer">
                 <button class="btn btn-danger" id="m-delete-btn" onclick="deleteProduct()" style="display:none">

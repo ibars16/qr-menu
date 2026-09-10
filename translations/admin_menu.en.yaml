@@ -151,6 +151,13 @@ step:
     category: Category
     info: Details
 
+tab:
+    group_aria: Dish sections
+    general: General
+    photo: Photo
+    details: Details
+    allergens: Allergens
+
 tags:
     none_configured: 'No tags configured yet — %link_start%create some in Tags%link_end% so you can mark dishes as Vegetarian, Gluten-free, etc.'
 

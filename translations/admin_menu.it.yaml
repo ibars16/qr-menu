@@ -151,6 +151,13 @@ step:
     category: Categoria
     info: Informazioni
 
+tab:
+    group_aria: Sezioni del piatto
+    general: Generale
+    photo: Foto
+    details: Dettagli
+    allergens: Allergeni
+
 tags:
     none_configured: 'Nessuna etichetta configurata — %link_start%creale in Etichette%link_end% per contrassegnare i piatti come Vegetariano, Senza glutine, ecc.'
 

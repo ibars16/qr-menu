@@ -260,7 +260,57 @@
             ['d-step-2','m-step-2'].forEach(id => document.getElementById(id)?.classList.add('active'));
             ['d-step-1','m-step-1'].forEach(id => document.getElementById(id)?.classList.remove('active'));
             initIngredientSelects();
+            this._resetTabs();
             setTimeout(() => panelEl('p-name')?.focus(), 80);
+        },
+
+        // ── Step-2 tabs (General/Foto/Detalles/Alérgenos) ───────────────────
+        // Scoped to the clicked tab's own .product-tabs-wrap throughout, so the
+        // desktop modal and mobile sheet copies (duplicate ids — see panelEl()
+        // doc) never affect each other.
+        activateTab(tabEl) {
+            const wrap = tabEl.closest('.product-tabs-wrap');
+            wrap.querySelectorAll('.product-tab').forEach(t => {
+                const on = t === tabEl;
+                t.classList.toggle('active', on);
+                t.setAttribute('aria-selected', on ? 'true' : 'false');
+                t.tabIndex = on ? 0 : -1;
+            });
+            wrap.querySelectorAll('.product-tab-panel').forEach(p =>
+                p.classList.toggle('active', p.dataset.tab === tabEl.dataset.tab)
+            );
+        },
+        // Roving-tabindex arrow-key navigation, per the WAI-ARIA tabs pattern.
+        onTabKeydown(event) {
+            if (!['ArrowRight','ArrowLeft','Home','End'].includes(event.key)) return;
+            const tabs = [...event.currentTarget.querySelectorAll('.product-tab')];
+            const idx = tabs.indexOf(document.activeElement);
+            if (idx === -1) return;
+            event.preventDefault();
+            const next = event.key === 'ArrowRight' ? tabs[(idx + 1) % tabs.length]
+                       : event.key === 'ArrowLeft'  ? tabs[(idx - 1 + tabs.length) % tabs.length]
+                       : event.key === 'Home'       ? tabs[0]
+                       :                              tabs[tabs.length - 1];
+            next.focus();
+            this.activateTab(next);
+        },
+        _resetTabs() {
+            document.querySelectorAll('.product-tabs-wrap').forEach(wrap => {
+                const first = wrap.querySelector('.product-tab');
+                if (first) this.activateTab(first);
+            });
+        },
+        // Called by validateProduct() on the open panel only — activates the
+        // tab holding the first invalid field so the error is never left
+        // hidden behind an inactive tab, then focuses/scrolls to it.
+        showErrorTab(tabName, fieldId) {
+            const tabBtn = activePanel()?.querySelector('.product-tab[data-tab="' + tabName + '"]');
+            if (tabBtn) this.activateTab(tabBtn);
+            setTimeout(() => {
+                const field = panelEl(fieldId);
+                field?.focus();
+                field?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            }, 50);
         },
     };
 
@@ -278,25 +328,40 @@
 
     function validateProduct() {
         let ok = true;
+        // First invalid field's tab — whichever fails first (name/price
+        // before nutrition) wins, so the owner always lands on the earliest
+        // problem rather than the last one checked.
+        let errorTab = null, errorField = null;
+
         [['p-name','p-name-error'],['p-price','p-price-error']].forEach(([fid,eid]) => {
             const val = panelEl(fid)?.value?.trim();
             const empty = !val || (fid === 'p-price' && parseFloat(val) <= 0);
             panelEl(eid)?.classList.toggle('show', empty);
             panelEl(fid)?.classList.toggle('error', empty);
-            if (empty) ok = false;
+            if (empty) {
+                ok = false;
+                if (!errorTab) { errorTab = 'general'; errorField = fid; }
+            }
         });
 
         // One shared error under the whole nutrition group rather than one
         // per field — see #p-nutrition-error in _product_fields.html.twig.
+        // These fields live in the Detalles tab, not General — the tab
+        // picked below must follow the field, not default to General.
         const nutritionIds = ['p-fat', 'p-protein', 'p-carbohydrates', 'p-sugars'];
         let nutritionInvalid = false;
         nutritionIds.forEach(fid => {
             const invalid = !isValidNutritionGrams(panelEl(fid)?.value?.trim() ?? '');
             panelEl(fid)?.classList.toggle('error', invalid);
-            if (invalid) nutritionInvalid = true;
+            if (invalid) {
+                nutritionInvalid = true;
+                if (!errorTab) { errorTab = 'details'; errorField = fid; }
+            }
         });
         panelEl('p-nutrition-error')?.classList.toggle('show', nutritionInvalid);
         if (nutritionInvalid) ok = false;
+
+        if (errorTab) ProductUI.showErrorTab(errorTab, errorField);
 
         return ok;
     }

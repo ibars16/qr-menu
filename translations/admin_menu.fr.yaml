@@ -151,6 +151,13 @@ step:
     category: Catégorie
     info: Informations
 
+tab:
+    group_aria: Sections du plat
+    general: Général
+    photo: Photo
+    details: Détails
+    allergens: Allergènes
+
 tags:
     none_configured: 'Aucune étiquette configurée — %link_start%créez-en dans Étiquettes%link_end% pour marquer vos plats comme Végétarien, Sans gluten, etc.'
 

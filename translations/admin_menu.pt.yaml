@@ -151,6 +151,13 @@ step:
     category: Categoria
     info: Informação
 
+tab:
+    group_aria: Secções do prato
+    general: Geral
+    photo: Foto
+    details: Detalhes
+    allergens: Alergénios
+
 tags:
     none_configured: 'Sem etiquetas configuradas — %link_start%crie-as em Etiquetas%link_end% para poder marcar pratos como Vegetariano, Sem glúten, etc.'
 

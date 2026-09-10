@@ -1,406 +1,470 @@
-{# templates/admin/_product_fields.html.twig #}
+{# templates/admin/_product_fields.html.twig
 
-{# Categoría — siempre visible y editable #}
-<div class="field">
-    <label class="field-label">{{ 'field.category'|trans({}, 'admin_menu') }} <span class="req">*</span></label>
-    <select id="p-category">
-        {% for category in categories %}
-            {% set catT = category.getDisplayTranslation(locale) %}
-            <option value="{{ category.id }}">{{ catT ? catT.name : 'common.unnamed'|trans({}, 'admin_menu') }}</option>
-        {% endfor %}
-    </select>
-</div>
+   Included twice by _product_modal.html.twig (desktop modal + mobile
+   sheet), so every id in here exists twice in the DOM — see panelEl()/
+   activePanel() in _admin_js_utils.html.twig. tab_prefix ('d' or 'm',
+   passed by the including `{% include %}`) keeps the new tab
+   bar/tabpanel ids unique per copy, same convention as d-step-1/m-step-1
+   and d-back-btn/m-back-btn in _product_modal.html.twig — real distinct
+   ids, not a second set of duplicates. #}
+{% set tab_prefix = tab_prefix|default('d') %}
 
-{# Nombre — obligatorio #}
-<div class="field">
-    <label class="field-label">
-        {{ 'field.product_name'|trans({}, 'admin_menu') }} <span class="req">*</span>
-    </label>
-    <input type="text"
-           id="p-name"
-           placeholder="{{ 'field.product_name_placeholder'|trans({}, 'admin_menu') }}">
-    <div class="field-error" id="p-name-error">{{ 'field_error.name_required'|trans({}, 'admin_menu') }}</div>
-</div>
-
-{# Descripción — opcional #}
-<div class="field">
-    <label class="field-label">
-        {{ 'field.description'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
-    </label>
-    <textarea id="p-desc"
-              placeholder="{{ 'field.description_placeholder'|trans({}, 'admin_menu') }}"></textarea>
-</div>
-
-{# Traducciones IA — oculto por defecto; solo aparece en un plato ya
-   guardado que tenga alguna traducción generada aparte del idioma por
-   defecto del restaurante. Deja corregir a mano el texto de un idioma
-   concreto (p.ej. una mala traducción de la IA) sin tocar el resto — ver
-   ProductUI.renderTranslations()/selectTranslationLocale()/saveTranslation()
-   en _product_js.html.twig. #}
-<div class="translation-accordion" id="p-translations-accordion" style="display:none">
-    <div class="translation-accordion-toggle" onclick="toggleTranslationsAccordion(this)" role="button" tabindex="0" aria-expanded="false">
-        <i class="ti ti-chevron-right translation-accordion-chevron" aria-hidden="true"></i>
-        <div class="translation-accordion-toggle-text">
-            <span class="translation-accordion-title">
-                {{ 'translations.title'|trans({}, 'admin_menu') }}
-                <span class="translation-accordion-badge" id="p-translations-badge"></span>
-            </span>
-        </div>
-    </div>
-    <div class="translation-accordion-body">
-        <div class="field">
-            <label class="field-label">{{ 'translations.locale_label'|trans({}, 'admin_menu') }}</label>
-            <div class="translation-locale-row">
-                <select id="p-translation-locale" onchange="ProductUI.selectTranslationLocale(this.value)"></select>
-                <span class="translation-source-badge" id="p-translation-source-badge"></span>
-            </div>
-        </div>
-        <div class="field">
-            <label class="field-label">{{ 'translations.name_label'|trans({}, 'admin_menu') }}</label>
-            <input type="text" id="p-translation-name">
-        </div>
-        <div class="field">
-            <label class="field-label">{{ 'translations.description_label'|trans({}, 'admin_menu') }}</label>
-            <textarea id="p-translation-desc"></textarea>
-        </div>
-        <div class="allergen-add-btn" onclick="ProductUI.saveTranslation()" role="button" tabindex="0">
-            <i class="ti ti-check" style="font-size:13px" aria-hidden="true"></i> {{ 'translations.save'|trans({}, 'admin_menu') }}
-        </div>
-    </div>
-</div>
-
-{# Precio, "fila base" del bloque de precios. En estado simple es la única
-   fila visible (la Etiqueta va oculta) — idéntico a hoy, con su propia
-   etiqueta de campo visible (no hay fila de cabecera que la sustituya
-   todavía). En estado expandido, togglePriceVariants() en menu.html.twig
-   RE-PARENTA este MISMO nodo (nunca lo duplica) dentro de
-   .price-variant-rows como primera fila, y lo devuelve aquí (justo antes de
-   .price-variants-section) al colapsar. Mismas clases que una fila de
-   variante para que se vea idéntica una vez dentro del grupo — ver
-   .price-variants-group .price-variant-base-row .field-label en el CSS,
-   que oculta la etiqueta propia de "Precio" solo cuando la fila está
-   dentro del grupo (la cabecera de columna la sustituye ahí). Sin botón ×
-   — el precio base es obligatorio — pero con un espaciador invisible de su
-   mismo ancho, para que las columnas de todas las filas queden alineadas. #}
-<div class="price-variant-row-item price-variant-base-row">
-    <div class="field price-variant-label-field price-variant-base-label-field" style="display:none">
-        <input type="text"
-               id="p-base-price-label"
-               maxlength="40"
-               placeholder="{{ 'field.price_variant_label_placeholder'|trans({}, 'admin_menu') }}">
-    </div>
-    <div class="field price-variant-price-field">
-        <label class="field-label">
-            {{ 'field.price'|trans({'%currency%': restaurant.currency}, 'admin_menu') }} <span class="req">*</span>
-        </label>
-        <input type="number"
-               id="p-price"
-               min="0" step="0.01"
-               placeholder="0.00"
-               inputmode="decimal">
-        <div class="field-error" id="p-price-error">{{ 'field_error.price_required'|trans({}, 'admin_menu') }}</div>
-    </div>
-    <span class="price-variant-remove-spacer" aria-hidden="true"></span>
-</div>
-
-{# Precios por variante (Tapa/Media ración/Ración, Caña/Doble/Jarra…) — one
-   persistent toggle that both expands (pulls the base price row in as the
-   list's first row, plus one empty variant row already visible — choosing
-   "varios precios" already implies a second price, so the owner never
-   needs a second click just to see it) and collapses (clears everything,
-   moves the base row back to its home position, back to the exact simple
-   state). Up to 3 more label+price rows (4 prices total). Base row +
-   variant rows + "add another" link all live inside the SAME grouped box,
-   so it reads as one coherent price list — supplement (unrelated) sits
-   well below it. Column headers ("Etiqueta" / "Precio (…) *") render once,
-   above every row, rather than repeating per row — every row (base and
-   variant alike) is a bare label+price input pair with no row-level label
-   of its own, so all rows share the exact same height/padding. See
-   togglePriceVariants()/addPriceVariantRow()/removePriceVariantRow() and
-   resetProduct() in menu.html.twig. #}
-<div class="price-variants-section">
-    <div class="extra-price-toggle price-variants-toggle" onclick="togglePriceVariants(this)" role="button" tabindex="0">
-        <i class="ti ti-plus" aria-hidden="true"></i> {{ 'field.price_variants_toggle'|trans({}, 'admin_menu') }}
-    </div>
-    <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
-        {{ 'field.price_variants_toggle_hint'|trans({}, 'admin_menu') }}
-    </p>
-    <div class="price-variants-group" style="display:none">
-        <div class="field-label price-variants-group-label">{{ 'field.price_variants_group_label'|trans({}, 'admin_menu') }}</div>
-        <div class="price-variant-headers">
-            <span class="field-label price-variant-header-label">{{ 'field.price_variant_column_label'|trans({}, 'admin_menu') }}</span>
-            <span class="field-label price-variant-header-price">{{ 'field.price'|trans({'%currency%': restaurant.currency}, 'admin_menu') }} <span class="req">*</span></span>
-            <span class="price-variant-header-spacer" aria-hidden="true"></span>
-        </div>
-        <div class="price-variant-rows"></div>
-        <div class="price-variant-add" onclick="addPriceVariantRow(this)" role="button" tabindex="0">
-            <i class="ti ti-plus" style="font-size:12px" aria-hidden="true"></i> {{ 'field.price_variant_add'|trans({}, 'admin_menu') }}
-        </div>
-    </div>
-</div>
-
-{# Suplemento — a single optional extra charge, unrelated to price variants
-   above; a single direct link reveals the field immediately, no
-   intermediate chooser (there's nothing left to choose between). Visually
-   separated from the price list above (see .extra-price-section's own
-   margin-top) so it never reads as part of it. See
-   showSupplementField()/hideSupplementField() and resetProduct() in
-   menu.html.twig. #}
-<div class="extra-price-section">
-    <div class="extra-price-toggle" onclick="showSupplementField(this)" role="button" tabindex="0">
-        <i class="ti ti-plus" aria-hidden="true"></i> {{ 'field.supplement_toggle'|trans({}, 'admin_menu') }}
-    </div>
-    <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
-        {{ 'field.supplement_hint'|trans({}, 'admin_menu') }}
-    </p>
-    <div class="field extra-price-field" style="display:none">
-        <label class="field-label">
-            {{ 'field.supplement_price'|trans({'%currency%': restaurant.currency}, 'admin_menu') }}
-            <span class="extra-price-remove" onclick="hideSupplementField(this)" role="button" tabindex="0" aria-label="{{ 'field.remove_extra_price'|trans({}, 'admin_menu') }}">×</span>
-        </label>
-        <input type="number"
-               id="p-supplement-price"
-               min="0" step="0.01"
-               placeholder="0.00"
-               inputmode="decimal">
-    </div>
-</div>
-
-{# Imagen — opcional #}
-<div class="field">
-    <label class="field-label">
-        {{ 'field.photo'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
-    </label>
-    <div class="img-upload"
-         id="img-upload-area"
-         onclick="document.getElementById('p-img-input').click()"
-         ondragover="event.preventDefault(); this.classList.add('drag-over')"
-         ondragleave="this.classList.remove('drag-over')"
-         ondrop="handleImageDrop(event, this)"
-         role="button"
-         tabindex="0"
-         aria-label="{{ 'upload.aria'|trans({}, 'admin_menu') }}">
-        <div class="img-upload-hint">
-            <i class="ti ti-photo-up" style="font-size:20px" aria-hidden="true"></i>
-            {{ 'upload.hint'|trans({}, 'admin_menu') }}
-        </div>
-    </div>
-    <input type="file"
-           id="p-img-input"
-           accept="image/*"
-           style="display:none"
-           onchange="previewImage(this)">
-</div>
-
-{# Información nutricional — calorías (ya existía, ?int/kcal) agrupada junto
-   a los 4 campos añadidos en la migración de la Fase 1 (fat/protein/
-   carbohydrates/sugars, decimal(5,1)/gramos) bajo un único .field, mismo
-   patrón que "Alérgenos" usa para agrupar sus propios sub-bloques más abajo.
-   Todos opcionales e independientes entre sí — un plato puede tener
-   cualquier subconjunto relleno. .field-row ya existía en
-   _product_modal_css.html.twig sin usarse en este formulario; se reutiliza
-   aquí tal cual (colapsa a una columna en móvil). #}
-<div class="field">
-    <label class="field-label">
-        {{ 'field.nutrition_facts'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
-    </label>
-
-    <div class="field">
-        <label class="field-label">{{ 'field.calories'|trans({}, 'admin_menu') }}</label>
-        <input type="number"
-               id="p-calories"
-               min="0"
-               placeholder="kcal"
-               inputmode="numeric">
+{# Step 2 is grouped into 4 tabs (General/Foto/Detalles/Alérgenos) rather
+   than one long scroll. Tab switching is handled by ProductUI.activateTab()
+   in _product_js.html.twig, scoped to the closest .product-tabs-wrap so the
+   desktop and mobile copies never affect each other. Reset-to-General on
+   every step-2 open lives in ProductUI.goStep2() (ProductUI._resetTabs()). #}
+<div class="product-tabs-wrap">
+    <div class="product-tabs" role="tablist" aria-label="{{ 'tab.group_aria'|trans({}, 'admin_menu') }}" onkeydown="ProductUI.onTabKeydown(event)">
+        <button type="button" class="product-tab active" role="tab" data-tab="general"
+                id="{{ tab_prefix }}-tab-general" aria-controls="{{ tab_prefix }}-tabpanel-general"
+                aria-selected="true" tabindex="0" onclick="ProductUI.activateTab(this)">
+            {{ 'tab.general'|trans({}, 'admin_menu') }}
+        </button>
+        <button type="button" class="product-tab" role="tab" data-tab="photo"
+                id="{{ tab_prefix }}-tab-photo" aria-controls="{{ tab_prefix }}-tabpanel-photo"
+                aria-selected="false" tabindex="-1" onclick="ProductUI.activateTab(this)">
+            {{ 'tab.photo'|trans({}, 'admin_menu') }}
+        </button>
+        <button type="button" class="product-tab" role="tab" data-tab="details"
+                id="{{ tab_prefix }}-tab-details" aria-controls="{{ tab_prefix }}-tabpanel-details"
+                aria-selected="false" tabindex="-1" onclick="ProductUI.activateTab(this)">
+            {{ 'tab.details'|trans({}, 'admin_menu') }}
+        </button>
+        <button type="button" class="product-tab" role="tab" data-tab="allergens"
+                id="{{ tab_prefix }}-tab-allergens" aria-controls="{{ tab_prefix }}-tabpanel-allergens"
+                aria-selected="false" tabindex="-1" onclick="ProductUI.activateTab(this)">
+            {{ 'tab.allergens'|trans({}, 'admin_menu') }}
+        </button>
     </div>
 
-    <div class="field-row">
-        <div class="field">
-            <label class="field-label">{{ 'field.fat'|trans({}, 'admin_menu') }}</label>
-            <input type="number" id="p-fat" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
-        </div>
-        <div class="field">
-            <label class="field-label">{{ 'field.protein'|trans({}, 'admin_menu') }}</label>
-            <input type="number" id="p-protein" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
-        </div>
-    </div>
-    <div class="field-row">
-        <div class="field">
-            <label class="field-label">{{ 'field.carbohydrates'|trans({}, 'admin_menu') }}</label>
-            <input type="number" id="p-carbohydrates" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
-        </div>
-        <div class="field">
-            <label class="field-label">{{ 'field.sugars'|trans({}, 'admin_menu') }}</label>
-            <input type="number" id="p-sugars" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
-        </div>
-    </div>
+    <div class="product-tab-panels">
+        {# ═══ General: categoría, nombre, descripción, traducciones IA, precio ═══ #}
+        <div class="product-tab-panel active" role="tabpanel" data-tab="general"
+             id="{{ tab_prefix }}-tabpanel-general" aria-labelledby="{{ tab_prefix }}-tab-general">
 
-    <div class="field-error" id="p-nutrition-error">{{ 'error.nutrition_value_invalid'|trans({}, 'admin_menu') }}</div>
-</div>
-
-{# Picante — opcional #}
-<div class="field">
-    <label class="field-label">
-        {{ 'field.spicy_level'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
-    </label>
-    <div class="spicy-row">
-        {% for i in 1..5 %}
-            <div class="spicy-pip"
-                 data-level="{{ i }}"
-                 onclick="setSpicy({{ i }})"
-                 role="button"
-                 tabindex="0"
-                 aria-label="{{ 'spicy.aria'|trans({'%level%': i}, 'admin_menu') }}"><span class="chili">🌶</span></div>
-        {% endfor %}
-        <span class="spicy-text">{{ 'spicy.none'|trans({}, 'admin_menu') }}</span>
-    </div>
-</div>
-
-{# Etiquetas — opcional. "recommended" (Smart Waiter) is deliberately excluded
-   from this generic list — it has its own dedicated section below so it's
-   never duplicated between the two controls. #}
-{% set recommendedTag = null %}
-{% set genericTags = [] %}
-{% for tag in restaurant.productTags %}
-    {% if tag.isSystem and tag.code == 'recommended' %}
-        {% set recommendedTag = tag %}
-    {% else %}
-        {% set genericTags = genericTags|merge([tag]) %}
-    {% endif %}
-{% endfor %}
-
-{% if genericTags|length > 0 %}
-    <div class="field">
-        <label class="field-label">
-            {{ 'field.tags'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
-        </label>
-        <div class="tag-pills">
-            {% for tag in genericTags %}
-                {% set tagT = null %}
-                {% for tr in tag.translations %}
-                    {% if tr.locale == locale %}{% set tagT = tr %}{% endif %}
-                {% endfor %}
-                {% if tagT %}
-                    <div class="tag-pill"
-                         data-tag-id="{{ tag.id }}"
-                         onclick="this.classList.toggle('on')"
-                         role="checkbox"
-                         aria-checked="false">
-                        {{ tag.icon }} {{ tagT.name }}
-                    </div>
-                {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-{% else %}
-    <div style="font-size:12px;color:var(--tx-6);padding:8px 12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--bd-1)">
-        {{ 'tags.none_configured'|trans({
-            '%link_start%': '<a href="' ~ path('admin_tags') ~ '" style="color:var(--tx-3)">',
-            '%link_end%': '</a>',
-        }, 'admin_menu')|raw }}
-    </div>
-{% endif %}
-
-{# Smart Waiter — the one signal the AI assistant is allowed to cite when a
-   customer asks what the restaurant recommends (see MenuContextBuilder /
-   SmartWaiterPromptBuilder). This checkbox only adds or removes the existing
-   "recommended" System Tag — same product_save "tags" payload as the pills
-   above, no new field or logic. #}
-{% if recommendedTag %}
-    <div class="field">
-        <label class="field-label">{{ recommendedTag.icon }} {{ 'smart_waiter.section_title'|trans({}, 'admin_menu') }}</label>
-        <label class="sw-recommend-box">
-            <input type="checkbox" id="p-recommended" data-tag-id="{{ recommendedTag.id }}">
-            <span class="sw-recommend-text">
-                <span class="sw-recommend-label">{{ 'smart_waiter.recommended_label'|trans({}, 'admin_menu') }}</span>
-                <span class="sw-recommend-hint">{{ 'smart_waiter.recommended_hint'|trans({}, 'admin_menu') }}</span>
-            </span>
-        </label>
-    </div>
-{% endif %}
-
-{# Ingredientes — opcional #}
-<div class="field">
-    <label class="field-label" for="ing-select">
-        {{ 'field.ingredients'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
-    </label>
-    <select id="ing-select" multiple placeholder="{{ 'ingredients.placeholder'|trans({}, 'admin_menu') }}"></select>
-    <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
-        {{ 'ingredients.hint'|trans({}, 'admin_menu') }}
-    </p>
-</div>
-
-{# Alérgenos — opcional, calculado desde los ingredientes + casos especiales #}
-{% macro help(text) %}
-    <span class="help-icon" role="button" tabindex="0" aria-label="{{ 'common.help'|trans({}, 'admin_menu') }}" data-help-text="{{ text|e('html_attr') }}" onclick="toggleHelp(event, this)">?</span>
-{% endmacro %}
-{% import _self as ui %}
-
-<div class="field">
-    <label class="field-label">
-        {{ 'field.allergens'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
-    </label>
-
-    <div class="allergen-block">
-        <div class="allergen-subtitle">
-            {{ 'allergens.computed_title'|trans({}, 'admin_menu') }}
-            {{ ui.help('allergens.help_computed'|trans({}, 'admin_menu')) }}
-        </div>
-        <div class="allergen-chip-row" id="p-allergen-computed"></div>
-        <p class="allergen-hint">{{ 'allergens.computed_hint'|trans({}, 'admin_menu') }}</p>
-    </div>
-
-    <div class="allergen-block" id="p-private-ingredient-allergens-wrap" style="display:none">
-        <div class="allergen-subtitle">{{ 'allergens.your_ingredients_title'|trans({}, 'admin_menu') }}</div>
-        <p class="allergen-hint">{{ 'allergens.your_ingredients_hint'|trans({}, 'admin_menu') }}</p>
-        <div id="p-private-ingredient-allergens"></div>
-    </div>
-
-    {# Collapsed by default — the vast majority of dishes need nothing here at all;
-       see toggleAllergenAdvanced() in menu.html.twig. #}
-    <div class="allergen-accordion">
-        <div class="allergen-accordion-toggle" onclick="toggleAllergenAdvanced(this)" role="button" tabindex="0" aria-expanded="false">
-            <i class="ti ti-chevron-right allergen-accordion-chevron" aria-hidden="true"></i>
-            <div class="allergen-accordion-toggle-text">
-                <span class="allergen-accordion-title">
-                    {{ 'allergens.advanced_title'|trans({}, 'admin_menu') }}
-                    <span class="allergen-accordion-badge" style="display:none">0</span>
-                </span>
-                <span class="allergen-accordion-subtitle">
-                    {{ 'allergens.advanced_hint'|trans({}, 'admin_menu') }}
-                    {{ ui.help('allergens.help_cross_contamination'|trans({}, 'admin_menu')) }}
-                </span>
-            </div>
-        </div>
-        <div class="allergen-accordion-body">
-            <div class="allergen-block-label">
-                {{ 'allergens.overrides_title'|trans({}, 'admin_menu') }}
-                {{ ui.help('allergens.help_product_exception'|trans({}, 'admin_menu')) }}
-            </div>
-            <div class="allergen-chip-row" id="p-allergen-overrides"></div>
-            <div class="allergen-override-adder">
-                <select id="p-allergen-add-select">
-                    <option value="">{{ 'allergens.select_allergen'|trans({}, 'admin_menu') }}</option>
-                    {% for allergen in allergens %}
-                        {% set aT = allergen.getTranslation(locale) %}
-                        {% if not aT %}{% set aT = allergen.getTranslation('en') %}{% endif %}
-                        {% if aT %}<option value="{{ allergen.id }}">{{ allergen.icon }} {{ aT.name }}</option>{% endif %}
+            {# Categoría — siempre visible y editable #}
+            <div class="field">
+                <label class="field-label">{{ 'field.category'|trans({}, 'admin_menu') }} <span class="req">*</span></label>
+                <select id="p-category">
+                    {% for category in categories %}
+                        {% set catT = category.getDisplayTranslation(locale) %}
+                        <option value="{{ category.id }}">{{ catT ? catT.name : 'common.unnamed'|trans({}, 'admin_menu') }}</option>
                     {% endfor %}
                 </select>
-                <select id="p-allergen-add-presence">
-                    <option value="contains">{{ 'allergens.presence_contains'|trans({}, 'admin_menu') }}</option>
-                    <option value="may_contain">{{ 'allergens.presence_may_contain'|trans({}, 'admin_menu') }}</option>
-                    <option value="free_from">{{ 'allergens.presence_free_from'|trans({}, 'admin_menu') }}</option>
-                </select>
-                <input type="text" id="p-allergen-add-note" placeholder="{{ 'allergens.note_placeholder'|trans({}, 'admin_menu') }}">
-                <div class="allergen-add-btn" onclick="addAllergenOverride()" role="button" tabindex="0">
-                    <i class="ti ti-plus" style="font-size:13px" aria-hidden="true"></i> {{ 'allergens.add_exception'|trans({}, 'admin_menu') }}
+            </div>
+
+            {# Nombre — obligatorio #}
+            <div class="field">
+                <label class="field-label">
+                    {{ 'field.product_name'|trans({}, 'admin_menu') }} <span class="req">*</span>
+                </label>
+                <input type="text"
+                       id="p-name"
+                       placeholder="{{ 'field.product_name_placeholder'|trans({}, 'admin_menu') }}">
+                <div class="field-error" id="p-name-error">{{ 'field_error.name_required'|trans({}, 'admin_menu') }}</div>
+            </div>
+
+            {# Descripción — opcional #}
+            <div class="field">
+                <label class="field-label">
+                    {{ 'field.description'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
+                </label>
+                <textarea id="p-desc"
+                          placeholder="{{ 'field.description_placeholder'|trans({}, 'admin_menu') }}"></textarea>
+            </div>
+
+            {# Traducciones IA — oculto por defecto; solo aparece en un plato ya
+               guardado que tenga alguna traducción generada aparte del idioma por
+               defecto del restaurante. Deja corregir a mano el texto de un idioma
+               concreto (p.ej. una mala traducción de la IA) sin tocar el resto — ver
+               ProductUI.renderTranslations()/selectTranslationLocale()/saveTranslation()
+               en _product_js.html.twig. #}
+            <div class="translation-accordion" id="p-translations-accordion" style="display:none">
+                <div class="translation-accordion-toggle" onclick="toggleTranslationsAccordion(this)" role="button" tabindex="0" aria-expanded="false">
+                    <i class="ti ti-chevron-right translation-accordion-chevron" aria-hidden="true"></i>
+                    <div class="translation-accordion-toggle-text">
+                        <span class="translation-accordion-title">
+                            {{ 'translations.title'|trans({}, 'admin_menu') }}
+                            <span class="translation-accordion-badge" id="p-translations-badge"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="translation-accordion-body">
+                    <div class="field">
+                        <label class="field-label">{{ 'translations.locale_label'|trans({}, 'admin_menu') }}</label>
+                        <div class="translation-locale-row">
+                            <select id="p-translation-locale" onchange="ProductUI.selectTranslationLocale(this.value)"></select>
+                            <span class="translation-source-badge" id="p-translation-source-badge"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">{{ 'translations.name_label'|trans({}, 'admin_menu') }}</label>
+                        <input type="text" id="p-translation-name">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">{{ 'translations.description_label'|trans({}, 'admin_menu') }}</label>
+                        <textarea id="p-translation-desc"></textarea>
+                    </div>
+                    <div class="allergen-add-btn" onclick="ProductUI.saveTranslation()" role="button" tabindex="0">
+                        <i class="ti ti-check" style="font-size:13px" aria-hidden="true"></i> {{ 'translations.save'|trans({}, 'admin_menu') }}
+                    </div>
                 </div>
             </div>
-            <div class="allergen-presence-legend">
-                <span>{{ 'allergens.presence_contains'|trans({}, 'admin_menu') }} {{ ui.help('allergens.help_contains'|trans({}, 'admin_menu')) }}</span>
-                <span>{{ 'allergens.presence_may_contain'|trans({}, 'admin_menu') }} {{ ui.help('allergens.help_may_contain'|trans({}, 'admin_menu')) }}</span>
-                <span>{{ 'allergens.presence_free_from'|trans({}, 'admin_menu') }} {{ ui.help('allergens.help_free_from'|trans({}, 'admin_menu')) }}</span>
+
+            {# Precio, "fila base" del bloque de precios. En estado simple es la única
+               fila visible (la Etiqueta va oculta) — idéntico a hoy, con su propia
+               etiqueta de campo visible (no hay fila de cabecera que la sustituya
+               todavía). En estado expandido, togglePriceVariants() en menu.html.twig
+               RE-PARENTA este MISMO nodo (nunca lo duplica) dentro de
+               .price-variant-rows como primera fila, y lo devuelve aquí (justo antes de
+               .price-variants-section) al colapsar. Mismas clases que una fila de
+               variante para que se vea idéntica una vez dentro del grupo — ver
+               .price-variants-group .price-variant-base-row .field-label en el CSS,
+               que oculta la etiqueta propia de "Precio" solo cuando la fila está
+               dentro del grupo (la cabecera de columna la sustituye ahí). Sin botón ×
+               — el precio base es obligatorio — pero con un espaciador invisible de su
+               mismo ancho, para que las columnas de todas las filas queden alineadas. #}
+            <div class="price-variant-row-item price-variant-base-row">
+                <div class="field price-variant-label-field price-variant-base-label-field" style="display:none">
+                    <input type="text"
+                           id="p-base-price-label"
+                           maxlength="40"
+                           placeholder="{{ 'field.price_variant_label_placeholder'|trans({}, 'admin_menu') }}">
+                </div>
+                <div class="field price-variant-price-field">
+                    <label class="field-label">
+                        {{ 'field.price'|trans({'%currency%': restaurant.currency}, 'admin_menu') }} <span class="req">*</span>
+                    </label>
+                    <input type="number"
+                           id="p-price"
+                           min="0" step="0.01"
+                           placeholder="0.00"
+                           inputmode="decimal">
+                    <div class="field-error" id="p-price-error">{{ 'field_error.price_required'|trans({}, 'admin_menu') }}</div>
+                </div>
+                <span class="price-variant-remove-spacer" aria-hidden="true"></span>
+            </div>
+
+            {# Precios por variante (Tapa/Media ración/Ración, Caña/Doble/Jarra…) — one
+               persistent toggle that both expands (pulls the base price row in as the
+               list's first row, plus one empty variant row already visible — choosing
+               "varios precios" already implies a second price, so the owner never
+               needs a second click just to see it) and collapses (clears everything,
+               moves the base row back to its home position, back to the exact simple
+               state). Up to 3 more label+price rows (4 prices total). Base row +
+               variant rows + "add another" link all live inside the SAME grouped box,
+               so it reads as one coherent price list — supplement (unrelated) sits
+               well below it. Column headers ("Etiqueta" / "Precio (…) *") render once,
+               above every row, rather than repeating per row — every row (base and
+               variant alike) is a bare label+price input pair with no row-level label
+               of its own, so all rows share the exact same height/padding. See
+               togglePriceVariants()/addPriceVariantRow()/removePriceVariantRow() and
+               resetProduct() in menu.html.twig. #}
+            <div class="price-variants-section">
+                <div class="extra-price-toggle price-variants-toggle" onclick="togglePriceVariants(this)" role="button" tabindex="0">
+                    <i class="ti ti-plus" aria-hidden="true"></i> {{ 'field.price_variants_toggle'|trans({}, 'admin_menu') }}
+                </div>
+                <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
+                    {{ 'field.price_variants_toggle_hint'|trans({}, 'admin_menu') }}
+                </p>
+                <div class="price-variants-group" style="display:none">
+                    <div class="field-label price-variants-group-label">{{ 'field.price_variants_group_label'|trans({}, 'admin_menu') }}</div>
+                    <div class="price-variant-headers">
+                        <span class="field-label price-variant-header-label">{{ 'field.price_variant_column_label'|trans({}, 'admin_menu') }}</span>
+                        <span class="field-label price-variant-header-price">{{ 'field.price'|trans({'%currency%': restaurant.currency}, 'admin_menu') }} <span class="req">*</span></span>
+                        <span class="price-variant-header-spacer" aria-hidden="true"></span>
+                    </div>
+                    <div class="price-variant-rows"></div>
+                    <div class="price-variant-add" onclick="addPriceVariantRow(this)" role="button" tabindex="0">
+                        <i class="ti ti-plus" style="font-size:12px" aria-hidden="true"></i> {{ 'field.price_variant_add'|trans({}, 'admin_menu') }}
+                    </div>
+                </div>
+            </div>
+
+            {# Suplemento — a single optional extra charge, unrelated to price variants
+               above; a single direct link reveals the field immediately, no
+               intermediate chooser (there's nothing left to choose between). Visually
+               separated from the price list above (see .extra-price-section's own
+               margin-top) so it never reads as part of it. See
+               showSupplementField()/hideSupplementField() and resetProduct() in
+               menu.html.twig. #}
+            <div class="extra-price-section">
+                <div class="extra-price-toggle" onclick="showSupplementField(this)" role="button" tabindex="0">
+                    <i class="ti ti-plus" aria-hidden="true"></i> {{ 'field.supplement_toggle'|trans({}, 'admin_menu') }}
+                </div>
+                <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
+                    {{ 'field.supplement_hint'|trans({}, 'admin_menu') }}
+                </p>
+                <div class="field extra-price-field" style="display:none">
+                    <label class="field-label">
+                        {{ 'field.supplement_price'|trans({'%currency%': restaurant.currency}, 'admin_menu') }}
+                        <span class="extra-price-remove" onclick="hideSupplementField(this)" role="button" tabindex="0" aria-label="{{ 'field.remove_extra_price'|trans({}, 'admin_menu') }}">×</span>
+                    </label>
+                    <input type="number"
+                           id="p-supplement-price"
+                           min="0" step="0.01"
+                           placeholder="0.00"
+                           inputmode="decimal">
+                </div>
+            </div>
+        </div>
+
+        {# ═══ Foto: bloque de imagen — un solo campo hoy, pero el panel es un
+           contenedor .field genérico (igual que General/Detalles), no algo
+           acoplado a "un único campo" — un futuro campo de vídeo entraría
+           aquí como otro .field hermano, sin reestructurar nada. ═══ #}
+        <div class="product-tab-panel" role="tabpanel" data-tab="photo"
+             id="{{ tab_prefix }}-tabpanel-photo" aria-labelledby="{{ tab_prefix }}-tab-photo">
+
+            <div class="field">
+                <label class="field-label">
+                    {{ 'field.photo'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
+                </label>
+                <div class="img-upload"
+                     id="img-upload-area"
+                     onclick="document.getElementById('p-img-input').click()"
+                     ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                     ondragleave="this.classList.remove('drag-over')"
+                     ondrop="handleImageDrop(event, this)"
+                     role="button"
+                     tabindex="0"
+                     aria-label="{{ 'upload.aria'|trans({}, 'admin_menu') }}">
+                    <div class="img-upload-hint">
+                        <i class="ti ti-photo-up" style="font-size:20px" aria-hidden="true"></i>
+                        {{ 'upload.hint'|trans({}, 'admin_menu') }}
+                    </div>
+                </div>
+                <input type="file"
+                       id="p-img-input"
+                       accept="image/*"
+                       style="display:none"
+                       onchange="previewImage(this)">
+            </div>
+        </div>
+
+        {# ═══ Detalles: nutrición, picante, etiquetas, recomendado ═══ #}
+        <div class="product-tab-panel" role="tabpanel" data-tab="details"
+             id="{{ tab_prefix }}-tabpanel-details" aria-labelledby="{{ tab_prefix }}-tab-details">
+
+            {# Información nutricional — calorías (ya existía, ?int/kcal) agrupada junto
+               a los 4 campos añadidos en la migración de la Fase 1 (fat/protein/
+               carbohydrates/sugars, decimal(5,1)/gramos) bajo un único .field, mismo
+               patrón que "Alérgenos" usa para agrupar sus propios sub-bloques más abajo.
+               Todos opcionales e independientes entre sí — un plato puede tener
+               cualquier subconjunto relleno. .field-row ya existía en
+               _product_modal_css.html.twig sin usarse en este formulario; se reutiliza
+               aquí tal cual (colapsa a una columna en móvil). #}
+            <div class="field">
+                <label class="field-label">
+                    {{ 'field.nutrition_facts'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
+                </label>
+
+                <div class="field">
+                    <label class="field-label">{{ 'field.calories'|trans({}, 'admin_menu') }}</label>
+                    <input type="number"
+                           id="p-calories"
+                           min="0"
+                           placeholder="kcal"
+                           inputmode="numeric">
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label class="field-label">{{ 'field.fat'|trans({}, 'admin_menu') }}</label>
+                        <input type="number" id="p-fat" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">{{ 'field.protein'|trans({}, 'admin_menu') }}</label>
+                        <input type="number" id="p-protein" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label class="field-label">{{ 'field.carbohydrates'|trans({}, 'admin_menu') }}</label>
+                        <input type="number" id="p-carbohydrates" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
+                    </div>
+                    <div class="field">
+                        <label class="field-label">{{ 'field.sugars'|trans({}, 'admin_menu') }}</label>
+                        <input type="number" id="p-sugars" min="0" max="9999.9" step="0.1" placeholder="g" inputmode="decimal">
+                    </div>
+                </div>
+
+                <div class="field-error" id="p-nutrition-error">{{ 'error.nutrition_value_invalid'|trans({}, 'admin_menu') }}</div>
+            </div>
+
+            {# Picante — opcional #}
+            <div class="field">
+                <label class="field-label">
+                    {{ 'field.spicy_level'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
+                </label>
+                <div class="spicy-row">
+                    {% for i in 1..5 %}
+                        <div class="spicy-pip"
+                             data-level="{{ i }}"
+                             onclick="setSpicy({{ i }})"
+                             role="button"
+                             tabindex="0"
+                             aria-label="{{ 'spicy.aria'|trans({'%level%': i}, 'admin_menu') }}"><span class="chili">🌶</span></div>
+                    {% endfor %}
+                    <span class="spicy-text">{{ 'spicy.none'|trans({}, 'admin_menu') }}</span>
+                </div>
+            </div>
+
+            {# Etiquetas — opcional. "recommended" (Smart Waiter) is deliberately excluded
+               from this generic list — it has its own dedicated section below so it's
+               never duplicated between the two controls. #}
+            {% set recommendedTag = null %}
+            {% set genericTags = [] %}
+            {% for tag in restaurant.productTags %}
+                {% if tag.isSystem and tag.code == 'recommended' %}
+                    {% set recommendedTag = tag %}
+                {% else %}
+                    {% set genericTags = genericTags|merge([tag]) %}
+                {% endif %}
+            {% endfor %}
+
+            {% if genericTags|length > 0 %}
+                <div class="field">
+                    <label class="field-label">
+                        {{ 'field.tags'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
+                    </label>
+                    <div class="tag-pills">
+                        {% for tag in genericTags %}
+                            {% set tagT = null %}
+                            {% for tr in tag.translations %}
+                                {% if tr.locale == locale %}{% set tagT = tr %}{% endif %}
+                            {% endfor %}
+                            {% if tagT %}
+                                <div class="tag-pill"
+                                     data-tag-id="{{ tag.id }}"
+                                     onclick="this.classList.toggle('on')"
+                                     role="checkbox"
+                                     aria-checked="false">
+                                    {{ tag.icon }} {{ tagT.name }}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div style="font-size:12px;color:var(--tx-6);padding:8px 12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--bd-1)">
+                    {{ 'tags.none_configured'|trans({
+                        '%link_start%': '<a href="' ~ path('admin_tags') ~ '" style="color:var(--tx-3)">',
+                        '%link_end%': '</a>',
+                    }, 'admin_menu')|raw }}
+                </div>
+            {% endif %}
+
+            {# Smart Waiter — the one signal the AI assistant is allowed to cite when a
+               customer asks what the restaurant recommends (see MenuContextBuilder /
+               SmartWaiterPromptBuilder). This checkbox only adds or removes the existing
+               "recommended" System Tag — same product_save "tags" payload as the pills
+               above, no new field or logic. #}
+            {% if recommendedTag %}
+                <div class="field">
+                    <label class="field-label">{{ recommendedTag.icon }} {{ 'smart_waiter.section_title'|trans({}, 'admin_menu') }}</label>
+                    <label class="sw-recommend-box">
+                        <input type="checkbox" id="p-recommended" data-tag-id="{{ recommendedTag.id }}">
+                        <span class="sw-recommend-text">
+                            <span class="sw-recommend-label">{{ 'smart_waiter.recommended_label'|trans({}, 'admin_menu') }}</span>
+                            <span class="sw-recommend-hint">{{ 'smart_waiter.recommended_hint'|trans({}, 'admin_menu') }}</span>
+                        </span>
+                    </label>
+                </div>
+            {% endif %}
+        </div>
+
+        {# ═══ Alérgenos: ingredientes + alérgenos (calculados, de ingredientes,
+           casos especiales) ═══ #}
+        <div class="product-tab-panel" role="tabpanel" data-tab="allergens"
+             id="{{ tab_prefix }}-tabpanel-allergens" aria-labelledby="{{ tab_prefix }}-tab-allergens">
+
+            {# Ingredientes — opcional #}
+            <div class="field">
+                <label class="field-label" for="ing-select">
+                    {{ 'field.ingredients'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
+                </label>
+                <select id="ing-select" multiple placeholder="{{ 'ingredients.placeholder'|trans({}, 'admin_menu') }}"></select>
+                <p style="font-size:11px;color:var(--tx-7);margin-top:6px;line-height:1.5">
+                    {{ 'ingredients.hint'|trans({}, 'admin_menu') }}
+                </p>
+            </div>
+
+            {# Alérgenos — opcional, calculado desde los ingredientes + casos especiales #}
+            {% macro help(text) %}
+                <span class="help-icon" role="button" tabindex="0" aria-label="{{ 'common.help'|trans({}, 'admin_menu') }}" data-help-text="{{ text|e('html_attr') }}" onclick="toggleHelp(event, this)">?</span>
+            {% endmacro %}
+            {% import _self as ui %}
+
+            <div class="field">
+                <label class="field-label">
+                    {{ 'field.allergens'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
+                </label>
+
+                <div class="allergen-block">
+                    <div class="allergen-subtitle">
+                        {{ 'allergens.computed_title'|trans({}, 'admin_menu') }}
+                        {{ ui.help('allergens.help_computed'|trans({}, 'admin_menu')) }}
+                    </div>
+                    <div class="allergen-chip-row" id="p-allergen-computed"></div>
+                    <p class="allergen-hint">{{ 'allergens.computed_hint'|trans({}, 'admin_menu') }}</p>
+                </div>
+
+                <div class="allergen-block" id="p-private-ingredient-allergens-wrap" style="display:none">
+                    <div class="allergen-subtitle">{{ 'allergens.your_ingredients_title'|trans({}, 'admin_menu') }}</div>
+                    <p class="allergen-hint">{{ 'allergens.your_ingredients_hint'|trans({}, 'admin_menu') }}</p>
+                    <div id="p-private-ingredient-allergens"></div>
+                </div>
+
+                {# Collapsed by default — the vast majority of dishes need nothing here at all;
+                   see toggleAllergenAdvanced() in menu.html.twig. #}
+                <div class="allergen-accordion">
+                    <div class="allergen-accordion-toggle" onclick="toggleAllergenAdvanced(this)" role="button" tabindex="0" aria-expanded="false">
+                        <i class="ti ti-chevron-right allergen-accordion-chevron" aria-hidden="true"></i>
+                        <div class="allergen-accordion-toggle-text">
+                            <span class="allergen-accordion-title">
+                                {{ 'allergens.advanced_title'|trans({}, 'admin_menu') }}
+                                <span class="allergen-accordion-badge" style="display:none">0</span>
+                            </span>
+                            <span class="allergen-accordion-subtitle">
+                                {{ 'allergens.advanced_hint'|trans({}, 'admin_menu') }}
+                                {{ ui.help('allergens.help_cross_contamination'|trans({}, 'admin_menu')) }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="allergen-accordion-body">
+                        <div class="allergen-block-label">
+                            {{ 'allergens.overrides_title'|trans({}, 'admin_menu') }}
+                            {{ ui.help('allergens.help_product_exception'|trans({}, 'admin_menu')) }}
+                        </div>
+                        <div class="allergen-chip-row" id="p-allergen-overrides"></div>
+                        <div class="allergen-override-adder">
+                            <select id="p-allergen-add-select">
+                                <option value="">{{ 'allergens.select_allergen'|trans({}, 'admin_menu') }}</option>
+                                {% for allergen in allergens %}
+                                    {% set aT = allergen.getTranslation(locale) %}
+                                    {% if not aT %}{% set aT = allergen.getTranslation('en') %}{% endif %}
+                                    {% if aT %}<option value="{{ allergen.id }}">{{ allergen.icon }} {{ aT.name }}</option>{% endif %}
+                                {% endfor %}
+                            </select>
+                            <select id="p-allergen-add-presence">
+                                <option value="contains">{{ 'allergens.presence_contains'|trans({}, 'admin_menu') }}</option>
+                                <option value="may_contain">{{ 'allergens.presence_may_contain'|trans({}, 'admin_menu') }}</option>
+                                <option value="free_from">{{ 'allergens.presence_free_from'|trans({}, 'admin_menu') }}</option>
+                            </select>
+                            <input type="text" id="p-allergen-add-note" placeholder="{{ 'allergens.note_placeholder'|trans({}, 'admin_menu') }}">
+                            <div class="allergen-add-btn" onclick="addAllergenOverride()" role="button" tabindex="0">
+                                <i class="ti ti-plus" style="font-size:13px" aria-hidden="true"></i> {{ 'allergens.add_exception'|trans({}, 'admin_menu') }}
+                            </div>
+                        </div>
+                        <div class="allergen-presence-legend">
+                            <span>{{ 'allergens.presence_contains'|trans({}, 'admin_menu') }} {{ ui.help('allergens.help_contains'|trans({}, 'admin_menu')) }}</span>
+                            <span>{{ 'allergens.presence_may_contain'|trans({}, 'admin_menu') }} {{ ui.help('allergens.help_may_contain'|trans({}, 'admin_menu')) }}</span>
+                            <span>{{ 'allergens.presence_free_from'|trans({}, 'admin_menu') }} {{ ui.help('allergens.help_free_from'|trans({}, 'admin_menu')) }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

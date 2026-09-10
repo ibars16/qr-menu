@@ -104,6 +104,35 @@
 .step.active .step-num { background:#C1440E; border-color:#C1440E; color:#fff; }
 .step-sep { color:var(--bd-2); }
 
+/* Product tabs — internal grouping of step 2 (General/Foto/Detalles/
+   Alérgenos), not to be confused with .steps above (the 2-step
+   category→info wizard). .product-tabs-wrap replaces the flat field list
+   as .panel-body's only child, so .panel-body's own flex/gap/overflow-y
+   rules (shared with #d-step1-body/#m-step1-body's cat-select) stay
+   untouched — the tab bar sits fixed via flex-shrink:0 and only
+   .product-tab-panels scrolls. */
+.product-tabs-wrap { display:flex; flex-direction:column; flex:1; min-height:0; }
+.product-tabs { display:flex; gap:18px; border-bottom:1px solid var(--bd-1); flex-shrink:0; }
+.product-tab {
+    appearance:none; background:none; border:none; font-family:inherit;
+    font-size:13px; font-weight:500; color:var(--tx-5); cursor:pointer;
+    padding:0 0 10px; margin-bottom:-1px; border-bottom:2px solid transparent;
+    transition:color 0.15s, border-color 0.15s; white-space:nowrap;
+}
+.product-tab:hover { color:var(--tx-2); }
+.product-tab.active { color:var(--tx-hi); border-bottom-color:var(--brand); }
+.product-tab:focus-visible { outline:2px solid var(--brand); outline-offset:2px; border-radius:4px; }
+
+.product-tab-panels { flex:1; min-height:0; overflow-y:auto; padding-top:15px; }
+.product-tab-panel { display:none; flex-direction:column; gap:15px; }
+.product-tab-panel.active { display:flex; }
+
+@media (max-width: 767px) {
+    .product-tabs { gap:14px; }
+    .product-tab { padding:0 0 12px; font-size:13px; }
+    .product-tab-panels { padding-top:16px; }
+}
+
 /* Cat select */
 .cat-select-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:8px; }
 .cat-select-card {
