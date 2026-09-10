@@ -187,12 +187,4 @@ error:
     nutrition_value_invalid: 'The value must be a number between 0 and 9999.9, with at most one decimal.'
 
 translations:
-    title: AI translations
     hint_empty: "No AI translations yet — they'll appear here once a customer views the menu in another language."
-    locale_label: Language
-    source_ai: AI-translated
-    source_human: Edited by you
-    name_label: Name
-    description_label: Description
-    save: Save correction
-    saved: 'Translation saved ✓'

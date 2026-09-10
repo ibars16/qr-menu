@@ -187,12 +187,4 @@ error:
     nutrition_value_invalid: 'Der Wert muss eine Zahl zwischen 0 und 9999.9 mit höchstens einer Dezimalstelle sein.'
 
 translations:
-    title: KI-Übersetzungen
     hint_empty: "Noch keine KI-Übersetzungen — sie erscheinen hier, sobald ein Kunde das Menü in einer anderen Sprache ansieht."
-    locale_label: Sprache
-    source_ai: KI-übersetzt
-    source_human: Von dir bearbeitet
-    name_label: Name
-    description_label: Beschreibung
-    save: Korrektur speichern
-    saved: 'Übersetzung gespeichert ✓'

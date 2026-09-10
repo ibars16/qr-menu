@@ -187,12 +187,4 @@ error:
     nutrition_value_invalid: 'O valor deve ser um número entre 0 e 9999.9, com no máximo uma casa decimal.'
 
 translations:
-    title: Traduções de IA
     hint_empty: 'Ainda não há traduções de IA — vão aparecer aqui assim que um cliente vir o menu noutro idioma.'
-    locale_label: Idioma
-    source_ai: Traduzido por IA
-    source_human: Editado por ti
-    name_label: Nome
-    description_label: Descrição
-    save: Guardar correção
-    saved: 'Tradução guardada ✓'
