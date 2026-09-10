@@ -169,6 +169,7 @@ smart_waiter:
 upload:
     aria: Ajouter une photo du plat
     hint: Cliquez ou glissez une image ici
+    change: Changer la photo
 
 error:
     category_name_required: Le nom est obligatoire.

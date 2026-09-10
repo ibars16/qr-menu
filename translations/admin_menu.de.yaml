@@ -169,6 +169,7 @@ smart_waiter:
 upload:
     aria: Foto des Gerichts hochladen
     hint: Klicke oder ziehe ein Bild hierher
+    change: Foto ändern
 
 error:
     category_name_required: Der Name ist erforderlich.

@@ -231,8 +231,12 @@
                      tabindex="0"
                      aria-label="{{ 'upload.aria'|trans({}, 'admin_menu') }}">
                     <div class="img-upload-hint">
-                        <i class="ti ti-photo-up" style="font-size:20px" aria-hidden="true"></i>
+                        <i class="ti ti-photo-up" aria-hidden="true"></i>
                         {{ 'upload.hint'|trans({}, 'admin_menu') }}
+                    </div>
+                    <div class="img-upload-spinner" aria-hidden="true"></div>
+                    <div class="img-upload-edit" style="display:none">
+                        <i class="ti ti-pencil" aria-hidden="true"></i> {{ 'upload.change'|trans({}, 'admin_menu') }}
                     </div>
                 </div>
                 <input type="file"

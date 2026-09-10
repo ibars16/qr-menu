@@ -169,6 +169,7 @@ smart_waiter:
 upload:
     aria: Subir imagen del plato
     hint: Haz clic o arrastra una imagen aquí
+    change: Cambiar foto
 
 error:
     category_name_required: El nombre es obligatorio.

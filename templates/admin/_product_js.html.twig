@@ -884,33 +884,44 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllHelp(); });
 
     // ── Image preview / upload ───────────────────────────────────────────────
+    // Shared by previewImage() (local file, instant via ObjectURL) and
+    // renderProductImage() (a saved photo — a real network fetch of the
+    // original upload, no server-side thumbnail exists yet, so it can be
+    // slow) — both show a spinner and fade the <img> in on its load event,
+    // so a slow load reads as "loading", never as empty/broken. Also
+    // reveals "Cambiar foto" so the area still visibly invites a change
+    // once a photo is set, not just a plain picture with no affordance.
+    function showImageInArea(area, src) {
+        let img = area.querySelector('img');
+        if (!img) { img = document.createElement('img'); area.appendChild(img); }
+        img.classList.remove('loaded');
+        area.classList.add('loading');
+        img.onload = () => { img.classList.add('loaded'); area.classList.remove('loading'); };
+        img.src = src;
+        area.querySelector('.img-upload-hint').style.display = 'none';
+        area.querySelector('.img-upload-edit').style.display = 'flex';
+    }
+
     // previewImage() only shows the picked file locally — the actual upload
     // happens in saveProduct(), once a product id exists to attach it to (see
     // uploadProductImage()). A brand-new dish has no id until the main save
     // round-trips, so the file just sits in the <input> until then.
     function previewImage(input) {
         if (!input.files?.length) return;
-        const area = panelEl('img-upload-area');
-        const url  = URL.createObjectURL(input.files[0]);
-        let img    = area.querySelector('img');
-        if (!img) { img = document.createElement('img'); area.appendChild(img); }
-        img.src = url;
-        area.querySelector('.img-upload-hint').style.display = 'none';
+        showImageInArea(panelEl('img-upload-area'), URL.createObjectURL(input.files[0]));
     }
 
-    // Renders the dish's already-saved photo (openEditProduct) — same
-    // add/reuse-<img> logic as previewImage(), just from a URL instead of a
-    // local file, and cleared back to the hint when the dish has none.
+    // Renders the dish's already-saved photo (openEditProduct), or clears
+    // back to the hint when the dish has none.
     function renderProductImage(imagePath) {
         document.querySelectorAll('[id="img-upload-area"]').forEach(area => {
-            let img = area.querySelector('img');
             if (imagePath) {
-                if (!img) { img = document.createElement('img'); area.appendChild(img); }
-                img.src = `/uploads/products/${imagePath}`;
-                area.querySelector('.img-upload-hint').style.display = 'none';
+                showImageInArea(area, `/uploads/products/${imagePath}`);
             } else {
-                img?.remove();
+                area.querySelector('img')?.remove();
+                area.classList.remove('loading');
                 area.querySelector('.img-upload-hint').style.display = '';
+                area.querySelector('.img-upload-edit').style.display = 'none';
             }
         });
     }
@@ -990,8 +1001,11 @@
         if (catSelectError) catSelectError.style.display = 'none';
         document.querySelectorAll('[id="img-upload-area"]').forEach(area => {
             area.querySelector('img')?.remove();
+            area.classList.remove('loading');
             const hint = area.querySelector('.img-upload-hint');
             if (hint) hint.style.display = '';
+            const edit = area.querySelector('.img-upload-edit');
+            if (edit) edit.style.display = 'none';
         });
         // Clear any picked-but-not-yet-uploaded file too — otherwise it
         // stays in the <input> and saveProduct() would silently attach the

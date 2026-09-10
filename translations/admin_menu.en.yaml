@@ -169,6 +169,7 @@ smart_waiter:
 upload:
     aria: Upload dish photo
     hint: Click or drag an image here
+    change: Change photo
 
 error:
     category_name_required: Name is required.

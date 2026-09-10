@@ -270,16 +270,47 @@
     .field-row { flex-direction:column; }
 }
 
-/* Image upload */
+/* Image upload — its own tab now (Foto), with the room a 76px line-item
+   box never had: 76px on object-fit:cover cropped most food photos down
+   to an unrecognizable sliver. Sized as a real photo preview instead. */
 .img-upload {
-    width:100%; height:76px; border:1px dashed var(--bd-2); border-radius:9px;
+    width:100%; aspect-ratio:16/9; max-height:260px; border:1px dashed var(--bd-2); border-radius:var(--r-lg);
     display:flex; align-items:center; justify-content:center; gap:8px;
     font-size:13px; color:var(--tx-6); cursor:pointer; background:var(--bg-card);
     transition:border-color 0.15s, color 0.15s; position:relative; overflow:hidden;
 }
 .img-upload:hover, .img-upload.drag-over { border-color:var(--tx-6); color:var(--tx-3); }
-.img-upload img  { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:8px; }
-.img-upload-hint { position:relative; z-index:1; display:flex; align-items:center; gap:6px; }
+.img-upload img {
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    opacity:0; transition:opacity 0.2s;
+}
+.img-upload img.loaded { opacity:1; }
+.img-upload-hint { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; padding:0 var(--sp-4); }
+.img-upload-hint i { font-size:26px; color:var(--tx-7); }
+
+/* Shown once the <img> starts loading (a saved photo is a real network
+   fetch of the original upload — there's no server-side thumbnail yet, so
+   it can take a moment) — a spinner reads as "loading", an empty box
+   reads as broken. Removed the instant the image's load event fires. */
+.img-upload-spinner {
+    position:absolute; z-index:1; width:22px; height:22px; border-radius:50%;
+    border:2px solid var(--bd-2); border-top-color:var(--tx-4);
+    animation:img-upload-spin 0.7s linear infinite; display:none;
+}
+.img-upload.loading .img-upload-spinner { display:block; }
+.img-upload.loading .img-upload-hint { display:none; }
+@keyframes img-upload-spin { to { transform:rotate(360deg); } }
+
+/* "Cambiar foto" — only shown once there's an image (previewImage()/
+   renderProductImage() toggle it opposite to .img-upload-hint), so the
+   whole clickable area still visibly invites a change instead of relying
+   on the owner guessing the photo itself is clickable. */
+.img-upload-edit {
+    position:absolute; z-index:2; left:50%; bottom:12px; transform:translateX(-50%);
+    align-items:center; gap:6px; padding:7px 14px; border-radius:var(--r-pill);
+    background:rgba(0,0,0,0.65); color:#fff; font-size:12px; font-weight:500;
+}
+.img-upload:hover .img-upload-edit { background:rgba(0,0,0,0.8); }
 
 /* Spicy */
 .chili {

@@ -169,6 +169,7 @@ smart_waiter:
 upload:
     aria: Carica foto del piatto
     hint: Clicca o trascina un'immagine qui
+    change: Cambia foto
 
 error:
     category_name_required: Il nome è obbligatorio.
