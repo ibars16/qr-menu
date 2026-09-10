@@ -112,16 +112,23 @@
    untouched — the tab bar sits fixed via flex-shrink:0 and only
    .product-tab-panels scrolls. */
 .product-tabs-wrap { display:flex; flex-direction:column; flex:1; min-height:0; }
-.product-tabs { display:flex; gap:18px; border-bottom:1px solid var(--bd-1); flex-shrink:0; }
+/* Segmented control, not an underline row — a thin text-only tab bar read
+   as barely-there against the rest of the form; a filled bg + border on
+   the group, and a raised card on the active tab, makes which of the 4
+   sections you're on obvious at a glance. */
+.product-tabs {
+    display:flex; gap:2px; padding:3px; flex-shrink:0;
+    background:var(--bg-input); border:1px solid var(--bd-2); border-radius:10px;
+}
 .product-tab {
-    appearance:none; background:none; border:none; font-family:inherit;
-    font-size:13px; font-weight:500; color:var(--tx-5); cursor:pointer;
-    padding:0 0 10px; margin-bottom:-1px; border-bottom:2px solid transparent;
-    transition:color 0.15s, border-color 0.15s; white-space:nowrap;
+    flex:1; appearance:none; background:none; border:none; font-family:inherit;
+    font-size:13px; font-weight:500; color:var(--tx-4); cursor:pointer;
+    padding:8px 6px; border-radius:7px; text-align:center;
+    transition:color 0.15s, background 0.15s, box-shadow 0.15s; white-space:nowrap;
 }
 .product-tab:hover { color:var(--tx-2); }
-.product-tab.active { color:var(--tx-hi); border-bottom-color:var(--brand); }
-.product-tab:focus-visible { outline:2px solid var(--brand); outline-offset:2px; border-radius:4px; }
+.product-tab.active { color:var(--tx-hi); background:var(--bg-card); box-shadow:var(--shadow-sm); }
+.product-tab:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
 
 /* All 4 panels are always laid out, stacked in the same grid cell — the
    grid sizes its row to the tallest of the 4 regardless of which is
@@ -139,8 +146,7 @@
 .product-tab-panel.active { visibility:visible; pointer-events:auto; }
 
 @media (max-width: 767px) {
-    .product-tabs { gap:14px; }
-    .product-tab { padding:0 0 12px; font-size:13px; }
+    .product-tab { padding:10px 4px; font-size:12px; }
     .product-tab-panels { padding-top:16px; }
 }
 
@@ -192,18 +198,6 @@
 .field textarea { resize:none; height:76px; line-height:1.55; }
 .field-row { display:flex; gap:10px; }
 .field-row .field { flex:1; }
-
-/* Category select — the one field on this tab that decides where the dish
-   lives, so it gets a visual weight none of the plain fields around it
-   have: an accent border/tint (same rgba(193,68,14,…) used for
-   .cat-select-card.selected above) instead of the neutral input styling. */
-.field-highlight {
-    padding:10px 12px 12px; border:1px solid rgba(193,68,14,0.4); border-radius:10px;
-    background:rgba(193,68,14,0.06);
-}
-.field-highlight .field-label { color:var(--tx-1); font-size:12px; }
-.field-highlight select { border-color:rgba(193,68,14,0.5); background:var(--bg-card); }
-.field-highlight select:focus { border-color:var(--brand); }
 
 /* Suplemento — subtle text link, direct reveal (no chooser). Clear
    margin-top separates it from the price list above (see
