@@ -46,6 +46,7 @@ class MenuAdminController extends AbstractController
         private readonly ProductTranslationService $productTranslationService,
         private readonly CategoryTranslationService $categoryTranslationService,
         private readonly UploadValidator $uploadValidator,
+        private readonly string $kernelEnvironment,
     ) {
     }
 
@@ -884,6 +885,12 @@ class MenuAdminController extends AbstractController
     #[Route('/products/delete-all', name: 'products_delete_all', methods: ['POST'])]
     public function deleteAllProducts(EntityManagerInterface $em): JsonResponse
     {
+        // Dev-only tool — 404 (not 403) outside dev so the route doesn't
+        // even hint at its existence in production.
+        if ('dev' !== $this->kernelEnvironment) {
+            throw $this->createNotFoundException();
+        }
+
         $restaurant = $this->restaurant();
 
         foreach ($restaurant->getCategories() as $category) {

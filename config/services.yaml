@@ -125,6 +125,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Controller\Admin\MenuAdminController:
+        arguments:
+            $kernelEnvironment: '%kernel.environment%'
+
     App\Service\MenuImportPipeline:
         arguments:
             $logger: '@monolog.logger.menu_import'

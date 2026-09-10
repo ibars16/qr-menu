@@ -5,7 +5,7 @@
 {% block page_title %}{{ 'title'|trans({}, 'admin_menu') }}{% endblock %}
 
 {% block header_actions %}
-    {% if totalProducts > 0 %}
+    {% if totalProducts > 0 and app.environment == 'dev' %}
         <button class="btn btn-danger" onclick="deleteAllProducts()" title="{{ 'action.delete_all_products'|trans({}, 'admin_menu') }}">
             <i class="ti ti-trash" aria-hidden="true"></i>
             <span class="hide-mobile">{{ 'action.delete_all_products'|trans({}, 'admin_menu') }}</span>
