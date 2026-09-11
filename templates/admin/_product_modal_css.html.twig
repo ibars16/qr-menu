@@ -555,6 +555,7 @@
     user-select:none; background:var(--bg-card); transition:background 0.15s;
 }
 .allergen-accordion-toggle:hover { background:var(--bg-hover); }
+.allergen-accordion-toggle:focus-visible { outline:2px solid var(--brand); outline-offset:-2px; }
 .allergen-accordion-chevron { font-size:14px; color:var(--tx-6); margin-top:2px; flex-shrink:0; transition:transform 0.18s; }
 .allergen-accordion-toggle[aria-expanded="true"] .allergen-accordion-chevron { transform:rotate(90deg); }
 .allergen-accordion-toggle-text { display:flex; flex-direction:column; gap:3px; min-width:0; }

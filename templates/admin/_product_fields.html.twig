@@ -406,10 +406,27 @@
                     <p class="allergen-hint">{{ 'allergens.computed_hint'|trans({}, 'admin_menu') }}</p>
                 </div>
 
-                <div class="allergen-block" id="p-private-ingredient-allergens-wrap" style="display:none">
-                    <div class="allergen-subtitle">{{ 'allergens.your_ingredients_title'|trans({}, 'admin_menu') }}</div>
-                    <p class="allergen-hint">{{ 'allergens.your_ingredients_hint'|trans({}, 'admin_menu') }}</p>
-                    <div id="p-private-ingredient-allergens"></div>
+                {# Collapsed by default — same accordion pattern as "Casos especiales"
+                   below, and unlike nutrition it never auto-opens even with data: the
+                   computed result above is what ends up on the public menu, this is
+                   only the correction tool for it. Display of the whole accordion
+                   (vs display:none) still follows "has restaurant ingredients", set by
+                   renderPrivateIngredientAllergens() — orthogonal to open/collapsed. #}
+                <div class="allergen-accordion" id="p-private-ingredient-allergens-wrap" style="display:none">
+                    <div class="allergen-accordion-toggle" onclick="toggleAllergenAdvanced(this)" role="button" tabindex="0" aria-expanded="false">
+                        <i class="ti ti-chevron-right allergen-accordion-chevron" aria-hidden="true"></i>
+                        <div class="allergen-accordion-toggle-text">
+                            <span class="allergen-accordion-title">
+                                {{ 'allergens.your_ingredients_title'|trans({}, 'admin_menu') }}
+                            </span>
+                            <span class="allergen-accordion-subtitle">
+                                {{ 'allergens.your_ingredients_hint'|trans({}, 'admin_menu') }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="allergen-accordion-body">
+                        <div id="p-private-ingredient-allergens"></div>
+                    </div>
                 </div>
 
                 {# Collapsed by default — the vast majority of dishes need nothing here at all;
