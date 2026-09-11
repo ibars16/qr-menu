@@ -309,21 +309,28 @@
                columna en móvil).
 
                Colapsado tras un toggle por defecto — el menos rellenado de los 4
-               bloques de Detalles, y el más tedioso de completar, así que no se le
-               da peso visual por delante de recomendado/etiquetas/picante. Mismo
-               patrón visual que "Añadir varios precios"/"Añadir suplemento"
-               (.extra-price-toggle, sin regla CSS propia), pero mismo modelo de
+               bloques de Detalles, y el más tedioso de completar. Mismo modelo de
                interacción que Variantes, no Suplemento: un toggle persistente de
                2 estados que solo pliega/despliega la vista, sin borrar los 5
                valores al colapsar (son independientes y opcionales — plegar no es
                "no quiero esto", como sí lo es el × de Suplemento). Ver
                toggleNutrition()/revealNutrition() y resetProduct() en
                _product_js.html.twig; validateProduct() fuerza esta sección abierta
-               antes de saltar a un error dentro, para que nunca quede escondido. #}
+               antes de saltar a un error dentro, para que nunca quede escondido.
+
+               A diferencia de "Añadir varios precios"/"Añadir suplemento" (que
+               comparten la misma base .extra-price-toggle pero se quedan
+               deliberadamente discretos), este toggle lleva más peso visual —
+               .nutrition-toggle en el CSS — porque el dueño tiene que NOTAR que
+               ahí puede añadir información nutricional, no solo encontrarla si la
+               busca. El "(opcional)" es un span hermano de .nutrition-toggle-text,
+               nunca anidado dentro — toggleNutrition() hace textContent= sobre ese
+               span en cada click y borraría cualquier hijo. #}
             <div class="nutrition-section">
                 <div class="extra-price-toggle nutrition-toggle" onclick="toggleNutrition(this)" role="button" tabindex="0">
                     <i class="ti ti-plus" aria-hidden="true"></i>
                     <span class="nutrition-toggle-text">{{ 'field.nutrition_toggle'|trans({}, 'admin_menu') }}</span>
+                    <span class="opt nutrition-toggle-opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
                 </div>
                 <div class="nutrition-fields" style="display:none">
                     <div class="field-label nutrition-group-label">{{ 'field.nutrition_facts'|trans({}, 'admin_menu') }}</div>

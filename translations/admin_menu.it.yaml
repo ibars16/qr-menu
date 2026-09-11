@@ -32,7 +32,7 @@ empty:
 field:
     calories: Calorie
     nutrition_facts: Valori nutrizionali
-    nutrition_toggle: Mostra valori nutrizionali
+    nutrition_toggle: Aggiungi valori nutrizionali
     nutrition_collapse: Nascondi valori nutrizionali
     fat: Grassi
     protein: Proteine

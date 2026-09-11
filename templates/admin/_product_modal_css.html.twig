@@ -341,6 +341,36 @@
     border-top: 1px solid var(--bd-1);
 }
 
+/* Nutrición toggle — deliberately heavier than .extra-price-toggle's other
+   two users ("Añadir varios precios"/"Añadir suplemento" stay as discreet
+   as they already were; this overrides ONLY the .nutrition-toggle hook, so
+   nothing else sharing the .extra-price-toggle base is affected). The base
+   rule reads as a footnote link; this one needs to read as an available
+   action — a subtle framed chip (border + very faint fill, same radius as
+   the form inputs) at body-text size/weight instead of the small muted
+   link. ":focus-visible" still comes from the shared .extra-price-toggle
+   rule. */
+.nutrition-toggle {
+    font-size: var(--fs-md); font-weight:500; color: var(--tx-1);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--bd-1); border-radius: var(--r-md);
+    background: var(--bg-hover);
+}
+.nutrition-toggle:hover { color: var(--tx-hi); border-color: var(--bd-2); }
+/* .extra-price-toggle:focus-visible sets border-radius:4px (line ~259) —
+   fine for the plain-link price toggles, but would visibly snap this
+   chip's own 9px radius down on focus. Same specificity (two classes) as
+   that rule but declared later, so this wins without touching the shared
+   rule the price toggles still rely on. */
+.nutrition-toggle:focus-visible { border-radius: var(--r-md); }
+.nutrition-toggle i { font-size: var(--fs-md); }
+/* "(opcional)" — same span/class the rest of Detalles' optional fields use
+   (NIVEL DE PICANTE/ETIQUETAS), but a notch bigger than .opt's default
+   10px since it sits next to fs-md text here rather than an 11px
+   field-label; stays visible in both toggle states (a sibling of
+   .nutrition-toggle-text, not touched by toggleNutrition()'s textContent=). */
+.nutrition-toggle-opt { font-size: var(--fs-xs); }
+
 /* Nutrición — collapsed by default (see toggleNutrition() in
    _product_js.html.twig). .nutrition-fields replicates the flex/gap a
    .field would normally give its children automatically, since this
@@ -358,6 +388,14 @@
     .field input, .field textarea, .field select { font-size:16px; }
     .field input, .field select { min-height:48px; }
     .field-row { flex-direction:column; }
+    /* .nutrition-toggle stays inline-flex (shrink-to-fit chip) on desktop,
+       where the modal is wide enough — but "Añadir información nutricional
+       (opcional)" at fs-md plus the icon can get close to a 390px viewport's
+       width, and inline-flex never wraps unless something constrains its
+       box first. Full-width flex row here lets it wrap onto a second line
+       instead of forcing horizontal scroll — also a bigger, easier tap
+       target on mobile. */
+    .nutrition-toggle { display:flex; width:100%; flex-wrap:wrap; }
 }
 
 /* Image upload — its own tab now (Foto), with the room a 76px line-item

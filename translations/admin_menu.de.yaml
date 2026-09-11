@@ -32,7 +32,7 @@ empty:
 field:
     calories: Kalorien
     nutrition_facts: Nährwertangaben
-    nutrition_toggle: Nährwertangaben anzeigen
+    nutrition_toggle: Nährwertangaben hinzufügen
     nutrition_collapse: Nährwertangaben ausblenden
     fat: Fett
     protein: Eiweiß
