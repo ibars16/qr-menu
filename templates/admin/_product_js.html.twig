@@ -457,7 +457,13 @@
                 plugins: ['remove_button'],
                 valueField: 'value',
                 labelField: 'name',
-                searchField: [],
+                // Not empty: with no scoring field, Sifter treats every
+                // option as a perfect match regardless of query — options
+                // from a previous search (server-filtered, not client-
+                // filtered) would never get hidden once a new query no
+                // longer matches them, since nothing here ever removes
+                // them from `options`, only adds to it.
+                searchField: ['name'],
                 options: [],
                 persist: false,
                 maxOptions: 20,
