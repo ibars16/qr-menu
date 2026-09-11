@@ -78,6 +78,7 @@ allergens:
     computed_hint: Wird automatisch aus den untenstehenden Zutaten berechnet — bearbeite die Allergene einer Zutat oder füge bei Bedarf eine gerichtsspezifische Ausnahme hinzu.
     computed_empty: In den aktuellen Zutaten wurden keine Allergene erkannt.
     your_ingredients_title: Allergene deiner Zutaten
+    scope_all_dishes: Alle deine Gerichte
     your_ingredients_hint: Wird mit jedem anderen Gericht geteilt, das dieselbe Zutat verwendet.
     new_ingredient_hint: Speichere das Gericht zuerst, um Allergene für neu hinzugefügte Zutaten zu markieren.
     overrides_title: Gerichtsspezifische Ausnahmen
@@ -91,6 +92,7 @@ allergens:
     remove: Entfernen
     source_computed_label: aus Zutaten
     advanced_title: Besondere Allergenfälle
+    scope_this_dish: Nur dieses Gericht
     advanced_hint: Nutze diesen Bereich nur, wenn die automatisch erkannten Allergene nicht ausreichen — zum Beispiel bei Kreuzkontamination oder wenn dieses Gericht eine zertifizierte allergenfreie Alternativzutat verwendet.
     help_computed: Diese Allergene werden automatisch anhand der Zutaten dieses Gerichts erkannt. In den meisten Fällen musst du nichts ändern.
     help_contains: Das Allergen ist absichtlich enthalten, weil eine oder mehrere Zutaten es enthalten.

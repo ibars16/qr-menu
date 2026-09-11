@@ -571,6 +571,20 @@
     padding:0 4px; border-radius:999px; background:var(--tx-6); color:var(--bg-card);
     font-size:10px; font-weight:700; margin-left:3px; vertical-align:middle;
 }
+/* Scope pills — informational only (no focus target of their own, no
+   --brand/alarm color): tell "affects every dish" apart from "this dish
+   only" while the accordion is collapsed. Inline with the title text, so
+   it wraps together with it exactly like .allergen-accordion-badge above
+   already does at narrow widths. */
+.allergen-scope-pill {
+    display:inline-flex; align-items:center; white-space:nowrap;
+    font-size:var(--fs-xs); font-weight:500; color:var(--tx-muted);
+    border:1px solid var(--bd-1); border-radius:var(--r-pill);
+    padding:1px var(--sp-2); margin-left:var(--sp-1); vertical-align:middle;
+}
+/* "Affects every dish" carries the wider consequence — one notch more
+   marked via a firmer border + weight, never via color/alarm. */
+.allergen-scope-pill-shared { border-color:var(--bd-2); font-weight:600; }
 .allergen-accordion-subtitle { font-size:11px; font-weight:400; color:var(--tx-7); line-height:1.5; }
 .allergen-accordion-body { display:none; padding:13px; border-top:1px solid var(--bd-1); }
 .allergen-accordion-body.open { display:block; }

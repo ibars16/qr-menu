@@ -78,6 +78,7 @@ allergens:
     computed_hint: Se calcula automáticamente según los ingredientes de abajo — edita los alérgenos de un ingrediente, o añade una excepción específica para este plato si hace falta.
     computed_empty: No se detectaron alérgenos en los ingredientes actuales.
     your_ingredients_title: Alérgenos de tus ingredientes
+    scope_all_dishes: Todos tus platos
     your_ingredients_hint: Se comparte con cualquier otro plato que use el mismo ingrediente.
     new_ingredient_hint: Guarda el plato primero para poder etiquetar los alérgenos de los ingredientes recién añadidos.
     overrides_title: Excepciones de este plato
@@ -91,6 +92,7 @@ allergens:
     remove: Quitar
     source_computed_label: según ingredientes
     advanced_title: Casos especiales de alérgenos
+    scope_this_dish: Solo este plato
     advanced_hint: Usa esta sección solo si los alérgenos detectados automáticamente no son suficientes, por ejemplo por contaminación cruzada o porque este plato usa un ingrediente alternativo certificado sin ese alérgeno.
     help_computed: Estos alérgenos se detectan automáticamente a partir de los ingredientes de este plato. En la mayoría de los casos no necesitas cambiar nada.
     help_contains: El alérgeno está presente intencionadamente porque uno o más ingredientes lo contienen.

@@ -78,6 +78,7 @@ allergens:
     computed_hint: Automatically calculated from the ingredients below — edit an ingredient's allergens, or add a dish-specific exception if needed.
     computed_empty: No allergens detected from the current ingredients.
     your_ingredients_title: Your ingredients' allergens
+    scope_all_dishes: All your dishes
     your_ingredients_hint: Shared with every other dish that uses the same ingredient.
     new_ingredient_hint: Save the dish first to tag allergens on newly added ingredients.
     overrides_title: Dish-specific exceptions
@@ -91,6 +92,7 @@ allergens:
     remove: Remove
     source_computed_label: from ingredients
     advanced_title: Special Allergen Cases
+    scope_this_dish: This dish only
     advanced_hint: Use this section only if the automatically detected allergens are not sufficient — for example due to cross-contamination, or because this dish uses a certified allergen-free alternative ingredient.
     help_computed: These allergens are detected automatically from the ingredients used in this dish. In most cases you do not need to change anything.
     help_contains: The allergen is intentionally present because one or more ingredients contain it.

@@ -78,6 +78,7 @@ allergens:
     computed_hint: Calculado automaticamente com base nos ingredientes abaixo — edita os alergénios de um ingrediente ou adiciona uma exceção específica para este prato, se necessário.
     computed_empty: Nenhum alergénio detetado nos ingredientes atuais.
     your_ingredients_title: Alergénios dos teus ingredientes
+    scope_all_dishes: Todos os teus pratos
     your_ingredients_hint: Partilhado com qualquer outro prato que use o mesmo ingrediente.
     new_ingredient_hint: Guarda primeiro o prato para poderes marcar os alergénios de ingredientes recém-adicionados.
     overrides_title: Exceções deste prato
@@ -91,6 +92,7 @@ allergens:
     remove: Remover
     source_computed_label: com base nos ingredientes
     advanced_title: Casos especiais de alergénios
+    scope_this_dish: Só este prato
     advanced_hint: Usa esta secção apenas se os alergénios detetados automaticamente não forem suficientes — por exemplo, devido a contaminação cruzada ou porque este prato usa um ingrediente alternativo certificado sem esse alergénio.
     help_computed: Estes alergénios são detetados automaticamente a partir dos ingredientes deste prato. Na maioria dos casos não precisas de alterar nada.
     help_contains: O alergénio está presente intencionalmente porque um ou mais ingredientes o contêm.
