@@ -541,19 +541,29 @@
     // ingredient is used), and this product's own override list (batched
     // into the main saveProduct() payload like tags/ingredients are).
 
-    function allergenChipHtml(a, presence, removable) {
+    // showPresence defaults to true — the computed row (chip color is now
+    // neutral everywhere, see .achip-contains/may_contain/free_from) is the
+    // ONE caller that turns it off, since it's a single "what this dish
+    // contains" list where contains is the assumed reading. Overrides never
+    // omit it: it's the only remaining way (now that color is neutral) to
+    // tell contains/may_contain/free_from apart in Casos especiales —
+    // dropping it there would make an explicit "confirmed free from" read
+    // identical to "contains", which is a food-safety regression, not a
+    // cosmetic one.
+    function allergenChipHtml(a, presence, removable, showPresence = true) {
         const label = presence === 'contains' ? MSG_ALLERGEN_PRESENCE_CONTAINS
             : presence === 'may_contain' ? MSG_ALLERGEN_PRESENCE_MAY_CONTAIN
             : MSG_ALLERGEN_PRESENCE_FREE_FROM;
         const remove = removable
             ? `<span class="achip-remove" onclick="removeAllergenOverride(${a.id})" role="button" tabindex="0" aria-label="${MSG_ALLERGEN_REMOVE}"><i class="ti ti-x" style="font-size:11px"></i></span>`
             : '';
-        return `<span class="achip achip-${presence}">${a.icon} ${a.name} · ${label}${remove}</span>`;
+        const suffix = showPresence ? ` · ${label}` : '';
+        return `<span class="achip achip-${presence}">${a.icon} ${a.name}${suffix}${remove}</span>`;
     }
 
     function renderAllergenComputed(list) {
         const html = (list && list.length)
-            ? list.map(e => allergenChipHtml({ icon: e.icon, name: e.name, id: e.id }, e.presence, false)).join('')
+            ? list.map(e => allergenChipHtml({ icon: e.icon, name: e.name, id: e.id }, e.presence, false, false)).join('')
             : `<span class="allergen-empty">${MSG_ALLERGEN_COMPUTED_EMPTY}</span>`;
         document.querySelectorAll('[id="p-allergen-computed"]').forEach(el => el.innerHTML = html);
     }

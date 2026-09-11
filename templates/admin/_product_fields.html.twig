@@ -443,14 +443,12 @@
                             </span>
                             <span class="allergen-accordion-subtitle">
                                 {{ 'allergens.advanced_hint'|trans({}, 'admin_menu') }}
-                                {{ ui.help('allergens.help_cross_contamination'|trans({}, 'admin_menu')) }}
                             </span>
                         </div>
                     </div>
                     <div class="allergen-accordion-body">
                         <div class="allergen-block-label">
                             {{ 'allergens.overrides_title'|trans({}, 'admin_menu') }}
-                            {{ ui.help('allergens.help_product_exception'|trans({}, 'admin_menu')) }}
                         </div>
                         <div class="allergen-chip-row" id="p-allergen-overrides"></div>
                         <div class="allergen-override-adder">
@@ -473,9 +471,10 @@
                             </div>
                         </div>
                         <div class="allergen-presence-legend">
-                            <span>{{ 'allergens.presence_contains'|trans({}, 'admin_menu') }} {{ ui.help('allergens.help_contains'|trans({}, 'admin_menu')) }}</span>
-                            <span>{{ 'allergens.presence_may_contain'|trans({}, 'admin_menu') }} {{ ui.help('allergens.help_may_contain'|trans({}, 'admin_menu')) }}</span>
-                            <span>{{ 'allergens.presence_free_from'|trans({}, 'admin_menu') }} {{ ui.help('allergens.help_free_from'|trans({}, 'admin_menu')) }}</span>
+                            <span>{{ 'allergens.presence_contains'|trans({}, 'admin_menu') }}</span>
+                            <span>{{ 'allergens.presence_may_contain'|trans({}, 'admin_menu') }}</span>
+                            <span>{{ 'allergens.presence_free_from'|trans({}, 'admin_menu') }}</span>
+                            {{ ui.help('allergens.help_presence_legend'|trans({}, 'admin_menu')) }}
                         </div>
                     </div>
                 </div>

@@ -512,9 +512,16 @@
     font-size:12px; padding:5px 10px; border-radius:20px; border:1px solid var(--bd-2);
     display:inline-flex; align-items:center; gap:5px; min-height:30px; background:var(--bg-input); color:var(--tx-5);
 }
-.achip-contains    { background:rgba(220,38,38,0.12); color:#e0684a; border-color:rgba(220,38,38,0.28); }
-.achip-may_contain { background:transparent; color:#c78a3d; border:1px dashed rgba(199,138,61,0.55); }
-.achip-free_from   { background:var(--bg-card); color:var(--tx-6); border-color:var(--bd-2); }
+/* Deliberately identical across all three presence states — a chip is
+   informational, not a warning, and the previous red/amber coding read as
+   alarm even for "confirmed free from". The AA-safe pairing (~4.5:1 in
+   both themes, verified the same way as .allergen-scope-pill) rather than
+   the plain .achip base (--tx-5 on --bg-input, ~2.3:1 — fails AA). Presence
+   is still legible via the " · <label>" text suffix wherever it's kept
+   (see allergenChipHtml()'s showPresence param) — never drop both at once. */
+.achip-contains, .achip-may_contain, .achip-free_from {
+    background:var(--bg-card); color:var(--tx-muted); border-color:var(--bd-2);
+}
 .achip-remove { cursor:pointer; opacity:0.55; display:flex; align-items:center; }
 .achip-remove:hover { opacity:1; }
 

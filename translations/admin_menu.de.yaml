@@ -95,11 +95,7 @@ allergens:
     scope_this_dish: Nur dieses Gericht
     advanced_hint: Nutze diesen Bereich nur, wenn die automatisch erkannten Allergene nicht ausreichen — zum Beispiel bei Kreuzkontamination oder wenn dieses Gericht eine zertifizierte allergenfreie Alternativzutat verwendet.
     help_computed: Diese Allergene werden automatisch anhand der Zutaten dieses Gerichts erkannt. In den meisten Fällen musst du nichts ändern.
-    help_contains: Das Allergen ist absichtlich enthalten, weil eine oder mehrere Zutaten es enthalten.
-    help_may_contain: Verwende dies bei einem Risiko der Kreuzkontamination — zum Beispiel weil dieselbe Fritteuse, derselbe Ofen oder derselbe Zubereitungsbereich mit allergenhaltigen Speisen geteilt wird.
-    help_free_from: Verwende dies nur, wenn du sicher bist, dass dieses Gericht tatsächlich frei von diesem Allergen ist (zum Beispiel weil du einen zertifizierten allergenfreien Ersatz verwendest). Dies sollte nur in Ausnahmefällen verwendet werden.
-    help_product_exception: Überschreibt die automatisch berechneten Allergene nur für dieses Gericht.
-    help_cross_contamination: Kreuzkontamination entsteht, wenn ein Allergen durch gemeinsam genutzte Geräte, Kochöl oder Oberflächen versehentlich in ein Gericht gelangt — selbst wenn keine der Zutaten des Gerichts es enthält.
+    help_presence_legend: 'Enthält: das Gericht enthält dieses Allergen. Kann Spuren enthalten: Risiko einer Kreuzkontamination — zum Beispiel durch eine gemeinsam genutzte Fritteuse, einen Ofen oder einen Zubereitungsbereich. Bestätigt frei von: nur wenn du wirklich sicher bist (z. B. durch eine zertifizierte Zutat) — das ist eine Ausnahme, nicht die Standardwahl.'
 
 js:
     category_created: 'Kategorie erstellt ✓'

@@ -95,11 +95,7 @@ allergens:
     scope_this_dish: Ce plat uniquement
     advanced_hint: Utilisez cette section uniquement si les allergènes détectés automatiquement ne suffisent pas — par exemple en cas de contamination croisée, ou si ce plat utilise un ingrédient de substitution certifié sans cet allergène.
     help_computed: Ces allergènes sont détectés automatiquement à partir des ingrédients de ce plat. Dans la plupart des cas, vous n'avez rien à modifier.
-    help_contains: L'allergène est intentionnellement présent car un ou plusieurs ingrédients en contiennent.
-    help_may_contain: À utiliser en cas de risque de contamination croisée — par exemple parce que la même friteuse, le même four ou la même zone de préparation est partagée avec des aliments contenant cet allergène.
-    help_free_from: À utiliser uniquement si vous êtes certain que ce plat est réellement exempt de cet allergène (par exemple parce que vous utilisez un substitut certifié). Cela ne doit être utilisé que dans des cas exceptionnels.
-    help_product_exception: Remplace les allergènes calculés automatiquement uniquement pour ce plat.
-    help_cross_contamination: La contamination croisée se produit lorsqu'un allergène se retrouve accidentellement dans un plat à cause d'équipements, d'huile de cuisson ou de surfaces partagés — même si aucun ingrédient du plat n'en contient.
+    help_presence_legend: 'Contient : le plat contient cet allergène. Peut contenir des traces : risque de contamination croisée — par exemple à cause d''une friteuse, d''un four ou d''une zone de préparation partagés. Confirmé sans cet allergène : uniquement si vous êtes réellement certain (par exemple un ingrédient certifié) — c''est une affirmation exceptionnelle, pas le choix par défaut.'
 
 js:
     category_created: 'Catégorie créée ✓'
