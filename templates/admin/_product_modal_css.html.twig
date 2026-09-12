@@ -622,13 +622,19 @@
     .help-icon { width:18px; height:18px; font-size:11px; }
 }
 
-/* Ingredients — Tom Select (base structure from tom-select.default.min.css, reskinned here) */
+/* Ingredients — Tom Select (base structure from tom-select.default.min.css, reskinned here).
+   min-height matches .field input's 42px so the empty/typing state reads at
+   the same size as every other field in this modal, not smaller. max-height
+   + overflow-y:auto (same thin-scrollbar treatment as .panel-body) caps how
+   tall this can grow with a long ingredient list — past ~4 rows it scrolls
+   internally instead of pushing the whole modal taller. */
 .ts-wrapper.multi .ts-control {
     background:var(--bg-input); border:1px solid var(--bd-2); border-radius:10px;
-    padding:6px 8px; gap:5px;
+    padding:8px 10px; gap:6px; min-height:42px; max-height:160px; overflow-y:auto;
+    scrollbar-width:thin; scrollbar-color:var(--bg-tgl) transparent;
 }
 .ts-wrapper.multi.focus .ts-control { border-color:var(--tx-6); box-shadow:none; }
-.ts-control input { color:var(--tx-2); font-size:13px; }
+.ts-control input { color:var(--tx-2); font-size:14px; flex:1 1 auto; min-width:120px; }
 .ts-control input::placeholder { color:var(--tx-6); }
 .ts-wrapper.multi .ts-control > .item {
     display:flex; align-items:center; gap:5px; font-size:12px;
