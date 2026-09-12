@@ -503,15 +503,22 @@
                         return `<div class="no-results">${MSG_NO_INGREDIENTS_FOUND}</div>`;
                     },
                 },
-                onItemAdd() { refreshPrivateIngredientAllergens(); },
-                onItemRemove() { refreshPrivateIngredientAllergens(); },
+                onItemAdd() { refreshPrivateIngredientAllergens(); if (!_suppressAllergenComputeTrigger) scheduleAllergenComputedRefresh(); },
+                onItemRemove() { refreshPrivateIngredientAllergens(); if (!_suppressAllergenComputeTrigger) scheduleAllergenComputedRefresh(); },
             });
         });
     }
 
     // Replaces every panel's current selection with `list` ([{value, name, source}]).
+    // Suppresses the live allergen recompute while doing so — TomSelect
+    // fires onItemAdd/onItemRemove for every item here regardless of the
+    // "silent" argument (that only silences its own hidden-input sync), and
+    // a bulk load/reset already gets its correct computed list from
+    // openEditProduct()'s own response / resetProduct()'s explicit clear —
+    // an extra recompute request per item would be redundant, not wrong.
     async function setIngredientItems(list) {
         await initIngredientSelects();
+        _suppressAllergenComputeTrigger = true;
         ingSelects().forEach(ts => {
             ts.clear(true);
             ts.clearOptions();
@@ -520,6 +527,7 @@
                 ts.addItem(item.value, true);
             });
         });
+        _suppressAllergenComputeTrigger = false;
     }
 
     // Reads the currently-visible panel's selection back into [{value, name}]
@@ -566,6 +574,49 @@
             ? list.map(e => allergenChipHtml({ icon: e.icon, name: e.name, id: e.id }, e.presence, false, false)).join('')
             : `<span class="allergen-empty">${MSG_ALLERGEN_COMPUTED_EMPTY}</span>`;
         document.querySelectorAll('[id="p-allergen-computed"]').forEach(el => el.innerHTML = html);
+    }
+
+    function showAllergenComputedError(show) {
+        document.querySelectorAll('[id="p-allergen-computed-error"]').forEach(el => el.style.display = show ? '' : 'none');
+    }
+
+    // Live recompute of "Según tus ingredientes" on add/remove — never on a
+    // keystroke, that's the separate ingredient-search throttle above.
+    // Debounced so adding/removing several ingredients in a quick burst
+    // collapses into one request instead of one per item. Suppressed
+    // entirely during setIngredientItems()'s bulk load/clear — see there.
+    let _suppressAllergenComputeTrigger = false;
+    let _allergenComputeTimer = null;
+    // Bumped by resetProduct() so a request already in flight when the
+    // panel gets reset/reopened (a different product, or closed) can never
+    // land its response afterwards and overwrite whatever's correct by
+    // then — see the epoch check in refreshAllergenComputed().
+    let _allergenComputeEpoch = 0;
+    function scheduleAllergenComputedRefresh() {
+        clearTimeout(_allergenComputeTimer);
+        _allergenComputeTimer = setTimeout(refreshAllergenComputed, 280);
+    }
+
+    // Deliberately does NOT touch the chip row while the request is in
+    // flight (no flicker — the current chips stay correct until proven
+    // otherwise) and, on failure, does NOT silently leave a possibly-stale
+    // result looking valid: shows #p-allergen-computed-error instead. Uses
+    // apiFetch()'s existing generic error toast too (same as every other
+    // admin action) — the inline note is the food-safety-specific one that
+    // stays until the next successful recompute or a save/reload.
+    async function refreshAllergenComputed() {
+        const epoch = ++_allergenComputeEpoch;
+        const data = await apiFetch('/admin/products/compute-allergens', {
+            id: S.productId,
+            ingredients: collectIngredients(),
+        }, 'POST');
+        if (epoch !== _allergenComputeEpoch) return; // superseded by a reset/reopen — discard
+        if (data.error) {
+            showAllergenComputedError(true);
+            return;
+        }
+        showAllergenComputedError(false);
+        renderAllergenComputed(data.allergensComputed ?? []);
     }
 
     function renderAllergenOverrides() {
@@ -950,6 +1001,11 @@
 
     // ── Reset ──────────────────────────────────────────────────────────────────
     function resetProduct() {
+        // Invalidate any live-allergen-recompute in flight or pending
+        // before this reset — see refreshAllergenComputed()'s epoch check.
+        clearTimeout(_allergenComputeTimer);
+        _allergenComputeEpoch++;
+        showAllergenComputedError(false);
         ['p-name','p-desc','p-price','p-supplement-price','p-base-price-label','p-calories','p-fat','p-protein','p-carbohydrates','p-sugars'].forEach(id =>
             document.querySelectorAll('[id="' + id + '"]').forEach(el => { el.value=''; el.classList.remove('error'); })
         );

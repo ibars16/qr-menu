@@ -77,6 +77,7 @@ allergens:
     computed_title: Aus deinen Zutaten
     computed_hint: Wird automatisch aus den untenstehenden Zutaten berechnet — bearbeite die Allergene einer Zutat oder füge bei Bedarf eine gerichtsspezifische Ausnahme hinzu.
     computed_empty: In den aktuellen Zutaten wurden keine Allergene erkannt.
+    computed_refresh_error: Konnte nicht aktualisiert werden — speichere das Gericht, um es neu zu berechnen.
     your_ingredients_title: Allergene deiner Zutaten
     scope_all_dishes: Alle deine Gerichte
     your_ingredients_hint: Wird mit jedem anderen Gericht geteilt, das dieselbe Zutat verwendet.

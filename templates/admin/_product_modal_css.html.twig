@@ -505,6 +505,12 @@
 .allergen-block:first-child { margin-top:0; }
 .allergen-subtitle { font-size:11px; font-weight:600; color:var(--tx-4); margin-bottom:4px; }
 .allergen-hint { font-size:11px; color:var(--tx-7); line-height:1.5; margin-top:5px; }
+/* Deliberately --tx-muted (AA-safe), not --tx-7 like .allergen-hint above —
+   this is a real "we couldn't verify this" state, not decorative copy. No
+   red/alarm color per this tab's convention; the icon + wording carry the
+   distinction instead. */
+.allergen-computed-error { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--tx-muted); line-height:1.5; margin-top:5px; }
+.allergen-computed-error i { font-size:12px; flex-shrink:0; }
 .allergen-chip-row { display:flex; flex-wrap:wrap; gap:6px; min-height:0; }
 .allergen-empty { font-size:12px; color:var(--tx-7); }
 

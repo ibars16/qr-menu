@@ -77,6 +77,7 @@ allergens:
     computed_title: Según tus ingredientes
     computed_hint: Se calcula automáticamente según los ingredientes de abajo — edita los alérgenos de un ingrediente, o añade una excepción específica para este plato si hace falta.
     computed_empty: No se detectaron alérgenos en los ingredientes actuales.
+    computed_refresh_error: No se pudo actualizar el cálculo — guarda el plato para recalcularlo.
     your_ingredients_title: Alérgenos de tus ingredientes
     scope_all_dishes: Todos tus platos
     your_ingredients_hint: Se comparte con cualquier otro plato que use el mismo ingrediente.

@@ -403,6 +403,14 @@
                         {{ ui.help('allergens.help_computed'|trans({}, 'admin_menu')) }}
                     </div>
                     <div class="allergen-chip-row" id="p-allergen-computed"></div>
+                    {# Hidden unless the live recompute (add/remove ingredient) fails —
+                       see refreshAllergenComputed() in _product_js.html.twig. Never
+                       left to look like a silently-stale-but-valid result: food-safety
+                       data, not a cosmetic sync indicator. #}
+                    <p class="allergen-computed-error" id="p-allergen-computed-error" style="display:none">
+                        <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+                        {{ 'allergens.computed_refresh_error'|trans({}, 'admin_menu') }}
+                    </p>
                     <p class="allergen-hint">{{ 'allergens.computed_hint'|trans({}, 'admin_menu') }}</p>
                 </div>
 

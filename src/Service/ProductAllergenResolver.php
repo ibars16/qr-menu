@@ -101,41 +101,7 @@ final class ProductAllergenResolver
 
         $result = [];
         foreach ($productIds as $pid) {
-            $entries = [];
-            $overridden = $overridesByProduct[$pid] ?? [];
-
-            foreach ($overridden as $aid => $override) {
-                $allergen = $allergensById[$aid] ?? null;
-                if (!$allergen) {
-                    continue;
-                }
-                $entries[] = [
-                    'allergen' => $allergen,
-                    'presence' => AllergenPresence::from($override['presence']),
-                    'source' => 'override',
-                    'note' => $override['note'],
-                ];
-            }
-
-            foreach ($computed[$pid] ?? [] as $aid => $presence) {
-                if (array_key_exists($aid, $overridden)) {
-                    continue; // an override always wins over the computed value for that allergen
-                }
-                $allergen = $allergensById[$aid] ?? null;
-                if (!$allergen) {
-                    continue;
-                }
-                $entries[] = [
-                    'allergen' => $allergen,
-                    'presence' => AllergenPresence::from($presence),
-                    'source' => 'computed',
-                    'note' => null,
-                ];
-            }
-
-            usort($entries, static fn (array $a, array $b) => $a['allergen']->getPosition() <=> $b['allergen']->getPosition());
-
-            $result[$pid] = $entries;
+            $result[$pid] = $this->buildEntries($computed[$pid] ?? [], $overridesByProduct[$pid] ?? [], $allergensById);
         }
 
         return $result;
@@ -145,6 +111,134 @@ final class ProductAllergenResolver
     public function resolveForProduct(Product $product): array
     {
         return $this->resolveForProducts([$product])[$product->getId()] ?? [];
+    }
+
+    /**
+     * Same union + override-layering as resolveForProducts() (they share
+     * buildEntries() below — one algorithm, never two), for a set of
+     * ingredient ids that may not (yet) be linked to a persisted product's
+     * ingredient join tables. Exists for the admin editor's live-recompute:
+     * while the owner is adding/removing ingredients before saving, there's
+     * no up-to-date product_ingredient/product_global_ingredient row to key
+     * resolveForProducts()'s query on.
+     *
+     * $productId is optional and, when given, only used to layer that
+     * product's *already-saved* overrides on top — a brand-new product (no
+     * id yet) simply can't have any, so omitting it is correct, not a
+     * shortcut.
+     *
+     * Callers are responsible for tenant-scoping $restaurantIngredientIds —
+     * this method trusts the ids it's given, exactly like
+     * resolveForProducts() trusts the product ids it's given.
+     *
+     * @param  int[] $restaurantIngredientIds Ingredient::$id values
+     * @param  int[] $globalIngredientIds     GlobalIngredient::$id values
+     * @return list<array{allergen: Allergen, presence: AllergenPresence, source: 'computed'|'override', note: ?string}>
+     */
+    public function resolveForIngredients(array $restaurantIngredientIds, array $globalIngredientIds, ?int $productId = null): array
+    {
+        $conn = $this->em->getConnection();
+
+        // Same "upgrade may_contain -> contains, never downgrade" rule as
+        // resolveForProducts() — which source is checked first doesn't
+        // matter, only whether *any* source ever said contains.
+        $computed = [];
+        $applyRows = static function (array $rows) use (&$computed): void {
+            foreach ($rows as $row) {
+                $aid = (int) $row['allergen_id'];
+                if (($computed[$aid] ?? null) === AllergenPresence::CONTAINS->value) {
+                    continue;
+                }
+                $computed[$aid] = $row['presence'];
+            }
+        };
+
+        if (!empty($globalIngredientIds)) {
+            $applyRows($conn->executeQuery(
+                'SELECT allergen_id, presence FROM global_ingredient_allergen WHERE global_ingredient_id IN (?)',
+                [$globalIngredientIds],
+                [ArrayParameterType::INTEGER]
+            )->fetchAllAssociative());
+        }
+
+        if (!empty($restaurantIngredientIds)) {
+            $applyRows($conn->executeQuery(
+                'SELECT allergen_id, presence FROM ingredient_allergen WHERE ingredient_id IN (?)',
+                [$restaurantIngredientIds],
+                [ArrayParameterType::INTEGER]
+            )->fetchAllAssociative());
+        }
+
+        $overridden = [];
+        if ($productId !== null) {
+            $rows = $conn->executeQuery(
+                'SELECT allergen_id, presence, note FROM product_allergen_override WHERE product_id = ?',
+                [$productId]
+            )->fetchAllAssociative();
+            foreach ($rows as $row) {
+                $overridden[(int) $row['allergen_id']] = ['presence' => $row['presence'], 'note' => $row['note']];
+            }
+        }
+
+        $allergensById = [];
+        foreach ($this->allergenRepository->findAllOrdered() as $allergen) {
+            $allergensById[$allergen->getId()] = $allergen;
+        }
+
+        return $this->buildEntries($computed, $overridden, $allergensById);
+    }
+
+    /**
+     * The one place the computed/override union + "override always wins"
+     * rule is implemented — resolveForProducts() and resolveForIngredients()
+     * both build their (allergen_id => presence) / (allergen_id => override)
+     * maps their own way (from product ids or from raw ingredient ids) and
+     * hand them here, so the actual merge logic never has two copies to
+     * drift apart. That single-source guarantee is why the admin editor's
+     * live preview is safe to trust: it can never compute something the
+     * public menu wouldn't.
+     *
+     * @param  array<int, string>                             $computedMap   allergen_id => presence value
+     * @param  array<int, array{presence: string, note: ?string}> $overriddenMap allergen_id => override data
+     * @param  array<int, Allergen>                            $allergensById
+     * @return list<array{allergen: Allergen, presence: AllergenPresence, source: 'computed'|'override', note: ?string}>
+     */
+    private function buildEntries(array $computedMap, array $overriddenMap, array $allergensById): array
+    {
+        $entries = [];
+
+        foreach ($overriddenMap as $aid => $override) {
+            $allergen = $allergensById[$aid] ?? null;
+            if (!$allergen) {
+                continue;
+            }
+            $entries[] = [
+                'allergen' => $allergen,
+                'presence' => AllergenPresence::from($override['presence']),
+                'source' => 'override',
+                'note' => $override['note'],
+            ];
+        }
+
+        foreach ($computedMap as $aid => $presence) {
+            if (array_key_exists($aid, $overriddenMap)) {
+                continue; // an override always wins over the computed value for that allergen
+            }
+            $allergen = $allergensById[$aid] ?? null;
+            if (!$allergen) {
+                continue;
+            }
+            $entries[] = [
+                'allergen' => $allergen,
+                'presence' => AllergenPresence::from($presence),
+                'source' => 'computed',
+                'note' => null,
+            ];
+        }
+
+        usort($entries, static fn (array $a, array $b) => $a['allergen']->getPosition() <=> $b['allergen']->getPosition());
+
+        return $entries;
     }
 
     /** @return array<int, list<array{allergen: Allergen, presence: AllergenPresence, source: 'computed'|'override', note: ?string}>> */

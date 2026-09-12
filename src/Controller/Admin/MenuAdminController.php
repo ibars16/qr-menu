@@ -384,6 +384,89 @@ class MenuAdminController extends AbstractController
     }
 
     /**
+     * Live recompute of "Según tus ingredientes" while the product editor is
+     * still open and unsaved — the same {value, name} shape the ingredient
+     * selector already sends to saveProduct(), so the JS side needs no new
+     * parsing. Deliberately does NOT read product_ingredient/
+     * product_global_ingredient (those only reflect the last *saved* state):
+     * it resolves straight from the ingredient ids the client currently has
+     * selected, via ProductAllergenResolver::resolveForIngredients() — same
+     * union algorithm the public menu's resolveForProducts() uses
+     * (buildEntries() is shared between them), just fed a different way.
+     *
+     * $id is optional, exactly like saveProduct() — a brand-new,
+     * not-yet-saved product has none yet. When given, only used to layer
+     * that product's already-saved overrides on top of the live computed
+     * set (see resolveForIngredients()); it is never treated as "this is
+     * what the product's ingredients are now" the way saveProduct() treats
+     * it.
+     *
+     * Returns only the computed-source entries (the same split
+     * getProduct() already makes) — an overridden allergen must keep
+     * showing here as suppressed, never re-appear with a different
+     * presence, so Casos especiales stays the only place that shows it.
+     */
+    #[Route('/products/compute-allergens', name: 'product_compute_allergens', methods: ['POST'])]
+    public function computeAllergens(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $restaurant = $this->restaurant();
+        $data       = json_decode($request->getContent(), true);
+        $productId  = $data['id'] ?? null;
+
+        if ($productId !== null) {
+            $product = $em->getRepository(Product::class)->find($productId);
+            if (!$product || $product->getCategory()->getRestaurant() !== $restaurant) {
+                return $this->json(['error' => $this->translator->trans('error.product_not_found', domain: 'admin_menu')], 404);
+            }
+        }
+
+        // Tenant scoping: a restaurant-ingredient id the client sends must
+        // actually belong to this restaurant, the same silent-skip pattern
+        // batchIngredientAllergens() already uses — this is the one thing
+        // resolveForIngredients() does NOT verify itself (it trusts its
+        // caller, same as resolveForProducts() trusts its product ids), so
+        // it has to happen here. Global ingredient ids need no such check —
+        // the library is shared/readable by every restaurant already.
+        $restaurantIds = [];
+        $globalIds     = [];
+        foreach ($data['ingredients'] ?? [] as $ingData) {
+            $parsed = $this->parseIngredientValue(trim($ingData['value'] ?? ''));
+            if ($parsed['type'] === 'restaurant') {
+                $restaurantIds[] = $parsed['id'];
+            } elseif ($parsed['type'] === 'global') {
+                $globalIds[] = $parsed['id'];
+            }
+            // 'new' (not yet persisted) and 'unknown' contribute nothing —
+            // correctly: an ingredient with no row can't have any known
+            // allergen yet, and hiding that would be dishonest, not helpful.
+        }
+
+        $ownedRestaurantIds = [];
+        if (!empty($restaurantIds)) {
+            foreach ($em->getRepository(Ingredient::class)->findBy(['id' => $restaurantIds]) as $ingredient) {
+                if ($ingredient->getRestaurant() === $restaurant) {
+                    $ownedRestaurantIds[] = $ingredient->getId();
+                }
+            }
+        }
+
+        $adminLocale   = $request->getLocale();
+        $contentLocale = $restaurant->getDefaultLanguage();
+
+        $allergensComputed = [];
+        foreach ($this->allergenResolver->resolveForIngredients($ownedRestaurantIds, $globalIds, $productId) as $entry) {
+            if ($entry['source'] !== 'computed') {
+                continue;
+            }
+            $row = $this->serializeAllergen($entry['allergen'], $adminLocale, $contentLocale);
+            $row['presence'] = $entry['presence']->value;
+            $allergensComputed[] = $row;
+        }
+
+        return $this->json(['allergensComputed' => $allergensComputed]);
+    }
+
+    /**
      * Lets the admin hand-correct one AI-generated translation (e.g. a
      * mistranslated dish name) without touching any other locale. Setting
      * source=human here is what protects this row from
