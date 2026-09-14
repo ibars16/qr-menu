@@ -667,6 +667,24 @@
     height:26px;
 }
 .ts-control input::placeholder { color:var(--tx-6); }
+/* Defensive: tom-select.default.min.css's own .ts-wrapper.multi .ts-control
+   > div rule paints #1da7ee blue/#0073bb border/#fff text — our .item rule
+   below already outguns it on specificity (0,4,0 vs 0,3,1, a real win, not
+   a tie) once a chip is settled, so this is never about who wins once both
+   stylesheets are loaded. It's about *when*: that vendor stylesheet loads
+   via ensureTomSelect()'s import(), fired without awaiting it, racing the
+   product-data fetch in openEditProduct() (_product_js.html.twig) — two
+   unrelated async chains with no ordering guarantee between them, most
+   exposed on a cold cache (first visit) where the CSS fetch is slower and
+   more likely to still be resolving right as chips get created. Targeting
+   the bare `> div` (not `.item`) and using !important closes that window
+   outright — the settled values below stay reachable regardless of which
+   of the two async loads finishes first. */
+.ts-control > div {
+    background:var(--bg-deep) !important;
+    border-color:var(--bd-2) !important;
+    color:var(--tx-3) !important;
+}
 .ts-wrapper.multi .ts-control > .item {
     display:flex; align-items:center; gap:5px; font-size:12px;
     padding:3px 8px; border-radius:20px; background:var(--bg-deep);
