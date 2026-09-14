@@ -661,6 +661,11 @@
     color:var(--tx-2); font-size:14px; flex:1 1 100%; min-width:100%;
     padding:4px 0 !important; order:-1; position:sticky; top:0;
     background:var(--bg-input) !important;
+    /* Explicit (border-box, see base.html.twig's global box-sizing reset)
+       instead of letting it fall out of line-height — .ts-dropdown's `top`
+       below is computed FROM this exact number, so it can't be left to
+       whatever the browser's default input line-height happens to render. */
+    height:26px;
 }
 .ts-control input::placeholder { color:var(--tx-6); }
 .ts-wrapper.multi .ts-control > .item {
@@ -683,9 +688,24 @@
     border-left:none; color:var(--tx-6); padding:2px 4px; font-size:13px;
 }
 .plugin-remove_button .item .remove:hover { background:none; color:#F0997B; }
+/* Default tom-select.default.min.css anchors this at top:100% of
+   .ts-wrapper — since .ts-wrapper's own height tracks .ts-control's
+   rendered height (up to the 180px scroll cap above), that puts the
+   dropdown below the ENTIRE chip stack, not below the sticky input row
+   sitting at its top. Overriding `top` to a literal pixel value anchored
+   to the input row (not the wrapper's full, variable height) fixes that:
+   8px (.ts-control's padding-top) + 26px (the sticky input's own
+   explicit height, set above) + 6px (.ts-control's row gap) = 40px —
+   lands right under the input regardless of how many chip rows sit
+   below it or how tall the (still a SIBLING, still un-clipped by
+   .ts-control's overflow — see comment above) dropdown grows.
+   The dropdown still overlaps the first visible chip row while open —
+   expected combobox overlay behavior, not a bug; it was already
+   overlapping content below .ts-wrapper before this change, just lower
+   down. */
 .ts-dropdown {
     background:var(--bg-deep); border:1px solid var(--bd-2); border-radius:9px;
-    margin-top:4px; overflow:hidden; box-shadow:none;
+    top:40px; margin-top:4px; overflow:hidden; box-shadow:none;
 }
 .ts-dropdown .option, .ts-dropdown .create {
     padding:10px 13px; font-size:13px; color:var(--tx-2);
