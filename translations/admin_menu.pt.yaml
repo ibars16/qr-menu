@@ -45,6 +45,7 @@ field:
     description_placeholder: 'Descreva brevemente o prato, os principais ingredientes, o modo de preparação…'
     ingredients: Ingredientes
     photo: Foto do prato
+    clip: Clipe curto
     price: 'Preço (%currency%)'
     price_variant_add: Adicionar outro preço
     price_variant_column_label: Etiqueta
@@ -174,6 +175,15 @@ upload:
     hint: Clique ou arraste uma imagem aqui
     limits: 'JPEG, PNG ou WebP · máx. 8 MB · mín. 400×400 px'
     change: Alterar foto
+
+clip:
+    explainer: Um clipe curto, mudo e em loop, para animar o prato na carta — não é um vídeo com som ou controlos.
+    upload_aria: Enviar clipe do prato
+    hint: Arrasta ou clica para enviar um clipe
+    limits: 'MP4 · máx. 8 MB · máx. 10 s'
+    change: Alterar
+    poster_capture_failed: Não foi possível gerar automaticamente uma miniatura a partir do clipe. Envia uma foto para que apareça na carta.
+    duration_warning: Este clipe dura mais de 10 s — o servidor vai rejeitá-lo ao guardar.
 
 error:
     category_name_required: O nome é obrigatório.

@@ -15,6 +15,8 @@
 <script>
     const SPICY_LABELS = {{ ['spicy.none','spicy.mild','spicy.medium','spicy.hot','spicy.very_hot','spicy.extreme']|map(k => k|trans({}, 'admin_menu'))|json_encode|raw }};
 
+    const CLIP_MAX_DURATION_SECONDS = 10;
+    const MSG_CLIP_DURATION_WARNING = "{{ 'clip.duration_warning'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_NEW_PRODUCT        = "{{ 'modal.product.new_title'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_EDIT_PRODUCT       = "{{ 'modal.product.edit_title'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_ERROR_LOADING_PRODUCT = "{{ 'js.error_loading_product'|trans({}, 'admin_menu')|e('js') }}";
@@ -133,6 +135,7 @@
                     revealNutrition();
                 }
                 renderProductImage(data.image);
+                renderProductClip(data.videoClip);
 
                 document.querySelectorAll('.tag-pill').forEach(p =>
                     p.classList.toggle('on', data.tags.includes(parseInt(p.dataset.tagId)))
@@ -385,6 +388,16 @@
         if (imageFile) {
             const imgData = await uploadProductImage(data.id, imageFile);
             if (imgData.error) showToast(imgData.error, 'error');
+        }
+
+        // Same deferred-until-save pattern as the photo above — a
+        // brand-new dish has no id until the main save round-trips. The
+        // captured poster (if any) already rode along inside imageFile
+        // above; this is only ever the clip's own bytes.
+        const clipFile = panelEl('p-clip-input')?.files?.[0];
+        if (clipFile) {
+            const clipData = await uploadProductClip(data.id, clipFile);
+            if (clipData.error) showToast(clipData.error, 'error');
         }
 
         showToast(S.productId ? MSG_PRODUCT_SAVED : MSG_PRODUCT_CREATED, 'success');
@@ -1030,6 +1043,156 @@
         }
     }
 
+    // ── Clip (short, silent, looping) preview / upload ───────────────────────
+    // Mirrors showImageInArea() above but for a <video> — muted/loop/autoplay
+    // so the admin's own preview already plays the way the public card will
+    // (only one clip is ever open in the editor at a time, unlike the public
+    // carta's several-at-once concern, so autoplay here is cheap).
+    function showClipInArea(area, src) {
+        let video = area.querySelector('video');
+        if (!video) {
+            video = document.createElement('video');
+            video.muted = true;
+            video.loop = true;
+            video.autoplay = true;
+            video.playsInline = true;
+            area.appendChild(video);
+        }
+        video.classList.remove('loaded');
+        area.classList.add('loading');
+        video.onloadeddata = () => { video.classList.add('loaded'); area.classList.remove('loading'); };
+        video.src = src;
+        area.querySelector('.img-upload-hint').style.display = 'none';
+        const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
+        if (changeBtn) changeBtn.style.display = '';
+    }
+
+    function showClipPosterWarning(show) {
+        document.querySelectorAll('[id="clip-poster-warning"]').forEach(el => el.classList.toggle('show', show));
+    }
+
+    // previewClip() shows the picked file locally, same deferred-upload
+    // pattern as previewImage() (see uploadProductClip(), called from
+    // saveProduct()) — and kicks off the poster capture below.
+    function previewClip(input) {
+        if (!input.files?.length) return;
+        const file = input.files[0];
+        const src = URL.createObjectURL(file);
+        showClipInArea(panelEl('clip-upload-area'), src);
+        showClipPosterWarning(false);
+        capturePosterFromClip(file, src);
+    }
+
+    // Renders the dish's already-saved clip (openEditProduct), or clears
+    // back to the hint when the dish has none.
+    function renderProductClip(clipPath) {
+        document.querySelectorAll('[id="clip-upload-area"]').forEach(area => {
+            if (clipPath) {
+                showClipInArea(area, `/uploads/products/${clipPath}`);
+            } else {
+                area.querySelector('video')?.remove();
+                area.classList.remove('loading');
+                area.querySelector('.img-upload-hint').style.display = '';
+                const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
+                if (changeBtn) changeBtn.style.display = 'none';
+            }
+        });
+    }
+
+    function handleClipDrop(event, area) {
+        event.preventDefault();
+        area.classList.remove('drag-over');
+        const file = event.dataTransfer?.files?.[0];
+        if (!file || file.type !== 'video/mp4') return;
+        const input = panelEl('p-clip-input');
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        previewClip(input);
+    }
+
+    async function uploadProductClip(productId, file) {
+        const formData = new FormData();
+        formData.append('clip', file);
+        try {
+            const res  = await fetch(`/admin/products/${productId}/clip`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!res.ok) return { error: data?.error || MSG_UNEXPECTED_ERROR };
+            return data;
+        } catch (e) {
+            return { error: MSG_UNEXPECTED_ERROR };
+        }
+    }
+
+    // Captures a poster frame from a freshly-picked clip entirely in the
+    // browser (hidden <video> + <canvas>, ~0.1s in) and stages it as a JPEG
+    // straight into p-img-input — the SAME input/endpoint the photo dropzone
+    // above already uses (uploadProductImage(), called from saveProduct()).
+    // No separate poster endpoint on the server at all.
+    //
+    // Fallback contract if capture fails for any reason (exotic codec,
+    // browser quirk, zero-dimension video): p-img-input is left completely
+    // untouched — whatever photo was already staged/saved keeps showing
+    // exactly as it was — and #clip-poster-warning is shown so the owner
+    // knows to add one manually. This is what keeps a clip from ever
+    // reaching the public carta with a <video poster> pointing at nothing
+    // (see layouts/standard/show.html.twig's own videoClip + image guard).
+    function capturePosterFromClip(file, srcUrl) {
+        const probe = document.createElement('video');
+        probe.muted = true;
+        probe.playsInline = true;
+        probe.preload = 'auto';
+        probe.src = srcUrl;
+
+        let settled = false;
+        const fail = () => {
+            if (settled) return;
+            settled = true;
+            showClipPosterWarning(true);
+        };
+        const timeoutId = setTimeout(fail, 5000);
+
+        probe.addEventListener('loadedmetadata', () => {
+            if (Number.isFinite(probe.duration) && probe.duration > CLIP_MAX_DURATION_SECONDS) {
+                // UX-only heads-up — the server's own moov/mvhd parse in
+                // UploadValidator::readMp4DurationSeconds() is the real
+                // guarantee, this just saves the owner a wasted save attempt.
+                showToast(MSG_CLIP_DURATION_WARNING, 'error');
+            }
+            try {
+                probe.currentTime = Math.min(0.1, (probe.duration || 0.2) / 2);
+            } catch (e) { fail(); }
+        });
+
+        probe.addEventListener('seeked', () => {
+            if (settled) return;
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = probe.videoWidth;
+                canvas.height = probe.videoHeight;
+                if (!canvas.width || !canvas.height) throw new Error('no video dimensions');
+                canvas.getContext('2d').drawImage(probe, 0, 0);
+                canvas.toBlob(blob => {
+                    clearTimeout(timeoutId);
+                    if (settled) return;
+                    settled = true;
+                    if (!blob) { showClipPosterWarning(true); return; }
+                    const posterFile = new File([blob], 'clip-poster.jpg', { type: 'image/jpeg' });
+                    const dt = new DataTransfer();
+                    dt.items.add(posterFile);
+                    const imgInput = panelEl('p-img-input');
+                    imgInput.files = dt.files;
+                    previewImage(imgInput);
+                }, 'image/jpeg', 0.85);
+            } catch (e) {
+                clearTimeout(timeoutId);
+                fail();
+            }
+        });
+
+        probe.addEventListener('error', () => { clearTimeout(timeoutId); fail(); });
+    }
+
     // ── Reset ──────────────────────────────────────────────────────────────────
     function resetProduct() {
         // Invalidate any live-allergen-recompute in flight or pending
@@ -1091,6 +1254,16 @@
         // stays in the <input> and saveProduct() would silently attach the
         // previous dish's photo to whichever dish is opened next.
         document.querySelectorAll('[id="p-img-input"]').forEach(el => { el.value = ''; });
+        document.querySelectorAll('[id="clip-upload-area"]').forEach(area => {
+            area.querySelector('video')?.remove();
+            area.classList.remove('loading');
+            const hint = area.querySelector('.img-upload-hint');
+            if (hint) hint.style.display = '';
+            const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
+            if (changeBtn) changeBtn.style.display = 'none';
+        });
+        document.querySelectorAll('[id="p-clip-input"]').forEach(el => { el.value = ''; });
+        showClipPosterWarning(false);
         S.productId=null; S.categoryId=null; S.menuSectionId=null; S.spicy=0;
         // Reset steps visibility
         ['product-modal-steps','product-sheet-steps'].forEach(id => {

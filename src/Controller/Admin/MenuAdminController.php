@@ -362,6 +362,7 @@ class MenuAdminController extends AbstractController
             'id'                => $product->getId(),
             'categoryId'        => $product->getCategory()->getId(),
             'image'             => $product->getImage(),
+            'videoClip'         => $product->getVideoClip(),
             'basePrice'         => $product->getBasePrice(),
             'supplementPrice'   => $product->getSupplementPrice(),
             'basePriceLabel'    => $product->getBasePriceLabel(),

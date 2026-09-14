@@ -460,11 +460,11 @@
    before this; --tx-1 (not --brand, forbidden in this component) since the
    dashed border-radius is followed automatically, no extra override needed. */
 .img-upload:focus-visible { outline:2px solid var(--tx-1); outline-offset:2px; }
-.img-upload img {
+.img-upload img, .img-upload video {
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
     opacity:0; transition:opacity 0.2s;
 }
-.img-upload img.loaded { opacity:1; }
+.img-upload img.loaded, .img-upload video.loaded { opacity:1; }
 .img-upload-hint { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; padding:0 var(--sp-4); }
 .img-upload-hint i { font-size:26px; color:var(--tx-muted); }
 /* Real limits, not decoration — must stay in sync with UploadValidator::LIMITS['dish_image'].
@@ -497,6 +497,12 @@
     margin-top:10px;
     padding:11px 16px; min-height:44px; font-size:14px;
 }
+
+/* Clip field — reuses .img-upload/.img-upload-change-btn wholesale (same
+   dropzone, same button), only this explainer line is new: short, muted,
+   makes "silent looping clip, not a video with sound" explicit right next
+   to the label rather than relying on the hint text alone. */
+.clip-explainer { font-size:12px; color:var(--tx-muted); line-height:1.4; }
 
 @media (max-width: 767px) {
     .img-upload-change-btn { min-height:48px; }
