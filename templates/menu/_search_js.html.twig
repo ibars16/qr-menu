@@ -26,6 +26,32 @@ function flipCard(wrap) {
 }
 function unflipCard(e, btn)    { e.stopPropagation(); btn.closest('.card').classList.remove('flipped'); }
 
+// Short clip (Product::$videoClip) — autoplay only for whichever card(s)
+// are actually on screen. preload="none" + no src attribute at all until
+// then (see standard/show.html.twig's .dish-clip), so a menu with several
+// clips never eagerly downloads or decodes all of them at once — real
+// mobile-data cost otherwise. applyFilters() (below) only ever toggles
+// display:none/'' on these same row elements, never removes them, and a
+// display:none element already reports isIntersecting:false on its own —
+// so one observe() per clip at load time is enough, nothing to re-wire
+// when a filter changes.
+(function() {
+    const clips = document.querySelectorAll('.dish-clip');
+    if (!clips.length || typeof IntersectionObserver === 'undefined') return;
+    const clipObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            const video = entry.target;
+            if (entry.isIntersecting) {
+                if (!video.src) video.src = video.dataset.clipSrc;
+                video.play().catch(() => {});
+            } else {
+                video.pause();
+            }
+        });
+    }, { threshold: 0.25 });
+    clips.forEach(video => clipObserver.observe(video));
+})();
+
 // Dish detail bottom-sheet modal (standard layout's photo-first cards) — one
 // shared overlay in the DOM, content cloned in from the clicked card's own
 // <template class="dish-tpl"> so nothing needs re-rendering server-side.
@@ -39,10 +65,19 @@ function openDishModal(card) {
     if (!tpl || !overlay || !photoWrap || !body) return;
     trackDishView(card.dataset.productId);
     const content   = tpl.content.cloneNode(true);
-    const photoNode = content.querySelector('img, .dish-placeholder');
+    const photoNode = content.querySelector('img, video, .dish-placeholder');
     photoWrap.innerHTML = '';
     body.innerHTML = '';
-    if (photoNode) photoWrap.appendChild(photoNode);
+    if (photoNode) {
+        photoWrap.appendChild(photoNode);
+        // The grid's own clips are gated by the IntersectionObserver above
+        // (several could be on screen at once); the modal only ever shows
+        // one dish at a time, so it can just play as soon as it's inserted.
+        if (photoNode.tagName === 'VIDEO' && photoNode.dataset.clipSrc) {
+            photoNode.src = photoNode.dataset.clipSrc;
+            photoNode.play().catch(() => {});
+        }
+    }
     body.appendChild(content);
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden', 'false');
@@ -66,6 +101,7 @@ function closeDishModal() {
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    document.getElementById('dish-modal-photo')?.querySelector('video')?.pause();
 }
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDishModal(); });
 

@@ -374,8 +374,8 @@
        both dimensions, so it's a no-op fallback rather than a competing
        rule. */
     .dish-card .front-img { position: relative; width: 100%; height: clamp(11.875rem, 42vw, 12.5rem); aspect-ratio: 4/3; background: var(--cf-img); overflow: hidden; font-size: initial; display: block; }
-    .dish-card .front-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
-    .dish-card:hover .front-img img { transform: scale(1.045); }
+    .dish-card .front-img img, .dish-card .front-img video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
+    .dish-card:hover .front-img img, .dish-card:hover .front-img video { transform: scale(1.045); }
 
     /* No-photo placeholder — a warm brand-colored panel with an icon and
        the dish name, styled to look intentional rather than a broken
@@ -420,7 +420,7 @@
     .dish-modal-close { position: absolute; top: 0.75rem; right: 0.75rem; z-index: 3; width: 2.75rem; height: 2.75rem; border-radius: 50%; border: none; background: rgba(255,255,255,0.92); color: var(--fg); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.18); transition: background 0.15s, transform 0.2s; }
     .dish-modal-close:hover { background: #ffffff; transform: rotate(90deg); }
     .dish-modal-photo { width: 100%; height: 14.375rem; aspect-ratio: 4/3; overflow: hidden; background: var(--cf-img); flex-shrink: 0; }
-    .dish-modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .dish-modal-photo img, .dish-modal-photo video { width: 100%; height: 100%; object-fit: cover; display: block; }
     /* Bottom padding cleared to sit below the Smart Waiter chat bubble
        (fixed, right:18px/bottom:18px, 56px — see .filters-panel-footer's
        comment above): the bubble stays visible on top of this modal on
@@ -811,7 +811,17 @@
                                     <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
                                 {% else %}
                                 <div class="front-img">
-                                    {% if product.image %}
+                                    {# videoClip requires image too — image is the <video poster> AND
+                                       the fallback for anything that can't/shouldn't play a clip (see
+                                       Product::$videoClip's own docblock). A clip with no poster never
+                                       reaches here: the editor's own fallback (capturePosterFromClip())
+                                       keeps that pairing honest at save time. #}
+                                    {% if product.videoClip and product.image %}
+                                        <video class="dish-clip" muted loop playsinline preload="none"
+                                               poster="{{ asset('uploads/products/' ~ product.image) }}"
+                                               data-clip-src="{{ asset('uploads/products/' ~ product.videoClip) }}"
+                                               aria-hidden="true"></video>
+                                    {% elseif product.image %}
                                         <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">
                                     {% else %}
                                         <div class="dish-placeholder"><i class="ti {{ isDrink ? 'ti-glass' : 'ti-tools-kitchen-2' }}" aria-hidden="true"></i><span>{{ pT.name }}</span></div>
@@ -834,13 +844,18 @@
                                 </div>
                                 {% endif %}
                                 <template class="dish-tpl">
-                                    {% if product.image %}
+                                    {% if product.videoClip and product.image %}
+                                        <video class="dish-clip" muted loop playsinline preload="none"
+                                               poster="{{ asset('uploads/products/' ~ product.image) }}"
+                                               data-clip-src="{{ asset('uploads/products/' ~ product.videoClip) }}"
+                                               aria-hidden="true"></video>
+                                    {% elseif product.image %}
                                         <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">
                                     {% elseif theme == 'maison' %}
                                         {# No placeholder at all for maison (2026-09-07, product decision —
                                            see conversation): openDishModal() (_search_js.html.twig) looks
-                                           for `img, .dish-placeholder` inside this template and, finding
-                                           neither, leaves #dish-modal-photo empty — maison's own
+                                           for `img, video, .dish-placeholder` inside this template and,
+                                           finding neither, leaves #dish-modal-photo empty — maison's own
                                            .dish-modal-photo:empty rule (overrides.html.twig) then collapses
                                            that box entirely, so a no-photo dish opens straight into its
                                            name/price/etc. with no reserved image space. Other themes keep
