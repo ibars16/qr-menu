@@ -702,10 +702,26 @@
    The dropdown still overlaps the first visible chip row while open —
    expected combobox overlay behavior, not a bug; it was already
    overlapping content below .ts-wrapper before this change, just lower
-   down. */
-.ts-dropdown {
+   down.
+
+   `top` needs BOTH the fuller .ts-wrapper.multi selector AND !important,
+   not just `.ts-dropdown { top:40px }` on its own: tom-select's own CSS
+   also has a bare `.ts-dropdown{top:100%;...}` rule, same specificity,
+   loaded via ensureTomSelect()'s import() — which is NOT awaited for the
+   CSS half, only for the JS constructor — so there's a real race between
+   this stylesheet (present from first paint) and that one (inserted a
+   moment later, async). A tie in specificity is won by whichever rule
+   lands later in the cascade, and that's timing-dependent: the dropdown
+   opened correctly the first time this was tried (before tom-select's
+   CSS had finished inserting), then silently reverted to top:100% for
+   the rest of that page's lifetime once it had (confirmed live via
+   document.styleSheets — both rules present, tom-select's ordered after
+   ours, computed top resolving to its 100%, not our 40px). Same fix
+   already applied to the sticky input's background/padding above, for
+   the exact same reason. */
+.ts-wrapper.multi .ts-dropdown {
     background:var(--bg-deep); border:1px solid var(--bd-2); border-radius:9px;
-    top:40px; margin-top:4px; overflow:hidden; box-shadow:none;
+    top:40px !important; margin-top:4px; overflow:hidden; box-shadow:none;
 }
 .ts-dropdown .option, .ts-dropdown .create {
     padding:10px 13px; font-size:13px; color:var(--tx-2);
