@@ -548,11 +548,18 @@
     background:var(--bg-input); border:1px solid var(--bd-2); color:var(--tx-1);
     font-size:12px; padding:7px 9px; border-radius:8px; outline:none; font-family:inherit; min-height:0;
 }
-.allergen-override-adder input { flex:1; min-width:130px; }
+/* flex-basis:100% on both, not left to whatever wrap happens to leave —
+   .allergen-add-btn's white-space:nowrap + the note input's min-width:130px
+   used to let them share a leftover-space row after the two <selects>
+   wrapped, squeezing the input well below full width; the longest
+   note_placeholder strings (es/fr/pt, ~40-45 chars) truncated inside it at
+   narrow widths. Each now always gets its own full-width row instead. */
+.allergen-override-adder input { flex:1; flex-basis:100%; min-width:130px; }
 .allergen-add-btn {
     display:flex; align-items:center; gap:5px; padding:7px 13px; border-radius:8px;
     background:var(--bg-card); border:1px solid var(--bd-2); color:var(--tx-3); font-size:12px;
     cursor:pointer; transition:all 0.1s; user-select:none; white-space:nowrap;
+    flex-basis:100%;
 }
 .allergen-add-btn:hover { border-color:var(--bd-3); color:var(--tx-1); }
 
