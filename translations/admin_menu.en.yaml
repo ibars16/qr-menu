@@ -33,7 +33,9 @@ field:
     calories: Calories
     nutrition_facts: Nutrition facts
     nutrition_toggle: Add nutrition facts
-    nutrition_collapse: Hide nutrition facts
+    nutrition_collapse: Collapse nutrition facts
+    nutrition_visible_label: Show on the public menu
+    nutrition_visible_hint: If you uncheck this, this information won't appear on your public menu, even though it stays saved here.
     fat: Fat
     protein: Protein
     carbohydrates: Carbohydrates

@@ -33,7 +33,9 @@ field:
     calories: Calorie
     nutrition_facts: Valori nutrizionali
     nutrition_toggle: Aggiungi valori nutrizionali
-    nutrition_collapse: Nascondi valori nutrizionali
+    nutrition_collapse: Comprimi valori nutrizionali
+    nutrition_visible_label: Mostra nel menu pubblico
+    nutrition_visible_hint: Se lo deselezioni, queste informazioni non appariranno nel tuo menu pubblico, anche se restano salvate qui.
     fat: Grassi
     protein: Proteine
     carbohydrates: Carboidrati

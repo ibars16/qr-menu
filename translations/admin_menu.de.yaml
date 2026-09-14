@@ -33,7 +33,9 @@ field:
     calories: Kalorien
     nutrition_facts: Nährwertangaben
     nutrition_toggle: Nährwertangaben hinzufügen
-    nutrition_collapse: Nährwertangaben ausblenden
+    nutrition_collapse: Nährwertangaben einklappen
+    nutrition_visible_label: In der öffentlichen Speisekarte anzeigen
+    nutrition_visible_hint: Wenn du dies deaktivierst, werden diese Angaben nicht in deiner öffentlichen Speisekarte angezeigt, bleiben aber hier gespeichert.
     fat: Fett
     protein: Eiweiß
     carbohydrates: Kohlenhydrate

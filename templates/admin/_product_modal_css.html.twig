@@ -160,10 +160,35 @@
    (visibility, not display:none, so it still counts toward the grid's
    height and — same as display:none did — is removed from the tab order
    and accessibility tree while hidden). */
-.product-tab-panels { flex:1; min-height:0; overflow-y:auto; padding-top:15px; display:grid; }
+.product-tab-panels { flex:1; min-height:0; padding-top:15px; display:grid; }
+/* Each panel scrolls on its own — overflow-y lives here, not on
+   .product-tab-panels above. All 4 stack in that shared grid cell so the
+   row still sizes to the tallest one (see the comment above), but with
+   overflow on the SHARED container every panel scrolled through the same
+   scrollTop: opening a short tab (e.g. Foto) after scrolling a long one
+   (e.g. Detalles) landed already scrolled down, or clipped, instead of at
+   its own top. min-height:0 lets each panel actually shrink to the row's
+   real (possibly viewport-constrained) height instead of forcing the row
+   to grow to its own content — that's what makes its own overflow-y:auto
+   kick in independently of the other 3. */
 .product-tab-panel {
     grid-area:1/1; display:flex; flex-direction:column; gap:15px;
     visibility:hidden; pointer-events:none;
+    overflow-y:auto; min-height:0;
+    /* The tallest panel's own content is, by construction, what sizes the
+       shared grid row — so that one panel's scrollHeight and clientHeight
+       are meant to land exactly equal. The grid track-sizing pass and the
+       scrollHeight/clientHeight measurement round independent subpixel
+       values to whole CSS pixels though, and can disagree by a hair,
+       tripping overflow:auto into showing a scrollbar that only ever
+       "scrolls" that sub-pixel sliver — a real scrollbar, but nothing
+       visibly moves when you drag it. 1px of real, non-fractional
+       headroom beats that: it always lands on the correct side of the
+       rounding regardless of which way either pass rounds. Bottom-only,
+       and clipped by the panel's own overflow whenever it isn't needed,
+       so it's never visible either way. */
+    padding-bottom:1px;
+    scrollbar-width:thin; scrollbar-color:var(--bg-tgl) transparent;
 }
 .product-tab-panel.active { visibility:visible; pointer-events:auto; }
 
@@ -385,6 +410,23 @@
    label+input pair). */
 .nutrition-fields { display:flex; flex-direction:column; gap:12px; margin-top:10px; }
 .nutrition-group-label { margin-bottom:-2px; }
+
+/* Public-menu visibility checkbox — same structure as .sw-recommend-box
+   (checkbox + stacked label/hint), kept as its own class rather than reused
+   directly: that one's "sw-" prefix means Smart Waiter specifically, and
+   this checkbox has nothing to do with it. */
+.nutrition-visibility {
+    display:flex; align-items:flex-start; gap:9px;
+    padding:10px 12px; background:var(--bg-card);
+    border:1px solid var(--bd-2); border-radius:10px; cursor:pointer;
+}
+.nutrition-visibility input[type="checkbox"] {
+    width:16px; height:16px; margin-top:1px; flex-shrink:0;
+    accent-color:var(--brand); cursor:pointer;
+}
+.nutrition-visibility-text { display:flex; flex-direction:column; gap:2px; }
+.nutrition-visibility-label { font-size:12.5px; font-weight:600; color:var(--tx-1); }
+.nutrition-visibility-hint { font-size:11px; color:var(--tx-6); line-height:1.5; }
 
 @media (max-width: 767px) {
     /* font-size:16px on all three prevents iOS Safari's auto-zoom on

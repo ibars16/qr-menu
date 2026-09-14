@@ -373,6 +373,7 @@ class MenuAdminController extends AbstractController
             'protein'           => $product->getProtein(),
             'carbohydrates'     => $product->getCarbohydrates(),
             'sugars'            => $product->getSugars(),
+            'nutritionVisible'  => $product->isNutritionVisible(),
             'spicyLevel'        => $product->getSpicyLevel(),
             'active'            => $product->isActive(),
             'translations'      => $translations,
@@ -710,6 +711,7 @@ class MenuAdminController extends AbstractController
         if (array_key_exists('protein',       $data)) $product->setProtein($data['protein'] !== null && $data['protein'] !== '' ? (string) $data['protein'] : null);
         if (array_key_exists('carbohydrates', $data)) $product->setCarbohydrates($data['carbohydrates'] !== null && $data['carbohydrates'] !== '' ? (string) $data['carbohydrates'] : null);
         if (array_key_exists('sugars',        $data)) $product->setSugars($data['sugars'] !== null && $data['sugars'] !== '' ? (string) $data['sugars'] : null);
+        if (array_key_exists('nutritionVisible', $data)) $product->setNutritionVisible((bool) $data['nutritionVisible']);
         if (array_key_exists('spicyLevel', $data)) $product->setSpicyLevel($data['spicyLevel'] ?: null);
         if (isset($data['active']))                 $product->setActive((bool) $data['active']);
 

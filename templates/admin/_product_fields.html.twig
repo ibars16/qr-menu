@@ -249,7 +249,14 @@
 
             {# Etiquetas — opcional. "recommended" (Smart Waiter) is deliberately excluded
                from this generic list — it has its own dedicated section above so it's
-               never duplicated between the two controls. #}
+               never duplicated between the two controls.
+
+               The "spicy" system tag stays IN this list (unlike "recommended") — it's
+               just a normal pill here — but data-tag-code lets toggleTagPill() in
+               _product_js.html.twig keep it in lockstep with the Nivel de picante
+               pips below: turning a pip on sets this pill on (and off↔off), and
+               toggling this pill on sets the level to 1 if it was 0. Same signal,
+               shown two ways, so they can never end up saying different things. #}
             {% if genericTags|length > 0 %}
                 <div class="field">
                     <label class="field-label">
@@ -264,7 +271,8 @@
                             {% if tagT %}
                                 <div class="tag-pill"
                                      data-tag-id="{{ tag.id }}"
-                                     onclick="this.classList.toggle('on')"
+                                     data-tag-code="{{ tag.code }}"
+                                     onclick="toggleTagPill(this)"
                                      role="checkbox"
                                      aria-checked="false">
                                     {{ tag.icon }} {{ tagT.name }}
@@ -334,6 +342,27 @@
                 </div>
                 <div class="nutrition-fields" style="display:none">
                     <div class="field-label nutrition-group-label">{{ 'field.nutrition_facts'|trans({}, 'admin_menu') }}</div>
+
+                    {# Public-menu opt-out — separate from, and independent of, the
+                       toggleNutrition() expand/collapse above: that one only shows/hides
+                       these inputs while editing (see its own comment), it never touched
+                       what a customer sees. This checkbox is what actually controls that
+                       — Product::$nutritionVisible, read by every public template that
+                       renders this data (menu/_card.html.twig's dead sibling aside — see
+                       that file's own note — the live ones are menu/_set_menu.html.twig
+                       and menu/layouts/standard/show.html.twig). Defaults checked so
+                       filling in any of the 5 fields below shows them on the public menu
+                       by default, same as before this checkbox existed; unchecking it
+                       keeps the data here (nothing is cleared) but stops rendering it
+                       publicly — the hint spells that distinction out inline rather than
+                       leaving "Mostrar" to be read as "this is currently public". #}
+                    <label class="nutrition-visibility">
+                        <input type="checkbox" id="p-nutrition-visible" checked>
+                        <span class="nutrition-visibility-text">
+                            <span class="nutrition-visibility-label">{{ 'field.nutrition_visible_label'|trans({}, 'admin_menu') }}</span>
+                            <span class="nutrition-visibility-hint">{{ 'field.nutrition_visible_hint'|trans({}, 'admin_menu') }}</span>
+                        </span>
+                    </label>
 
                     <div class="field">
                         <label class="field-label">{{ 'field.calories'|trans({}, 'admin_menu') }}</label>

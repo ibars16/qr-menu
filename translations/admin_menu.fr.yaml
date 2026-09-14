@@ -33,7 +33,9 @@ field:
     calories: Calories
     nutrition_facts: Informations nutritionnelles
     nutrition_toggle: Ajouter les informations nutritionnelles
-    nutrition_collapse: Masquer les informations nutritionnelles
+    nutrition_collapse: Réduire les informations nutritionnelles
+    nutrition_visible_label: Afficher sur la carte publique
+    nutrition_visible_hint: Si vous décochez cette case, ces informations n'apparaîtront pas sur votre carte publique, mais resteront enregistrées ici.
     fat: Lipides
     protein: Protéines
     carbohydrates: Glucides

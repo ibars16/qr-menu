@@ -104,6 +104,20 @@ class Product
     #[ORM\Column(type: 'decimal', precision: 5, scale: 1, nullable: true)]
     private ?string $sugars = null;
 
+    /**
+     * Whether the nutrition facts above render on the public menu at all.
+     * Defaults true (and stays true on every pre-existing row via the
+     * migration's DEFAULT TRUE) so introducing this flag never silently
+     * hides data an owner already filled in and was already showing —
+     * it only ever changes anything once an owner explicitly unchecks
+     * "Mostrar en la carta pública" in admin. Independent of whether the
+     * admin form's own nutrition section is expanded/collapsed — that's
+     * only a UI convenience local to the editor (see toggleNutrition() in
+     * _product_js.html.twig) with no bearing on what the customer sees.
+     */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $nutritionVisible = true;
+
     /** Spicy level from 0 (not spicy) to 5 (extremely spicy) */
     #[ORM\Column(nullable: true)]
     private ?int $spicyLevel = null;
@@ -415,6 +429,16 @@ class Product
     public function setSugars(?string $sugars): void
     {
         $this->sugars = $sugars;
+    }
+
+    public function isNutritionVisible(): bool
+    {
+        return $this->nutritionVisible;
+    }
+
+    public function setNutritionVisible(bool $nutritionVisible): void
+    {
+        $this->nutritionVisible = $nutritionVisible;
     }
 
     public function getSpicyLevel(): ?int

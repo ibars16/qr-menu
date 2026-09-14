@@ -126,6 +126,9 @@
                 setVal('p-protein', data.protein ?? '');
                 setVal('p-carbohydrates', data.carbohydrates ?? '');
                 setVal('p-sugars', data.sugars ?? '');
+                document.querySelectorAll('[id="p-nutrition-visible"]').forEach(cb =>
+                    cb.checked = data.nutritionVisible ?? true
+                );
                 if (data.calories != null || data.fat != null || data.protein != null || data.carbohydrates != null || data.sugars != null) {
                     revealNutrition();
                 }
@@ -366,6 +369,7 @@
             protein:        getVal('p-protein') || null,
             carbohydrates:  getVal('p-carbohydrates') || null,
             sugars:         getVal('p-sugars') || null,
+            nutritionVisible: panel.querySelector('[id="p-nutrition-visible"]')?.checked ?? true,
             spicyLevel:  S.spicy || null,
             active:      true,
             translations,
@@ -419,6 +423,7 @@
     function setSpicy(level) {
         S.spicy = S.spicy === level ? 0 : level;
         updateSpicyUI();
+        syncSpicyTag();
     }
     function updateSpicyUI() {
         document.querySelectorAll('.spicy-pip').forEach(p =>
@@ -427,6 +432,32 @@
         document.querySelectorAll('.spicy-text').forEach(el =>
             el.textContent = SPICY_LABELS[S.spicy]
         );
+    }
+    // Keeps the "spicy" system tag pill (see data-tag-code in
+    // _product_fields.html.twig) mirroring S.spicy — on whenever there's any
+    // level, off at "sin picante" — so the two controls can't disagree.
+    function syncSpicyTag() {
+        document.querySelectorAll('.tag-pill[data-tag-code="spicy"]').forEach(p =>
+            p.classList.toggle('on', S.spicy > 0)
+        );
+    }
+
+    // ── Tags ───────────────────────────────────────────────────────────────────
+    // Mirrors every copy sharing this tag id (desktop modal + mobile sheet —
+    // same convention openEditProduct() already uses to seed .tag-pill.on on
+    // load), not just the clicked element. The "spicy" tag is additionally
+    // wired to the Nivel de picante pips: turning it on with no level yet set
+    // defaults to 1 ("mínimo"); turning it off zeroes the level, since "no
+    // spicy tag" and "a spicy level" would otherwise contradict each other.
+    function toggleTagPill(el) {
+        const isOn = !el.classList.contains('on');
+        document.querySelectorAll(`.tag-pill[data-tag-id="${el.dataset.tagId}"]`).forEach(p =>
+            p.classList.toggle('on', isOn)
+        );
+        if (el.dataset.tagCode === 'spicy') {
+            S.spicy = isOn ? Math.max(S.spicy, 1) : 0;
+            updateSpicyUI();
+        }
     }
 
     // ── Ingredients (Tom Select, server-searched) ───────────────────────────────
@@ -1015,6 +1046,7 @@
         document.querySelectorAll('[id="p-category"]').forEach(el => { el.selectedIndex = 0; });
         document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('on'));
         document.querySelectorAll('[id="p-recommended"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('[id="p-nutrition-visible"]').forEach(cb => cb.checked = true);
         document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
         setIngredientItems([]);
         S.allergenOverrides = [];

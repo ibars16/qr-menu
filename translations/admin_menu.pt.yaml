@@ -33,7 +33,9 @@ field:
     calories: Calorias
     nutrition_facts: Informação nutricional
     nutrition_toggle: Adicionar informação nutricional
-    nutrition_collapse: Ocultar informação nutricional
+    nutrition_collapse: Recolher informação nutricional
+    nutrition_visible_label: Mostrar no cardápio público
+    nutrition_visible_hint: Se desmarcares esta opção, esta informação não aparecerá no teu cardápio público, embora fique guardada aqui.
     fat: Gorduras
     protein: Proteínas
     carbohydrates: Hidratos de carbono

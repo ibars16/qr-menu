@@ -98,7 +98,7 @@
                             {% if product.spicyLevel > 0 %}
                                 <div class="bsec"><div class="bsec-title">{{ 'dish.spicy'|trans({}, 'menu_public', locale) }}</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}{{ 'dish.spice_1'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 2 %}{{ 'dish.spice_2'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 3 %}{{ 'dish.spice_3'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 4 %}{{ 'dish.spice_4'|trans({}, 'menu_public', locale) }}{% else %}{{ 'dish.spice_5'|trans({}, 'menu_public', locale) }}{% endif %}</span></div></div>
                             {% endif %}
-                            {% if product.calories %}
+                            {% if product.calories and product.nutritionVisible %}
                                 <div class="bsec"><div class="bsec-title">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</div><div class="nut-row"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>
                             {% endif %}
                         </div>

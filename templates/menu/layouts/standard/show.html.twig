@@ -893,7 +893,7 @@
                                            one PHP string that's falsy), verified in the Fase 1
                                            migration — so a real 0.0g never gets mistaken for "not
                                            entered" the way a parsed 0 would. #}
-                                        {% set hasNutritionFacts = product.calories or product.fat or product.protein or product.carbohydrates or product.sugars %}
+                                        {% set hasNutritionFacts = product.nutritionVisible and (product.calories or product.fat or product.protein or product.carbohydrates or product.sugars) %}
                                         {% if hasNutritionFacts %}
                                             <div class="bsec">
                                                 <div class="bsec-title">{{ 'dish.nutrition_facts'|trans({}, 'menu_public', locale) }}</div>
@@ -907,7 +907,7 @@
                                             </div>
                                         {% endif %}
                                     {% else %}
-                                        {% if product.calories %}<div class="bsec"><div class="bsec-title">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</div><div class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
+                                        {% if product.calories and product.nutritionVisible %}<div class="bsec"><div class="bsec-title">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</div><div class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
                                     {% endif %}
                                 </template>
                             </div>
