@@ -172,6 +172,7 @@ smart_waiter:
 upload:
     aria: Upload dish photo
     hint: Click or drag an image here
+    limits: 'JPEG, PNG or WebP · max 8 MB · min 400×400 px'
     change: Change photo
 
 error:

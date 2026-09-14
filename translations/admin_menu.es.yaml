@@ -172,6 +172,7 @@ smart_waiter:
 upload:
     aria: Subir imagen del plato
     hint: Haz clic o arrastra una imagen aquí
+    limits: 'JPEG, PNG o WebP · máx. 8 MB · mín. 400×400 px'
     change: Cambiar foto
 
 error:

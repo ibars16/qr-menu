@@ -452,17 +452,25 @@
 .img-upload {
     width:100%; aspect-ratio:16/9; max-height:260px; border:1px dashed var(--bd-2); border-radius:var(--r-lg);
     display:flex; align-items:center; justify-content:center; gap:8px;
-    font-size:13px; color:var(--tx-6); cursor:pointer; background:var(--bg-card);
+    font-size:13px; color:var(--tx-muted); cursor:pointer; background:var(--bg-card);
     transition:border-color 0.15s, color 0.15s; position:relative; overflow:hidden;
 }
-.img-upload:hover, .img-upload.drag-over { border-color:var(--tx-6); color:var(--tx-3); }
+.img-upload:hover, .img-upload.drag-over { border-color:var(--tx-muted); color:var(--tx-3); }
+/* role="button" tabindex="0" — keyboard-focusable but had no visible ring
+   before this; --tx-1 (not --brand, forbidden in this component) since the
+   dashed border-radius is followed automatically, no extra override needed. */
+.img-upload:focus-visible { outline:2px solid var(--tx-1); outline-offset:2px; }
 .img-upload img {
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
     opacity:0; transition:opacity 0.2s;
 }
 .img-upload img.loaded { opacity:1; }
 .img-upload-hint { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; padding:0 var(--sp-4); }
-.img-upload-hint i { font-size:26px; color:var(--tx-7); }
+.img-upload-hint i { font-size:26px; color:var(--tx-muted); }
+/* Real limits, not decoration — must stay in sync with UploadValidator::LIMITS['dish_image'].
+   Static text on purpose (this is a markup/style-only change); if these ever
+   drift, UploadValidator is the source of truth to fix, not this string. */
+.img-upload-hint-limits { font-size:11px; color:var(--tx-muted); }
 
 /* Shown once the <img> starts loading (a saved photo is a real network
    fetch of the original upload — there's no server-side thumbnail yet, so
@@ -481,11 +489,13 @@
    of it (tried that first, blocked the photo itself). Only shown once
    there's an image (previewImage()/renderProductImage() reveal it,
    opposite to .img-upload-hint) — the dropzone's own hint is the call to
-   action until then. Sized up from the base .btn (bigger padding/font,
-   full width) so it reads as a real action, not an afterthought. */
+   action until then. Sized up from the base .btn (bigger padding/font) so
+   it reads as a real action, not an afterthought — but content-width: the
+   only full-width action on this screen is Guardar. .btn is already
+   inline-flex, so it sizes to its content on its own. */
 .img-upload-change-btn {
-    width:100%; margin-top:10px; justify-content:center;
-    padding:11px; min-height:44px; font-size:14px;
+    margin-top:10px;
+    padding:11px 16px; min-height:44px; font-size:14px;
 }
 
 @media (max-width: 767px) {

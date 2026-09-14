@@ -172,6 +172,7 @@ smart_waiter:
 upload:
     aria: Enviar foto do prato
     hint: Clique ou arraste uma imagem aqui
+    limits: 'JPEG, PNG ou WebP · máx. 8 MB · mín. 400×400 px'
     change: Alterar foto
 
 error:

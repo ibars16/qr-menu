@@ -172,6 +172,7 @@ smart_waiter:
 upload:
     aria: Foto des Gerichts hochladen
     hint: Klicke oder ziehe ein Bild hierher
+    limits: 'JPEG, PNG oder WebP · max. 8 MB · min. 400×400 px'
     change: Foto ändern
 
 error:

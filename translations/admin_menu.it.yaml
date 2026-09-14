@@ -172,6 +172,7 @@ smart_waiter:
 upload:
     aria: Carica foto del piatto
     hint: Clicca o trascina un'immagine qui
+    limits: 'JPEG, PNG o WebP · max 8 MB · min 400×400 px'
     change: Cambia foto
 
 error:

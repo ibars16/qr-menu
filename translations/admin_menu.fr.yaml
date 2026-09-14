@@ -172,6 +172,7 @@ smart_waiter:
 upload:
     aria: Ajouter une photo du plat
     hint: Cliquez ou glissez une image ici
+    limits: 'JPEG, PNG ou WebP · 8 Mo max · 400×400 px min'
     change: Changer la photo
 
 error:
