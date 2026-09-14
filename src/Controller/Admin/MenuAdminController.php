@@ -28,6 +28,7 @@ use App\Service\Upload\UploadValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -524,6 +525,16 @@ class MenuAdminController extends AbstractController
 
         $file = $request->files->get('image');
         if (!$file) {
+            // A request whose total body exceeds post_max_size makes PHP
+            // drop $_FILES (and $_POST) entirely — there's no UploadedFile
+            // object here to read getError() from, so Content-Length vs.
+            // the ini limit is the only signal left to tell "no file was
+            // picked" apart from "a file was picked but too big".
+            $contentLength = $request->headers->get('Content-Length');
+            if ($contentLength !== null && (int) $contentLength > UploadedFile::getMaxFilesize()) {
+                return $this->json(['error' => $this->translator->trans('error.image_too_large', domain: 'admin_menu')], 400);
+            }
+
             return $this->json(['error' => $this->translator->trans('error.image_invalid', domain: 'admin_menu')], 400);
         }
 

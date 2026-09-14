@@ -113,6 +113,15 @@ final class UploadValidator
     public function validate(UploadedFile $file, UploadProfile $profile, bool $qualityWarningsConfirmed = false): UploadValidationResult
     {
         if (!$file->isValid()) {
+            // UPLOAD_ERR_INI_SIZE/FORM_SIZE mean PHP truncated the file for
+            // exceeding upload_max_filesize/post_max_size before it ever
+            // reached here — that's a size problem, not "no valid file was
+            // picked", so it gets the same honest TooLarge message as our
+            // own maxSizeBytes check below rather than the generic one.
+            if (\in_array($file->getError(), [\UPLOAD_ERR_INI_SIZE, \UPLOAD_ERR_FORM_SIZE], true)) {
+                return UploadValidationResult::failure(UploadValidationError::TooLarge);
+            }
+
             return UploadValidationResult::failure(UploadValidationError::InvalidFile);
         }
 

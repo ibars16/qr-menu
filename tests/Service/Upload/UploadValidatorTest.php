@@ -147,6 +147,44 @@ final class UploadValidatorTest extends TestCase
         self::assertTrue($result->isValid);
     }
 
+    public function testTreatsIniSizeErrorAsTooLargeNotGenericInvalid(): void
+    {
+        // PHP itself truncates a file exceeding upload_max_filesize before
+        // it ever reaches our own maxSizeBytes check — the resulting
+        // UploadedFile is invalid, but the reason is "too big", not "no
+        // valid file was picked", so it must map to the same honest
+        // TooLarge error as our own size check, not the generic one.
+        $file = new UploadedFile('/tmp/does-not-need-to-exist', 'photo.png', 'image/png', \UPLOAD_ERR_INI_SIZE, true);
+
+        $result = $this->validator()->validate($file, UploadProfile::DishImage);
+
+        self::assertFalse($result->isValid);
+        self::assertSame(UploadValidationError::TooLarge, $result->error);
+    }
+
+    public function testTreatsFormSizeErrorAsTooLargeNotGenericInvalid(): void
+    {
+        $file = new UploadedFile('/tmp/does-not-need-to-exist', 'photo.png', 'image/png', \UPLOAD_ERR_FORM_SIZE, true);
+
+        $result = $this->validator()->validate($file, UploadProfile::DishImage);
+
+        self::assertFalse($result->isValid);
+        self::assertSame(UploadValidationError::TooLarge, $result->error);
+    }
+
+    public function testOtherUploadErrorsStayGenericInvalidFile(): void
+    {
+        // A size-unrelated upload failure (e.g. the client aborted mid
+        // transfer) must NOT be reinterpreted as "too large" — only the two
+        // size-specific PHP error codes get that treatment.
+        $file = new UploadedFile('/tmp/does-not-need-to-exist', 'photo.png', 'image/png', \UPLOAD_ERR_PARTIAL, true);
+
+        $result = $this->validator()->validate($file, UploadProfile::DishImage);
+
+        self::assertFalse($result->isValid);
+        self::assertSame(UploadValidationError::InvalidFile, $result->error);
+    }
+
     public function testModerationHookCanRejectAnOtherwiseValidUpload(): void
     {
         $rejectingModeration = new class implements ContentModerationInterface {
