@@ -473,16 +473,11 @@
                                 <option value="may_contain">{{ 'allergens.presence_may_contain'|trans({}, 'admin_menu') }}</option>
                                 <option value="free_from">{{ 'allergens.presence_free_from'|trans({}, 'admin_menu') }}</option>
                             </select>
+                            {{ ui.help('allergens.help_presence_legend'|trans({}, 'admin_menu')) }}
                             <input type="text" id="p-allergen-add-note" placeholder="{{ 'allergens.note_placeholder'|trans({}, 'admin_menu') }}">
                             <div class="allergen-add-btn" onclick="addAllergenOverride()" role="button" tabindex="0">
                                 <i class="ti ti-plus" style="font-size:13px" aria-hidden="true"></i> {{ 'allergens.add_exception'|trans({}, 'admin_menu') }}
                             </div>
-                        </div>
-                        <div class="allergen-presence-legend">
-                            <span>{{ 'allergens.presence_contains'|trans({}, 'admin_menu') }}</span>
-                            <span>{{ 'allergens.presence_may_contain'|trans({}, 'admin_menu') }}</span>
-                            <span>{{ 'allergens.presence_free_from'|trans({}, 'admin_menu') }}</span>
-                            {{ ui.help('allergens.help_presence_legend'|trans({}, 'admin_menu')) }}
                         </div>
                     </div>
                 </div>
