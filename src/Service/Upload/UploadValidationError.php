@@ -9,5 +9,6 @@ enum UploadValidationError
     case TooLarge;
     case DimensionsTooSmall;
     case DimensionsTooLarge;
+    case DurationTooLong;
     case Rejected;
 }

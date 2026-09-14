@@ -13,4 +13,5 @@ enum UploadProfile: string
     case DishImage = 'dish_image';
     case HeroImage = 'hero_image';
     case MenuImportPage = 'menu_import_page';
+    case DishClip = 'dish_clip';
 }

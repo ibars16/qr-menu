@@ -15,10 +15,22 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  */
 final class UploadValidator
 {
-    private const ALLOWED_EXTENSIONS_BY_MIME = [
+    private const ALLOWED_IMAGE_EXTENSIONS_BY_MIME = [
         'image/jpeg' => 'jpg',
         'image/png'  => 'png',
         'image/webp' => 'webp',
+    ];
+
+    /**
+     * mp4 only for now — webm uses a completely different container format
+     * (Matroska/EBML, not ISO-BMFF), so accepting it would mean a second,
+     * unrelated duration parser alongside readMp4DurationSeconds() below.
+     * Duration is the one hard guarantee here ("corto" must actually be
+     * enforced), so it doesn't get to be the thing skipped for webm's
+     * sake — revisit only if webm support is asked for on its own.
+     */
+    private const ALLOWED_VIDEO_EXTENSIONS_BY_MIME = [
+        'video/mp4' => 'mp4',
     ];
 
     /**
@@ -78,6 +90,22 @@ final class UploadValidator
             'maxSizeBytes'    => 15 * 1024 * 1024,
             'checkDimensions' => false,
         ],
+        /**
+         * The dish "clip" — a short, silent, looping animation, not a video
+         * with sound/controls (see MenuAdminController::uploadProductClip()).
+         * No dimension check (checkDimensions: false, same as
+         * menu_import_page — resolution isn't the concern here); duration
+         * is, since "short" is the entire product promise. maxDurationSeconds
+         * is enforced server-side by reading the file's own moov/mvhd box
+         * (readMp4DurationSeconds() below) — never trust a client-reported
+         * duration for this, only the client-side hint that saves the owner
+         * a wasted upload.
+         */
+        'dish_clip' => [
+            'maxSizeBytes'       => 8 * 1024 * 1024,
+            'checkDimensions'    => false,
+            'maxDurationSeconds' => 10,
+        ],
     ];
 
     public function __construct(
@@ -126,11 +154,13 @@ final class UploadValidator
         }
 
         $limits = self::LIMITS[$profile->value];
+        $isVideo = $profile === UploadProfile::DishClip;
+        $allowedExtensions = $isVideo ? self::ALLOWED_VIDEO_EXTENSIONS_BY_MIME : self::ALLOWED_IMAGE_EXTENSIONS_BY_MIME;
 
         // Real content-sniffed MIME type (finfo over the file's actual
         // bytes), never the client-supplied filename or Content-Type header.
         $mimeType = $file->getMimeType();
-        if (!isset(self::ALLOWED_EXTENSIONS_BY_MIME[$mimeType])) {
+        if (!isset($allowedExtensions[$mimeType])) {
             return UploadValidationResult::failure(UploadValidationError::UnsupportedType);
         }
 
@@ -139,6 +169,20 @@ final class UploadValidator
         }
 
         $warnings = [];
+
+        if ($isVideo) {
+            // Fail closed: a clip we can't confidently read a duration out
+            // of (malformed/truncated/exotic container) is treated the same
+            // as an unsupported type, never let through unchecked — the
+            // duration cap is the one guarantee this profile exists for.
+            $durationSeconds = $this->readMp4DurationSeconds($file->getPathname());
+            if ($durationSeconds === null) {
+                return UploadValidationResult::failure(UploadValidationError::UnsupportedType);
+            }
+            if ($durationSeconds > $limits['maxDurationSeconds']) {
+                return UploadValidationResult::failure(UploadValidationError::DurationTooLong);
+            }
+        }
 
         if ($limits['checkDimensions']) {
             $dimensions = @getimagesize($file->getPathname());
@@ -181,8 +225,142 @@ final class UploadValidator
             return UploadValidationResult::needsConfirmation($warnings);
         }
 
-        $safeFilename = bin2hex(random_bytes(16)) . '.' . self::ALLOWED_EXTENSIONS_BY_MIME[$mimeType];
+        $safeFilename = bin2hex(random_bytes(16)) . '.' . $allowedExtensions[$mimeType];
 
         return UploadValidationResult::success($safeFilename, $mimeType, $warnings);
+    }
+
+    /**
+     * Reads the movie duration straight out of an MP4/ISO-BMFF file's
+     * moov/mvhd box — no ffprobe, no dependency, just the handful of bytes
+     * the container format guarantees are there for any player to read.
+     * Returns null (never a guess) for anything that doesn't look like a
+     * well-formed MP4, so validate() fails closed rather than let an
+     * unreadable duration slip through unchecked.
+     */
+    private function readMp4DurationSeconds(string $path): ?float
+    {
+        $fileSize = @filesize($path);
+        if ($fileSize === false || $fileSize < 8) {
+            return null;
+        }
+
+        $handle = @fopen($path, 'rb');
+        if ($handle === false) {
+            return null;
+        }
+
+        try {
+            $moov = $this->findBox($handle, 0, $fileSize, 'moov');
+            if ($moov === null) {
+                return null;
+            }
+            [$moovOffset, $moovLength] = $moov;
+
+            $mvhd = $this->findBox($handle, $moovOffset, $moovLength, 'mvhd');
+            if ($mvhd === null) {
+                return null;
+            }
+            [$mvhdOffset, $mvhdLength] = $mvhd;
+
+            fseek($handle, $mvhdOffset);
+            $versionByte = fread($handle, 1);
+            if ($versionByte === false || $versionByte === '') {
+                return null;
+            }
+            $version = ord($versionByte);
+
+            // mvhd body: version(1) + flags(3), then either the 32-bit
+            // (version 0) or 64-bit (version 1) creation/modification times,
+            // then timescale (always 32-bit) + duration (32 or 64-bit).
+            if (1 === $version) {
+                if ($mvhdLength < 32) {
+                    return null;
+                }
+                fseek($handle, $mvhdOffset + 20);
+                $data = fread($handle, 12);
+                if ($data === false || \strlen($data) < 12) {
+                    return null;
+                }
+                $timescale = unpack('N', substr($data, 0, 4))[1];
+                $duration = ($this->readUint32($data, 4) << 32) | $this->readUint32($data, 8);
+            } else {
+                if ($mvhdLength < 20) {
+                    return null;
+                }
+                fseek($handle, $mvhdOffset + 12);
+                $data = fread($handle, 8);
+                if ($data === false || \strlen($data) < 8) {
+                    return null;
+                }
+                $timescale = $this->readUint32($data, 0);
+                $duration = $this->readUint32($data, 4);
+            }
+
+            if ($timescale <= 0) {
+                return null;
+            }
+
+            return $duration / $timescale;
+        } finally {
+            fclose($handle);
+        }
+    }
+
+    private function readUint32(string $data, int $offset): int
+    {
+        return unpack('N', substr($data, $offset, 4))[1];
+    }
+
+    /**
+     * Finds the first box of $type within [$start, $start + $length) of an
+     * ISO-BMFF file and returns [dataOffset, dataSize] — the range just past
+     * that box's own header. Returns null if not found, or the moment any
+     * box header looks malformed (a size that would read past the searched
+     * range) — never guesses past bytes it can't account for.
+     *
+     * @return array{0:int,1:int}|null
+     */
+    private function findBox($handle, int $start, int $length, string $type): ?array
+    {
+        $end = $start + $length;
+        $pos = $start;
+
+        while ($pos + 8 <= $end) {
+            fseek($handle, $pos);
+            $header = fread($handle, 8);
+            if ($header === false || \strlen($header) < 8) {
+                return null;
+            }
+
+            $size = $this->readUint32($header, 0);
+            $boxType = substr($header, 4, 4);
+            $headerSize = 8;
+
+            if (1 === $size) {
+                $ext = fread($handle, 8);
+                if ($ext === false || \strlen($ext) < 8) {
+                    return null;
+                }
+                $size = ($this->readUint32($ext, 0) << 32) | $this->readUint32($ext, 4);
+                $headerSize = 16;
+            } elseif (0 === $size) {
+                // "extends to end of file" in the spec — here, to the end
+                // of whatever range we were asked to search.
+                $size = $end - $pos;
+            }
+
+            if ($size < $headerSize || $pos + $size > $end) {
+                return null;
+            }
+
+            if ($boxType === $type) {
+                return [$pos + $headerSize, $size - $headerSize];
+            }
+
+            $pos += $size;
+        }
+
+        return null;
     }
 }

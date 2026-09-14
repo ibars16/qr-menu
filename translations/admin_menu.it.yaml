@@ -187,6 +187,11 @@ error:
     image_dimensions_too_small: L'immagine è troppo piccola (min. 400x400 px).
     image_dimensions_too_large: L'immagine è troppo grande (max. 5000x5000 px).
     image_upload_failed: Impossibile caricare l'immagine. Riprova.
+    clip_invalid: Non è stato selezionato un video valido.
+    clip_unsupported_type: Formato video non supportato. Usa MP4.
+    clip_too_large: Il video è troppo grande (max 8 MB).
+    clip_duration_too_long: Il video è troppo lungo (max 10 s).
+    clip_upload_failed: Impossibile caricare il video. Riprova.
     unexpected: Qualcosa è andato storto. Riprova.
     nutrition_value_invalid: 'Il valore deve essere un numero compreso tra 0 e 9999.9, con al massimo un decimale.'
 

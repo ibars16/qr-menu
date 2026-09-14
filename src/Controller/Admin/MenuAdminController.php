@@ -574,6 +574,60 @@ class MenuAdminController extends AbstractController
     }
 
     /**
+     * Same shape as uploadProductImage() above (separate multipart route,
+     * called after saveProduct() has an id), writing to Product::$videoClip
+     * instead of $image — a distinct, optional field, not a replacement for
+     * the photo (see Product.php's docblock on $videoClip).
+     */
+    #[Route('/products/{id}/clip', name: 'product_clip_upload', methods: ['POST'])]
+    public function uploadProductClip(Product $product, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $this->assertOwner($product->getCategory()->getRestaurant());
+
+        $file = $request->files->get('clip');
+        if (!$file) {
+            $contentLength = $request->headers->get('Content-Length');
+            if ($contentLength !== null && (int) $contentLength > UploadedFile::getMaxFilesize()) {
+                return $this->json(['error' => $this->translator->trans('error.clip_too_large', domain: 'admin_menu')], 400);
+            }
+
+            return $this->json(['error' => $this->translator->trans('error.clip_invalid', domain: 'admin_menu')], 400);
+        }
+
+        $result = $this->uploadValidator->validate($file, UploadProfile::DishClip);
+        if (!$result->isValid) {
+            return $this->json(['error' => $this->translator->trans($this->productClipErrorKey($result->error), domain: 'admin_menu')], 400);
+        }
+
+        $newFilename = $result->safeFilename;
+
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/products';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        try {
+            $file->move($uploadDir, $newFilename);
+        } catch (FileException) {
+            return $this->json(['error' => $this->translator->trans('error.clip_upload_failed', domain: 'admin_menu')], 500);
+        }
+
+        $oldClip = $product->getVideoClip();
+        if ($oldClip) {
+            $oldPath = $uploadDir . '/' . $oldClip;
+            if (is_file($oldPath)) {
+                unlink($oldPath);
+            }
+        }
+
+        $product->setVideoClip($newFilename);
+        $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
+        $em->flush();
+
+        return $this->json(['videoClip' => $newFilename]);
+    }
+
+    /**
      * calories predates the nutrition-fields migration (?int, whole kcal).
      * This only adds format validation in front of its existing setter —
      * its persistence just below (`$data['calories'] ?: null`, which
@@ -626,7 +680,24 @@ class MenuAdminController extends AbstractController
             UploadValidationError::TooLarge => 'error.image_too_large',
             UploadValidationError::DimensionsTooSmall => 'error.image_dimensions_too_small',
             UploadValidationError::DimensionsTooLarge => 'error.image_dimensions_too_large',
-            UploadValidationError::InvalidFile, UploadValidationError::Rejected => 'error.image_invalid',
+            // DurationTooLong is unreachable for an image profile (only
+            // UploadProfile::DishClip ever produces it) — grouped with the
+            // generic case defensively rather than left unhandled.
+            UploadValidationError::InvalidFile, UploadValidationError::Rejected, UploadValidationError::DurationTooLong => 'error.image_invalid',
+        };
+    }
+
+    private function productClipErrorKey(UploadValidationError $error): string
+    {
+        return match ($error) {
+            UploadValidationError::UnsupportedType => 'error.clip_unsupported_type',
+            UploadValidationError::TooLarge => 'error.clip_too_large',
+            UploadValidationError::DurationTooLong => 'error.clip_duration_too_long',
+            // Dimensions* are unreachable for the clip profile (checkDimensions
+            // is off for dish_clip) — grouped with the generic case
+            // defensively rather than left unhandled.
+            UploadValidationError::InvalidFile, UploadValidationError::Rejected,
+            UploadValidationError::DimensionsTooSmall, UploadValidationError::DimensionsTooLarge => 'error.clip_invalid',
         };
     }
 
