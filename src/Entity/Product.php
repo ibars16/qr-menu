@@ -39,6 +39,17 @@ class Product
     private ?string $image = null;
 
     /**
+     * A short (<=10s), silent, looping clip — an optional layer on top of
+     * $image, never a replacement for it. $image stays the universal
+     * poster/fallback (admin list thumbnail, set-menu thumbnail, and the
+     * <video poster> itself) read by everything that already reads it,
+     * unchanged; only the live dish-card/detail-sheet render points branch
+     * on this being set. See MenuAdminController::uploadProductClip().
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $videoClip = null;
+
+    /**
      * Price stored in cents to avoid floating point precision issues.
      * Example: 1250 = 12.50 in the restaurant's base currency.
      */
@@ -272,6 +283,16 @@ class Product
     public function setImage(?string $image): void
     {
         $this->image = $image;
+    }
+
+    public function getVideoClip(): ?string
+    {
+        return $this->videoClip;
+    }
+
+    public function setVideoClip(?string $videoClip): void
+    {
+        $this->videoClip = $videoClip;
     }
 
     public function getBasePrice(): int
