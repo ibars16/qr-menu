@@ -331,20 +331,29 @@
    back to its original spot — see togglePriceVariants()) reveals a
    grouped box that holds the base row, extra rows, and the "add"
    link together, so the whole thing reads as one coherent price
-   list rather than loose top-level fields. */
+   list rather than loose top-level fields. A real card (border token
+   one step up + soft shadow) instead of the flat same-as-background
+   square it had before, so it reads as one distinct block the moment
+   it opens rather than just more of the panel's own background. */
 .price-variants-group {
-    margin-top:10px; padding:12px; border-radius:10px;
-    background:var(--bg-card); border:1px solid var(--bd-1);
+    margin-top:10px; padding:var(--sp-4); border-radius:var(--r-lg);
+    background:var(--bg-card); border:1px solid var(--bd-2);
+    box-shadow:var(--shadow-sm);
 }
-.price-variants-group-label { margin-bottom:10px; }
+.price-variants-group-label { margin-bottom:10px; font-size:var(--fs-sm); color:var(--tx-3); }
 /* Column headers render once, above the list — see the "field-label
    display:none" rule below for how the base row's OWN "Precio"
    label (needed when it's outside the group, in the simple state)
-   gets out of the way once these headers take over. */
-.price-variant-headers { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+   gets out of the way once these headers take over. Thin rule under
+   the headers now separates them from the first row, so they read as
+   a fixed header rather than just that row's own labels. */
+.price-variant-headers {
+    display:flex; gap:8px; align-items:center;
+    padding-bottom:8px; margin-bottom:8px; border-bottom:1px solid var(--bd-1);
+}
 .price-variant-header-label { flex:1.3; }
 .price-variant-header-price { flex:1; }
-.price-variant-rows { display:flex; flex-direction:column; gap:8px; }
+.price-variant-rows { display:flex; flex-direction:column; gap:10px; }
 .price-variant-row-item { display:flex; gap:8px; align-items:center; }
 .price-variant-label-field { flex:1.3; }
 .price-variant-price-field { flex:1; }
@@ -361,17 +370,30 @@
 .price-variant-remove, .price-variant-remove-spacer, .price-variant-header-spacer {
     width:44px; flex-shrink:0;
 }
+/* Round hover/focus fill instead of a bare "×" floating with no
+   affordance — same danger tint as .field-error/.btn-danger:hover
+   (#F0997B) so removing a row reads as the same kind of action as
+   every other delete control in this form. Geometry (44×44) unchanged
+   from before, so the tap target and column alignment don't move. */
 .price-variant-remove {
     display:flex; align-items:center; justify-content:center; height:44px;
-    font-size:18px; line-height:1; font-weight:600;
-    color:var(--tx-6); cursor:pointer;
+    font-size:18px; line-height:1; font-weight:600; border-radius:var(--r-md);
+    color:var(--tx-6); cursor:pointer; transition:color 0.12s, background-color 0.12s;
 }
-.price-variant-remove:hover { color:var(--tx-1); }
+.price-variant-remove:hover { color:#F0997B; background:rgba(240,153,123,0.12); }
+.price-variant-remove:focus-visible { outline:2px solid var(--tx-1); outline-offset:2px; border-radius:var(--r-md); }
+/* Dashed "insert a row" affordance instead of a bare text link — reads
+   as its own recognizable pattern, one notch quieter than the solid
+   .price-variants-toggle chip above it so the hierarchy (open the
+   section vs. add one more line inside it) stays clear. */
 .price-variant-add {
-    display:inline-flex; align-items:center; gap:5px; margin-top:10px;
-    font-size:12px; color:var(--tx-6); cursor:pointer; user-select:none; transition:color 0.1s;
+    display:inline-flex; align-items:center; gap:6px; margin-top:4px;
+    padding:var(--sp-1) var(--sp-2); font-size:var(--fs-sm); color:var(--tx-4);
+    border:1px dashed var(--bd-2); border-radius:var(--r-md);
+    cursor:pointer; user-select:none; transition:color 0.1s, border-color 0.1s, background-color 0.1s;
 }
-.price-variant-add:hover { color:var(--tx-3); }
+.price-variant-add:hover { color:var(--tx-1); border-color:var(--tx-6); background:var(--bg-hover); }
+.price-variant-add:focus-visible { outline:2px solid var(--tx-1); outline-offset:2px; border-radius:var(--r-md); }
 
 /* Detalles tab groups into 4 blocks — Recomendado (destacar) / Etiquetas /
    Picante / Nutrición (datos numéricos) — that used to read as one
@@ -470,6 +492,9 @@
        chip instead of a shrink-to-fit link, "× Volver a precio único"
        plus its icon can get close to a 390px viewport's width. */
     .price-variants-toggle { display:flex; width:100%; flex-wrap:wrap; justify-content:center; }
+    /* "+ Añadir otro precio" as a full-width dashed row on mobile too —
+       same bigger-tap-target reasoning as the two toggles above. */
+    .price-variant-add { display:flex; width:100%; }
 }
 
 /* Image upload — its own tab now (Foto), with the room a 76px line-item
