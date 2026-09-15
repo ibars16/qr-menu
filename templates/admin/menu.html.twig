@@ -361,6 +361,10 @@
             spicy:       0,
             allergenOverrides: [],
             ingredientAllergenCache: {},
+            // Canvas-captured poster for a freshly-picked clip, staged here
+            // (not in an <input>) since #p-img-input holds the clip file
+            // itself — see capturePosterFromClip() in _product_js.html.twig.
+            stagedPosterFile: null,
         };
     </script>
     {% include 'admin/_admin_js_utils.html.twig' %}

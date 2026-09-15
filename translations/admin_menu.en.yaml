@@ -44,8 +44,7 @@ field:
     description: Description
     description_placeholder: 'Briefly describe the dish, main ingredients, preparation style…'
     ingredients: Ingredients
-    photo: Dish photo
-    clip: Short clip
+    photo: Dish photo or clip
     price: 'Price (%currency%)'
     price_variant_add: Add another price
     price_variant_column_label: Label
@@ -171,17 +170,12 @@ smart_waiter:
     recommended_hint: This dish will appear as a recommendation for customers.
 
 upload:
-    aria: Upload dish photo
-    hint: Click or drag an image here
-    limits: 'JPEG, PNG or WebP · max 8 MB · min 400×400 px'
-    change: Change photo
+    aria: Upload dish photo or clip
+    hint: Drag or click to upload a photo or a clip
+    limits: 'Photo: JPEG, PNG or WebP (max 8 MB, min 400×400 px) · Clip: MP4 (max 8 MB, max 10s)'
+    change: Change
 
 clip:
-    explainer: A short, silent, looping clip to animate the dish on the menu — not a video with sound or controls.
-    upload_aria: Upload dish clip
-    hint: Drag or click to upload a clip
-    limits: 'MP4 · max 8 MB · max 10s'
-    change: Change
     poster_capture_failed: Couldn't automatically generate a thumbnail from the clip. Upload a photo so it shows on the menu.
     duration_warning: This clip is longer than 10s — the server will reject it when you save.
 

@@ -44,8 +44,7 @@ field:
     description: Descripción
     description_placeholder: 'Describe brevemente el plato, ingredientes principales, forma de preparación…'
     ingredients: Ingredientes
-    photo: Foto del plato
-    clip: Clip corto
+    photo: Foto o clip del plato
     price: 'Precio (%currency%)'
     price_variant_add: Añadir otro precio
     price_variant_column_label: Etiqueta
@@ -171,17 +170,12 @@ smart_waiter:
     recommended_hint: Este plato aparecerá como una recomendación para los clientes.
 
 upload:
-    aria: Subir imagen del plato
-    hint: Haz clic o arrastra una imagen aquí
-    limits: 'JPEG, PNG o WebP · máx. 8 MB · mín. 400×400 px'
-    change: Cambiar foto
+    aria: Subir foto o clip del plato
+    hint: Arrastra o pulsa para subir una foto o un clip
+    limits: 'Foto: JPEG, PNG o WebP (máx. 8 MB, mín. 400×400 px) · Clip: MP4 (máx. 8 MB, máx. 10 s)'
+    change: Cambiar
 
 clip:
-    explainer: Un clip mudo y corto, en bucle, para animar el plato en la carta — no es un vídeo con sonido ni controles.
-    upload_aria: Subir clip del plato
-    hint: Arrastra o pulsa para subir un clip
-    limits: 'MP4 · máx. 8 MB · máx. 10 s'
-    change: Cambiar
     poster_capture_failed: No se pudo generar la miniatura automáticamente a partir del clip. Sube una foto para que se muestre en la carta.
     duration_warning: Este clip dura más de 10 s — el servidor lo rechazará al guardar.
 

@@ -485,9 +485,9 @@
 .img-upload.loading .img-upload-hint { display:none; }
 @keyframes img-upload-spin { to { transform:rotate(360deg); } }
 
-/* "Cambiar foto" — a real button below the photo, not an overlay on top
-   of it (tried that first, blocked the photo itself). Only shown once
-   there's an image (previewImage()/renderProductImage() reveal it,
+/* "Cambiar" — a real button below the photo/clip, not an overlay on top
+   of it (tried that first, blocked the media itself). Only shown once
+   there's media (previewMedia()/renderProductMedia() reveal it,
    opposite to .img-upload-hint) — the dropzone's own hint is the call to
    action until then. Sized up from the base .btn (bigger padding/font) so
    it reads as a real action, not an afterthought — but content-width: the
@@ -497,12 +497,6 @@
     margin-top:10px;
     padding:11px 16px; min-height:44px; font-size:14px;
 }
-
-/* Clip field — reuses .img-upload/.img-upload-change-btn wholesale (same
-   dropzone, same button), only this explainer line is new: short, muted,
-   makes "silent looping clip, not a video with sound" explicit right next
-   to the label rather than relying on the hint text alone. */
-.clip-explainer { font-size:12px; color:var(--tx-muted); line-height:1.4; }
 
 @media (max-width: 767px) {
     .img-upload-change-btn { min-height:48px; }

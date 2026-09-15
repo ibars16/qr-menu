@@ -44,8 +44,7 @@ field:
     description: Descrizione
     description_placeholder: 'Descrivi brevemente il piatto, gli ingredienti principali, il metodo di preparazione…'
     ingredients: Ingredienti
-    photo: Foto del piatto
-    clip: Clip breve
+    photo: Foto o clip del piatto
     price: 'Prezzo (%currency%)'
     price_variant_add: Aggiungi un altro prezzo
     price_variant_column_label: Etichetta
@@ -171,17 +170,12 @@ smart_waiter:
     recommended_hint: Questo piatto apparirà come consiglio per i clienti.
 
 upload:
-    aria: Carica foto del piatto
-    hint: Clicca o trascina un'immagine qui
-    limits: 'JPEG, PNG o WebP · max 8 MB · min 400×400 px'
-    change: Cambia foto
+    aria: Carica foto o clip del piatto
+    hint: Trascina o clicca per caricare una foto o una clip
+    limits: 'Foto: JPEG, PNG o WebP (max 8 MB, min 400×400 px) · Clip: MP4 (max 8 MB, max 10 s)'
+    change: Cambia
 
 clip:
-    explainer: Una clip breve, muta e in loop, per animare il piatto nel menu — non un video con audio o controlli.
-    upload_aria: Carica clip del piatto
-    hint: Trascina o clicca per caricare una clip
-    limits: 'MP4 · max 8 MB · max 10 s'
-    change: Cambia
     poster_capture_failed: Impossibile generare automaticamente una miniatura dalla clip. Carica una foto perché venga mostrata nel menu.
     duration_warning: Questa clip dura più di 10 s — il server la rifiuterà al salvataggio.
 

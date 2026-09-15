@@ -134,8 +134,7 @@
                 if (data.calories != null || data.fat != null || data.protein != null || data.carbohydrates != null || data.sugars != null) {
                     revealNutrition();
                 }
-                renderProductImage(data.image);
-                renderProductClip(data.videoClip);
+                renderProductMedia(data.image, data.videoClip);
 
                 document.querySelectorAll('.tag-pill').forEach(p =>
                     p.classList.toggle('on', data.tags.includes(parseInt(p.dataset.tagId)))
@@ -384,20 +383,27 @@
         const data = await apiFetch('/admin/products/save', payload);
         if (data.error) { showToast(data.error, 'error'); return; }
 
-        const imageFile = panelEl('p-img-input')?.files?.[0];
-        if (imageFile) {
-            const imgData = await uploadProductImage(data.id, imageFile);
-            if (imgData.error) showToast(imgData.error, 'error');
-        }
-
-        // Same deferred-until-save pattern as the photo above — a
-        // brand-new dish has no id until the main save round-trips. The
-        // captured poster (if any) already rode along inside imageFile
-        // above; this is only ever the clip's own bytes.
-        const clipFile = panelEl('p-clip-input')?.files?.[0];
-        if (clipFile) {
-            const clipData = await uploadProductClip(data.id, clipFile);
+        // One control, one pick — the file's real MIME (already checked
+        // once in previewMedia(), re-checked here since it's what decides
+        // which endpoint(s) to call) decides photo vs. clip. A clip's own
+        // auto-captured poster (S.stagedPosterFile, set by
+        // capturePosterFromClip()) uploads FIRST: uploadProductImage()
+        // clears any previous videoClip as its own invariant, so the clip
+        // uploaded right after is the one that ends up winning. If capture
+        // failed, S.stagedPosterFile stays null and image is left
+        // untouched entirely — see capturePosterFromClip()'s own fallback
+        // contract — the clip itself still saves.
+        const mediaFile = panelEl('p-img-input')?.files?.[0];
+        if (mediaFile && mediaFile.type.startsWith('video/')) {
+            if (S.stagedPosterFile) {
+                const imgData = await uploadProductImage(data.id, S.stagedPosterFile);
+                if (imgData.error) showToast(imgData.error, 'error');
+            }
+            const clipData = await uploadProductClip(data.id, mediaFile);
             if (clipData.error) showToast(clipData.error, 'error');
+        } else if (mediaFile) {
+            const imgData = await uploadProductImage(data.id, mediaFile);
+            if (imgData.error) showToast(imgData.error, 'error');
         }
 
         showToast(S.productId ? MSG_PRODUCT_SAVED : MSG_PRODUCT_CREATED, 'success');
@@ -967,18 +973,31 @@
     document.addEventListener('click', closeAllHelp);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllHelp(); });
 
-    // ── Image preview / upload ───────────────────────────────────────────────
-    // Shared by previewImage() (local file, instant via ObjectURL) and
-    // renderProductImage() (a saved photo — a real network fetch of the
+    // ── Media (photo OR clip) preview / upload ────────────────────────────────
+    // One control, one choice: the file the owner picks in #p-img-input IS
+    // the decision (see the panel's own comment in _product_fields.html.twig
+    // and uploadProductImage()'s clip-clearing comment in
+    // MenuAdminController). image always ends up holding a real, fixed
+    // picture — either the photo itself, or the clip's own auto-captured
+    // poster — never a leftover from a different, unrelated pick.
+    function clearMediaPreview(area) {
+        area.querySelector('img')?.remove();
+        area.querySelector('video')?.remove();
+        area.classList.remove('loading');
+    }
+
+    // Shared by previewMedia() (local file, instant via ObjectURL) and
+    // renderProductMedia() (a saved photo — a real network fetch of the
     // original upload, no server-side thumbnail exists yet, so it can be
     // slow) — both show a spinner and fade the <img> in on its load event,
     // so a slow load reads as "loading", never as empty/broken. Also
-    // reveals the "Cambiar foto" button below the photo (a sibling of
-    // #img-upload-area, not an overlay on top of it) once a photo is set.
+    // reveals the "Cambiar" button below it (a sibling of #img-upload-area,
+    // not an overlay on top of it) once media is set. Clears any leftover
+    // <video> first — the two are mutually exclusive in this one area.
     function showImageInArea(area, src) {
-        let img = area.querySelector('img');
-        if (!img) { img = document.createElement('img'); area.appendChild(img); }
-        img.classList.remove('loaded');
+        clearMediaPreview(area);
+        const img = document.createElement('img');
+        area.appendChild(img);
         area.classList.add('loading');
         img.onload = () => { img.classList.add('loaded'); area.classList.remove('loading'); };
         img.src = src;
@@ -987,78 +1006,19 @@
         if (changeBtn) changeBtn.style.display = '';
     }
 
-    // previewImage() only shows the picked file locally — the actual upload
-    // happens in saveProduct(), once a product id exists to attach it to (see
-    // uploadProductImage()). A brand-new dish has no id until the main save
-    // round-trips, so the file just sits in the <input> until then.
-    function previewImage(input) {
-        if (!input.files?.length) return;
-        showImageInArea(panelEl('img-upload-area'), URL.createObjectURL(input.files[0]));
-    }
-
-    // Renders the dish's already-saved photo (openEditProduct), or clears
-    // back to the hint when the dish has none.
-    function renderProductImage(imagePath) {
-        document.querySelectorAll('[id="img-upload-area"]').forEach(area => {
-            if (imagePath) {
-                showImageInArea(area, `/uploads/products/${imagePath}`);
-            } else {
-                area.querySelector('img')?.remove();
-                area.classList.remove('loading');
-                area.querySelector('.img-upload-hint').style.display = '';
-                const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
-                if (changeBtn) changeBtn.style.display = 'none';
-            }
-        });
-    }
-
-    // Drag-and-drop onto the upload area — mirrors the click-to-browse path:
-    // the dropped file is handed to the same hidden <input> (via DataTransfer,
-    // since a FileList can't be built by hand) so both paths share one preview.
-    function handleImageDrop(event, area) {
-        event.preventDefault();
-        area.classList.remove('drag-over');
-        const file = event.dataTransfer?.files?.[0];
-        if (!file || !file.type.startsWith('image/')) return;
-        const input = panelEl('p-img-input');
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        input.files = dt.files;
-        previewImage(input);
-    }
-
-    // Separate request from saveProduct() on purpose: that one is JSON, this
-    // needs multipart/form-data for the file. Called only after saveProduct()
-    // has a product id to attach the image to.
-    async function uploadProductImage(productId, file) {
-        const formData = new FormData();
-        formData.append('image', file);
-        try {
-            const res  = await fetch(`/admin/products/${productId}/image`, { method: 'POST', body: formData });
-            const data = await res.json();
-            if (!res.ok) return { error: data?.error || MSG_UNEXPECTED_ERROR };
-            return data;
-        } catch (e) {
-            return { error: MSG_UNEXPECTED_ERROR };
-        }
-    }
-
-    // ── Clip (short, silent, looping) preview / upload ───────────────────────
-    // Mirrors showImageInArea() above but for a <video> — muted/loop/autoplay
-    // so the admin's own preview already plays the way the public card will
-    // (only one clip is ever open in the editor at a time, unlike the public
-    // carta's several-at-once concern, so autoplay here is cheap).
+    // Mirrors showImageInArea() but for a <video> — muted/loop/autoplay so
+    // the admin's own preview already plays the way the public card will
+    // (only one clip is ever open in the editor at a time, unlike the
+    // public carta's several-at-once concern, so autoplay here is cheap).
+    // Clears any leftover <img> first, same mutual-exclusion as above.
     function showClipInArea(area, src) {
-        let video = area.querySelector('video');
-        if (!video) {
-            video = document.createElement('video');
-            video.muted = true;
-            video.loop = true;
-            video.autoplay = true;
-            video.playsInline = true;
-            area.appendChild(video);
-        }
-        video.classList.remove('loaded');
+        clearMediaPreview(area);
+        const video = document.createElement('video');
+        video.muted = true;
+        video.loop = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        area.appendChild(video);
         area.classList.add('loading');
         video.onloadeddata = () => { video.classList.add('loaded'); area.classList.remove('loading'); };
         video.src = src;
@@ -1071,27 +1031,39 @@
         document.querySelectorAll('[id="clip-poster-warning"]').forEach(el => el.classList.toggle('show', show));
     }
 
-    // previewClip() shows the picked file locally, same deferred-upload
-    // pattern as previewImage() (see uploadProductClip(), called from
-    // saveProduct()) — and kicks off the poster capture below.
-    function previewClip(input) {
+    // previewMedia() only shows the picked file locally — the actual
+    // upload(s) happen in saveProduct(), once a product id exists to
+    // attach them to. A brand-new dish has no id until the main save
+    // round-trips, so the file just sits in the <input> until then.
+    // The real-content MIME of the picked file (not its extension) is what
+    // decides photo vs. clip, mirroring UploadValidator's own real-content
+    // sniffing server-side.
+    function previewMedia(input) {
         if (!input.files?.length) return;
         const file = input.files[0];
-        const src = URL.createObjectURL(file);
-        showClipInArea(panelEl('clip-upload-area'), src);
+        S.stagedPosterFile = null;
         showClipPosterWarning(false);
-        capturePosterFromClip(file, src);
+
+        if (file.type.startsWith('video/')) {
+            const src = URL.createObjectURL(file);
+            showClipInArea(panelEl('img-upload-area'), src);
+            capturePosterFromClip(file, src);
+        } else {
+            showImageInArea(panelEl('img-upload-area'), URL.createObjectURL(file));
+        }
     }
 
-    // Renders the dish's already-saved clip (openEditProduct), or clears
-    // back to the hint when the dish has none.
-    function renderProductClip(clipPath) {
-        document.querySelectorAll('[id="clip-upload-area"]').forEach(area => {
+    // Renders the dish's already-saved media (openEditProduct): the clip if
+    // it has one (its own file, not just the poster — a richer preview),
+    // else the photo, else clears back to the hint.
+    function renderProductMedia(imagePath, clipPath) {
+        document.querySelectorAll('[id="img-upload-area"]').forEach(area => {
             if (clipPath) {
                 showClipInArea(area, `/uploads/products/${clipPath}`);
+            } else if (imagePath) {
+                showImageInArea(area, `/uploads/products/${imagePath}`);
             } else {
-                area.querySelector('video')?.remove();
-                area.classList.remove('loading');
+                clearMediaPreview(area);
                 area.querySelector('.img-upload-hint').style.display = '';
                 const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
                 if (changeBtn) changeBtn.style.display = 'none';
@@ -1099,16 +1071,37 @@
         });
     }
 
-    function handleClipDrop(event, area) {
+    // Drag-and-drop onto the upload area — mirrors the click-to-browse path:
+    // the dropped file is handed to the same hidden <input> (via DataTransfer,
+    // since a FileList can't be built by hand) so both paths share one preview.
+    function handleMediaDrop(event, area) {
         event.preventDefault();
         area.classList.remove('drag-over');
         const file = event.dataTransfer?.files?.[0];
-        if (!file || file.type !== 'video/mp4') return;
-        const input = panelEl('p-clip-input');
+        if (!file || !(file.type.startsWith('image/') || file.type.startsWith('video/'))) return;
+        const input = panelEl('p-img-input');
         const dt = new DataTransfer();
         dt.items.add(file);
         input.files = dt.files;
-        previewClip(input);
+        previewMedia(input);
+    }
+
+    // Separate request from saveProduct() on purpose: that one is JSON, this
+    // needs multipart/form-data for the file. Called only after saveProduct()
+    // has a product id to attach the image to. Also clears any previous
+    // videoClip server-side (see the endpoint's own comment) — a manually
+    // chosen photo always wins.
+    async function uploadProductImage(productId, file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const res  = await fetch(`/admin/products/${productId}/image`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!res.ok) return { error: data?.error || MSG_UNEXPECTED_ERROR };
+            return data;
+        } catch (e) {
+            return { error: MSG_UNEXPECTED_ERROR };
+        }
     }
 
     async function uploadProductClip(productId, file) {
@@ -1125,18 +1118,22 @@
     }
 
     // Captures a poster frame from a freshly-picked clip entirely in the
-    // browser (hidden <video> + <canvas>, ~0.1s in) and stages it as a JPEG
-    // straight into p-img-input — the SAME input/endpoint the photo dropzone
-    // above already uses (uploadProductImage(), called from saveProduct()).
-    // No separate poster endpoint on the server at all.
+    // browser (hidden <video> + <canvas>, ~0.1s in) and stashes it in
+    // S.stagedPosterFile — read by saveProduct(), which uploads it via the
+    // SAME uploadProductImage()/endpoint the photo path already uses. No
+    // separate poster endpoint on the server at all. Kept as its own JS
+    // variable rather than staged into p-img-input (DataTransfer trick the
+    // old two-field version used) because that input now holds the clip
+    // itself — overwriting it with the poster would lose the owner's pick.
     //
     // Fallback contract if capture fails for any reason (exotic codec,
-    // browser quirk, zero-dimension video): p-img-input is left completely
-    // untouched — whatever photo was already staged/saved keeps showing
-    // exactly as it was — and #clip-poster-warning is shown so the owner
-    // knows to add one manually. This is what keeps a clip from ever
-    // reaching the public carta with a <video poster> pointing at nothing
-    // (see layouts/standard/show.html.twig's own videoClip + image guard).
+    // browser quirk, zero-dimension video): S.stagedPosterFile stays null,
+    // so saveProduct() below leaves image completely untouched — whatever
+    // photo was already saved keeps showing exactly as it was — and
+    // #clip-poster-warning is shown so the owner knows to add one manually.
+    // This is what keeps a clip from ever reaching the public carta with a
+    // <video poster> pointing at nothing (see layouts/standard/show.html.twig's
+    // own videoClip + image guard).
     function capturePosterFromClip(file, srcUrl) {
         const probe = document.createElement('video');
         probe.muted = true;
@@ -1177,12 +1174,7 @@
                     if (settled) return;
                     settled = true;
                     if (!blob) { showClipPosterWarning(true); return; }
-                    const posterFile = new File([blob], 'clip-poster.jpg', { type: 'image/jpeg' });
-                    const dt = new DataTransfer();
-                    dt.items.add(posterFile);
-                    const imgInput = panelEl('p-img-input');
-                    imgInput.files = dt.files;
-                    previewImage(imgInput);
+                    S.stagedPosterFile = new File([blob], 'clip-poster.jpg', { type: 'image/jpeg' });
                 }, 'image/jpeg', 0.85);
             } catch (e) {
                 clearTimeout(timeoutId);
@@ -1243,8 +1235,7 @@
         const catSelectError = document.getElementById('cat-select-error');
         if (catSelectError) catSelectError.style.display = 'none';
         document.querySelectorAll('[id="img-upload-area"]').forEach(area => {
-            area.querySelector('img')?.remove();
-            area.classList.remove('loading');
+            clearMediaPreview(area);
             const hint = area.querySelector('.img-upload-hint');
             if (hint) hint.style.display = '';
             const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
@@ -1252,17 +1243,9 @@
         });
         // Clear any picked-but-not-yet-uploaded file too — otherwise it
         // stays in the <input> and saveProduct() would silently attach the
-        // previous dish's photo to whichever dish is opened next.
+        // previous dish's media to whichever dish is opened next.
         document.querySelectorAll('[id="p-img-input"]').forEach(el => { el.value = ''; });
-        document.querySelectorAll('[id="clip-upload-area"]').forEach(area => {
-            area.querySelector('video')?.remove();
-            area.classList.remove('loading');
-            const hint = area.querySelector('.img-upload-hint');
-            if (hint) hint.style.display = '';
-            const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
-            if (changeBtn) changeBtn.style.display = 'none';
-        });
-        document.querySelectorAll('[id="p-clip-input"]').forEach(el => { el.value = ''; });
+        S.stagedPosterFile = null;
         showClipPosterWarning(false);
         S.productId=null; S.categoryId=null; S.menuSectionId=null; S.spicy=0;
         // Reset steps visibility

@@ -172,10 +172,15 @@
             </div>
         </div>
 
-        {# ═══ Foto: bloque de imagen — el panel es un contenedor .field
-           genérico (igual que General/Detalles), no algo acoplado a "un
-           único campo": el clip de abajo es exactamente ese .field
-           hermano, sin reestructurar nada. ═══ #}
+        {# ═══ Foto o clip: UN control de medio — el dueño sube una cosa u
+           otra, nunca ambas por separado (ver docblock de Product::$videoClip
+           y el comentario de uploadProductImage() en el controlador: image
+           SIEMPRE es la imagen fija — la foto tal cual, o el póster
+           auto-generado si lo que se sube es un clip — video_clip guarda la
+           animación si la hay, y nunca conviven una foto elegida a mano con
+           un clip distinto). Un único input#p-img-input decide por el MIME
+           real del archivo qué subir; ver previewMedia()/capturePosterFromClip()
+           en _product_js.html.twig. ═══ #}
         <div class="product-tab-panel" role="tabpanel" data-tab="photo"
              id="{{ tab_prefix }}-tabpanel-photo" aria-labelledby="{{ tab_prefix }}-tab-photo">
 
@@ -188,7 +193,7 @@
                      onclick="document.getElementById('p-img-input').click()"
                      ondragover="event.preventDefault(); this.classList.add('drag-over')"
                      ondragleave="this.classList.remove('drag-over')"
-                     ondrop="handleImageDrop(event, this)"
+                     ondrop="handleMediaDrop(event, this)"
                      role="button"
                      tabindex="0"
                      aria-label="{{ 'upload.aria'|trans({}, 'admin_menu') }}">
@@ -199,64 +204,25 @@
                     </div>
                     <div class="img-upload-spinner" aria-hidden="true"></div>
                 </div>
-                {# Below the photo, not over it — only shown once there's an
-                   image (previewImage()/renderProductImage() reveal it), the
+                {# Below the photo/clip, not over it — only shown once there's
+                   media (previewMedia()/renderProductMedia() reveal it), the
                    dropzone's own hint is the call to action until then. #}
                 <button type="button" class="btn img-upload-change-btn" style="display:none"
                         onclick="document.getElementById('p-img-input').click()">
                     <i class="ti ti-pencil" aria-hidden="true"></i> {{ 'upload.change'|trans({}, 'admin_menu') }}
                 </button>
-                <input type="file"
-                       id="p-img-input"
-                       accept="image/*"
-                       style="display:none"
-                       onchange="previewImage(this)">
-            </div>
-
-            {# ═══ Clip corto — Product::$videoClip, capa opcional sobre la
-               foto de arriba, nunca la sustituye (conviven: ver docblock de
-               la entidad). Elegir un clip genera su póster en el propio
-               navegador (canvas sobre un <video> oculto, ver
-               capturePosterFromClip() en _product_js.html.twig) y lo sube
-               por el MISMO input#p-img-input/endpoint de la foto — no hay
-               endpoint de póster aparte, cero backend nuevo para esto. ═══ #}
-            <div class="field">
-                <label class="field-label">
-                    {{ 'field.clip'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
-                </label>
-                <p class="clip-explainer">{{ 'clip.explainer'|trans({}, 'admin_menu') }}</p>
-                <div class="img-upload"
-                     id="clip-upload-area"
-                     onclick="document.getElementById('p-clip-input').click()"
-                     ondragover="event.preventDefault(); this.classList.add('drag-over')"
-                     ondragleave="this.classList.remove('drag-over')"
-                     ondrop="handleClipDrop(event, this)"
-                     role="button"
-                     tabindex="0"
-                     aria-label="{{ 'clip.upload_aria'|trans({}, 'admin_menu') }}">
-                    <div class="img-upload-hint">
-                        <i class="ti ti-video" aria-hidden="true"></i>
-                        {{ 'clip.hint'|trans({}, 'admin_menu') }}
-                        <span class="img-upload-hint-limits">{{ 'clip.limits'|trans({}, 'admin_menu') }}</span>
-                    </div>
-                    <div class="img-upload-spinner" aria-hidden="true"></div>
-                </div>
-                <button type="button" class="btn img-upload-change-btn" style="display:none"
-                        onclick="document.getElementById('p-clip-input').click()">
-                    <i class="ti ti-pencil" aria-hidden="true"></i> {{ 'clip.change'|trans({}, 'admin_menu') }}
-                </button>
-                {# Honest fallback when canvas capture fails (exotic codec,
-                   browser quirk) — see capturePosterFromClip(). Never left
-                   silent: the clip still gets staged/saved either way, this
-                   just tells the owner the photo above wasn't auto-filled. #}
+                {# Honest fallback when a clip's canvas poster capture fails
+                   (exotic codec, browser quirk) — see capturePosterFromClip().
+                   The clip itself still gets staged/saved either way; this
+                   just tells the owner the photo wasn't auto-filled from it. #}
                 <p class="field-error" id="clip-poster-warning">
                     <i class="ti ti-alert-triangle" aria-hidden="true"></i> {{ 'clip.poster_capture_failed'|trans({}, 'admin_menu') }}
                 </p>
                 <input type="file"
-                       id="p-clip-input"
-                       accept="video/mp4"
+                       id="p-img-input"
+                       accept="image/*,video/*"
                        style="display:none"
-                       onchange="previewClip(this)">
+                       onchange="previewMedia(this)">
             </div>
         </div>
 

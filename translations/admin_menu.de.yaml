@@ -44,8 +44,7 @@ field:
     description: Beschreibung
     description_placeholder: 'Beschreibe kurz das Gericht, die Hauptzutaten und die Zubereitungsart…'
     ingredients: Zutaten
-    photo: Foto des Gerichts
-    clip: Kurzer Clip
+    photo: Foto oder Clip des Gerichts
     price: 'Preis (%currency%)'
     price_variant_add: Weiteren Preis hinzufügen
     price_variant_column_label: Bezeichnung
@@ -171,17 +170,12 @@ smart_waiter:
     recommended_hint: Dieses Gericht wird den Kunden als Empfehlung angezeigt.
 
 upload:
-    aria: Foto des Gerichts hochladen
-    hint: Klicke oder ziehe ein Bild hierher
-    limits: 'JPEG, PNG oder WebP · max. 8 MB · min. 400×400 px'
-    change: Foto ändern
+    aria: Foto oder Clip des Gerichts hochladen
+    hint: Klicke oder ziehe ein Foto oder einen Clip hierher
+    limits: 'Foto: JPEG, PNG oder WebP (max. 8 MB, min. 400×400 px) · Clip: MP4 (max. 8 MB, max. 10 s)'
+    change: Ändern
 
 clip:
-    explainer: Ein kurzer, stummer Clip in Dauerschleife, der das Gericht auf der Karte animiert — kein Video mit Ton oder Steuerelementen.
-    upload_aria: Clip des Gerichts hochladen
-    hint: Klicke oder ziehe einen Clip hierher
-    limits: 'MP4 · max. 8 MB · max. 10 s'
-    change: Ändern
     poster_capture_failed: Die Miniaturansicht konnte nicht automatisch aus dem Clip erstellt werden. Lade ein Foto hoch, damit es auf der Karte angezeigt wird.
     duration_warning: Dieser Clip ist länger als 10 s — der Server wird ihn beim Speichern ablehnen.
 
