@@ -983,7 +983,26 @@
     function clearMediaPreview(area) {
         area.querySelector('img')?.remove();
         area.querySelector('video')?.remove();
+        area.querySelector('.img-upload-clip-bg')?.remove();
         area.classList.remove('loading');
+    }
+
+    // Creates (or updates) the blurred-poster fill behind a clip's <video>
+    // — see the .img-upload-clip-bg comment in _product_modal_css.html.twig.
+    // A no-op when there's no poster yet (a freshly-picked clip's poster is
+    // still being captured — see capturePosterFromClip(), which calls this
+    // again once it has one, so the admin's own preview ends up matching
+    // what the public carta will show, never diverging).
+    function setClipBackground(area, posterSrc) {
+        if (!posterSrc) return;
+        let bg = area.querySelector('.img-upload-clip-bg');
+        if (!bg) {
+            bg = document.createElement('div');
+            bg.className = 'img-upload-clip-bg';
+            bg.setAttribute('aria-hidden', 'true');
+            area.insertBefore(bg, area.querySelector('video'));
+        }
+        bg.style.backgroundImage = `url("${posterSrc}")`;
     }
 
     // Shared by previewMedia() (local file, instant via ObjectURL) and
@@ -1011,8 +1030,18 @@
     // (only one clip is ever open in the editor at a time, unlike the
     // public carta's several-at-once concern, so autoplay here is cheap).
     // Clears any leftover <img> first, same mutual-exclusion as above.
-    function showClipInArea(area, src) {
+    //
+    // object-fit:contain (see _product_modal_css.html.twig) shows the
+    // clip's whole frame instead of cropping it — posterSrc (the same
+    // image uploadProductImage() will end up storing) fills the leftover
+    // space behind it, blurred, exactly like the public card/detail sheet,
+    // so the admin's own preview never diverges from what the diner sees.
+    // Optional: a freshly-picked clip has no poster yet (still being
+    // captured — see capturePosterFromClip()), so this is left blank until
+    // setClipBackground() is called again once one exists.
+    function showClipInArea(area, src, posterSrc) {
         clearMediaPreview(area);
+        setClipBackground(area, posterSrc);
         const video = document.createElement('video');
         video.muted = true;
         video.loop = true;
@@ -1059,7 +1088,7 @@
     function renderProductMedia(imagePath, clipPath) {
         document.querySelectorAll('[id="img-upload-area"]').forEach(area => {
             if (clipPath) {
-                showClipInArea(area, `/uploads/products/${clipPath}`);
+                showClipInArea(area, `/uploads/products/${clipPath}`, imagePath ? `/uploads/products/${imagePath}` : null);
             } else if (imagePath) {
                 showImageInArea(area, `/uploads/products/${imagePath}`);
             } else {
@@ -1175,6 +1204,11 @@
                     settled = true;
                     if (!blob) { showClipPosterWarning(true); return; }
                     S.stagedPosterFile = new File([blob], 'clip-poster.jpg', { type: 'image/jpeg' });
+                    // Backfill the blurred fill behind the <video> now that
+                    // a poster actually exists — showClipInArea() left it
+                    // blank when this clip was first picked (see its own
+                    // comment). Same area the video already lives in.
+                    setClipBackground(panelEl('img-upload-area'), URL.createObjectURL(S.stagedPosterFile));
                 }, 'image/jpeg', 0.85);
             } catch (e) {
                 clearTimeout(timeoutId);

@@ -460,9 +460,24 @@
    before this; --tx-1 (not --brand, forbidden in this component) since the
    dashed border-radius is followed automatically, no extra override needed. */
 .img-upload:focus-visible { outline:2px solid var(--tx-1); outline-offset:2px; }
-.img-upload img, .img-upload video {
+.img-upload img {
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
     opacity:0; transition:opacity 0.2s;
+}
+/* A clip's own aspect ratio is the owner's to keep — contain, never crop a
+   frame the way a photo gets cropped. .img-upload-clip-bg (a plain static
+   image, not a second <video>) fills the leftover space behind it with a
+   blurred, scaled-up copy of the same poster already used for <video
+   poster> — see showClipInArea() in _product_js.html.twig. transform:
+   scale(1.15) keeps the blur's own soft edge from ever showing the box's
+   hard edge (the container's overflow:hidden crops the excess). */
+.img-upload video {
+    position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
+    opacity:0; transition:opacity 0.2s; z-index:1;
+}
+.img-upload-clip-bg {
+    position:absolute; inset:0; background-size:cover; background-position:center;
+    filter:blur(20px); transform:scale(1.15);
 }
 .img-upload img.loaded, .img-upload video.loaded { opacity:1; }
 .img-upload-hint { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; padding:0 var(--sp-4); }

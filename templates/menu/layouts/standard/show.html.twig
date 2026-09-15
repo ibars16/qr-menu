@@ -374,8 +374,16 @@
        both dimensions, so it's a no-op fallback rather than a competing
        rule. */
     .dish-card .front-img { position: relative; width: 100%; height: clamp(11.875rem, 42vw, 12.5rem); aspect-ratio: 4/3; background: var(--cf-img); overflow: hidden; font-size: initial; display: block; }
-    .dish-card .front-img img, .dish-card .front-img video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
-    .dish-card:hover .front-img img, .dish-card:hover .front-img video { transform: scale(1.045); }
+    .dish-card .front-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
+    /* A clip keeps its own aspect ratio — contain, never cropped the way a
+       photo is — with .dish-clip-bg (a plain blurred copy of the same
+       poster, not a second <video>) filling whatever the letterbox leaves
+       bare. z-index keeps it above .dish-clip-bg regardless of DOM order;
+       transform:scale(1.15) keeps the blur's soft edge from ever showing
+       through the box's own hard edge (overflow:hidden crops the rest). */
+    .dish-card .front-img video.dish-clip { width: 100%; height: 100%; object-fit: contain; display: block; position: relative; z-index: 1; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
+    .dish-card .front-img .dish-clip-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: blur(20px); transform: scale(1.15); }
+    .dish-card:hover .front-img img, .dish-card:hover .front-img video.dish-clip { transform: scale(1.045); }
 
     /* No-photo placeholder — a warm brand-colored panel with an icon and
        the dish name, styled to look intentional rather than a broken
@@ -419,8 +427,11 @@
     .dish-modal-overlay.open .dish-modal { transform: translateY(0); }
     .dish-modal-close { position: absolute; top: 0.75rem; right: 0.75rem; z-index: 3; width: 2.75rem; height: 2.75rem; border-radius: 50%; border: none; background: rgba(255,255,255,0.92); color: var(--fg); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.18); transition: background 0.15s, transform 0.2s; }
     .dish-modal-close:hover { background: #ffffff; transform: rotate(90deg); }
-    .dish-modal-photo { width: 100%; height: 14.375rem; aspect-ratio: 4/3; overflow: hidden; background: var(--cf-img); flex-shrink: 0; }
-    .dish-modal-photo img, .dish-modal-photo video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .dish-modal-photo { position: relative; width: 100%; height: 14.375rem; aspect-ratio: 4/3; overflow: hidden; background: var(--cf-img); flex-shrink: 0; }
+    .dish-modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* Same contain + blurred-fill treatment as .dish-card .front-img above. */
+    .dish-modal-photo video.dish-clip { width: 100%; height: 100%; object-fit: contain; display: block; position: relative; z-index: 1; }
+    .dish-modal-photo .dish-clip-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: blur(20px); transform: scale(1.15); }
     /* Bottom padding cleared to sit below the Smart Waiter chat bubble
        (fixed, right:18px/bottom:18px, 56px — see .filters-panel-footer's
        comment above): the bubble stays visible on top of this modal on
@@ -817,6 +828,11 @@
                                        reaches here: the editor's own fallback (capturePosterFromClip())
                                        keeps that pairing honest at save time. #}
                                     {% if product.videoClip and product.image %}
+                                        {# The video keeps its own aspect ratio (object-fit:contain,
+                                           never cropped) — this blurred copy of the same poster fills
+                                           whatever the letterbox leaves bare. One static image, not a
+                                           second <video>. #}
+                                        <div class="dish-clip-bg" style="background-image:url('{{ asset('uploads/products/' ~ product.image) }}')" aria-hidden="true"></div>
                                         <video class="dish-clip" muted loop playsinline preload="none"
                                                poster="{{ asset('uploads/products/' ~ product.image) }}"
                                                data-clip-src="{{ asset('uploads/products/' ~ product.videoClip) }}"
@@ -845,6 +861,7 @@
                                 {% endif %}
                                 <template class="dish-tpl">
                                     {% if product.videoClip and product.image %}
+                                        <div class="dish-clip-bg" style="background-image:url('{{ asset('uploads/products/' ~ product.image) }}')" aria-hidden="true"></div>
                                         <video class="dish-clip" muted loop playsinline preload="none"
                                                poster="{{ asset('uploads/products/' ~ product.image) }}"
                                                data-clip-src="{{ asset('uploads/products/' ~ product.videoClip) }}"
