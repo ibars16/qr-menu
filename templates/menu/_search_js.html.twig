@@ -65,22 +65,9 @@ function openDishModal(card) {
     if (!tpl || !overlay || !photoWrap || !body) return;
     trackDishView(card.dataset.productId);
     const content   = tpl.content.cloneNode(true);
-    // .dish-clip-sizer (the invisible poster <img> that gives a clip's box
-    // its own aspect ratio — see .has-clip in standard/show.html.twig) is a
-    // sibling of the <video>, not inside it, so it needs its own
-    // clone-and-append here too — excluded from the general img/video/
-    // placeholder query below so that query still finds the real content
-    // (the <video>) rather than this layout-only prop.
-    const sizerNode = content.querySelector('.dish-clip-sizer');
-    const photoNode = content.querySelector('img:not(.dish-clip-sizer), video, .dish-placeholder');
+    const photoNode = content.querySelector('img, video, .dish-placeholder');
     photoWrap.innerHTML = '';
     body.innerHTML = '';
-    // Reset every time, not just "add when present" — otherwise a clip
-    // dish's box stays sized like a clip when the very next dish opened is
-    // a plain photo (this element is one shared, reused box, never
-    // recreated between opens).
-    photoWrap.classList.toggle('has-clip', !!sizerNode);
-    if (sizerNode) photoWrap.appendChild(sizerNode);
     if (photoNode) {
         photoWrap.appendChild(photoNode);
         // The grid's own clips are gated by the IntersectionObserver above

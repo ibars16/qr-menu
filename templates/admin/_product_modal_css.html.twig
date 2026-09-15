@@ -460,48 +460,17 @@
    before this; --tx-1 (not --brand, forbidden in this component) since the
    dashed border-radius is followed automatically, no extra override needed. */
 .img-upload:focus-visible { outline:2px solid var(--tx-1); outline-offset:2px; }
-.img-upload img {
+/* Photo and clip share this one fixed 16/9 box, unconditionally — a clip
+   card must measure exactly like a photo card, never taller (tried an
+   adaptive box sized to the clip's own aspect ratio across three commits;
+   reverted in full, see the one that removed this comment's predecessors
+   for why). object-fit:cover crops a clip's frame the same way it already
+   crops a photo — no special-casing needed here at all. */
+.img-upload img, .img-upload video {
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
     opacity:0; transition:opacity 0.2s;
 }
-.img-upload video {
-    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-    opacity:0; transition:opacity 0.2s; z-index:1;
-}
 .img-upload img.loaded, .img-upload video.loaded { opacity:1; }
-
-/* Clip mode: the box stops being a fixed 16/9 — it's sized by
-   .img-upload-clip-sizer below instead, so a vertical clip gets a tall
-   card and a horizontal one a wide card, each filled edge-to-edge by the
-   cover-fit <video> above (no letterbox bars, so no blurred-backdrop
-   layer is needed here — that was 8f52461's approach for a FIXED box,
-   superseded by this one; removed, not layered on top of it).
-   min-height here is the transitional floor: before a freshly-picked
-   clip's poster exists yet (still being captured — see
-   capturePosterFromClip()), the sizer <img> has no src and no intrinsic
-   size, so the box would otherwise collapse to ~0 for that brief window. */
-.img-upload.has-clip { aspect-ratio:auto; height:auto; max-height:none; min-height:194px; }
-/* Decorative sizing prop, never actually seen: a plain <img> (no
-   object-fit) stretches to fill whatever min/max-height clamps it to,
-   which would visibly distort a clip whose ratio falls outside them —
-   visibility:hidden keeps it invisible while still occupying the layout
-   height that drives the box above. The <video>'s own poster="" (cover
-   fit, never distorted) is what actually shows during buffering. */
-/* .img-upload .img-upload-clip-sizer (not the bare class alone): the
-   generic ".img-upload img" rule above (position:absolute, height:100%)
-   otherwise wins on specificity and pulls this out of flow entirely —
-   an absolutely-positioned, height:100%-of-an-auto-height-parent sizer
-   can't drive that parent's height at all, which is exactly the bug this
-   was caught fixing (a 9:16 clip settled at the 194px min-height floor
-   instead of clamping to the max — see the commit message).
-   max-height 345px = 1:1 at this ~345px width (lowered from an original
-   431px/4:5 — that let a 9:16 clip render taller than felt right; 1:1
-   keeps the box square-ish instead, cropping a bit more top/bottom on an
-   extreme clip, which is the intended trade-off). */
-.img-upload .img-upload-clip-sizer {
-    position:static; display:block; width:100%; height:auto;
-    min-height:194px; max-height:345px; visibility:hidden;
-}
 .img-upload-hint { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; padding:0 var(--sp-4); }
 .img-upload-hint i { font-size:26px; color:var(--tx-muted); }
 /* Real limits, not decoration — must stay in sync with UploadValidator::LIMITS['dish_image'].

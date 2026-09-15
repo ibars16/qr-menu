@@ -364,12 +364,7 @@
        set-menu rows (menu/_set_menu.html.twig), which still use the 3D
        flip mechanic and must keep working unmodified. The whole card is
        one tap target; "Ver más" is a visual cue only. ══════════════════ */
-    /* align-self:start — .cards-grid has no align-items of its own (default
-       stretch), so without this a clip card (variable, sometimes much
-       taller height — see .has-clip below) sitting next to a fixed-height
-       photo card in the same 2-column row (≥640px) would stretch that
-       shorter card to match the row, leaving blank space at its bottom. */
-    .dish-card { align-self: start; cursor: pointer; border-radius: var(--card-radius, 18px); overflow: hidden; background: var(--cf-bg); border: 1px solid var(--cf-border); box-shadow: var(--card-shadow, none); transition: box-shadow 0.35s ease, transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.3s ease; }
+    .dish-card { cursor: pointer; border-radius: var(--card-radius, 18px); overflow: hidden; background: var(--cf-bg); border: 1px solid var(--cf-border); box-shadow: var(--card-shadow, none); transition: box-shadow 0.35s ease, transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.3s ease; }
     .dish-card:hover { box-shadow: var(--cf-hshadow, var(--card-shadow, none)); border-color: var(--cf-hborder); transform: translateY(-5px); }
     .dish-card:active { transform: translateY(-2px) scale(0.99); }
 
@@ -379,43 +374,14 @@
        both dimensions, so it's a no-op fallback rather than a competing
        rule. */
     .dish-card .front-img { position: relative; width: 100%; height: clamp(11.875rem, 42vw, 12.5rem); aspect-ratio: 4/3; background: var(--cf-img); overflow: hidden; font-size: initial; display: block; }
-    .dish-card .front-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
-    .dish-card .front-img video.dish-clip { width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; inset: 0; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
+    /* Photo and clip share this one fixed box, unconditionally — a clip
+       card must measure exactly like a photo card, never taller (tried an
+       adaptive box sized to the clip's own aspect ratio across three
+       commits; reverted in full — see the commit that removed it for
+       why). object-fit:cover crops a clip's frame the same way it already
+       crops a photo, no special-casing needed. */
+    .dish-card .front-img img, .dish-card .front-img video.dish-clip { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
     .dish-card:hover .front-img img, .dish-card:hover .front-img video.dish-clip { transform: scale(1.045); }
-    /* Clip mode: the box stops being a fixed 4/3 — .dish-clip-sizer below
-       drives its height instead, so a vertical clip gets a tall card and a
-       horizontal one a wide one, each filled edge-to-edge by the
-       cover-fit <video> above (cover never leaves a letterbox gap, so no
-       blurred-backdrop layer is needed — a FIXED-box + contain approach
-       would have needed one, this doesn't). min-height is the transitional
-       floor: a clip whose poster hasn't loaded yet (openDishModal() clones
-       it fresh each time) would otherwise collapse the box to ~0 for that
-       instant. 194px/345px = 16:9/1:1 at this card's own ~345px width. */
-    .dish-card .front-img.has-clip { height: auto; aspect-ratio: auto; min-height: 194px; }
-    /* Decorative sizing prop, never actually seen: a plain <img> (no
-       object-fit) stretches to fill whatever min/max-height clamps it to,
-       which would visibly distort a clip whose ratio falls outside them —
-       visibility:hidden keeps it invisible while still occupying the
-       layout height that drives the box above. The <video>'s own
-       poster="" (cover fit, never distorted) is what shows during
-       buffering instead.
-       Scoped as ".front-img .dish-clip-sizer" (not the bare class alone):
-       the older ".front-img img" rule above (position:absolute,
-       height:100%) otherwise wins on specificity and pulls this out of
-       flow entirely — an absolutely-positioned, height:100%-of-an-auto-
-       height-parent sizer can't drive that parent's height at all. Caught
-       on a real 1080x1920 clip that settled at the 194px floor instead of
-       clamping to the max — same fix mirrored for .dish-modal-photo below
-       and for .img-upload in the admin editor.
-       max-height 345px = 1:1 at this ~345px width (lowered from an
-       original 431px/4:5 — that let a 9:16 clip render taller than felt
-       right; 1:1 keeps the card square-ish instead, cropping a bit more
-       top/bottom on an extreme clip, which is the intended trade-off). */
-    .front-img .dish-clip-sizer,
-    .dish-modal-photo .dish-clip-sizer {
-        position: static; display: block; width: 100%; height: auto;
-        min-height: 194px; max-height: 345px; visibility: hidden;
-    }
 
     /* No-photo placeholder — a warm brand-colored panel with an icon and
        the dish name, styled to look intentional rather than a broken
@@ -460,12 +426,10 @@
     .dish-modal-close { position: absolute; top: 0.75rem; right: 0.75rem; z-index: 3; width: 2.75rem; height: 2.75rem; border-radius: 50%; border: none; background: rgba(255,255,255,0.92); color: var(--fg); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.18); transition: background 0.15s, transform 0.2s; }
     .dish-modal-close:hover { background: #ffffff; transform: rotate(90deg); }
     .dish-modal-photo { position: relative; width: 100%; height: 14.375rem; aspect-ratio: 4/3; overflow: hidden; background: var(--cf-img); flex-shrink: 0; }
-    .dish-modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .dish-modal-photo video.dish-clip { width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; inset: 0; }
-    /* Same box-adapts-to-clip treatment as .dish-card .front-img above —
-       openDishModal() (_search_js.html.twig) toggles .has-clip on this
-       element fresh on every open/close, since it's one shared, reused box. */
-    .dish-modal-photo.has-clip { height: auto; aspect-ratio: auto; min-height: 194px; }
+    /* Photo and clip share this one fixed box — same reasoning as
+       .dish-card .front-img above, so the detail sheet always matches the
+       card it was opened from. */
+    .dish-modal-photo img, .dish-modal-photo video.dish-clip { width: 100%; height: 100%; object-fit: cover; display: block; }
     /* Bottom padding cleared to sit below the Smart Waiter chat bubble
        (fixed, right:18px/bottom:18px, 56px — see .filters-panel-footer's
        comment above): the bubble stays visible on top of this modal on
@@ -855,18 +819,13 @@
                                     {{ _self.dishContains(cardAllergens, locale) }}
                                     <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
                                 {% else %}
-                                <div class="front-img{{ (product.videoClip and product.image) ? ' has-clip' : '' }}">
+                                <div class="front-img">
                                     {# videoClip requires image too — image is the <video poster> AND
                                        the fallback for anything that can't/shouldn't play a clip (see
                                        Product::$videoClip's own docblock). A clip with no poster never
                                        reaches here: the editor's own fallback (capturePosterFromClip())
                                        keeps that pairing honest at save time. #}
                                     {% if product.videoClip and product.image %}
-                                        {# .dish-clip-sizer: an invisible <img> of the same poster, in
-                                           normal flow, whose own rendered height (clamped, see .has-clip
-                                           above) drives the box's height — the box adapts to the clip's
-                                           own orientation instead of staying a fixed 4/3. #}
-                                        <img class="dish-clip-sizer" src="{{ asset('uploads/products/' ~ product.image) }}" alt="" aria-hidden="true">
                                         <video class="dish-clip" muted loop playsinline preload="none"
                                                poster="{{ asset('uploads/products/' ~ product.image) }}"
                                                data-clip-src="{{ asset('uploads/products/' ~ product.videoClip) }}"
@@ -895,7 +854,6 @@
                                 {% endif %}
                                 <template class="dish-tpl">
                                     {% if product.videoClip and product.image %}
-                                        <img class="dish-clip-sizer" src="{{ asset('uploads/products/' ~ product.image) }}" alt="" aria-hidden="true">
                                         <video class="dish-clip" muted loop playsinline preload="none"
                                                poster="{{ asset('uploads/products/' ~ product.image) }}"
                                                data-clip-src="{{ asset('uploads/products/' ~ product.videoClip) }}"
