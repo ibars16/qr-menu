@@ -390,7 +390,7 @@
        would have needed one, this doesn't). min-height is the transitional
        floor: a clip whose poster hasn't loaded yet (openDishModal() clones
        it fresh each time) would otherwise collapse the box to ~0 for that
-       instant. 194px/431px = 16:9/4:5 at this card's own ~345px width. */
+       instant. 194px/345px = 16:9/1:1 at this card's own ~345px width. */
     .dish-card .front-img.has-clip { height: auto; aspect-ratio: auto; min-height: 194px; }
     /* Decorative sizing prop, never actually seen: a plain <img> (no
        object-fit) stretches to fill whatever min/max-height clamps it to,
@@ -405,12 +405,16 @@
        flow entirely — an absolutely-positioned, height:100%-of-an-auto-
        height-parent sizer can't drive that parent's height at all. Caught
        on a real 1080x1920 clip that settled at the 194px floor instead of
-       clamping to 431px — same fix mirrored for .dish-modal-photo below
-       and for .img-upload in the admin editor. */
+       clamping to the max — same fix mirrored for .dish-modal-photo below
+       and for .img-upload in the admin editor.
+       max-height 345px = 1:1 at this ~345px width (lowered from an
+       original 431px/4:5 — that let a 9:16 clip render taller than felt
+       right; 1:1 keeps the card square-ish instead, cropping a bit more
+       top/bottom on an extreme clip, which is the intended trade-off). */
     .front-img .dish-clip-sizer,
     .dish-modal-photo .dish-clip-sizer {
         position: static; display: block; width: 100%; height: auto;
-        min-height: 194px; max-height: 431px; visibility: hidden;
+        min-height: 194px; max-height: 345px; visibility: hidden;
     }
 
     /* No-photo placeholder — a warm brand-colored panel with an icon and

@@ -493,10 +493,14 @@
    an absolutely-positioned, height:100%-of-an-auto-height-parent sizer
    can't drive that parent's height at all, which is exactly the bug this
    was caught fixing (a 9:16 clip settled at the 194px min-height floor
-   instead of clamping to the 431px max — see the commit message). */
+   instead of clamping to the max — see the commit message).
+   max-height 345px = 1:1 at this ~345px width (lowered from an original
+   431px/4:5 — that let a 9:16 clip render taller than felt right; 1:1
+   keeps the box square-ish instead, cropping a bit more top/bottom on an
+   extreme clip, which is the intended trade-off). */
 .img-upload .img-upload-clip-sizer {
     position:static; display:block; width:100%; height:auto;
-    min-height:194px; max-height:431px; visibility:hidden;
+    min-height:194px; max-height:345px; visibility:hidden;
 }
 .img-upload-hint { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; padding:0 var(--sp-4); }
 .img-upload-hint i { font-size:26px; color:var(--tx-muted); }
