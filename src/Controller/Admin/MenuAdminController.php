@@ -567,11 +567,27 @@ class MenuAdminController extends AbstractController
             }
         }
 
+        // A manually chosen photo always wins over a previous clip's
+        // auto-generated poster — image and videoClip must never point at
+        // unrelated media (see Product::$videoClip's docblock). This is
+        // the one place that invariant is actually enforced: the editor's
+        // single media control (see _product_js.html.twig) only ever
+        // calls this endpoint for a real photo pick, but the invariant
+        // holds here regardless of the caller.
+        $oldClip = $product->getVideoClip();
+        if ($oldClip) {
+            $oldClipPath = $uploadDir . '/' . $oldClip;
+            if (is_file($oldClipPath)) {
+                unlink($oldClipPath);
+            }
+            $product->setVideoClip(null);
+        }
+
         $product->setImage($newFilename);
         $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
-        return $this->json(['image' => $newFilename]);
+        return $this->json(['image' => $newFilename, 'videoClip' => $product->getVideoClip()]);
     }
 
     /**

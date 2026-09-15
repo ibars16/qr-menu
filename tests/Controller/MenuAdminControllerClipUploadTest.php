@@ -39,6 +39,9 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
     /** @var string[] */
     private array $clipFilesToRemove = [];
 
+    /** @var string[] */
+    private array $imageFilesToRemove = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -50,6 +53,13 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
     protected function tearDown(): void
     {
         foreach ($this->clipFilesToRemove as $filename) {
+            $path = $this->productsDir . '/' . $filename;
+            if (is_file($path)) {
+                unlink($path);
+            }
+        }
+
+        foreach ($this->imageFilesToRemove as $filename) {
             $path = $this->productsDir . '/' . $filename;
             if (is_file($path)) {
                 unlink($path);
@@ -158,6 +168,21 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         return new UploadedFile($path, 'clip.mp4', 'video/mp4', null, true);
     }
 
+    /**
+     * Real static fixture (800x400 JPEG, already committed for the hero-image
+     * tests) copied to a fresh temp path — UploadedFile::move() consumes its
+     * source file even in test mode, so pointing straight at the fixture
+     * would break every later test reusing it. 800x400 clears dish_image's
+     * own 400x400 minimum in both dimensions; no GD needed.
+     */
+    private function photoUpload(): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'photo_upload_test_');
+        copy(__DIR__ . '/../fixtures/upload_hero_ok.jpg', $path);
+
+        return new UploadedFile($path, 'photo.jpg', 'image/jpeg', null, true);
+    }
+
     public function testUploadingAValidClipSetsVideoClipAndDeletesThePreviousOne(): void
     {
         [$owner, $productId] = $this->makeRestaurantWithOwnerAndProduct('Clip Upload Test');
@@ -191,6 +216,61 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         $product = $this->em->getRepository(Product::class)->find($productId);
         self::assertSame($secondFilename, $product->getVideoClip());
         self::assertNull($product->getImage(), 'the clip endpoint must never touch the image column');
+    }
+
+    public function testUploadingAPhotoAfterAClipClearsVideoClipAndDeletesItsFile(): void
+    {
+        [$owner, $productId] = $this->makeRestaurantWithOwnerAndProduct('Photo Clears Clip Test');
+        $this->client->loginUser($owner);
+
+        $this->client->request('POST', "/admin/products/{$productId}/clip", [], [
+            'clip' => $this->clipUpload(3.0),
+        ]);
+        self::assertResponseIsSuccessful();
+        $clipFilename = json_decode($this->client->getResponse()->getContent(), true)['videoClip'];
+        $this->clipFilesToRemove[] = $clipFilename;
+        self::assertFileExists($this->productsDir . '/' . $clipFilename);
+
+        // A manually chosen photo must win outright — image and videoClip
+        // are never allowed to point at unrelated media (see
+        // uploadProductImage()'s own comment on this).
+        $this->client->request('POST', "/admin/products/{$productId}/image", [], [
+            'image' => $this->photoUpload(),
+        ]);
+        self::assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        self::assertNull($data['videoClip'], 'the response itself must report the clip as cleared');
+        $imageFilename = $data['image'];
+        $this->imageFilesToRemove[] = $imageFilename;
+
+        self::assertFileExists($this->productsDir . '/' . $imageFilename);
+        self::assertFileDoesNotExist($this->productsDir . '/' . $clipFilename, 'the orphaned clip file must be deleted, not just unlinked from the row');
+
+        $this->em->clear();
+        $product = $this->em->getRepository(Product::class)->find($productId);
+        self::assertSame($imageFilename, $product->getImage());
+        self::assertNull($product->getVideoClip(), 'uploading a photo must clear a previously-set videoClip');
+    }
+
+    public function testUploadingAPhotoWithNoExistingClipNeverTouchesVideoClip(): void
+    {
+        // The new clip-clearing branch in uploadProductImage() is guarded
+        // on getVideoClip() being non-null — this pins down the common
+        // case (no clip at all) stays a no-op, not just "doesn't crash".
+        [$owner, $productId] = $this->makeRestaurantWithOwnerAndProduct('Photo Only Test');
+        $this->client->loginUser($owner);
+
+        $this->client->request('POST', "/admin/products/{$productId}/image", [], [
+            'image' => $this->photoUpload(),
+        ]);
+        self::assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->imageFilesToRemove[] = $data['image'];
+        self::assertNull($data['videoClip']);
+
+        $this->em->clear();
+        $product = $this->em->getRepository(Product::class)->find($productId);
+        self::assertNull($product->getVideoClip());
     }
 
     public function testUploadingAClipToAnotherTenantsProductIsForbiddenAndLeavesItUntouched(): void
