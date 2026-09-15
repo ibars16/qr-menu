@@ -292,6 +292,39 @@
             }
         });
 
+        // Precios por variante — the label is required ONLY while this
+        // group is expanded (multiprice mode); a plain single price has no
+        // label to fill in at all, so a collapsed/hidden group is never
+        // checked. The base row becomes the list's first price once the
+        // group is open (see togglePriceVariants()), so its own label
+        // (#p-base-price-label) and #p-price are checked here exactly like
+        // any other row — not just the generated .price-variant-* rows.
+        const activeP = activePanel();
+        const variantsGroup = activeP?.querySelector('.price-variants-group');
+        let variantsInvalid = false;
+        if (variantsGroup && variantsGroup.style.display !== 'none') {
+            const rows = [...activeP.querySelectorAll('.price-variant-row-item')];
+            rows.forEach(row => {
+                const isBase = row.classList.contains('price-variant-base-row');
+                const labelInput = isBase ? panelEl('p-base-price-label') : row.querySelector('.price-variant-label');
+                const priceInput = isBase ? panelEl('p-price') : row.querySelector('.price-variant-price');
+                const labelEmpty = !labelInput?.value?.trim();
+                const priceEmpty = !priceInput?.value || parseFloat(priceInput.value) <= 0;
+                labelInput?.classList.toggle('error', labelEmpty);
+                priceInput?.classList.toggle('error', priceEmpty);
+                if (labelEmpty || priceEmpty) variantsInvalid = true;
+            });
+            // Belt-and-braces — removePriceVariantRow() already redirects
+            // into "volver a precio único" rather than ever leaving just 1
+            // row (see there), this just re-checks the same invariant here.
+            if (rows.length < 2) variantsInvalid = true;
+        }
+        panelEl('p-price-variants-error')?.classList.toggle('show', variantsInvalid);
+        if (variantsInvalid) {
+            ok = false;
+            if (!errorTab) { errorTab = 'general'; errorField = 'p-base-price-label'; }
+        }
+
         // One shared error under the whole nutrition group rather than one
         // per field — see #p-nutrition-error in _product_fields.html.twig.
         // These fields live in the Detalles tab, not General — the tab
@@ -338,8 +371,11 @@
         const tags = [...panel.querySelectorAll('.tag-pill.on')].map(t => parseInt(t.dataset.tagId));
         panel.querySelectorAll('[id="p-recommended"]:checked').forEach(cb => tags.push(parseInt(cb.dataset.tagId)));
 
-        // Owner-typed free text, never blocking save if a row is left half-filled —
-        // a row missing either half is simply dropped rather than shown as an error.
+        // Owner-typed free text. validateProduct() above already rejected the
+        // save if the group was open with any row missing text or price, or
+        // with fewer than 2 total prices — so by this point every row here
+        // (when the group is open) is complete; the filter is only a
+        // defensive backstop, not how incompleteness gets handled.
         const priceVariants = [...activePanel().querySelectorAll('.price-variant-row-item:not(.price-variant-base-row)')]
             .map(row => ({
                 label: row.querySelector('.price-variant-label').value.trim(),
@@ -886,8 +922,16 @@
         updatePriceVariantAddVisibility(section);
     }
 
+    // Never leaves fewer than 2 total prices (base + ≥1 variant) — removing
+    // the last remaining variant row IS choosing "Volver a precio único",
+    // so it derives into that exact toggle (never reimplemented) instead of
+    // leaving a labeled solo price behind.
     function removePriceVariantRow(removeEl) {
         const section = removeEl.closest('.price-variants-section');
+        if (priceVariantRowCount(section) <= 1) {
+            togglePriceVariants(section.querySelector('.price-variants-toggle'));
+            return;
+        }
         removeEl.closest('.price-variant-row-item').remove();
         updatePriceVariantAddVisibility(section);
     }

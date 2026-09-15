@@ -133,7 +133,7 @@
                 <div class="price-variants-group" style="display:none">
                     <div class="field-label price-variants-group-label">{{ 'field.price_variants_group_label'|trans({}, 'admin_menu') }}</div>
                     <div class="price-variant-headers">
-                        <span class="field-label price-variant-header-label">{{ 'field.price_variant_column_label'|trans({}, 'admin_menu') }}</span>
+                        <span class="field-label price-variant-header-label">{{ 'field.price_variant_column_label'|trans({}, 'admin_menu') }} <span class="req">*</span></span>
                         <span class="field-label price-variant-header-price">{{ 'field.price'|trans({'%currency%': restaurant.currency}, 'admin_menu') }} <span class="req">*</span></span>
                         <span class="price-variant-header-spacer" aria-hidden="true"></span>
                     </div>
@@ -141,6 +141,11 @@
                     <div class="price-variant-add" onclick="addPriceVariantRow(this)" role="button" tabindex="0">
                         <i class="ti ti-plus" style="font-size:12px" aria-hidden="true"></i> {{ 'field.price_variant_add'|trans({}, 'admin_menu') }}
                     </div>
+                    {# Shared error under the whole group, same pattern as
+                       #p-nutrition-error — required text+price applies to
+                       every row (base included) only while this group is
+                       open; see validateProduct() in _product_js.html.twig. #}
+                    <div class="field-error" id="p-price-variants-error">{{ 'field_error.price_variants_incomplete'|trans({}, 'admin_menu') }}</div>
                 </div>
             </div>
 

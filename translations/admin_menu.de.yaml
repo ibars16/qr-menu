@@ -67,6 +67,7 @@ field_error:
     name_required: Der Name ist erforderlich
     description_required: Die Beschreibung ist erforderlich
     price_required: Der Preis ist erforderlich
+    price_variants_incomplete: Bezeichnung und Preis für jede Zeile ausfüllen (mindestens 2 Preise)
 
 ingredients:
     hint: Neue Zutaten werden automatisch zur Zutatenliste des Restaurants hinzugefügt.
@@ -198,6 +199,7 @@ error:
     clip_upload_failed: Das Video konnte nicht hochgeladen werden. Bitte versuche es erneut.
     unexpected: Etwas ist schiefgelaufen. Bitte versuche es erneut.
     nutrition_value_invalid: 'Der Wert muss eine Zahl zwischen 0 und 9999.9 mit höchstens einer Dezimalstelle sein.'
+    price_variants_invalid: 'Bezeichnung und Preis für jede Variante ausfüllen (mindestens 2 Preise).'
 
 translations:
     hint_empty: "Noch keine KI-Übersetzungen — sie erscheinen hier, sobald ein Kunde das Menü in einer anderen Sprache ansieht."

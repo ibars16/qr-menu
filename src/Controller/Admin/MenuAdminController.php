@@ -805,6 +805,40 @@ class MenuAdminController extends AbstractController
             }
         }
 
+        // Price variants — same "validate up front, before any setter or
+        // the first flush()" rule as nutrition above. A dish is "in
+        // multiprice mode" the moment either signal is present (mirrors
+        // Product::hasPriceVariants()); once it is, the base row's own
+        // label counts as this list's first price (see
+        // togglePriceVariants() in _product_js.html.twig), so it — and
+        // every priceVariants row — must carry a label AND a numeric
+        // price, with at least 2 prices total (base + ≥1 variant). The
+        // admin JS (validateProduct()/removePriceVariantRow()) already
+        // enforces all of this before ever calling this route; this is
+        // only the guard against a raw API call bypassing it — never
+        // silently drop an incomplete row here the way the "full replace"
+        // block further down does for a row missing from a valid request.
+        $rawBaseLabel = trim((string) ($data['basePriceLabel'] ?? ''));
+        $rawVariants  = is_array($data['priceVariants'] ?? null) ? $data['priceVariants'] : [];
+        if ($rawBaseLabel !== '' || count($rawVariants) > 0) {
+            $priceVariantsError = $this->json(['error' => $this->translator->trans('error.price_variants_invalid', domain: 'admin_menu')], 400);
+            if ($rawBaseLabel === '') {
+                return $priceVariantsError;
+            }
+            $validVariantCount = 0;
+            foreach ($rawVariants as $variantData) {
+                $vLabel = trim((string) ($variantData['label'] ?? ''));
+                $vPrice = $variantData['price'] ?? null;
+                if ($vLabel === '' || !is_numeric($vPrice)) {
+                    return $priceVariantsError;
+                }
+                $validVariantCount++;
+            }
+            if ($validVariantCount < 1) {
+                return $priceVariantsError;
+            }
+        }
+
         if (array_key_exists('calories',   $data)) $product->setCalories($data['calories'] ?: null);
         if (array_key_exists('fat',           $data)) $product->setFat($data['fat'] !== null && $data['fat'] !== '' ? (string) $data['fat'] : null);
         if (array_key_exists('protein',       $data)) $product->setProtein($data['protein'] !== null && $data['protein'] !== '' ? (string) $data['protein'] : null);

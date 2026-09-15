@@ -67,6 +67,7 @@ field_error:
     name_required: Il nome è obbligatorio
     description_required: La descrizione è obbligatoria
     price_required: Il prezzo è obbligatorio
+    price_variants_incomplete: Completa l'etichetta e il prezzo di ogni riga (minimo 2 prezzi)
 
 ingredients:
     hint: I nuovi ingredienti vengono aggiunti automaticamente alla banca ingredienti del ristorante.
@@ -198,6 +199,7 @@ error:
     clip_upload_failed: Impossibile caricare il video. Riprova.
     unexpected: Qualcosa è andato storto. Riprova.
     nutrition_value_invalid: 'Il valore deve essere un numero compreso tra 0 e 9999.9, con al massimo un decimale.'
+    price_variants_invalid: 'Completa l''etichetta e il prezzo di ogni variante (minimo 2 prezzi).'
 
 translations:
     hint_empty: "Nessuna traduzione IA ancora — appariranno qui non appena un cliente vedrà il menu in un'altra lingua."

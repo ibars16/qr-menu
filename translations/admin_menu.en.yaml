@@ -67,6 +67,7 @@ field_error:
     name_required: Name is required
     description_required: Description is required
     price_required: Price is required
+    price_variants_incomplete: Fill in the label and price for every row (minimum 2 prices)
 
 ingredients:
     hint: New ingredients are automatically added to the restaurant's ingredient bank.
@@ -198,6 +199,7 @@ error:
     clip_upload_failed: The video could not be uploaded. Please try again.
     unexpected: Something went wrong. Please try again.
     nutrition_value_invalid: 'The value must be a number between 0 and 9999.9, with at most one decimal.'
+    price_variants_invalid: 'Fill in the label and price for every variant (minimum 2 prices).'
 
 translations:
     hint_empty: "No AI translations yet — they'll appear here once a customer views the menu in another language."
