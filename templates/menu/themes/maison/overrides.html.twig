@@ -153,6 +153,40 @@
         color: var(--fg-2); font-family: var(--font-body); font-size: 0.7em; letter-spacing: 0.04em;
     }
     .dish-price .price-item-value, .dish-detail-price .price-item-value { color: var(--cn); }
+    /* Multi-price alignment — the base layout's .price-stack/.price-row (each
+       row its own independent grid, see standard/show.html.twig) sizes the
+       "auto" price column to that one row's own label width, so two rows
+       with labels of different length ("botella"/"copa") land their price
+       columns at different x-offsets — a visible zigzag instead of aligned
+       decimals. Fixed here, maison-only, by promoting .price-stack itself to
+       the grid and turning .price-row into `display:contents` so every row's
+       label/value join ONE shared two-column grid instead of one grid each —
+       column widths (and therefore decimal alignment) are then computed once
+       across all rows together. Labels stay their own column (auto-width up
+       to 1fr, so a long label still truncates rather than pushing the price
+       column around); prices right-align via text-align so the currency
+       suffix stays a quiet trailing unit rather than shifting the digits.
+       Scoped to this file only (theme=='maison'), so the base grid every
+       other theme relies on is untouched. */
+    .price-stack {
+        display: grid; grid-template-columns: 1fr auto; column-gap: 12px; row-gap: 6px;
+        min-width: 0;
+    }
+    .price-row { display: contents; }
+    .price-item-label { text-align: left; }
+    .price-item-value { text-align: right; font-variant-numeric: tabular-nums; }
+    /* Hairline between price options — "choose one" affordance requested for
+       the detail sheet; harmless on the card too (rows are rare there — most
+       dishes carry a single price and never render a second .price-row). One
+       border per cell (label + value) rather than a single full-width rule,
+       since .price-row itself generates no box to draw one on once it's
+       `display:contents` above; the small gap it leaves across the
+       column-gap reads as part of the row's own breathing room, not a
+       broken line. */
+    .price-row + .price-row .price-item-label,
+    .price-row + .price-row .price-item-value {
+        border-top: 1px solid var(--line-soft); padding-top: 6px;
+    }
     /* Currency suffix — small and muted instead of matching the price's own
        serif/size, so "22.17 USD" reads as one price with a quiet unit, not
        two equal-weight numbers. See _price.html.twig's price() macro (all
