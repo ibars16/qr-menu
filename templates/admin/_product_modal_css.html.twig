@@ -276,9 +276,9 @@
    set, separated as a whole from the price by the border-top above, not
    from each other). Falls back to .product-tab-panel's own gap, same as
    any two related lines. See showSupplementField()/hideSupplementField().
-   Same treatment on .price-variants-toggle (an additional class on the
-   other section's toggle, not a separate rule) so both read as the same
-   kind of secondary, optional action rather than a real field. */
+   "Añadir suplemento" keeps the plain .extra-price-toggle look below —
+   .price-variants-toggle gets its own heavier override right after it
+   (same reasoning as .nutrition-toggle's own override further down). */
 .extra-price-section { margin-top: 0; }
 .extra-price-toggle {
     display:inline-flex; align-items:center; gap:5px; margin-top:8px;
@@ -287,6 +287,28 @@
 .extra-price-toggle:hover { color:var(--tx-3); }
 .extra-price-toggle:focus-visible { outline:2px solid var(--brand); outline-offset:2px; border-radius:4px; }
 .extra-price-toggle i { font-size:var(--fs-sm); }
+
+/* Precios por variante toggle — this is the SAME element in both states
+   (see setPriceVariantsToggleState() in _product_js.html.twig: it only
+   swaps the innerHTML between "+ Añadir varios precios" and "× Volver a
+   precio único", never a different node), so unlike "Añadir suplemento"
+   it needs to read as a real, findable action in both directions —
+   collapsing back out of variants mode is easy to lose as a plain link.
+   Same framed-chip treatment as .nutrition-toggle below, but with
+   --bd-2/--bg-input (a plain secondary button, not the heavier
+   nutrition chip) since --brand is reserved for the primary "+ Nuevo
+   plato" CTA and this is a secondary action. Own :focus-visible (not
+   --brand) for the same reason — --tx-1 ring, same non-brand pattern as
+   .img-upload:focus-visible further down. */
+.price-variants-toggle {
+    font-size: var(--fs-md); font-weight:500; color: var(--tx-1);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--bd-2); border-radius: var(--r-md);
+    background: var(--bg-input);
+}
+.price-variants-toggle:hover { color: var(--tx-hi); border-color: var(--tx-6); }
+.price-variants-toggle:focus-visible { outline: 2px solid var(--tx-1); outline-offset: 2px; border-radius: var(--r-md); }
+.price-variants-toggle i { font-size: var(--fs-md); }
 /* Hidden until the section is opened — previously an always-visible <p>,
    which gave "un solo precio" (the common case) unwanted visual weight
    below the base price. Shown/hidden alongside the group/field itself in
@@ -444,6 +466,10 @@
        instead of forcing horizontal scroll — also a bigger, easier tap
        target on mobile. */
     .nutrition-toggle { display:flex; width:100%; flex-wrap:wrap; }
+    /* Same reasoning as .nutrition-toggle just above — now a bordered
+       chip instead of a shrink-to-fit link, "× Volver a precio único"
+       plus its icon can get close to a 390px viewport's width. */
+    .price-variants-toggle { display:flex; width:100%; flex-wrap:wrap; justify-content:center; }
 }
 
 /* Image upload — its own tab now (Foto), with the room a 76px line-item
