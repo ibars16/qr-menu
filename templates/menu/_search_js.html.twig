@@ -65,15 +65,22 @@ function openDishModal(card) {
     if (!tpl || !overlay || !photoWrap || !body) return;
     trackDishView(card.dataset.productId);
     const content   = tpl.content.cloneNode(true);
-    const bgNode    = content.querySelector('.dish-clip-bg');
-    const photoNode = content.querySelector('img, video, .dish-placeholder');
+    // .dish-clip-sizer (the invisible poster <img> that gives a clip's box
+    // its own aspect ratio — see .has-clip in standard/show.html.twig) is a
+    // sibling of the <video>, not inside it, so it needs its own
+    // clone-and-append here too — excluded from the general img/video/
+    // placeholder query below so that query still finds the real content
+    // (the <video>) rather than this layout-only prop.
+    const sizerNode = content.querySelector('.dish-clip-sizer');
+    const photoNode = content.querySelector('img:not(.dish-clip-sizer), video, .dish-placeholder');
     photoWrap.innerHTML = '';
     body.innerHTML = '';
-    // .dish-clip-bg (the blurred poster fill behind a contain-fit clip —
-    // see standard/show.html.twig) is a sibling of the <video>, not inside
-    // it, so it needs its own clone-and-append here too, before the video
-    // so it paints behind it.
-    if (bgNode) photoWrap.appendChild(bgNode);
+    // Reset every time, not just "add when present" — otherwise a clip
+    // dish's box stays sized like a clip when the very next dish opened is
+    // a plain photo (this element is one shared, reused box, never
+    // recreated between opens).
+    photoWrap.classList.toggle('has-clip', !!sizerNode);
+    if (sizerNode) photoWrap.appendChild(sizerNode);
     if (photoNode) {
         photoWrap.appendChild(photoNode);
         // The grid's own clips are gated by the IntersectionObserver above
@@ -81,6 +88,18 @@ function openDishModal(card) {
         // one dish at a time, so it can just play as soon as it's inserted.
         if (photoNode.tagName === 'VIDEO' && photoNode.dataset.clipSrc) {
             photoNode.src = photoNode.dataset.clipSrc;
+            // A cloneNode()'d <video> doesn't reliably repaint its own
+            // poster once (re)inserted in this browser — it fetches fine
+            // (confirmed in Resource Timing) but never paints, leaving the
+            // box blank until real video data arrives. Toggling the
+            // attribute off a tick and back on forces it to paint. Caught
+            // against a real clip, not the synthetic fixtures used
+            // elsewhere — those have no decodable frame either way, so
+            // this never surfaced until now.
+            const poster = photoNode.poster;
+            photoNode.removeAttribute('poster');
+            void photoNode.offsetHeight;
+            photoNode.setAttribute('poster', poster);
             photoNode.play().catch(() => {});
         }
     }

@@ -981,28 +981,21 @@
     // picture — either the photo itself, or the clip's own auto-captured
     // poster — never a leftover from a different, unrelated pick.
     function clearMediaPreview(area) {
-        area.querySelector('img')?.remove();
-        area.querySelector('video')?.remove();
-        area.querySelector('.img-upload-clip-bg')?.remove();
-        area.classList.remove('loading');
+        area.querySelectorAll('img, video').forEach(el => el.remove());
+        area.classList.remove('loading', 'has-clip');
     }
 
-    // Creates (or updates) the blurred-poster fill behind a clip's <video>
-    // — see the .img-upload-clip-bg comment in _product_modal_css.html.twig.
-    // A no-op when there's no poster yet (a freshly-picked clip's poster is
-    // still being captured — see capturePosterFromClip(), which calls this
-    // again once it has one, so the admin's own preview ends up matching
-    // what the public carta will show, never diverging).
-    function setClipBackground(area, posterSrc) {
+    // Sets (or updates) the src of the invisible sizer <img> that gives a
+    // clip's box its own aspect ratio — see .img-upload-clip-sizer /
+    // .img-upload.has-clip in _product_modal_css.html.twig. A no-op when
+    // there's no poster yet (a freshly-picked clip's poster is still being
+    // captured — see capturePosterFromClip(), which calls this again once
+    // it has one, so the box grows/shrinks from the transitional min-height
+    // floor to the clip's real (clamped) ratio without a page reload).
+    function setClipSizerSrc(area, posterSrc) {
         if (!posterSrc) return;
-        let bg = area.querySelector('.img-upload-clip-bg');
-        if (!bg) {
-            bg = document.createElement('div');
-            bg.className = 'img-upload-clip-bg';
-            bg.setAttribute('aria-hidden', 'true');
-            area.insertBefore(bg, area.querySelector('video'));
-        }
-        bg.style.backgroundImage = `url("${posterSrc}")`;
+        const sizer = area.querySelector('.img-upload-clip-sizer');
+        if (sizer) sizer.src = posterSrc;
     }
 
     // Shared by previewMedia() (local file, instant via ObjectURL) and
@@ -1031,17 +1024,27 @@
     // public carta's several-at-once concern, so autoplay here is cheap).
     // Clears any leftover <img> first, same mutual-exclusion as above.
     //
-    // object-fit:contain (see _product_modal_css.html.twig) shows the
-    // clip's whole frame instead of cropping it — posterSrc (the same
-    // image uploadProductImage() will end up storing) fills the leftover
-    // space behind it, blurred, exactly like the public card/detail sheet,
-    // so the admin's own preview never diverges from what the diner sees.
-    // Optional: a freshly-picked clip has no poster yet (still being
-    // captured — see capturePosterFromClip()), so this is left blank until
-    // setClipBackground() is called again once one exists.
+    // The box itself adapts to the clip's own aspect ratio (.has-clip,
+    // within min/max clamps — see _product_modal_css.html.twig) instead of
+    // staying a fixed 16/9: .img-upload-clip-sizer is an invisible <img>
+    // carrying the SAME poster the <video> will end up stored against
+    // (uploadProductImage() persists it), in normal flow so its own
+    // rendered height drives the box's height — the <video> then sits
+    // absolute on top, object-fit:cover, filling it edge-to-edge with no
+    // crop beyond what the clamps force. posterSrc is optional: a
+    // freshly-picked clip has no poster yet (still being captured — see
+    // capturePosterFromClip(), which calls setClipSizerSrc() again once it
+    // has one) — the box just sits at its transitional min-height floor
+    // until then, never collapsing to zero.
     function showClipInArea(area, src, posterSrc) {
         clearMediaPreview(area);
-        setClipBackground(area, posterSrc);
+        area.classList.add('has-clip');
+        const sizer = document.createElement('img');
+        sizer.className = 'img-upload-clip-sizer';
+        sizer.alt = '';
+        sizer.setAttribute('aria-hidden', 'true');
+        if (posterSrc) sizer.src = posterSrc;
+        area.appendChild(sizer);
         const video = document.createElement('video');
         video.muted = true;
         video.loop = true;
@@ -1204,11 +1207,12 @@
                     settled = true;
                     if (!blob) { showClipPosterWarning(true); return; }
                     S.stagedPosterFile = new File([blob], 'clip-poster.jpg', { type: 'image/jpeg' });
-                    // Backfill the blurred fill behind the <video> now that
-                    // a poster actually exists — showClipInArea() left it
-                    // blank when this clip was first picked (see its own
-                    // comment). Same area the video already lives in.
-                    setClipBackground(panelEl('img-upload-area'), URL.createObjectURL(S.stagedPosterFile));
+                    // Backfill the sizer now that a poster actually exists —
+                    // showClipInArea() left it src-less when this clip was
+                    // first picked (see its own comment), so the box was
+                    // sitting at its transitional min-height floor. Same
+                    // area the video already lives in.
+                    setClipSizerSrc(panelEl('img-upload-area'), URL.createObjectURL(S.stagedPosterFile));
                 }, 'image/jpeg', 0.85);
             } catch (e) {
                 clearTimeout(timeoutId);
