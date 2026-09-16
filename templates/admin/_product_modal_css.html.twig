@@ -276,9 +276,9 @@
    set, separated as a whole from the price by the border-top above, not
    from each other). Falls back to .product-tab-panel's own gap, same as
    any two related lines. See showSupplementField()/hideSupplementField().
-   "Añadir suplemento" keeps the plain .extra-price-toggle look below —
-   .price-variants-toggle gets its own heavier override right after it
-   (same reasoning as .nutrition-toggle's own override further down). */
+   "Añadir suplemento" now gets the same heavier chip look as
+   "Añadir varios precios" via its own .supplement-toggle override,
+   further below next to .extra-price-remove. */
 .extra-price-section { margin-top: 0; }
 .extra-price-toggle {
     display:inline-flex; align-items:center; gap:5px; margin-top:8px;
@@ -324,6 +324,48 @@
     font-size:15px; line-height:1; font-weight:600; color:var(--tx-6); cursor:pointer; padding:0 2px;
 }
 .extra-price-remove:hover { color:var(--tx-1); }
+
+/* "Añadir suplemento" — same framed-chip/card/round-danger-× treatment as
+   "Añadir varios precios" right above it (.price-variants-toggle/
+   .price-variants-group/.price-variant-remove below), so the two price
+   actions read as one visual family instead of one looking like a real
+   control and the other like an afterthought link. Layered onto the
+   shared .extra-price-* hooks via an extra class (JS still toggles the
+   base classes — see showSupplementField()/hideSupplementField() in
+   _product_js.html.twig) rather than replacing them, same pattern
+   .price-variants-toggle/.nutrition-toggle already use. */
+.supplement-toggle {
+    font-size: var(--fs-md); font-weight:500; color: var(--tx-1);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--bd-2); border-radius: var(--r-md);
+    background: var(--bg-input);
+}
+.supplement-toggle:hover { color: var(--tx-hi); border-color: var(--tx-6); }
+.supplement-toggle:focus-visible { outline: 2px solid var(--tx-1); outline-offset: 2px; border-radius: var(--r-md); }
+.supplement-toggle i { font-size: var(--fs-md); }
+/* Same card treatment as .price-variants-group (border one step up from
+   the panel background + soft shadow), so the revealed field reads as a
+   distinct block the moment it opens instead of a bare input floating in
+   the panel. */
+.supplement-field {
+    margin-top:10px; padding:var(--sp-4); border-radius:var(--r-lg);
+    background:var(--bg-card); border:1px solid var(--bd-2);
+    box-shadow:var(--shadow-sm);
+}
+/* Same round hover/focus fill + danger tint as .price-variant-remove, so
+   removing the supplement reads as the same kind of delete action as
+   removing a price-variant row, instead of a bare "×" with no affordance.
+   Smaller footprint than .price-variant-remove's 44×44 (this × sits
+   inline in the field label, not in its own column), but same visual
+   language. */
+.supplement-remove {
+    display:flex; align-items:center; justify-content:center;
+    width:24px; height:24px; margin-left:auto;
+    font-size:16px; line-height:1; font-weight:600; border-radius:var(--r-md);
+    color:var(--tx-6); cursor:pointer; transition:color 0.12s, background-color 0.12s;
+}
+.supplement-remove:hover { color:#F0997B; background:rgba(240,153,123,0.12); }
+.supplement-remove:focus-visible { outline:2px solid var(--tx-1); outline-offset:2px; border-radius:var(--r-md); }
 
 /* Precios por variante — one persistent toggle (expand: re-parents
    the base price row in as the list's first row, plus one empty
@@ -495,6 +537,10 @@
     /* "+ Añadir otro precio" as a full-width dashed row on mobile too —
        same bigger-tap-target reasoning as the two toggles above. */
     .price-variant-add { display:flex; width:100%; }
+    /* Same reasoning as .price-variants-toggle just above — now the same
+       bordered chip, "+ Añadir suplemento" can get close to a 390px
+       viewport's width too. */
+    .supplement-toggle { display:flex; width:100%; flex-wrap:wrap; justify-content:center; }
 }
 
 /* Image upload — its own tab now (Foto), with the room a 76px line-item

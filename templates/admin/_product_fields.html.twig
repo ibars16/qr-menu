@@ -153,20 +153,23 @@
                above; a single direct link reveals the field immediately, no
                intermediate chooser (there's nothing left to choose between). Visually
                separated from the price list above (see .extra-price-section's own
-               margin-top) so it never reads as part of it. See
-               showSupplementField()/hideSupplementField() and resetProduct() in
-               menu.html.twig. #}
+               margin-top) so it never reads as part of it. Toggle/field/remove-×
+               get the same framed-chip/card/round-danger-hover treatment as
+               "Añadir varios precios" (.supplement-toggle/.supplement-field/
+               .supplement-remove, layered onto the shared .extra-price-* hooks that
+               showSupplementField()/hideSupplementField() still target — see
+               resetProduct() in menu.html.twig). #}
             <div class="extra-price-section">
-                <div class="extra-price-toggle" onclick="showSupplementField(this)" role="button" tabindex="0">
+                <div class="extra-price-toggle supplement-toggle" onclick="showSupplementField(this)" role="button" tabindex="0">
                     <i class="ti ti-plus" aria-hidden="true"></i> {{ 'field.supplement_toggle'|trans({}, 'admin_menu') }}
                 </div>
                 <p class="extra-price-hint" style="display:none">
                     {{ 'field.supplement_hint'|trans({}, 'admin_menu') }}
                 </p>
-                <div class="field extra-price-field" style="display:none">
+                <div class="field extra-price-field supplement-field" style="display:none">
                     <label class="field-label">
                         {{ 'field.supplement_price'|trans({'%currency%': restaurant.currency}, 'admin_menu') }}
-                        <span class="extra-price-remove" onclick="hideSupplementField(this)" role="button" tabindex="0" aria-label="{{ 'field.remove_extra_price'|trans({}, 'admin_menu') }}">×</span>
+                        <span class="extra-price-remove supplement-remove" onclick="hideSupplementField(this)" role="button" tabindex="0" aria-label="{{ 'field.remove_extra_price'|trans({}, 'admin_menu') }}">×</span>
                     </label>
                     <input type="number"
                            id="p-supplement-price"
