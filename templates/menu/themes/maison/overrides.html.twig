@@ -221,26 +221,14 @@
        gap this reopens on a short label like "COPA". */
     .price-item-label { text-align: left; }
     .price-item-value { text-align: right; font-variant-numeric: tabular-nums; }
-    /* Hairline between price options — card only (2026-09-16, owner
-       request: removed from the detail sheet, see .dish-detail-price
-       .price-stack's row-gap below for how that sheet separates options
-       instead). Scoped to .dish-price so it never matches inside
-       .dish-detail-price. One border per cell (label + value) rather than a
-       single full-width rule, since .price-row itself generates no box to
-       draw one on once it's `display:contents` above; the small gap it
-       leaves across the column-gap reads as part of the row's own
-       breathing room, not a broken line. */
-    .dish-price .price-row + .price-row .price-item-label,
-    .dish-price .price-row + .price-row .price-item-value {
-        border-top: 1px solid var(--line-soft); padding-top: 6px;
-    }
-    /* Detail sheet: options separated by air instead of a rule (2026-09-16,
-       owner request) — wider row-gap than the card's 8px stands in for the
-       hairline+padding-top the card uses instead, so BOTELLA/COPA still
-       read as distinct rows without a line loose in the middle of the
-       price block (the full-width section-header rule above PICANTE etc.
-       is unrelated and untouched). */
-    .dish-detail-price .price-stack { row-gap: 14px; }
+    /* Options separated by air, not a rule — card and detail sheet now use
+       the SAME criterion (2026-09-16, owner request: the card still had the
+       hairline border-top from an earlier pass; removed here so neither
+       render site draws a line between BOTELLA/COPA, only the detail sheet
+       did before this change). row-gap alone stands in for the hairline +
+       padding-top the card used to carry (the full-width section-header
+       rule above PICANTE etc. is unrelated and untouched). */
+    .dish-price .price-stack, .dish-detail-price .price-stack { row-gap: 14px; }
     /* Currency suffix — small and muted instead of matching the price's own
        serif/size, so "15.75 USD" reads as one price with a quiet trailing
        unit, the eye landing on the number. See _price.html.twig's price()
