@@ -144,13 +144,36 @@
         letter-spacing: 0.2em; color: var(--cf-hborder-text);
     }
 
-    /* Price — fine display-serif typography, no filled pill */
+    /* Price — fine display-serif typography, no filled pill. font-weight:400
+       (regular) rather than the base pill's 500 it would otherwise inherit —
+       the elegance here comes from the Fraunces letterform itself, not from
+       bolding it; a heavier weight read as shouting next to the theme's
+       otherwise quiet type. */
     .dish-price, .dish-detail-price {
         background: none; box-shadow: none; padding: 0; color: var(--cn); font-family: var(--font-display);
-        font-size: calc(18px * var(--font-scale));
+        font-size: calc(18px * var(--font-scale)); font-weight: 400;
     }
+    /* .dish-detail-price pins --font-scale back to the root's 0.94 (2026-09-16,
+       owner request) instead of inheriting .dish-modal's own --font-scale:1.06
+       (further down, pre-existing "sheet reads bigger" bump for the whole
+       modal — name/description/chips/etc.). Left un-pinned, the price number
+       and label rendered ~12.8% larger in the detail than the identical rule
+       produces on the card (measured: 19.08px vs 16.92px for the number),
+       reading as an inflated restatement of the card's price instead of the
+       same contained language. Custom properties cascade, so this one
+       declaration also re-scales every descendant that reads var(--font-scale)
+       — .price-item-label and .price-currency both do — without touching the
+       modal-wide 1.06 that everything else in the sheet still uses. */
+    .dish-detail-price { --font-scale: 0.94; }
+    /* Label — deliberately small and light next to the price (owner request,
+       2026-09-16: previous pass at 0.62em/600 still read too equal-weight
+       against the price). 0.55em + 400 is the theme's own smallest/lightest
+       combination anywhere near body text; text-transform:uppercase is kept
+       so it still reads as a tag rather than trailing off into illegibility
+       at this size. */
     .dish-price .price-item-label, .dish-detail-price .price-item-label {
-        color: var(--fg-2); font-family: var(--font-body); font-size: 0.7em; letter-spacing: 0.04em;
+        color: var(--fg-2); font-family: var(--font-body); font-size: 0.55em; font-weight: 400;
+        letter-spacing: 0.07em; text-transform: uppercase;
     }
     .dish-price .price-item-value, .dish-detail-price .price-item-value { color: var(--cn); }
     /* Multi-price alignment — the base layout's .price-stack/.price-row (each
@@ -160,40 +183,78 @@
        columns at different x-offsets — a visible zigzag instead of aligned
        decimals. Fixed here, maison-only, by promoting .price-stack itself to
        the grid and turning .price-row into `display:contents` so every row's
-       label/value join ONE shared two-column grid instead of one grid each —
-       column widths (and therefore decimal alignment) are then computed once
-       across all rows together. Labels stay their own column (auto-width up
-       to 1fr, so a long label still truncates rather than pushing the price
-       column around); prices right-align via text-align so the currency
-       suffix stays a quiet trailing unit rather than shifting the digits.
-       Scoped to this file only (theme=='maison'), so the base grid every
-       other theme relies on is untouched. */
+       label/value join ONE shared two-column grid instead of one grid each.
+       Label column is a FIXED width (2026-09-16, owner request), not `1fr`:
+       `1fr` still let the column's width vary per dish (sized to whichever
+       label happened to be longest in that one price-stack), so "BOTELLA"
+       on one dish and a shorter label on another started their price
+       columns at different x-offsets across the page. A constant width
+       (comfortably fits the longest real label, "BOTELLA"/"botella", in the
+       0.55em/400 uppercase label font above) makes every price column on
+       the page start at the same X, and forces the label itself to occupy
+       less visual room — both symmetry asks in one change. Longer labels
+       still truncate with an ellipsis (base layout's .price-item-label
+       overflow rule) rather than pushing the price column around. Prices
+       right-align via text-align so the currency suffix stays a quiet
+       trailing unit rather than shifting the digits. Scoped to this file
+       only (theme=='maison'), so the base grid every other theme relies on
+       is untouched. */
+    /* align-items:baseline (2026-09-16, owner request) — the label and price
+       are different font-families/sizes (Inter 0.55em vs Fraunces 1em), so
+       without this they align by their box tops/stretch and the label reads
+       as floating above the price rather than sitting on it. `.price-row`
+       being `display:contents` (above) is exactly what makes this work: its
+       label/value become direct grid items in their own right, each with
+       its own baseline, instead of one opaque .price-row box the grid could
+       only align as a unit. */
     .price-stack {
-        display: grid; grid-template-columns: 1fr auto; column-gap: 12px; row-gap: 6px;
-        min-width: 0;
+        display: grid; grid-template-columns: 58px auto; column-gap: 4px; row-gap: 8px;
+        align-items: baseline; min-width: 0;
     }
     .price-row { display: contents; }
+    /* Label left-aligned (reverted 2026-09-16, same day — right-align broke
+       the card: it pushed "BOTELLA"/"COPA" in from the fixed column's own
+       left edge, so the whole price block read as indented/centered instead
+       of sharing the card's left edge with the dish name above it. Back to
+       left, which is also what keeps .price-stack's own left edge flush
+       with .front-name's — see column-gap note below for the label→price
+       gap this reopens on a short label like "COPA". */
     .price-item-label { text-align: left; }
     .price-item-value { text-align: right; font-variant-numeric: tabular-nums; }
-    /* Hairline between price options — "choose one" affordance requested for
-       the detail sheet; harmless on the card too (rows are rare there — most
-       dishes carry a single price and never render a second .price-row). One
-       border per cell (label + value) rather than a single full-width rule,
-       since .price-row itself generates no box to draw one on once it's
-       `display:contents` above; the small gap it leaves across the
-       column-gap reads as part of the row's own breathing room, not a
-       broken line. */
-    .price-row + .price-row .price-item-label,
-    .price-row + .price-row .price-item-value {
+    /* Hairline between price options — card only (2026-09-16, owner
+       request: removed from the detail sheet, see .dish-detail-price
+       .price-stack's row-gap below for how that sheet separates options
+       instead). Scoped to .dish-price so it never matches inside
+       .dish-detail-price. One border per cell (label + value) rather than a
+       single full-width rule, since .price-row itself generates no box to
+       draw one on once it's `display:contents` above; the small gap it
+       leaves across the column-gap reads as part of the row's own
+       breathing room, not a broken line. */
+    .dish-price .price-row + .price-row .price-item-label,
+    .dish-price .price-row + .price-row .price-item-value {
         border-top: 1px solid var(--line-soft); padding-top: 6px;
     }
+    /* Detail sheet: options separated by air instead of a rule (2026-09-16,
+       owner request) — wider row-gap than the card's 8px stands in for the
+       hairline+padding-top the card uses instead, so BOTELLA/COPA still
+       read as distinct rows without a line loose in the middle of the
+       price block (the full-width section-header rule above PICANTE etc.
+       is unrelated and untouched). */
+    .dish-detail-price .price-stack { row-gap: 14px; }
     /* Currency suffix — small and muted instead of matching the price's own
-       serif/size, so "22.17 USD" reads as one price with a quiet unit, not
-       two equal-weight numbers. See _price.html.twig's price() macro (all
-       3 layouts, both card front/back) for the .price-currency span this
-       targets — wrapping it there is unconditional/theme-agnostic, only
-       this rule gives it any visual treatment. */
-    .price-currency { font-size: calc(12px * var(--font-scale)); color: var(--fg-3); font-family: var(--font-body); margin-left: 3px; }
+       serif/size, so "15.75 USD" reads as one price with a quiet trailing
+       unit, the eye landing on the number. See _price.html.twig's price()
+       macro (all 3 layouts, both card front/back) for the .price-currency
+       span this targets — wrapping it there is unconditional/theme-agnostic,
+       only this rule gives it any visual treatment.
+       Color is --fg-2, not the even-quieter --fg-3 the rest of this theme
+       uses for de-emphasis: --fg-3 (#A99B8A) measures 2.05–2.56:1 on this
+       theme's surfaces, well under the 4.5:1 AA floor for text at this size
+       (a real WCAG fail, not a style choice — checked 2026-09-16 against
+       --surface/--bg/--surface-2). --fg-2 still reads distinctly quieter
+       than the price's own --cn (5.33–5.95:1 vs 12.7–15.8:1) while clearing
+       AA everywhere it's used. */
+    .price-currency { font-size: calc(10px * var(--font-scale)); color: var(--fg-2); font-family: var(--font-body); font-weight: 400; margin-left: 4px; }
 
     /* "Ver más" — filled wine pill, white text, same pattern as
        .filters-clear-link ("Borrar todo"): solid var(--accent) fill,
