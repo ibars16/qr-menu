@@ -270,6 +270,27 @@
        same align-self restated, or it stretches under the base's default
        align-items: stretch. */
     .dish-detail-price-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; align-self: flex-start; }
+    /* Extra air above the supplement line, multiprice only (2026-09-18,
+       owner request) — the shared 3px gap above (.row-price-col/
+       .dish-price-col/.dish-detail-price-wrap) reads fine when the
+       supplement sits right under a single price line (approved, must stay
+       untouched), but is too tight under a full .price-stack (BOTELLA/COPA):
+       the supplement line looked glued to the last price row instead of a
+       separate note. `:has(.price-stack)` is the scoping key rather than
+       row-counting — .price-stack only ever exists in the DOM when
+       product.hasPriceVariants (see _price.html.twig's price() macro; the
+       single-price path renders no .price-stack at all), so this can never
+       fire for the single-price case. Added as margin-top on the
+       supplement line itself (on top of the existing 3px gap) rather than
+       raising the shared gap, since the gap is genuinely shared with the
+       single-price case and must not move for it. :has() already used
+       elsewhere in this file (.sw-widget rules below), same support
+       baseline. */
+    .row-price-col:has(.price-stack) .row-supplement,
+    .dish-price-col:has(.price-stack) .dish-supplement,
+    .dish-detail-price-wrap:has(.price-stack) .dish-detail-supplement {
+        margin-top: 8px;
+    }
     .row-supplement, .dish-supplement, .dish-detail-supplement {
         font-family: var(--font-body); font-size: calc(11px * var(--font-scale)); font-weight: 400;
         color: var(--fg-2); letter-spacing: 0.02em; white-space: nowrap;
