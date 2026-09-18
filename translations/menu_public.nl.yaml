@@ -37,6 +37,7 @@ results:
     empty: "Geen producten beschikbaar."
 dish:
     popular: "Populair"
+    supplement: "Toeslag"
     view_more: "Meer bekijken"
     view_detail_aria: "Details van %name% bekijken"
     modal_aria: "Gerechtdetails"

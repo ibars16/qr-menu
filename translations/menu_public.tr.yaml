@@ -37,6 +37,7 @@ results:
     empty: "Ürün bulunmuyor."
 dish:
     popular: "Popüler"
+    supplement: "Ek ücret"
     view_more: "Daha fazla gör"
     view_detail_aria: "%name% detayını gör"
     modal_aria: "Yemek detayı"

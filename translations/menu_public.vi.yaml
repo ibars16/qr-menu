@@ -37,6 +37,7 @@ results:
     empty: "Không có sản phẩm nào."
 dish:
     popular: "Phổ biến"
+    supplement: "Phụ thu"
     view_more: "Xem thêm"
     view_detail_aria: "Xem chi tiết %name%"
     modal_aria: "Chi tiết món ăn"

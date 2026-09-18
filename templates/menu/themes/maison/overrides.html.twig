@@ -244,6 +244,52 @@
        AA everywhere it's used. */
     .price-currency { font-size: calc(10px * var(--font-scale)); color: var(--fg-2); font-family: var(--font-body); font-weight: 400; margin-left: 4px; }
 
+    /* Suplemento — grouped with the price, not the dish name (2026-09-18,
+       owner request). The old badge sat next to .front-name/.dish-detail-name
+       in a red pill (base layout's .supplement-badge, --cp) reading like a
+       loose promo; here it's a second price-block line, same visual
+       language as the price itself, so it reads as "this adds to the
+       price". Maison-only — see the theme != 'maison' / theme == 'maison'
+       gates around .supplement-badge and this markup in
+       standard/show.html.twig; every other theme still renders the
+       original badge next to the name, untouched. */
+    /* align-items: flex-start (2026-09-18, owner request) — flex-end had
+       each line right-align independently within the column's own
+       auto-width box (sized to the wider child, the "Suplemento · +X,XX"
+       line). Since the price line is shorter, that right-alignment left it
+       indented relative to the supplement line and the dish name above,
+       instead of the two price-block lines sharing one left edge with the
+       title. flex-start makes both lines hug the column's left edge —
+       already how .dish-detail-price-wrap (detail sheet) was set, unaffected
+       here. */
+    .row-price-col, .dish-price-col { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+    /* .dish-detail-price already carries its own align-self: flex-start
+       (base layout) so it doesn't stretch full-width inside .dish-modal-body's
+       column flex — that self-alignment travels fine onto its new wrapper's
+       cross axis, but the wrapper itself is a new flex item that needs the
+       same align-self restated, or it stretches under the base's default
+       align-items: stretch. */
+    .dish-detail-price-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; align-self: flex-start; }
+    .row-supplement, .dish-supplement, .dish-detail-supplement {
+        font-family: var(--font-body); font-size: calc(11px * var(--font-scale)); font-weight: 400;
+        color: var(--fg-2); letter-spacing: 0.02em; white-space: nowrap;
+    }
+    /* Pinned to the same 0.94 .dish-detail-price pins above (see its own
+       comment) — left un-pinned, this line would inherit the modal's 1.06
+       scale instead of matching the price it sits directly beneath. */
+    .dish-detail-supplement { --font-scale: 0.94; }
+    /* Amount — Fraunces like the price itself, but smaller (13px vs the
+       price's 18px) and never bold: a secondary line, not a second price.
+       Color is --cn, the theme's own price color — not --cp, which the base
+       badge used and which reads as alarm/discount red here. */
+    .row-supplement .suppl-value, .dish-supplement .suppl-value, .dish-detail-supplement .suppl-value {
+        font-family: var(--font-display); font-size: calc(13px * var(--font-scale)); font-weight: 400;
+        color: var(--cn); margin-left: 3px;
+    }
+    .row-supplement .price-currency, .dish-supplement .price-currency, .dish-detail-supplement .price-currency {
+        font-size: calc(10px * var(--font-scale));
+    }
+
     /* "Ver más" — filled wine pill, white text, same pattern as
        .filters-clear-link ("Borrar todo"): solid var(--accent) fill,
        white-on-#7A1E28 clears AA (~10:1), lighter --wine-soft on hover

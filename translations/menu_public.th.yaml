@@ -37,6 +37,7 @@ results:
     empty: "ไม่มีสินค้าให้บริการ"
 dish:
     popular: "ยอดนิยม"
+    supplement: "ค่าเสริม"
     view_more: "ดูเพิ่มเติม"
     view_detail_aria: "ดูรายละเอียดของ %name%"
     modal_aria: "รายละเอียดเมนู"

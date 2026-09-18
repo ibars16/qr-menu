@@ -37,6 +37,7 @@ results:
     empty: "利用可能な商品がありません。"
 dish:
     popular: "人気"
+    supplement: "追加料金"
     view_more: "詳しく見る"
     view_detail_aria: "%name% の詳細を見る"
     modal_aria: "料理の詳細"

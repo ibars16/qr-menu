@@ -37,6 +37,7 @@ results:
     empty: "Inga produkter tillgängliga."
 dish:
     popular: "Populär"
+    supplement: "Tillägg"
     view_more: "Visa mer"
     view_detail_aria: "Visa detaljer för %name%"
     modal_aria: "Rättdetaljer"

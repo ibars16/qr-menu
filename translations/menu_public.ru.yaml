@@ -37,6 +37,7 @@ results:
     empty: "Нет доступных блюд."
 dish:
     popular: "Популярное"
+    supplement: "Доплата"
     view_more: "Подробнее"
     view_detail_aria: "Подробнее о %name%"
     modal_aria: "Информация о блюде"

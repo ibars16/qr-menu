@@ -37,6 +37,7 @@ results:
     empty: "Não há produtos disponíveis."
 dish:
     popular: "Popular"
+    supplement: "Suplemento"
     view_more: "Ver mais"
     view_detail_aria: "Ver detalhe de %name%"
     modal_aria: "Detalhe do prato"
