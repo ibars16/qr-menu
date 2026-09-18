@@ -554,7 +554,7 @@
                     <div class="btext">
                         <div class="blabel">{{ ri.tagName }}</div>
                         <div class="bhead">{{ ri.t.name }}</div>
-                        <div class="bsub">{% if ri.t.description %}{{ ri.t.description }}{% else %}{{ priceMacro.price(ri.product, currency, true, currencyDisplay) }}{% endif %}</div>
+                        <div class="bsub">{% if ri.t.description %}{{ ri.t.description }}{% else %}{{ priceMacro.price(ri.product, currency, true, currencyDisplay, locale) }}{% endif %}</div>
                     </div>
                 </div>
             {% elseif recommendedItems|length > 1 %}
@@ -575,7 +575,7 @@
                                     <div class="btext">
                                         <div class="blabel">{{ ri.tagName }}</div>
                                         <div class="bhead">{{ ri.t.name }}</div>
-                                        <div class="bsub">{% if ri.t.description %}{{ ri.t.description }}{% else %}{{ priceMacro.price(ri.product, currency, true, currencyDisplay) }}{% endif %}</div>
+                                        <div class="bsub">{% if ri.t.description %}{{ ri.t.description }}{% else %}{{ priceMacro.price(ri.product, currency, true, currencyDisplay, locale) }}{% endif %}</div>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -815,8 +815,8 @@
                                     <div class="row-head">
                                         <div class="front-name">{{ pT.name }}</div>
                                         <div class="row-price-col">
-                                            <div class="row-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
-                                            {% if product.supplementPrice %}<div class="row-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}
+                                            <div class="row-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
+                                            {% if product.supplementPrice %}<div class="row-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}
                                         </div>
                                     </div>
                                     {{ _self.dishContains(cardAllergens, locale) }}
@@ -843,7 +843,7 @@
                                     {% if theme == 'maison' ? maisonBadge == 'popular' : product.id in popularProductIds %}<div class="popular-badge">🔥 {{ 'dish.popular'|trans({}, 'menu_public', locale) }}</div>{% endif %}
                                 </div>
                                 <div class="front-info">
-                                    <div class="front-name">{{ pT.name }}{% if theme != 'maison' and product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }} {{ currencyDisplay }}</span>{% endif %}</div>
+                                    <div class="front-name">{{ pT.name }}{% if theme != 'maison' and product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }} {{ currencyDisplay }}</span>{% endif %}</div>
                                     {# Description dropped from the maison card front (2026-09-05,
                                        see conversation) — it stays in the detail sheet only.
                                        Other themes keep showing it here unchanged. #}
@@ -852,11 +852,11 @@
                                     <div class="dish-bottom">
                                         {% if theme == 'maison' %}
                                             <div class="dish-price-col">
-                                                <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
-                                                {% if product.supplementPrice %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}
+                                                <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
+                                                {% if product.supplementPrice %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}
                                             </div>
                                         {% else %}
-                                            <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
+                                            <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
                                         {% endif %}
                                         <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
                                     </div>
@@ -882,14 +882,14 @@
                                     {% else %}
                                         <div class="dish-placeholder"><i class="ti {{ isDrink ? 'ti-glass' : 'ti-tools-kitchen-2' }}" aria-hidden="true"></i><span>{{ pT.name }}</span></div>
                                     {% endif %}
-                                    <div class="dish-detail-name">{{ pT.name }}{% if theme != 'maison' and product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }} {{ currencyDisplay }}</span>{% endif %}</div>
+                                    <div class="dish-detail-name">{{ pT.name }}{% if theme != 'maison' and product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }} {{ currencyDisplay }}</span>{% endif %}</div>
                                     {% if theme == 'maison' %}
                                         <div class="dish-detail-price-wrap">
-                                            <div class="dish-detail-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
-                                            {% if product.supplementPrice %}<div class="dish-detail-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}
+                                            <div class="dish-detail-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
+                                            {% if product.supplementPrice %}<div class="dish-detail-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}
                                         </div>
                                     {% else %}
-                                        <div class="dish-detail-price">{{ priceMacro.price(product, currency, true, currencyDisplay) }}</div>
+                                        <div class="dish-detail-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
                                     {% endif %}
                                     {% if pT.description %}<p class="dish-detail-desc">{{ pT.description }}</p>{% endif %}
                                     {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.spicy'|trans({}, 'menu_public', locale) }}</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}{{ 'dish.spice_1'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 2 %}{{ 'dish.spice_2'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 3 %}{{ 'dish.spice_3'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 4 %}{{ 'dish.spice_4'|trans({}, 'menu_public', locale) }}{% else %}{{ 'dish.spice_5'|trans({}, 'menu_public', locale) }}{% endif %}</span></div></div>{% endif %}

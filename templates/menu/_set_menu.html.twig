@@ -28,7 +28,7 @@
     {% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
     {% if not t %}{% set t = category.translations.first %}{% endif %}
     {% if t %}
-        <a href="#cat-{{ category.id }}" class="cat-tab cat-tab-menu" data-cat="cat-{{ category.id }}">{{ t.name }} · {{ (category.convertedMenuPrice / 100)|number_format(2) }} {{ currencyDisplay }}</a>
+        <a href="#cat-{{ category.id }}" class="cat-tab cat-tab-menu" data-cat="cat-{{ category.id }}">{{ t.name }} · {{ (category.convertedMenuPrice / 100)|menu_number(locale) }} {{ currencyDisplay }}</a>
     {% endif %}
 {% endmacro %}
 
@@ -39,7 +39,7 @@
     {% if menuT %}
         <div class="set-menu-header">
             <div class="set-menu-name">{{ menuT.name }}</div>
-            <div class="set-menu-price">{{ (category.convertedMenuPrice / 100)|number_format(2) }} {{ currencyDisplay }}</div>
+            <div class="set-menu-price">{{ (category.convertedMenuPrice / 100)|menu_number(locale) }} {{ currencyDisplay }}</div>
         </div>
         {% if category.menuDescription %}
             <div class="set-menu-desc">{{ category.menuDescription }}</div>
@@ -74,7 +74,7 @@
                         {% endif %}
                         <div class="set-menu-name product-name">{{ pT.name }}</div>
                         {% if product.supplementPrice %}
-                            <div class="set-menu-supplement">+{{ (product.getConvertedSupplementPrice() / 100)|number_format(2) }} {{ currencyDisplay }}</div>
+                            <div class="set-menu-supplement">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }} {{ currencyDisplay }}</div>
                         {% endif %}
                         <div class="set-menu-chevron"><i class="ti ti-chevron-right" aria-hidden="true"></i></div>
                     </div>

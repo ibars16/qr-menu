@@ -54,7 +54,7 @@
                     </div>
                     <div class="front-bottom">
                         <div class="front-price">
-                            {{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}
+                            {{ (product.convertedPrice / 100)|menu_number(locale) }} {{ currency }}
                         </div>
                         <div class="flip-hint">
                             <i class="ti ti-rotate-clockwise" style="font-size:13px" aria-hidden="true"></i>
@@ -77,7 +77,7 @@
                 <div class="back-header">
                     <div class="back-name">{{ translation.name }}</div>
                     <div class="back-price">
-                        {{ (product.convertedPrice / 100)|number_format(2) }} {{ currency }}
+                        {{ (product.convertedPrice / 100)|menu_number(locale) }} {{ currency }}
                     </div>
                 </div>
 
