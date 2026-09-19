@@ -422,7 +422,43 @@
     }
     .dish-row:hover { box-shadow: none; border-color: var(--line-soft); transform: none; }
     .dish-row:active { transform: none; }
-    .row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+    /* align-items: flex-start, not baseline (2026-09-19, owner
+       "profesionalización" pass) — .row-head's two children used to be
+       .front-name and .row-price-col directly; baseline gave a top edge
+       that was close but not exact (measured -2px, name vs. price top —
+       Fraunces' baseline sits slightly below its em-box top, and that
+       offset showed up once .front-name and .row-price were compared
+       baseline-to-baseline). Now .front-name lives inside .row-left
+       alongside "Ver más" and (optionally) .dish-contains, so it's
+       .row-left's own box being aligned against .row-price-col; measured
+       with flex-start, name-top and price-top now land on the exact same
+       pixel (0px diff), tighter than baseline's -2px. The bigger reason
+       for the switch is what baseline never addressed either way: it only
+       pins the TOP, so a short 1-line title next to a tall price+
+       supplement block still left "Ver más" hanging ~30px below the title
+       instead of hugging it — that's fixed by the .row-left regrouping
+       below, not by this align-items change; flex-start here is really
+       just the correct, exact version of the top-alignment baseline was
+       already approximating. */
+    .row-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+    /* Left column of a no-photo row — name, allergen tease, "Ver más" all
+       stacked here (2026-09-19, "profesionalización" pass; previously
+       .front-name was .row-head's own flex child and .dish-contains/
+       .more-hint were its own next SIBLINGS after .row-head closed, so
+       their vertical position was set by .row-head's total flex height —
+       i.e. by whichever of .front-name or .row-price-col was taller, not
+       by .front-name's own height. A short 1-line title next to a tall
+       price+supplement block on the right left "Ver más" stranded ~30px
+       below the title instead of the ~8px .dish-row .more-hint's own
+       margin-top already specifies — dead air, not a deliberate rhythm.
+       Nesting all three under one column makes "Ver más" follow the
+       title's own bottom unconditionally, so the gap is always that same
+       8px regardless of how tall the price column next to it happens to
+       be. min-width: 0 — a flex item's default min-width is its content's
+       natural (unwrapped) size, which for a long dish name could force
+       .row-head wider than the row and squeeze .row-price-col; 0 lets
+       .front-name's own white-space:normal wrapping do its job instead. */
+    .row-left { min-width: 0; }
     .dish-row .front-name {
         font-family: var(--font-display); font-size: calc(18px * var(--font-scale)); font-weight: 500;
         line-height: 1.25; white-space: normal; overflow: visible; text-overflow: clip;

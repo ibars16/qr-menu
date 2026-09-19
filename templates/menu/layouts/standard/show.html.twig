@@ -813,14 +813,16 @@
                                        from the card front (2026-09-05): it stays in the detail
                                        sheet only, same as the photo card below. #}
                                     <div class="row-head">
-                                        <div class="front-name">{{ pT.name }}</div>
+                                        <div class="row-left">
+                                            <div class="front-name">{{ pT.name }}</div>
+                                            {{ _self.dishContains(cardAllergens, locale) }}
+                                            <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
+                                        </div>
                                         <div class="row-price-col">
                                             <div class="row-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
                                             {% if product.supplementPrice %}<div class="row-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}
                                         </div>
                                     </div>
-                                    {{ _self.dishContains(cardAllergens, locale) }}
-                                    <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
                                 {% else %}
                                 <div class="front-img">
                                     {# videoClip requires image too — image is the <video poster> AND
