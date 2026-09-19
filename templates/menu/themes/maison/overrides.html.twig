@@ -274,7 +274,19 @@
        the row's actual right edge and the supplement read as detached
        from it. flex-end makes both lines hug the column's right edge
        instead, which is also the row's right edge, so price+supplement
-       read as one block. */
+       read as one block. gap stays 3px here — this is the column's
+       flex gap between its two direct children (.row-price and
+       .row-supplement), i.e. the price→supplement spacing. It is NOT what
+       spaces BOTELLA/COPA within a multiprice stack were this column ever
+       to hold one — that's an internal grid row-gap on .price-stack itself
+       (8px, unscoped — see the .dish-price/.dish-detail-price 14px
+       override above, which .row-price doesn't match), a separate box
+       nested one level inside .row-price, unaffected by this flex gap
+       either way. Confirmed by injecting a synthetic no-photo multiprice
+       stack and measuring: BOTELLA→COPA held at 8px regardless of this
+       value. See the .row-supplement margin-top rule below (2026-09-19)
+       for the compacted price→supplement spacing, kept separate from this
+       gap on principle even though the two never actually collided. */
     .row-price-col { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
     /* .dish-detail-price already carries its own align-self: flex-start
        (base layout) so it doesn't stretch full-width inside .dish-modal-body's
@@ -303,6 +315,24 @@
     .dish-price-col:has(.price-stack) .dish-supplement,
     .dish-detail-price-wrap:has(.price-stack) .dish-detail-supplement {
         margin-top: 8px;
+    }
+    /* No-photo row, single price only — compact the price→supplement gap
+       without touching .row-price-col's own 3px row-gap (2026-09-19, owner
+       request; targets the .row-supplement line directly instead of an
+       earlier attempt that shrank the whole column's gap — that approach
+       was scoped wider than the ask even though, empirically, it wouldn't
+       have touched BOTELLA/COPA spacing either: see the comment on
+       .row-price-col above). -2px against the inherited 3px gap nets
+       ~1px, measured. `:not(:has(.price-stack))` isn't just belt-and-braces
+       against the multiprice margin-top:8px rule above winning on
+       specificity (3 vs 1 class-level selectors, it already would) — it's
+       there so this rule can never even be a candidate on that element, so
+       nobody has to reason about cascade math to know the two can't ever
+       net against each other, today or if a no-photo multiprice dish shows
+       up later. .dish-supplement (photo card) is untouched — not part of
+       this selector at all. */
+    .row-price-col:not(:has(.price-stack)) .row-supplement {
+        margin-top: -2px;
     }
     .row-supplement, .dish-supplement, .dish-detail-supplement {
         font-family: var(--font-body); font-size: calc(11px * var(--font-scale)); font-weight: 400;
