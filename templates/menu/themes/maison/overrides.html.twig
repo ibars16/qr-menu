@@ -170,8 +170,23 @@
        against the price). 0.55em + 400 is the theme's own smallest/lightest
        combination anywhere near body text; text-transform:uppercase is kept
        so it still reads as a tag rather than trailing off into illegibility
-       at this size. */
-    .dish-price .price-item-label, .dish-detail-price .price-item-label {
+       at this size. .row-price added 2026-09-19 (owner
+       "profesionalización" pass) — .row-price didn't exist yet in 2026-09-16
+       (it's the no-photo row's price element, added later), so it fell back
+       to a standalone rule below .dish-row that only set color/font-family/
+       font-size/letter-spacing (0.7em/0.04em, no text-transform, and no
+       font-weight so it inherited the BASE layout's .price-item-label
+       font-weight:600 — see show.html.twig) — "botella"/"copa" rendered
+       noticeably bigger and bolder there than "BOTELLA"/"COPA" on the photo
+       card, an unintentional divergence rather than a deliberate one. Same
+       18px*scale base font-size on both .dish-price and .row-price (both
+       measured 16.92px pre-scale), so 0.55em computes to the identical
+       9.306px in both places — this merge doesn't just match the *values*,
+       it produces pixel-identical output. The old standalone .row-price
+       .price-item-label rule is removed below; it had nothing this rule
+       doesn't already cover (checked: only those 4 properties, all
+       superseded). */
+    .dish-price .price-item-label, .dish-detail-price .price-item-label, .row-price .price-item-label {
         color: var(--fg-2); font-family: var(--font-body); font-size: 0.55em; font-weight: 400;
         letter-spacing: 0.07em; text-transform: uppercase;
     }
@@ -467,7 +482,9 @@
         font-family: var(--font-display); font-size: calc(18px * var(--font-scale)); font-weight: 500;
         color: var(--cn); white-space: nowrap; flex-shrink: 0;
     }
-    .row-price .price-item-label { color: var(--fg-2); font-family: var(--font-body); font-size: 0.7em; letter-spacing: 0.04em; }
+    /* .price-item-label styling for .row-price now lives with its
+       .dish-price/.dish-detail-price siblings above (2026-09-19) — unified
+       micro-tag typography, see the comment there. */
     .row-price .price-item-value { color: var(--cn); }
     /* Description dropped from .dish-row's front (2026-09-05, see
        conversation) for the same reason as the photo card's .front-desc
