@@ -252,6 +252,7 @@
                                     </div>
                                     <div class="product-info">
                                         <div class="product-name">{{ pName }}</div>
+                                        {% include 'admin/_product_menu_notice.html.twig' %}
                                     </div>
                                     <div class="product-price">
                                         <span class="price-amount">{{ (product.basePrice / 100)|number_format(2) }}</span>

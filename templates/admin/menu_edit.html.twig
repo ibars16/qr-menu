@@ -199,6 +199,7 @@
                                         {% if product.supplementPrice %} · +{{ (product.supplementPrice / 100)|number_format(2) }} {{ restaurant.currency }}{% endif %}
                                         · <span class="dish-status product-status">{{ product.isActive ? 'product.visible'|trans({}, 'admin_menu') : 'product.hidden'|trans({}, 'admin_menu') }}</span>
                                     </div>
+                                    {% include 'admin/_product_menu_notice.html.twig' %}
                                 </div>
                                 <button class="toggle {{ product.isActive ? 'on' : '' }}"
                                         onclick="event.stopPropagation(); toggleProduct({{ product.id }}, this)"

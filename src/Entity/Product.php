@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\Trait\TimestampableTrait;
+use App\Enum\MenuHiddenReason;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -500,6 +501,49 @@ class Product
     public function isSafeToDisplay(): bool
     {
         return $this->menuSection !== null || $this->basePrice > 0;
+    }
+
+    /**
+     * Single read-only answer to "is this dish on the public menu?" — null
+     * when it is, otherwise the FIRST reason it isn't. It mirrors, and does
+     * not replace, the checks the public render applies today (see
+     * MenuController::renderMenu(), Category::getActiveProductsSorted() /
+     * getActiveSectionsWithProducts(), show.html.twig, _set_menu.html.twig):
+     * category active, dish active, isSafeToDisplay() (a fixed-price-menu
+     * dish is already exempt from the €0 rule there, so this needs no
+     * special case), and a translation to show.
+     *
+     * The translation check is locale-independent on purpose: every
+     * template resolves the name as exact locale → restaurant default →
+     * translations.first, so it only comes up empty when the collection
+     * itself is empty. "Has any translation" is therefore the whole rule,
+     * for the dish and for its category.
+     *
+     * Reasons are ordered outermost first (category, dish, price,
+     * translation), so a dish in a hidden category reports that even if it
+     * is also hidden itself.
+     */
+    public function menuHiddenReason(): ?MenuHiddenReason
+    {
+        if (!$this->category->isActive()) {
+            return MenuHiddenReason::CategoryHidden;
+        }
+        if (!$this->active) {
+            return MenuHiddenReason::ProductHidden;
+        }
+        if (!$this->isSafeToDisplay()) {
+            return MenuHiddenReason::PriceZero;
+        }
+        if ($this->translations->isEmpty() || $this->category->getTranslations()->isEmpty()) {
+            return MenuHiddenReason::NoTranslation;
+        }
+
+        return null;
+    }
+
+    public function isShownOnMenu(): bool
+    {
+        return $this->menuHiddenReason() === null;
     }
 
     public function getPosition(): int

@@ -139,6 +139,11 @@ notice:
 product:
     add_to_category: 'Add dish to %category%'
     hidden: Hidden
+    hidden_reason:
+        category_hidden: its category is hidden
+        no_translation: it has no translation
+        price_zero: its price is 0
+    not_on_menu: 'Not shown on your menu: %reason%'
     toggle_aria: Toggle dish visibility
     visible: Visible
 

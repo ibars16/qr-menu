@@ -5,7 +5,8 @@
    tags, Smart Waiter recommend, allergens, help popovers, Tom Select) —
    shared by the Carta screen (menu.html.twig) and the Menús edit screen
    (menu_edit.html.twig), which both `{% include %}` this INSIDE their own
-   <style> block (this file has no <style> tag of its own).
+   <style> block (this file has no <style> tag of its own). The last block,
+   .menu-notice, styles the dish-row indicator both screens share.
 
    Extracted so both screens style the same markup identically, one source —
    before this, menu_edit.html.twig only had the generic modal/sheet/field
@@ -922,3 +923,21 @@
 @media (min-width: 768px) {
     .sheet-overlay { display:none !important; }
 }
+
+/* ══════════════════════════════
+   "NOT ON THE MENU" NOTICE (dish rows — see _product_menu_notice.html.twig)
+   Text is --tx-3, NOT --tx-muted: the row sits on the page background and
+   gets a --bg-hover fill on hover, and --tx-muted measures 4.43:1 (light,
+   page) / 4.04:1 (light, hover) / 4.46:1 (dark, hover) there. --tx-3 stays
+   >= 4.69:1 on every row surface in both themes. Never --tx-5/6/7 (fail AA).
+   The icon reuses the --brand attention tint of the missing-photo banner.
+   Only rendered for an active dish, so it never sits inside an .inactive
+   (opacity 0.4) row on load — but toggleProduct() can make the row inactive
+   without a reload, and a hidden dish already reads "Oculto", so hide it then.
+══════════════════════════════ */
+.menu-notice {
+    display:flex; align-items:flex-start; gap:var(--sp-1); margin-top:2px;
+    font-size:var(--fs-xs); line-height:1.35; color:var(--tx-3);
+}
+.menu-notice i { font-size:var(--fs-sm); line-height:1.2; color:var(--brand); flex-shrink:0; }
+.product-row.inactive .menu-notice { display:none; }

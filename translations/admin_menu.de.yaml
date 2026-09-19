@@ -139,6 +139,11 @@ notice:
 product:
     add_to_category: 'Gericht zu %category% hinzufügen'
     hidden: Ausgeblendet
+    hidden_reason:
+        category_hidden: die Kategorie ist ausgeblendet
+        no_translation: keine Übersetzung
+        price_zero: der Preis ist 0
+    not_on_menu: 'Nicht in der Speisekarte sichtbar: %reason%'
     toggle_aria: Gerichtsichtbarkeit umschalten
     visible: Sichtbar
 

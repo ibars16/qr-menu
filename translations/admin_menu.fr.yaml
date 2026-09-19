@@ -139,6 +139,11 @@ notice:
 product:
     add_to_category: 'Ajouter un plat à %category%'
     hidden: Masqué
+    hidden_reason:
+        category_hidden: sa catégorie est masquée
+        no_translation: aucune traduction
+        price_zero: son prix est à 0
+    not_on_menu: 'Non affiché dans la carte : %reason%'
     toggle_aria: Activer/désactiver le plat
     visible: Visible
 

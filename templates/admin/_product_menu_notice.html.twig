@@ -1,0 +1,16 @@
+{# templates/admin/_product_menu_notice.html.twig
+
+   "Marked visible, but not on the public menu" indicator for a dish row —
+   shared by the Carta screen (menu.html.twig) and the Menús edit screen
+   (menu_edit.html.twig). Expects `product`. Renders nothing unless the dish
+   is active AND Product::menuHiddenReason() says the public menu won't show
+   it: a dish the owner hid on purpose already reads "Oculto" honestly, so
+   it gets no notice. Purely informational (no interaction); the dish's own
+   toggle is untouched. Styled by .menu-notice in _product_modal_css.html.twig. #}
+{% set hiddenReason = product.isActive ? product.menuHiddenReason : null %}
+{% if hiddenReason %}
+    <div class="menu-notice" role="note">
+        <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+        <span>{{ 'product.not_on_menu'|trans({'%reason%': ('product.hidden_reason.' ~ hiddenReason.value)|trans({}, 'admin_menu')}, 'admin_menu') }}</span>
+    </div>
+{% endif %}

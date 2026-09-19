@@ -139,6 +139,11 @@ notice:
 product:
     add_to_category: 'Aggiungi piatto a %category%'
     hidden: Nascosto
+    hidden_reason:
+        category_hidden: la categoria è nascosta
+        no_translation: nessuna traduzione
+        price_zero: il prezzo è 0
+    not_on_menu: 'Non compare nel menu: %reason%'
     toggle_aria: Attiva/disattiva piatto
     visible: Visibile
 

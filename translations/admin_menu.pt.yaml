@@ -139,6 +139,11 @@ notice:
 product:
     add_to_category: 'Adicionar prato a %category%'
     hidden: Oculto
+    hidden_reason:
+        category_hidden: a categoria está oculta
+        no_translation: sem tradução
+        price_zero: o preço é 0
+    not_on_menu: 'Não aparece no cardápio: %reason%'
     toggle_aria: Ativar/desativar prato
     visible: Visível
 
