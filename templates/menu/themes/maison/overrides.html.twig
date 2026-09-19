@@ -261,8 +261,21 @@
        instead of the two price-block lines sharing one left edge with the
        title. flex-start makes both lines hug the column's left edge —
        already how .dish-detail-price-wrap (detail sheet) was set, unaffected
-       here. */
-    .row-price-col, .dish-price-col { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+       here. This is the photo-card column only — .dish-price sits under
+       .front-name, left-aligned with it. */
+    .dish-price-col { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+    /* .row-price-col is the NO-photo row's column (2026-09-19, owner
+       request) — split out from .dish-price-col above because it's the
+       opposite case: this block sits at the RIGHT of .row-head, in line
+       with the title, not under a left-aligned title. flex-start there
+       left the shorter price line flush with the column's own left edge
+       while the column itself is sized to its widest child (the longer
+       "Suplemento · +X,XX" line), so the price floated with a gap before
+       the row's actual right edge and the supplement read as detached
+       from it. flex-end makes both lines hug the column's right edge
+       instead, which is also the row's right edge, so price+supplement
+       read as one block. */
+    .row-price-col { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
     /* .dish-detail-price already carries its own align-self: flex-start
        (base layout) so it doesn't stretch full-width inside .dish-modal-body's
        column flex — that self-alignment travels fine onto its new wrapper's
