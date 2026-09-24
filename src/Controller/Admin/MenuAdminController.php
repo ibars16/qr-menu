@@ -162,6 +162,18 @@ class MenuAdminController extends AbstractController
             $categories
         ));
 
+        // Same scope and same shape as $missingPhotoCount. "Active but not on
+        // the public menu" is exactly the per-row notice's own condition
+        // (admin/_product_menu_notice.html.twig) — one Product::menuHiddenReason()
+        // decides both, so the banner's N always equals the rows carrying a notice.
+        $notOnMenuCount = array_sum(array_map(
+            static fn(Category $c) => count(array_filter(
+                $c->getProducts()->toArray(),
+                static fn(Product $p) => $p->isActive() && $p->menuHiddenReason() !== null
+            )),
+            $categories
+        ));
+
         return $this->render('admin/menu.html.twig', [
             'restaurant'         => $restaurant,
             'categories'         => $categories,
@@ -170,6 +182,7 @@ class MenuAdminController extends AbstractController
             'allergens'          => $this->allergenRepository->findAllOrdered(),
             'totalProducts'      => $totalProducts,
             'missingPhotoCount'  => $missingPhotoCount,
+            'notOnMenuCount'     => $notOnMenuCount,
         ]);
     }
 

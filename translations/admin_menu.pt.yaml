@@ -135,6 +135,8 @@ modal:
 notice:
     missing_photos_singular: '%count% prato sem foto no seu cardápio'
     missing_photos_plural: '%count% pratos sem foto no seu cardápio'
+    not_on_menu_singular: '%count% prato não aparece no seu cardápio'
+    not_on_menu_plural: '%count% pratos não aparecem no seu cardápio'
 
 product:
     add_to_category: 'Adicionar prato a %category%'

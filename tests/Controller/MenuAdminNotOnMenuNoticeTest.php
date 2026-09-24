@@ -221,4 +221,51 @@ final class MenuAdminNotOnMenuNoticeTest extends WebTestCase
         self::assertNull($this->notice($page, $this->ids['menu_price_zero_ok']));
         self::assertNull($this->notice($page, $this->ids['menu_hidden_by_owner']));
     }
+
+    private function bannerText(Crawler $page): ?string
+    {
+        $banner = $page->filter('#not-on-menu-banner');
+
+        return $banner->count() === 0 ? null : trim(preg_replace('/\s+/', ' ', $banner->text()));
+    }
+
+    private function removeDish(string $key): void
+    {
+        $this->em->remove($this->em->getRepository(Product::class)->find($this->ids[$key]));
+        $this->em->flush();
+        // Fresh graph for the next request — see setUp()'s clear().
+        $this->em->clear();
+    }
+
+    public function testBannerCountsExactlyTheDishesThatCarryANotice(): void
+    {
+        $page = $this->client->request('GET', '/admin/menu');
+        self::assertResponseIsSuccessful();
+
+        // Carta only: price_zero, no_translation and in_hidden_category. Not
+        // the visible dish, not the one the owner hid, not the fixed-price
+        // menus' dishes (a separate screen).
+        self::assertSame('3 platos no se muestran en tu carta', $this->bannerText($page));
+        self::assertSame(
+            3,
+            $page->filter('.product-row .menu-notice')->count(),
+            "the banner's N must equal the number of rows carrying a notice",
+        );
+    }
+
+    public function testBannerUsesTheSingularForOneDishAndDisappearsAtZero(): void
+    {
+        $this->removeDish('price_zero');
+        $this->removeDish('no_translation');
+
+        $page = $this->client->request('GET', '/admin/menu');
+        self::assertSame('1 plato no se muestra en tu carta', $this->bannerText($page));
+
+        $this->removeDish('in_hidden_category');
+
+        $page = $this->client->request('GET', '/admin/menu');
+        self::assertResponseIsSuccessful();
+        self::assertNull($this->bannerText($page), 'no offending dish left: no banner at all');
+        self::assertCount(0, $page->filter('.product-row .menu-notice'));
+    }
 }

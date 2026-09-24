@@ -135,6 +135,8 @@ modal:
 notice:
     missing_photos_singular: '%count% dish without a photo in your menu'
     missing_photos_plural: '%count% dishes without a photo in your menu'
+    not_on_menu_singular: '%count% dish is not shown on your menu'
+    not_on_menu_plural: '%count% dishes are not shown on your menu'
 
 product:
     add_to_category: 'Add dish to %category%'

@@ -31,12 +31,13 @@
         ══════════════════════════════ */
         .menu-wrap { max-width: 860px; }
 
-        /* Missing-photo notice — same visual language as the static
-           .info-banner in tags.html.twig/users.html.twig, but this one is a
-           real <button> (not a <div>) since it's actionable: clicking it
-           highlights every dish missing a photo and scrolls to the first
-           one, it doesn't just inform. Only rendered when
-           missingPhotoCount > 0 (see body block below). */
+        /* Summary notices above the list (missing photo, not on the public
+           menu) — same visual language as the static .info-banner in
+           tags.html.twig/users.html.twig, but these are real <button>s (not
+           <div>s) since they're actionable: clicking one highlights every
+           dish it counts and scrolls to the first one, it doesn't just
+           inform. Each is only rendered when its own count > 0
+           (missingPhotoCount / notOnMenuCount, see body block below). */
         .info-banner {
             width:100%; text-align:left; font-family:inherit; appearance:none;
             background:var(--bg-nav); border:1px solid var(--bd-1); border-radius:var(--r-md);
@@ -47,7 +48,8 @@
         }
         .info-banner:hover { border-color:var(--bd-2); background:var(--bg-hover); }
         .info-banner:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
-        .info-banner i.ti-photo-off {
+        .info-banner i.ti-photo-off,
+        .info-banner i.ti-eye-off {
             font-size:15px; flex-shrink:0; color:var(--brand);
             width:28px; height:28px; border-radius:var(--r-pill); background:rgba(193,68,14,0.12);
             display:flex; align-items:center; justify-content:center;
@@ -55,10 +57,11 @@
         .info-banner span.info-banner-text { flex:1; }
         .info-banner i.ti-chevron-right { font-size:14px; flex-shrink:0; color:var(--tx-6); }
 
-        /* Highlight applied on click to every .product-row missing a photo
-           (see highlightMissingPhotos() below) — outline instead of a
-           background-only change so it stays visible on both the active
-           and .inactive (opacity:0.4) row states. */
+        /* Highlight applied on click of either summary banner (see
+           highlightRows() below) to the rows it counts — missing a photo,
+           or not on the public menu. One shared look, one class.
+           Outline instead of a background-only change so it stays visible
+           on both the active and .inactive (opacity:0.4) row states. */
         .product-row.highlight-missing-photo {
             outline:2px solid var(--brand); outline-offset:2px; background:var(--bg-hover);
         }
@@ -179,6 +182,17 @@
 
 {% block body %}
     <div class="menu-wrap">
+
+        {# Above the photo banner: dishes customers can't see at all matter more than dishes without a picture. #}
+        {% if notOnMenuCount > 0 %}
+            <button type="button" class="info-banner" id="not-on-menu-banner" onclick="highlightNotOnMenu()">
+                <i class="ti ti-eye-off" aria-hidden="true"></i>
+                <span class="info-banner-text">
+                    {{ (notOnMenuCount == 1 ? 'notice.not_on_menu_singular' : 'notice.not_on_menu_plural')|trans({'%count%': notOnMenuCount}, 'admin_menu') }}
+                </span>
+                <i class="ti ti-chevron-right" aria-hidden="true"></i>
+            </button>
+        {% endif %}
 
         {% if missingPhotoCount > 0 %}
             <button type="button" class="info-banner" id="missing-photo-banner" onclick="highlightMissingPhotos()">
@@ -460,21 +474,46 @@
             }
         }
 
-        // Missing-photo banner (see #missing-photo-banner above) — a dish
-        // row is "missing a photo" client-side exactly the same way the
-        // server decided it for the banner's own count: no <img> inside its
-        // .product-thumb (the template only renders one when product.image
-        // is set, see the fallback plate emoji a few lines up). Highlights
-        // every match and scrolls to the first one; no un-highlight timer on
-        // purpose — leaving it visible is more useful than fading it, and a
-        // page reload naturally clears it.
-        function highlightMissingPhotos() {
-            const rows = Array.from(document.querySelectorAll('.product-row'))
-                .filter(row => !row.querySelector('.product-thumb img'));
+        // Dish-row highlighting shared by the two summary banners above the
+        // list (#not-on-menu-banner, #missing-photo-banner). Each banner
+        // only decides WHICH rows (its own filter, below); marking them,
+        // scrolling to the first and the no-timer/no-toggle behavior are
+        // this one function. It clears any existing highlight first, so
+        // pressing one banner after the other never leaves two marks with
+        // different meanings on screen; pressing the same one twice just
+        // re-marks (and re-scrolls). No un-highlight timer on purpose —
+        // leaving it visible is more useful than fading it, and a page
+        // reload naturally clears it. (The class keeps its original
+        // "missing-photo" name: it is the one shared look, see its CSS.)
+        function highlightRows(rows) {
+            document.querySelectorAll('.product-row.highlight-missing-photo')
+                .forEach(row => row.classList.remove('highlight-missing-photo'));
             rows.forEach(row => row.classList.add('highlight-missing-photo'));
             if (rows.length > 0) {
                 rows[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
+        }
+
+        // Missing-photo banner (see #missing-photo-banner above) — a dish
+        // row is "missing a photo" client-side exactly the same way the
+        // server decided it for the banner's own count: no <img> inside its
+        // .product-thumb (the template only renders one when product.image
+        // is set, see the fallback plate emoji a few lines up).
+        function highlightMissingPhotos() {
+            highlightRows(Array.from(document.querySelectorAll('.product-row'))
+                .filter(row => !row.querySelector('.product-thumb img')));
+        }
+
+        // Not-on-the-menu banner (see #not-on-menu-banner above) — a row
+        // is one of these exactly when the server rendered its per-row
+        // .menu-notice (active dish that Product::menuHiddenReason() says
+        // the public menu won't show), the same condition that produced the
+        // banner's count. A row the owner has since toggled off (.inactive,
+        // no reload) keeps its now-hidden notice in the DOM but reads
+        // "Oculto" honestly, so it is skipped, matching the notice's own CSS.
+        function highlightNotOnMenu() {
+            highlightRows(Array.from(document.querySelectorAll('.product-row'))
+                .filter(row => !row.classList.contains('inactive') && row.querySelector('.menu-notice')));
         }
     </script>
 {% endblock %}

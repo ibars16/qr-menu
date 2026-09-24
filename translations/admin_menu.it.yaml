@@ -135,6 +135,8 @@ modal:
 notice:
     missing_photos_singular: '%count% piatto senza foto nel tuo menu'
     missing_photos_plural: '%count% piatti senza foto nel tuo menu'
+    not_on_menu_singular: '%count% piatto non compare nel tuo menu'
+    not_on_menu_plural: '%count% piatti non compaiono nel tuo menu'
 
 product:
     add_to_category: 'Aggiungi piatto a %category%'
