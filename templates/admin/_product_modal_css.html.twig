@@ -244,9 +244,17 @@
 }
 .field input::placeholder, .field textarea::placeholder { color:var(--tx-7); }
 .field input:focus, .field textarea:focus, .field select:focus { border-color:var(--tx-5); }
-.field input.error { border-color:rgba(240,100,80,0.6); }
-.field-error { font-size:11px; color:#F0997B; margin-top:2px; display:none; }
+.field input.error { border-color:var(--err-border); }
+.field-error { font-size:11px; color:var(--err-text); margin-top:2px; display:none; }
 .field-error.show { display:block; }
+
+/* Category step's own required-field notice (#cat-select-error in
+   _cat_select.html.twig) — same token, same AA scope note as .field-error
+   above (see base.html.twig). Only the color moved here: the show/hide
+   toggle stays exactly as it was, done inline via style.display in
+   ProductUI.goStep2()/the cat-card click handler (_product_js.html.twig),
+   untouched by this rule. */
+.cat-select-error { color:var(--err-text); }
 /* min-height, not a fixed height — a real dish description can run
    longer than 3-4 lines, and the previous height:76px + resize:none
    combination gave no way to see more of it than an internally-scrolled

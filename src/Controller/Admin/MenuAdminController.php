@@ -789,6 +789,31 @@ class MenuAdminController extends AbstractController
             }
         }
 
+        // Name and price are validated up front — before any scalar setter
+        // or the first flush() (the ingredients block further down) — same
+        // "clean 400, nothing ever written" rule the nutrition/price-variants
+        // checks below already follow. Product::$basePrice is a non-nullable,
+        // no-default typed int: for a brand-new Product (already persist()ed
+        // above, never flushed), reaching flush() without ever calling
+        // setBasePrice() throws an uncaught Error (uninitialized typed
+        // property) — a raw API call omitting/blanking the field, bypassing
+        // the admin JS's own validateProduct(), would otherwise 500 instead
+        // of getting a clean rejection. Deliberately no ">0" rule here: a
+        // normal dish priced at 0 is still guarded elsewhere (see
+        // Product::isSafeToDisplay()/menuHiddenReason()) and the admin JS
+        // already rejects <=0 on its own — this only closes the "missing
+        // price entirely" gap, per the product decision to leave that
+        // client-side threshold alone.
+        $defaultLocale = $restaurant->getDefaultLanguage();
+        $nameInput     = trim((string) ($data['translations'][$defaultLocale]['name'] ?? ''));
+        if ($nameInput === '') {
+            return $this->json(['error' => $this->translator->trans('field_error.name_required', domain: 'admin_menu')], 400);
+        }
+        $rawBasePrice = $data['basePrice'] ?? null;
+        if ($rawBasePrice === null || $rawBasePrice === '' || !is_numeric($rawBasePrice)) {
+            return $this->json(['error' => $this->translator->trans('field_error.price_required', domain: 'admin_menu')], 400);
+        }
+
         // Scalar fields
         if (isset($data['basePrice'])) {
             $product->setBasePrice((int) round((float)$data['basePrice'] * 100));
@@ -867,7 +892,8 @@ class MenuAdminController extends AbstractController
         // A change to it invalidates every AI-generated translation of this
         // product (see ProductTranslationService::invalidateStale) so they
         // regenerate from the new text instead of staying stale forever.
-        $defaultLocale = $restaurant->getDefaultLanguage();
+        // ($defaultLocale itself was already resolved above, for the
+        // up-front name/price validation.)
         $sourceChanged = false;
 
         foreach ($data['translations'] ?? [] as $locale => $trans) {

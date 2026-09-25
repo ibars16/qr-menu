@@ -274,6 +274,38 @@
         return v === '' || NUTRITION_GRAMS_PATTERN.test(v);
     }
 
+    // Shared by validateProduct() (on Guardar) and the live-clear listeners
+    // below (while typing) — one rule, so a value that keeps the Guardar
+    // check from firing is exactly the same value that clears an
+    // already-shown error. Price's own "empty" includes <=0, same threshold
+    // this form has always used (see ProductVisibilityTest for why the
+    // public menu treats a normal dish's own €0 differently — that's a
+    // separate, deliberately-untouched rule, not this one).
+    function isRequiredFieldEmpty(fid, rawVal) {
+        const val = (rawVal ?? '').trim();
+        return !val || (fid === 'p-price' && parseFloat(val) <= 0);
+    }
+
+    // Clears an already-shown "required" error the moment the field STOPS
+    // being invalid — it never shows a NEW error while typing (validation
+    // itself still only ever runs on Guardar, inside validateProduct()
+    // below), it only ever removes one already on screen. Bound once at
+    // script load: #p-name/#p-price are static markup, never re-created
+    // (unlike price-variant rows), and each id exists twice in the DOM
+    // (desktop modal + mobile sheet — see panelEl()'s own doc), so both
+    // copies get their own listener rather than relying on activePanel()
+    // scoping — the input that actually fired the event is the one whose
+    // .error class needs clearing, regardless of which of the two is open.
+    [['p-name','p-name-error'],['p-price','p-price-error']].forEach(([fid, eid]) => {
+        document.querySelectorAll('[id="' + fid + '"]').forEach(input => {
+            input.addEventListener('input', () => {
+                if (isRequiredFieldEmpty(fid, input.value)) return;
+                input.classList.remove('error');
+                panelEl(eid)?.classList.remove('show');
+            });
+        });
+    });
+
     function validateProduct() {
         let ok = true;
         // First invalid field's tab — whichever fails first (name/price
@@ -282,8 +314,7 @@
         let errorTab = null, errorField = null;
 
         [['p-name','p-name-error'],['p-price','p-price-error']].forEach(([fid,eid]) => {
-            const val = panelEl(fid)?.value?.trim();
-            const empty = !val || (fid === 'p-price' && parseFloat(val) <= 0);
+            const empty = isRequiredFieldEmpty(fid, panelEl(fid)?.value);
             panelEl(eid)?.classList.toggle('show', empty);
             panelEl(fid)?.classList.toggle('error', empty);
             if (empty) {

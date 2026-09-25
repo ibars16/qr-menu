@@ -36,6 +36,19 @@
                rungs of the grayscale, which are not guaranteed AA. */
             --tx-muted:      #7e7e7e;
 
+            /* Required-field error state — product editor only (.field-error,
+               input.error, #cat-select-error in _product_modal_css.html.twig/
+               _cat_select.html.twig). Deliberately NOT used by .flash-error/
+               .toast.error/.btn-danger:hover, which keep their own #F0997B —
+               those measure below AA on the light surfaces this scope
+               targets and are out of scope here (existing debt, untouched).
+               Measured against the editor's own real surfaces: --err-text on
+               --bg-card (.panel-body's background) is 8.38:1 here in dark;
+               --err-border on --bg-input (.field input's own background) is
+               5.29:1. Light-mode values differ from dark — see html.light. */
+            --err-text:      #F0997B;
+            --err-border:    #D9704E;
+
             /* ── Type scale ── */
             --fs-xs:         11px;
             --fs-sm:         12px;
@@ -96,6 +109,15 @@
             /* Secondary text — same role as dark mode, recalibrated: the
                dark-mode hex is too light to pass AA on white/near-white. */
             --tx-muted:      #707070;
+
+            /* Required-field error state — same recalibration as --tx-muted
+               above and the same scope note (see :root). The dark-mode
+               values measure 2.11:1 (--err-text on --bg-card) / 2.86:1
+               (--err-border on --bg-input) here — far under AA — so light
+               mode gets its own darker values: --err-text on --bg-card is
+               6.34:1, --err-border on --bg-input is 5.16:1. */
+            --err-text:      #A8341B;
+            --err-border:    #B33A1F;
 
             /* ── Elevation — much lower opacity than dark mode: on a light
                    surface a dark-mode-strength shadow reads as a muddy
