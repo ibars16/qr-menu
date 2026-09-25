@@ -143,13 +143,14 @@ product:
     hidden: Hidden
     hidden_reason:
         category_hidden: its category is hidden
-        no_translation: it has no translation
+        no_translation: it has no name
         price_zero: its price is 0
     not_on_menu: 'Not shown on your menu: %reason%'
     toggle_aria: Toggle dish visibility
     visible: Visible
 
 spicy:
+    clear: 'Remove spiciness'
     aria: 'Spice level %level%'
     none: Not spicy
     mild: 'Mild 🌶'
@@ -170,7 +171,16 @@ tab:
     allergens: Allergens
 
 tags:
-    none_configured: 'No tags configured yet — %link_start%create some in Tags%link_end% so you can mark dishes as Vegetarian, Gluten-free, etc.'
+    emoji_group:
+        diet: 'Diet & allergens'
+        food: 'Food'
+        drinks: 'Drinks'
+        featured: 'Highlights'
+    emoji_custom: 'Or paste any emoji and press Enter'
+    new_icon: 'Icon (emoji)'
+    add: 'New tag'
+    new_placeholder: 'Tag name'
+    create_error: "Couldn't create the tag"
 
 smart_waiter:
     section_title: Recommended

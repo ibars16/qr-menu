@@ -143,13 +143,14 @@ product:
     hidden: Nascosto
     hidden_reason:
         category_hidden: la categoria è nascosta
-        no_translation: nessuna traduzione
+        no_translation: non ha un nome
         price_zero: il prezzo è 0
     not_on_menu: 'Non compare nel menu: %reason%'
     toggle_aria: Attiva/disattiva piatto
     visible: Visibile
 
 spicy:
+    clear: 'Rimuovi piccante'
     aria: 'Livello di piccantezza %level%'
     none: Non piccante
     mild: 'Delicato 🌶'
@@ -170,7 +171,16 @@ tab:
     allergens: Allergeni
 
 tags:
-    none_configured: 'Nessuna etichetta configurata — %link_start%creale in Etichette%link_end% per contrassegnare i piatti come Vegetariano, Senza glutine, ecc.'
+    emoji_group:
+        diet: 'Dieta e allergeni'
+        food: 'Cibo'
+        drinks: 'Bevande'
+        featured: 'In evidenza'
+    emoji_custom: 'Oppure incolla un emoji e premi Invio'
+    new_icon: 'Icona (emoji)'
+    add: 'Nuova etichetta'
+    new_placeholder: 'Nome dell’etichetta'
+    create_error: "Impossibile creare l’etichetta"
 
 smart_waiter:
     section_title: Consigliato

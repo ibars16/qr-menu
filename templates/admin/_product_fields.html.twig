@@ -278,38 +278,89 @@
                pips below: turning a pip on sets this pill on (and off↔off), and
                toggling this pill on sets the level to 1 if it was 0. Same signal,
                shown two ways, so they can never end up saying different things. #}
-            {% if genericTags|length > 0 %}
-                <div class="field">
-                    <label class="field-label">
-                        {{ 'field.tags'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
-                    </label>
-                    <div class="tag-pills">
-                        {% for tag in genericTags %}
-                            {% set tagT = null %}
-                            {% for tr in tag.translations %}
-                                {% if tr.locale == locale %}{% set tagT = tr %}{% endif %}
-                            {% endfor %}
-                            {% if tagT %}
-                                <div class="tag-pill"
-                                     data-tag-id="{{ tag.id }}"
-                                     data-tag-code="{{ tag.code }}"
-                                     onclick="toggleTagPill(this)"
-                                     role="checkbox"
-                                     aria-checked="false">
-                                    {{ tag.icon }} {{ tagT.name }}
-                                </div>
-                            {% endif %}
+            <div class="field">
+                <label class="field-label">
+                    {{ 'field.tags'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
+                </label>
+                <div class="tag-pills">
+                    {% for tag in genericTags %}
+                        {% set tagT = null %}
+                        {% for tr in tag.translations %}
+                            {% if tr.locale == locale %}{% set tagT = tr %}{% endif %}
                         {% endfor %}
+                        {% if tagT %}
+                            <div class="tag-pill"
+                                 data-tag-id="{{ tag.id }}"
+                                 data-tag-code="{{ tag.code }}"
+                                 onclick="toggleTagPill(this)"
+                                 role="checkbox"
+                                 aria-checked="false">
+                                {{ tag.icon }} {{ tagT.name }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    {# Inline "create a tag without leaving the dish" — POSTs to
+                       TagsController::create() (same endpoint as the Etiquetas
+                       screen, so the tag belongs to this restaurant and shows up
+                       there too), then adds + selects the new pill in every copy
+                       of this partial. See startNewTag()/saveNewTag() in
+                       _product_js.html.twig. #}
+                    <button type="button" class="tag-pill tag-pill-add" onclick="startNewTag(this)">
+                        <i class="ti ti-plus" aria-hidden="true"></i> {{ 'tags.add'|trans({}, 'admin_menu') }}
+                    </button>
+                    <div class="tag-new" hidden>
+                        {# Emoji selector: a trigger showing the current icon; clicking it
+                           opens .tag-emoji-pop, a grouped grid plus a free field for any
+                           other emoji. The chosen icon lives in the trigger's data-icon
+                           (read by saveNewTag()). See the Tags JS block in
+                           _product_js.html.twig. #}
+                        <div class="tag-emoji-picker">
+                            <button type="button" class="tag-emoji-trigger" data-icon="🏷️"
+                                    onclick="toggleTagEmojiPop(this)" aria-haspopup="true" aria-expanded="false"
+                                    title="{{ 'tags.new_icon'|trans({}, 'admin_menu') }}"
+                                    aria-label="{{ 'tags.new_icon'|trans({}, 'admin_menu') }}">
+                                <span class="tag-emoji-current">🏷️</span>
+                                <i class="ti ti-chevron-down" aria-hidden="true"></i>
+                            </button>
+                            <div class="tag-emoji-pop" hidden role="dialog" aria-label="{{ 'tags.new_icon'|trans({}, 'admin_menu') }}">
+                                {% set emojiGroups = {
+                                    'tags.emoji_group.diet':     ['🌱','🥬','🌾','🥛','🥜','🥚','🌶️','🧄'],
+                                    'tags.emoji_group.food':     ['🐟','🦐','🥩','🐷','🍗','🍄','🧀','🍋','🍯','🍰','🍫'],
+                                    'tags.emoji_group.drinks':   ['🍷','🍺','🍸','☕'],
+                                    'tags.emoji_group.featured': ['⭐','❤️','🔥','🆕','👶','🏠','🏷️'],
+                                } %}
+                                {% for groupKey, emojis in emojiGroups %}
+                                    <div class="tag-emoji-group">{{ groupKey|trans({}, 'admin_menu') }}</div>
+                                    <div class="tag-emoji-grid">
+                                        {% for e in emojis %}
+                                            <button type="button" class="tag-emoji-opt" onclick="pickTagEmoji(this)">{{ e }}</button>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                                <div class="tag-emoji-custom">
+                                    <input type="text" class="tag-emoji-custom-input" maxlength="10"
+                                           placeholder="{{ 'tags.emoji_custom'|trans({}, 'admin_menu') }}"
+                                           onkeydown="onTagEmojiCustomKey(event, this)">
+                                </div>
+                            </div>
+                        </div>
+                        <input type="text" class="tag-new-input" maxlength="50"
+                               placeholder="{{ 'tags.new_placeholder'|trans({}, 'admin_menu') }}"
+                               aria-label="{{ 'tags.new_placeholder'|trans({}, 'admin_menu') }}"
+                               onkeydown="onNewTagKey(event, this)">
+                        <button type="button" class="tag-new-ok" onclick="saveNewTag(this)"
+                                title="{{ 'tags.add'|trans({}, 'admin_menu') }}"
+                                aria-label="{{ 'tags.add'|trans({}, 'admin_menu') }}">
+                            <i class="ti ti-check" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="tag-new-cancel" onclick="closeNewTag(this)"
+                                title="{{ 'action.cancel'|trans({}, 'admin_menu') }}"
+                                aria-label="{{ 'action.cancel'|trans({}, 'admin_menu') }}">
+                            <i class="ti ti-x" aria-hidden="true"></i>
+                        </button>
                     </div>
                 </div>
-            {% else %}
-                <div style="font-size:12px;color:var(--tx-6);padding:8px 12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--bd-1)">
-                    {{ 'tags.none_configured'|trans({
-                        '%link_start%': '<a href="' ~ path('admin_tags') ~ '" style="color:var(--tx-3)">',
-                        '%link_end%': '</a>',
-                    }, 'admin_menu')|raw }}
-                </div>
-            {% endif %}
+            </div>
 
             {# Picante — opcional #}
             <div class="field">
@@ -326,6 +377,11 @@
                              aria-label="{{ 'spicy.aria'|trans({'%level%': i}, 'admin_menu') }}"><span class="chili">🌶</span></div>
                     {% endfor %}
                     <span class="spicy-text">{{ 'spicy.none'|trans({}, 'admin_menu') }}</span>
+                    {# Shown only once a level is set (updateSpicyUI()); one tap back to
+                       "sin picante" instead of re-clicking the current pip. #}
+                    <button type="button" class="spicy-clear" onclick="clearSpicy()" hidden>
+                        <i class="ti ti-x" aria-hidden="true"></i> {{ 'spicy.clear'|trans({}, 'admin_menu') }}
+                    </button>
                 </div>
             </div>
 

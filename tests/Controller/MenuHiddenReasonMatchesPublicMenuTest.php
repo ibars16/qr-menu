@@ -56,6 +56,16 @@ final class MenuHiddenReasonMatchesPublicMenuTest extends WebTestCase
         $this->dish('price_zero_2', $normal, 'DishPriceZeroSecond', 0);
         $this->dish('hidden_dish', $normal, 'DishHiddenByOwner', 1000, active: false);
         $this->dish('no_translation', $normal, null, 1000);
+        // Regression (2026-09-25): a translation ROW with an empty string
+        // name — as opposed to no row at all — used to read as "has a
+        // translation" and render on the public menu with a blank name.
+        // dish()'s existing `$name !== null` check already creates the row
+        // when $name is '' (only null skips it), so this needs no new helper.
+        $this->dish('blank_name', $normal, '', 1000);
+        // Regression (2026-09-25, real data): blank default-language (es)
+        // name but a named 'en' row — must be hidden, not rendered via the
+        // other locale's name while the admin row shows it nameless.
+        $this->dish('blank_default_name', $normal, '', 1000, otherLocaleName: 'DishNamedOnlyInEnglish');
         $this->dish('hidden_category', $hiddenCat, 'DishInHiddenCategory', 1000);
         $this->dish('untranslated_category', $untranslCat, 'DishInUntranslatedCategory', 1000);
 
@@ -118,7 +128,7 @@ final class MenuHiddenReasonMatchesPublicMenuTest extends WebTestCase
         return $category;
     }
 
-    private function dish(string $key, Category $category, ?string $name, int $price, bool $active = true, ?MenuSection $section = null): void
+    private function dish(string $key, Category $category, ?string $name, int $price, bool $active = true, ?MenuSection $section = null, ?string $otherLocaleName = null): void
     {
         $product = new Product();
         $product->setBasePrice($price);
@@ -135,6 +145,14 @@ final class MenuHiddenReasonMatchesPublicMenuTest extends WebTestCase
             $this->em->persist($t);
         }
 
+        if ($otherLocaleName !== null) {
+            $t = new ProductTranslation();
+            $t->setLocale('en');
+            $t->setName($otherLocaleName);
+            $product->addTranslation($t);
+            $this->em->persist($t);
+        }
+
         $this->dishes[$key] = ['product' => $product, 'reason' => null, 'name' => $name];
     }
 
@@ -147,7 +165,12 @@ final class MenuHiddenReasonMatchesPublicMenuTest extends WebTestCase
         foreach ($this->dishes as $key => $entry) {
             // A dish with no translation has no name to look for; its card
             // (normal categories only) still carries its id.
-            $needle = $entry['name'] ?? sprintf('data-product-id="%d"', $entry['product']->getId());
+            // '' would satisfy str_contains() against anything, so an empty
+            // name is treated the same as no translation at all: proven by
+            // the dish's own card marker being absent, not by an empty needle.
+            $needle = ($entry['name'] === null || $entry['name'] === '')
+                ? sprintf('data-product-id="%d"', $entry['product']->getId())
+                : $entry['name'];
 
             self::assertSame(
                 $entry['reason'] === null,
@@ -155,6 +178,15 @@ final class MenuHiddenReasonMatchesPublicMenuTest extends WebTestCase
                 sprintf('"%s": method says %s, public HTML disagrees', $key, $entry['reason']?->value ?? 'shown'),
             );
         }
+    }
+
+    /** The es page alone can't prove it: there the blank es row is what the template picks anyway. */
+    public function testBlankDefaultNameDishIsHiddenInOtherLocalesToo(): void
+    {
+        $this->client->request('GET', '/r/' . $this->restaurant->getSlug() . '?lang=en');
+        self::assertResponseIsSuccessful();
+
+        self::assertStringNotContainsString('DishNamedOnlyInEnglish', $this->client->getResponse()->getContent());
     }
 
     public function testEachReasonIsWhatWeExpect(): void
@@ -165,6 +197,8 @@ final class MenuHiddenReasonMatchesPublicMenuTest extends WebTestCase
             'price_zero_2'          => MenuHiddenReason::PriceZero,
             'hidden_dish'           => MenuHiddenReason::ProductHidden,
             'no_translation'        => MenuHiddenReason::NoTranslation,
+            'blank_name'            => MenuHiddenReason::NoTranslation,
+            'blank_default_name'    => MenuHiddenReason::NoTranslation,
             'hidden_category'       => MenuHiddenReason::CategoryHidden,
             'untranslated_category' => MenuHiddenReason::NoTranslation,
             'menu_price_zero'       => null,

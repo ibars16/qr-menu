@@ -81,7 +81,7 @@ class TagsController extends AbstractController
         $code = $this->uniqueCodeFor($restaurant, strtolower(preg_replace('/[^a-z0-9]+/', '-', mb_strtolower($name))));
 
         $tag = new ProductTag($restaurant, $code);
-        $tag->setIcon(trim($data['icon'] ?? '🏷️') ?: '🏷️');
+        $tag->setIcon(mb_substr(trim($data['icon'] ?? '🏷️'), 0, 10) ?: '🏷️'); // product_tag.icon is VARCHAR(50); 10 covers any emoji sequence, same as the inputs' maxlength
         $tag->setColor($data['color'] ?? '#666666');
         $tag->setPosition($restaurant->getProductTags()->count());
 
@@ -121,7 +121,7 @@ class TagsController extends AbstractController
             return $this->json(['error' => $translator->trans('error.name_required', domain: 'admin_tags')], 400);
         }
 
-        $tag->setIcon(trim($data['icon'] ?? $tag->getIcon()) ?: $tag->getIcon());
+        $tag->setIcon(mb_substr(trim($data['icon'] ?? $tag->getIcon()), 0, 10) ?: $tag->getIcon());
         $tag->setColor($data['color'] ?? $tag->getColor());
 
         $locale = $tag->getRestaurant()->getDefaultLanguage();

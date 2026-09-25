@@ -7,6 +7,7 @@ use App\Entity\CategoryTranslation;
 use App\Entity\MenuSection;
 use App\Entity\Product;
 use App\Entity\ProductTranslation;
+use App\Entity\Restaurant;
 use App\Enum\MenuHiddenReason;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -24,7 +25,10 @@ final class ProductMenuHiddenReasonTest extends TestCase
 {
     private function category(bool $active = true, bool $translated = true, bool $fixedPrice = false): Category
     {
+        $restaurant = new Restaurant();
+        $restaurant->setDefaultLanguage('es');
         $category = new Category();
+        $category->setRestaurant($restaurant);
         $category->setActive($active);
         if ($fixedPrice) {
             $category->setMenuPrice(1500);
@@ -102,6 +106,73 @@ final class ProductMenuHiddenReasonTest extends TestCase
     public function testCategoryWithoutTranslationIsReported(): void
     {
         $product = $this->product($this->category(translated: false));
+
+        self::assertSame(MenuHiddenReason::NoTranslation, $product->menuHiddenReason());
+    }
+
+    /**
+     * Regression (2026-09-25): a translation ROW existing is not the same as
+     * it having text. Before this, `$this->translations->isEmpty()` read a
+     * row with an empty string name as "has a translation" — reachable only
+     * by writing directly to product_translation outside saveProduct()
+     * (which has required a non-blank name since the same date) — so a dish
+     * in that state passed as shown, with no admin notice, and rendered on
+     * the public menu with a blank name (see
+     * MenuHiddenReasonMatchesPublicMenuTest for the real-HTML version of
+     * this same case).
+     */
+    public function testDishWithABlankNameTranslationRowIsReported(): void
+    {
+        $category = $this->category();
+        $product  = $this->product($category, translated: false);
+        $blank    = new ProductTranslation();
+        $blank->setLocale('es');
+        $blank->setName('');
+        $product->addTranslation($blank);
+
+        self::assertSame(MenuHiddenReason::NoTranslation, $product->menuHiddenReason());
+    }
+
+    /**
+     * Regression (2026-09-25, real data): blank name in the restaurant's
+     * default language (the one the admin Carta row shows) but a named
+     * translation in another language. It used to count as "has a name",
+     * so the owner saw a nameless row with no notice.
+     */
+    public function testBlankDefaultLanguageNameIsReportedEvenWithOtherNamedTranslations(): void
+    {
+        $product = $this->product($this->category(), translated: false);
+        foreach (['es' => '', 'en' => 'Salmon carpaccio'] as $locale => $name) {
+            $t = new ProductTranslation();
+            $t->setLocale($locale);
+            $t->setName($name);
+            $product->addTranslation($t);
+        }
+
+        self::assertSame(MenuHiddenReason::NoTranslation, $product->menuHiddenReason());
+        self::assertFalse($product->hasMenuName());
+    }
+
+    /** No default-language row at all (e.g. default changed after import): any named translation is enough. */
+    public function testMissingDefaultLanguageRowFallsBackToAnyNamedTranslation(): void
+    {
+        $product = $this->product($this->category(), translated: false);
+        $t = new ProductTranslation();
+        $t->setLocale('en');
+        $t->setName('Salmon carpaccio');
+        $product->addTranslation($t);
+
+        self::assertNull($product->menuHiddenReason());
+    }
+
+    public function testCategoryWithOnlyABlankNameTranslationRowIsReported(): void
+    {
+        $category = $this->category(translated: false);
+        $blank    = new CategoryTranslation();
+        $blank->setLocale('es');
+        $blank->setName('');
+        $category->addTranslation($blank);
+        $product = $this->product($category);
 
         self::assertSame(MenuHiddenReason::NoTranslation, $product->menuHiddenReason());
     }

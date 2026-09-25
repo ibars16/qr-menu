@@ -515,9 +515,19 @@ class Product
      *
      * The translation check is locale-independent on purpose: every
      * template resolves the name as exact locale → restaurant default →
-     * translations.first, so it only comes up empty when the collection
-     * itself is empty. "Has any translation" is therefore the whole rule,
-     * for the dish and for its category.
+     * translations.first, falling through to whichever translation object
+     * it finds first regardless of its own text. A translation ROW existing
+     * is therefore not enough — checked and confirmed 2026-09-25 that a row
+     * with an empty string name (only reachable today via something writing
+     * directly to product_translation/category_translation outside
+     * MenuAdminController::saveProduct(), which has required a non-blank
+     * name since this same date) used to read as "has a translation" here,
+     * so a dish in that state passed this check, showed no admin notice,
+     * and rendered on the public menu with a blank name (show.html.twig /
+     * _set_menu.html.twig's own `{% if pT %}` has the identical gap — see
+     * their own fix, same date). The rule is therefore "has any translation
+     * with actual text", for the dish and for its category, not merely
+     * "has any translation".
      *
      * Reasons are ordered outermost first (category, dish, price,
      * translation), so a dish in a hidden category reports that even if it
@@ -534,11 +544,49 @@ class Product
         if (!$this->isSafeToDisplay()) {
             return MenuHiddenReason::PriceZero;
         }
-        if ($this->translations->isEmpty() || $this->category->getTranslations()->isEmpty()) {
+        if (!$this->hasMenuName() || !self::hasNamedTranslation($this->category->getTranslations())) {
             return MenuHiddenReason::NoTranslation;
         }
 
         return null;
+    }
+
+    /**
+     * Whether this dish has a name the public menu can show. Checked in
+     * addition to $active/isSafeToDisplay() everywhere the public menu and
+     * Smart Waiter list dishes, and by menuHiddenReason().
+     *
+     * The restaurant's default language is the one the owner edits (and
+     * the one the admin Carta row shows), so when a translation row exists
+     * for it, ITS name decides: a blank default-language name hides the
+     * dish in every locale, even if an AI/other-language translation has
+     * text — otherwise the owner sees a nameless row with no notice while
+     * the dish is live in other languages (confirmed 2026-09-25 on a dish
+     * with a blank `es` name and a named `en` one). With no row for the
+     * default language at all (e.g. it was changed after import), any
+     * translation with text is enough — same fallback as
+     * getDisplayTranslation().
+     */
+    public function hasMenuName(): bool
+    {
+        $default = $this->getTranslation($this->category->getRestaurant()->getDefaultLanguage());
+        if ($default !== null) {
+            return trim($default->getName()) !== '';
+        }
+
+        return self::hasNamedTranslation($this->translations);
+    }
+
+    /** @param Collection<int, ProductTranslation|CategoryTranslation> $translations */
+    private static function hasNamedTranslation(Collection $translations): bool
+    {
+        foreach ($translations as $translation) {
+            if (trim($translation->getName()) !== '') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function isShownOnMenu(): bool

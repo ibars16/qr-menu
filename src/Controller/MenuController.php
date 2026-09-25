@@ -349,7 +349,7 @@ class MenuController extends AbstractController
             }
 
             $products = $category->getProducts()
-                ->filter(fn($p) => $p->isActive() && $p->isSafeToDisplay())
+                ->filter(fn($p) => $p->isActive() && $p->isSafeToDisplay() && $p->hasMenuName())
                 ->toArray();
             usort($products, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
             foreach ($products as $product) {

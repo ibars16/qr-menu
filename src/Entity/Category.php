@@ -274,7 +274,7 @@ class Category
     public function getActiveProductsSorted(): array
     {
         $products = $this->products
-            ->filter(fn($p) => $p->isActive() && $p->isSafeToDisplay())
+            ->filter(fn($p) => $p->isActive() && $p->isSafeToDisplay() && $p->hasMenuName())
             ->toArray();
 
         usort($products, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
@@ -334,7 +334,7 @@ class Category
         return array_map(
             static fn(array $entry) => [
                 'section'  => $entry['section'],
-                'products' => array_values(array_filter($entry['products'], static fn(Product $p) => $p->isActive())),
+                'products' => array_values(array_filter($entry['products'], static fn(Product $p) => $p->isActive() && $p->hasMenuName())),
             ],
             $this->getSectionsWithProducts()
         );

@@ -536,7 +536,8 @@
                             {% set bT = bProduct.getTranslation(locale) %}
                             {% if not bT %}{% set bT = bProduct.getTranslation(restaurant.defaultLanguage) %}{% endif %}
                             {% if not bT %}{% set bT = bProduct.translations.first %}{% endif %}
-                            {% if bT %}
+                            {# bT.name is not empty: same gap as the card-grid's own pT check below — see its comment. #}
+                            {% if bT and bT.name is not empty %}
                                 {% set recommendedItems = recommendedItems|merge([{
                                     product: bProduct,
                                     t: bT,
@@ -775,7 +776,11 @@
                         {% set pT = product.getTranslation(locale) %}
                         {% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}
                         {% if not pT %}{% set pT = product.translations.first %}{% endif %}
-                        {% if pT %}
+                        {# pT.name is not empty: a translation ROW existing is not the same as it
+                           having text — see Product::menuHiddenReason()'s own note on this, fixed
+                           the same day this guard was added. A blank name is excluded here exactly
+                           like a €0 price is excluded above, not silently rendered blank. #}
+                        {% if pT and pT.name is not empty %}
                             {% set featuredTag = product.tags|filter(t => t.code == 'recommended')|first %}
                             {% set isDrink = category.type is defined and category.type and category.type.value == 'drink' %}
                             {# Maison shows at most one corner badge per card (recommended >

@@ -630,9 +630,19 @@
 .spicy-pip.on   { opacity:1; background:rgba(220,38,38,0.08); border-color:rgba(220,38,38,0.22); }
 .spicy-pip:hover { opacity:0.65; }
 .spicy-text { font-size:12px; color:var(--tx-6); }
+.spicy-clear {
+    margin-left:auto; display:inline-flex; align-items:center; gap:4px;
+    font-size:12px; font-family:inherit; padding:5px 11px 5px 9px; min-height:30px;
+    border-radius:20px; border:1px solid rgba(220,38,38,0.22); background:rgba(220,38,38,0.06);
+    color:var(--err-text); cursor:pointer; transition:background 0.1s, border-color 0.1s;
+}
+.spicy-clear .ti { font-size:13px; }
+.spicy-clear:hover { background:rgba(220,38,38,0.12); border-color:rgba(220,38,38,0.4); }
+.spicy-clear[hidden] { display:none; }
 
 @media (max-width: 767px) {
     .spicy-pip { width:38px; height:38px; font-size:20px; }
+    .spicy-clear { min-height:38px; font-size:13px; }
 }
 
 /* Tags */
@@ -644,9 +654,76 @@
 }
 .tag-pill.on { background:rgba(99,153,34,0.15); color:#7aad40; border-color:rgba(99,153,34,0.35); }
 .tag-pill:hover:not(.on) { border-color:var(--bd-2); color:var(--tx-3); }
+.tag-pill-add { border-style:dashed; background:transparent; font-family:inherit; gap:4px; }
+/* min-width:0 + max-width:100% + the input's width:0 (flex:1 grows it back):
+   otherwise the input's intrinsic width sets this box's minimum, and on a
+   phone-width modal it overflowed the .tag-pills row, cutting off ✓/✕. */
+.tag-new {
+    flex-basis:100%; min-width:0; max-width:100%; box-sizing:border-box; display:flex; align-items:center; gap:6px;
+    padding:6px; border:1px solid var(--bd-2); border-radius:12px; background:var(--bg-card);
+}
+.tag-new[hidden], .tag-pill-add[hidden] { display:none; }
+.field .tag-new-input {
+    flex:1; min-width:0; width:0; min-height:34px; padding:6px 10px; font-size:13px;
+    border:none; background:transparent; border-radius:8px;
+}
+.field .tag-new-input:focus { outline:none; }
+.field .tag-new-input.error::placeholder { color:var(--err-border); }
+.tag-new-ok, .tag-new-cancel {
+    width:34px; height:34px; flex:none; border-radius:8px; border:none; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center; font-size:16px;
+}
+.tag-new-ok     { background:var(--tx-1); color:var(--bg-card); }
+.tag-new-ok:hover { opacity:0.85; }
+.tag-new-cancel { background:transparent; color:var(--tx-6); }
+.tag-new-cancel:hover { background:var(--bg-hover); color:var(--tx-2); }
+
+/* Emoji selector */
+.tag-emoji-picker { position:relative; flex:none; }
+.tag-emoji-trigger {
+    height:34px; padding:0 6px 0 8px; border-radius:8px; border:1px solid var(--bd-2);
+    background:var(--bg-input); cursor:pointer; display:inline-flex; align-items:center; gap:2px;
+    color:var(--tx-6); font-family:inherit;
+}
+.tag-emoji-trigger:hover, .tag-emoji-trigger[aria-expanded="true"] { border-color:var(--tx-5); color:var(--tx-3); }
+.tag-emoji-current { font-size:18px; line-height:1; }
+.tag-emoji-trigger .ti { font-size:12px; }
+.tag-emoji-pop {
+    position:fixed; z-index:1000; width:272px; max-width:calc(100vw - 16px); /* top/left set by toggleTagEmojiPop() */
+    padding:10px; border-radius:12px; border:1px solid var(--bd-2); background:var(--bg-card);
+    box-shadow:var(--shadow-lg, 0 10px 30px rgba(0,0,0,0.18));
+}
+.tag-emoji-pop[hidden] { display:none; }
+.tag-emoji-group {
+    font-size:10px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--tx-6); margin:8px 2px 4px;
+}
+.tag-emoji-group:first-child { margin-top:0; }
+.tag-emoji-grid { display:grid; grid-template-columns:repeat(8, 1fr); gap:2px; }
+.tag-emoji-opt {
+    aspect-ratio:1; border:none; border-radius:8px; background:transparent; cursor:pointer;
+    font-size:18px; line-height:1; padding:0; display:flex; align-items:center; justify-content:center;
+}
+.tag-emoji-opt:hover { background:var(--bg-hover); }
+.tag-emoji-opt.on    { background:var(--bg-hover); box-shadow:inset 0 0 0 1px var(--tx-5); }
+.tag-emoji-custom { margin-top:10px; padding-top:10px; border-top:1px solid var(--bd-1); }
+.tag-emoji-custom-input {
+    width:100%; min-height:34px; padding:6px 10px; font-size:13px; border-radius:8px; font-family:inherit;
+    border:1px solid var(--bd-2); background:var(--bg-input); color:var(--tx-1); outline:none;
+}
+.tag-emoji-custom-input::placeholder { color:var(--tx-7); }
+.tag-emoji-custom-input:focus { border-color:var(--tx-5); }
 
 @media (max-width: 767px) {
     .tag-pill { font-size:13px; min-height:38px; padding:6px 14px; }
+    .field .tag-new-input, .tag-emoji-custom-input { font-size:16px; min-height:40px; } /* 16px: no iOS zoom-on-focus */
+    /* The typed text must stay 16px (iOS zooms on focus below that), but
+       the placeholder can shrink freely — at 16px it didn't fit the narrow
+       phone-width fields ("Nombre de la etiq…"). */
+    .field .tag-new-input::placeholder, .tag-emoji-custom-input::placeholder { font-size:12px; }
+    .tag-new-ok, .tag-new-cancel, .tag-emoji-trigger { height:40px; }
+    .tag-new-ok, .tag-new-cancel { width:40px; }
+    .tag-emoji-opt { font-size:22px; }
 }
 
 /* Recommended-dish toggle */

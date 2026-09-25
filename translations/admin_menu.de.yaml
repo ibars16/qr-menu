@@ -143,13 +143,14 @@ product:
     hidden: Ausgeblendet
     hidden_reason:
         category_hidden: die Kategorie ist ausgeblendet
-        no_translation: keine Übersetzung
+        no_translation: es hat keinen Namen
         price_zero: der Preis ist 0
     not_on_menu: 'Nicht in der Speisekarte sichtbar: %reason%'
     toggle_aria: Gerichtsichtbarkeit umschalten
     visible: Sichtbar
 
 spicy:
+    clear: 'Schärfe entfernen'
     aria: 'Schärfegrad %level%'
     none: Nicht scharf
     mild: 'Mild 🌶'
@@ -170,7 +171,16 @@ tab:
     allergens: Allergene
 
 tags:
-    none_configured: 'Noch keine Etiketten konfiguriert — %link_start%erstelle welche unter Etiketten%link_end%, um Gerichte als Vegetarisch, Glutenfrei usw. zu kennzeichnen.'
+    emoji_group:
+        diet: 'Ernährung & Allergene'
+        food: 'Speisen'
+        drinks: 'Getränke'
+        featured: 'Highlights'
+    emoji_custom: 'Oder beliebiges Emoji einfügen und Enter drücken'
+    new_icon: 'Symbol (Emoji)'
+    add: 'Neues Etikett'
+    new_placeholder: 'Name des Etiketts'
+    create_error: "Das Etikett konnte nicht erstellt werden"
 
 smart_waiter:
     section_title: Empfohlen

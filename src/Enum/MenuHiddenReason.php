@@ -18,6 +18,6 @@ enum MenuHiddenReason: string
     /** A normal dish priced at €0 — see Product::isSafeToDisplay(). */
     case PriceZero = 'price_zero';
 
-    /** The dish or its category has no translation at all, so it has no name to render. */
+    /** The dish (see Product::hasMenuName()) or its category has no name to render. The value keeps its historical name. */
     case NoTranslation = 'no_translation';
 }

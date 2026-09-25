@@ -26,6 +26,7 @@
     const MSG_PRODUCT_VISIBLE  = "{{ 'product.visible'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PRODUCT_HIDDEN   = "{{ 'product.hidden'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PRODUCT_DELETED  = "{{ 'js.product_deleted'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_TAG_CREATE_ERROR = "{{ 'tags.create_error'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PRICE_VARIANT_LABEL_PLACEHOLDER = "{{ 'field.price_variant_label_placeholder'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_REMOVE_EXTRA_PRICE = "{{ 'field.remove_extra_price'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PRICE_VARIANTS_TOGGLE = "{{ 'field.price_variants_toggle'|trans({}, 'admin_menu')|e('js') }}";
@@ -518,6 +519,12 @@
         document.querySelectorAll('.spicy-text').forEach(el =>
             el.textContent = SPICY_LABELS[S.spicy]
         );
+        document.querySelectorAll('.spicy-clear').forEach(b => b.hidden = S.spicy === 0);
+    }
+    function clearSpicy() {
+        S.spicy = 0;
+        updateSpicyUI();
+        syncSpicyTag();
     }
     // Keeps the "spicy" system tag pill (see data-tag-code in
     // _product_fields.html.twig) mirroring S.spicy — on whenever there's any
@@ -543,6 +550,174 @@
         if (el.dataset.tagCode === 'spicy') {
             S.spicy = isOn ? Math.max(S.spicy, 1) : 0;
             updateSpicyUI();
+        }
+    }
+
+    // ── New tag, created inline from the dish editor ────────────────────────────
+    // The "+ Nueva etiqueta" pill swaps itself for a small input; Enter (or ✓)
+    // POSTs to /admin/tags/create — the same endpoint the Etiquetas screen
+    // uses, which ties the tag to the logged-in user's restaurant — then
+    // appends the new pill to EVERY .tag-pills (desktop modal + mobile sheet
+    // copies of _product_fields.html.twig) already switched on, so it's saved
+    // with the dish by the normal `.tag-pill.on` collection in saveProduct().
+    // A name matching an existing pill (case-insensitive) just switches that
+    // one on instead of creating a duplicate.
+    function startNewTag(btn) {
+        const box = btn.nextElementSibling;
+        btn.hidden = true;
+        box.hidden = false;
+        box.querySelector('.tag-new-input').focus();
+    }
+
+    // Every handler below takes any element inside the .tag-new box and
+    // works from the box itself.
+    function setTagEmoji(box, icon) {
+        const trigger = box.querySelector('.tag-emoji-trigger');
+        trigger.dataset.icon = icon;
+        trigger.querySelector('.tag-emoji-current').textContent = icon;
+        (box._pop ?? box).querySelectorAll('.tag-emoji-opt').forEach(b => b.classList.toggle('on', b.textContent.trim() === icon));
+    }
+
+    // While open, the popover is moved to <body> (the modal is transformed,
+    // which would make position:fixed relative to it and let its overflow
+    // clip the grid); _box remembers which .tag-new it belongs to, and
+    // closing puts it back inside its picker.
+    function tagBoxOf(el) {
+        const pop = el.closest('.tag-emoji-pop');
+        return pop?._box ?? el.closest('.tag-new');
+    }
+
+    function closeTagEmojiPop(box) {
+        const pop = box._pop;
+        if (!pop) return;
+        pop.hidden = true;
+        box.querySelector('.tag-emoji-picker').appendChild(pop);
+        box._pop = null;
+        box.querySelector('.tag-emoji-trigger').setAttribute('aria-expanded', 'false');
+    }
+
+    function closeNewTag(el) {
+        const box = el.closest('.tag-new');
+        closeTagEmojiPop(box);
+        box.querySelectorAll('input').forEach(i => { i.value = ''; i.classList.remove('error'); });
+        setTagEmoji(box, '🏷️');
+        box.hidden = true;
+        box.previousElementSibling.hidden = false;
+    }
+
+    function toggleTagEmojiPop(trigger) {
+        const box = trigger.closest('.tag-new');
+        if (box._pop) { closeTagEmojiPop(box); return; }
+        const pop = box.querySelector('.tag-emoji-pop');
+        pop._box = box;
+        box._pop = pop;
+        document.body.appendChild(pop);
+        pop.hidden = false;
+        trigger.setAttribute('aria-expanded', 'true');
+        // Opens below the trigger, or above when there's no room below.
+        const r   = trigger.getBoundingClientRect();
+        const h   = pop.offsetHeight;
+        const top = (r.bottom + 6 + h > window.innerHeight - 8) ? Math.max(8, r.top - 6 - h) : r.bottom + 6;
+        pop.style.top  = top + 'px';
+        pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - pop.offsetWidth - 8)) + 'px';
+    }
+
+    function pickTagEmoji(btn) {
+        const box = tagBoxOf(btn);
+        setTagEmoji(box, btn.textContent.trim());
+        closeTagEmojiPop(box);
+        box.querySelector('.tag-new-input').focus();
+    }
+
+    function onTagEmojiCustomKey(e, input) {
+        const box = tagBoxOf(input);
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const v = input.value.trim();
+            if (v) setTagEmoji(box, v);
+            input.value = '';
+            closeTagEmojiPop(box);
+            box.querySelector('.tag-new-input').focus();
+        }
+    }
+
+    function onNewTagKey(e, input) {
+        if (e.key === 'Enter') { e.preventDefault(); saveNewTag(input); }
+        else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeNewTag(input); }
+    }
+
+    // A fixed-position popover would drift away from its trigger on scroll/resize — close it instead.
+    function closeOpenTagEmojiPops(e) {
+        document.querySelectorAll('body > .tag-emoji-pop').forEach(pop => {
+            if (e && (pop.contains(e.target) || pop._box.querySelector('.tag-emoji-picker').contains(e.target))) return;
+            closeTagEmojiPop(pop._box);
+        });
+    }
+    window.addEventListener('scroll', closeOpenTagEmojiPops, true);
+    window.addEventListener('resize', () => closeOpenTagEmojiPops());
+    // Click outside an open emoji popover closes it (the box itself stays open).
+    document.addEventListener('mousedown', closeOpenTagEmojiPops);
+    // Escape with the popover open closes just the popover — captured first
+    // so the modal's own Escape handler doesn't close the whole dish editor
+    // and strand the popover in <body>.
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        const open = document.querySelectorAll('body > .tag-emoji-pop');
+        if (!open.length) return;
+        e.preventDefault(); e.stopImmediatePropagation();
+        open.forEach(pop => {
+            const box = pop._box;
+            closeTagEmojiPop(box);
+            box.querySelector('.tag-emoji-trigger').focus();
+        });
+    }, true);
+
+    function pillLabel(pill) {
+        return pill.textContent.trim().replace(/^\S+\s+/, '').toLocaleLowerCase();
+    }
+
+    async function saveNewTag(el) {
+        const box   = el.closest('.tag-new');
+        const input = box.querySelector('.tag-new-input');
+        const name  = input.value.trim();
+        const icon  = box.querySelector('.tag-emoji-trigger').dataset.icon || '🏷️';
+        if (!name) { input.classList.add('error'); input.focus(); return; }
+        if (box.dataset.saving) return;
+
+        const existing = [...box.closest('.tag-pills').querySelectorAll('.tag-pill[data-tag-id]')]
+            .find(p => pillLabel(p) === name.toLocaleLowerCase());
+        if (existing) {
+            if (!existing.classList.contains('on')) toggleTagPill(existing);
+            closeNewTag(input);
+            return;
+        }
+
+        box.dataset.saving = '1';
+        try {
+            const res  = await fetch('/admin/tags/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, icon }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.id) throw new Error(data.error || MSG_TAG_CREATE_ERROR);
+
+            document.querySelectorAll('.tag-pills').forEach(list => {
+                const pill = document.createElement('div');
+                pill.className = 'tag-pill on';
+                pill.dataset.tagId = data.id;
+                pill.setAttribute('role', 'checkbox');
+                pill.setAttribute('aria-checked', 'true');
+                pill.onclick = () => toggleTagPill(pill);
+                pill.textContent = `${data.icon} ${data.name}`;
+                list.insertBefore(pill, list.querySelector('.tag-pill-add'));
+            });
+            closeNewTag(input);
+        } catch (err) {
+            input.classList.add('error');
+            showToast(err.message || MSG_TAG_CREATE_ERROR, 'error');
+        } finally {
+            delete box.dataset.saving;
         }
     }
 
@@ -1280,6 +1455,7 @@
         );
         document.querySelectorAll('[id="p-category"]').forEach(el => { el.selectedIndex = 0; });
         document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('on'));
+        document.querySelectorAll('.tag-new').forEach(box => { if (!box.hidden) closeNewTag(box); });
         document.querySelectorAll('[id="p-recommended"]').forEach(cb => cb.checked = false);
         document.querySelectorAll('[id="p-nutrition-visible"]').forEach(cb => cb.checked = true);
         document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));

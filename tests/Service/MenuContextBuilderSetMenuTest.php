@@ -71,6 +71,7 @@ final class MenuContextBuilderSetMenuTest extends TestCase
         $product->setPosition($position);
         $product->setBasePrice(0);
         $product->setActive(true);
+        $product->setCategory($section->getCategory()); // non-nullable in the DB; hasMenuName() reads the restaurant's default language through it
         $section->addProduct($product);
 
         $translation = new ProductTranslation();

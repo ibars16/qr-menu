@@ -5,6 +5,8 @@ namespace App\Tests\Entity;
 use App\Entity\Category;
 use App\Entity\MenuSection;
 use App\Entity\Product;
+use App\Entity\ProductTranslation;
+use App\Entity\Restaurant;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -22,8 +24,24 @@ final class ProductVisibilityTest extends TestCase
         $product->setBasePrice($basePriceCents);
         $product->setActive($active);
         $product->setMenuSection($menuSection);
+        // Named, so getActiveProductsSorted()'s hasMenuName() check never
+        // interferes with what these tests are about (price/active).
+        $t = new ProductTranslation();
+        $t->setLocale('es');
+        $t->setName('Plato');
+        $product->addTranslation($t);
 
         return $product;
+    }
+
+    private function category(): Category
+    {
+        $restaurant = new Restaurant();
+        $restaurant->setDefaultLanguage('es');
+        $category = new Category();
+        $category->setRestaurant($restaurant);
+
+        return $category;
     }
 
     public function testNormalDishWithPositivePriceIsSafeToDisplay(): void
@@ -50,7 +68,7 @@ final class ProductVisibilityTest extends TestCase
 
     public function testCategoryHidesActiveZeroPriceDishFromPublicMenu(): void
     {
-        $category   = new Category();
+        $category   = $this->category();
         $zeroPriced = $this->productWithPrice(0);
         $priced     = $this->productWithPrice(1000);
         $category->addProduct($zeroPriced);
@@ -63,7 +81,7 @@ final class ProductVisibilityTest extends TestCase
 
     public function testCategoryStillHidesInactiveDishRegardlessOfPrice(): void
     {
-        $category = new Category();
+        $category = $this->category();
         $inactive = $this->productWithPrice(1000, false);
         $category->addProduct($inactive);
 

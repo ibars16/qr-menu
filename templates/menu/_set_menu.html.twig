@@ -61,7 +61,10 @@
     {% set pT = product.getTranslation(locale) %}
     {% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}
     {% if not pT %}{% set pT = product.translations.first %}{% endif %}
-    {% if pT %}
+    {# pT.name is not empty: a translation ROW existing is not the same as it
+       having text — see Product::menuHiddenReason()'s own note and
+       show.html.twig's identical guard, fixed the same day. #}
+    {% if pT and pT.name is not empty %}
         <div class="card-wrap set-menu-row-wrap"
              onclick="flipCard(this)"
              data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}"
