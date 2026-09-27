@@ -40,7 +40,7 @@ class Product
     private ?string $image = null;
 
     /**
-     * A short (<=10s), silent, looping clip — an optional layer on top of
+     * A short (<=6s), silent, looping clip — an optional layer on top of
      * $image, never a replacement for it. $image stays the universal
      * poster/fallback (admin list thumbnail, set-menu thumbnail, and the
      * <video poster> itself) read by everything that already reads it,
@@ -49,6 +49,35 @@ class Product
      */
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $videoClip = null;
+
+    /**
+     * Framing of $videoClip inside the fixed card/detail box, as CSS
+     * object-position percentages (0–100, null = centred). The box always
+     * crops the clip to fill (object-fit:cover) like a photo; the owner
+     * drags the clip in the admin preview to pick which part stays visible.
+     */
+    #[ORM\Column(type: 'smallint', nullable: true)]
+    private ?int $videoFocusX = null;
+
+    #[ORM\Column(type: 'smallint', nullable: true)]
+    private ?int $videoFocusY = null;
+
+    /**
+     * How far the clip is zoomed inside its box, 0–100: 0 = whole clip
+     * visible (contain, gaps filled by a blurred copy), 100 = box fully
+     * covered (cover, edges cropped). Null = 100, i.e. how every clip
+     * rendered before this field existed. Only applied when the clip's own
+     * dimensions below are known — see getVideoAspectRatio().
+     */
+    #[ORM\Column(type: 'smallint', nullable: true)]
+    private ?int $videoZoom = null;
+
+    /** Display size of $videoClip (rotation applied), read with ffprobe on upload. */
+    #[ORM\Column(nullable: true)]
+    private ?int $videoWidth = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $videoHeight = null;
 
     /**
      * Price stored in cents to avoid floating point precision issues.
@@ -294,6 +323,56 @@ class Product
     public function setVideoClip(?string $videoClip): void
     {
         $this->videoClip = $videoClip;
+    }
+
+    public function getVideoFocusX(): ?int
+    {
+        return $this->videoFocusX;
+    }
+
+    public function getVideoFocusY(): ?int
+    {
+        return $this->videoFocusY;
+    }
+
+    /** Values are clamped to 0–100; null resets that axis to centred. */
+    public function setVideoFocus(?int $x, ?int $y): void
+    {
+        $this->videoFocusX = $x === null ? null : max(0, min(100, $x));
+        $this->videoFocusY = $y === null ? null : max(0, min(100, $y));
+    }
+
+    public function getVideoZoom(): ?int
+    {
+        return $this->videoZoom;
+    }
+
+    /** Clamped to 0–100; null resets to full cover. */
+    public function setVideoZoom(?int $zoom): void
+    {
+        $this->videoZoom = $zoom === null ? null : max(0, min(100, $zoom));
+    }
+
+    public function setVideoDimensions(?int $width, ?int $height): void
+    {
+        $this->videoWidth = $width;
+        $this->videoHeight = $height;
+    }
+
+    /** width / height of the clip, or null when its dimensions aren't known. */
+    public function getVideoAspectRatio(): ?float
+    {
+        if (!$this->videoWidth || !$this->videoHeight) {
+            return null;
+        }
+
+        return round($this->videoWidth / $this->videoHeight, 4);
+    }
+
+    /** CSS object-position value for the clip, e.g. "50% 30%". */
+    public function getVideoObjectPosition(): string
+    {
+        return ($this->videoFocusX ?? 50) . '% ' . ($this->videoFocusY ?? 50) . '%';
     }
 
     public function getBasePrice(): int

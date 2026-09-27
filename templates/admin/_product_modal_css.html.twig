@@ -571,11 +571,44 @@
    adaptive box sized to the clip's own aspect ratio across three commits;
    reverted in full, see the one that removed this comment's predecessors
    for why). object-fit:cover crops a clip's frame the same way it already
-   crops a photo — no special-casing needed here at all. */
+   crops a photo; the owner drags the clip to choose which part stays
+   visible (.framing below, see initClipFraming()). */
 .img-upload img, .img-upload video {
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
     opacity:0; transition:opacity 0.2s;
 }
+/* Clip framing: the whole box becomes a drag surface (touch-action:none so
+   a vertical drag on mobile frames the clip instead of scrolling the sheet). */
+.img-upload.framing { cursor:grab; touch-action:none; container-type:size; isolation:isolate; }
+/* Zoomed clip — same geometry as the public carta's .dish-clip--fit
+   (layouts/standard/show.html.twig): --z 0 = whole clip, 1 = box covered;
+   --fx/--fy place it. --ar is set from the clip's metadata in
+   showClipInArea(). The blurred cover copy fills any gap behind it. */
+.img-upload video.clip-fit {
+    --fit-min: min(100cqw, 100cqh * var(--ar, 1.7778));
+    --fit-max: max(100cqw, 100cqh * var(--ar, 1.7778));
+    --w: calc(var(--fit-min) + var(--z) * (var(--fit-max) - var(--fit-min)));
+    inset:auto; object-fit:fill; max-width:none;
+    width:var(--w); height:calc(var(--w) / var(--ar, 1.7778));
+    left:calc((100cqw - var(--w)) * var(--fx));
+    top:calc((100cqh - var(--w) / var(--ar, 1.7778)) * var(--fy));
+}
+.img-upload video.clip-backdrop { inset:-24px; width:auto; height:auto; z-index:-1; filter:blur(18px) brightness(0.85); }
+.clip-zoom { display:none; align-items:center; gap:8px; margin-top:8px; font-size:12px; color:var(--tx-muted); }
+.clip-zoom.show { display:flex; }
+.clip-zoom input { flex:1; accent-color:var(--tx-1); }
+.clip-zoom i { font-size:16px; }
+.img-upload.framing.dragging { cursor:grabbing; }
+.img-upload.framing.dragging video { transition:none; }
+.img-upload-frame-badge {
+    position:absolute; left:50%; bottom:var(--sp-2, 8px); transform:translateX(-50%); z-index:2;
+    display:none; align-items:center; gap:6px; padding:4px 10px; border-radius:999px;
+    background:rgba(0,0,0,0.6); color:#fff; font-size:12px; white-space:nowrap; pointer-events:none;
+}
+.img-upload.framing .img-upload-frame-badge { display:inline-flex; }
+.clip-frame-hint { display:none; margin-top:6px; font-size:12px; color:var(--tx-muted); }
+.clip-trim-notice { display:flex; align-items:center; gap:6px; margin-top:6px; font-size:12px; color:var(--tx-muted); }
+.clip-frame-hint.show { display:block; }
 .img-upload img.loaded, .img-upload video.loaded { opacity:1; }
 .img-upload-hint { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; padding:0 var(--sp-4); }
 .img-upload-hint i { font-size:26px; color:var(--tx-muted); }

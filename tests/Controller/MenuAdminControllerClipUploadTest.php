@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Process\Process;
 
 /**
  * Functional coverage for MenuAdminController::uploadProductClip — the
@@ -18,14 +19,13 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  * actual route, same approach as SettingsControllerCrossTenantLogoTest /
  * MenuAdminMissingPhotoNoticeTest.
  *
- * No GD, no ffmpeg: the clip fixture is a minimal, well-formed MP4
- * (ftyp + moov/mvhd + mdat) built by hand in makeMp4Bytes() — the same
- * technique already validated against UploadValidator's own moov/mvhd
- * parser in UploadValidatorTest (finfo genuinely detects it as
- * video/mp4). MIME/size/duration edge cases are covered as pure logic in
- * UploadValidatorTest; this file only covers what needs a real HTTP
- * request and a persisted Product — the tenant check, and that a
- * replacement clip actually deletes the old file.
+ * The endpoint runs FFmpeg (ClipTranscoder: trim + poster), so accepted
+ * clips here are real, decodable videos generated with FFmpeg's own test
+ * source (realClipUpload()) — FFmpeg is in the app's Docker image. The
+ * hand-built header-only MP4 (makeMp4Bytes(), no decodable frames) is
+ * still used where that's the point: rejected-before-FFmpeg durations, and
+ * FFmpeg failing on a file the validator accepted. MIME/size/duration edge
+ * cases are covered as pure logic in UploadValidatorTest.
  */
 final class MenuAdminControllerClipUploadTest extends WebTestCase
 {
@@ -160,6 +160,32 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         return $ftyp . $moov . $mdat;
     }
 
+    /** A real, decodable MP4 (FFmpeg testsrc, 320x240, 10 fps) of the given length. */
+    private function realClipUpload(int $durationSeconds): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'clip_upload_test_') . '.mp4';
+        $process = new Process([
+            'ffmpeg', '-nostdin', '-y', '-loglevel', 'error',
+            '-f', 'lavfi', '-i', "testsrc=size=320x240:rate=10:duration={$durationSeconds}",
+            '-c:v', 'libx264', '-pix_fmt', 'yuv420p', $path,
+        ]);
+        $process->mustRun();
+
+        return new UploadedFile($path, 'clip.mp4', 'video/mp4', null, true);
+    }
+
+    private function storedDurationSeconds(string $filename): float
+    {
+        $process = new Process([
+            'ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0',
+            $this->productsDir . '/' . $filename,
+        ]);
+        $process->mustRun();
+
+        return (float) trim($process->getOutput());
+    }
+
+    /** Header-only MP4 — valid to UploadValidator, undecodable to FFmpeg. */
     private function clipUpload(float $durationSeconds): UploadedFile
     {
         $path = tempnam(sys_get_temp_dir(), 'clip_upload_test_');
@@ -183,39 +209,85 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         return new UploadedFile($path, 'photo.jpg', 'image/jpeg', null, true);
     }
 
-    public function testUploadingAValidClipSetsVideoClipAndDeletesThePreviousOne(): void
+    public function testUploadingAValidClipSetsVideoClipAndPosterAndDeletesThePreviousOnes(): void
     {
         [$owner, $productId] = $this->makeRestaurantWithOwnerAndProduct('Clip Upload Test');
         $this->client->loginUser($owner);
 
         $this->client->request('POST', "/admin/products/{$productId}/clip", [], [
-            'clip' => $this->clipUpload(3.0),
+            'clip' => $this->realClipUpload(3),
         ]);
         self::assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
-        self::assertArrayHasKey('videoClip', $data);
-        $firstFilename = $data['videoClip'];
-        $this->clipFilesToRemove[] = $firstFilename;
-        self::assertFileExists($this->productsDir . '/' . $firstFilename);
+        $firstClip = $data['videoClip'];
+        $firstPoster = $data['image'];
+        $this->clipFilesToRemove[] = $firstClip;
+        $this->imageFilesToRemove[] = $firstPoster;
+        self::assertFalse($data['trimmed'], 'a clip under the cap is stored as-is');
+        self::assertFileExists($this->productsDir . '/' . $firstClip);
+        self::assertFileExists($this->productsDir . '/' . $firstPoster, 'the poster is extracted server-side, same request');
+        self::assertStringEndsWith('.jpg', $firstPoster);
 
-        // Replace it — the old file must be gone once the new one lands,
+        // Replace it — both old files must be gone once the new ones land,
         // same cleanup pattern as uploadProductImage().
         $this->client->request('POST', "/admin/products/{$productId}/clip", [], [
-            'clip' => $this->clipUpload(4.0),
+            'clip' => $this->realClipUpload(4),
         ]);
         self::assertResponseIsSuccessful();
         $data2 = json_decode($this->client->getResponse()->getContent(), true);
-        $secondFilename = $data2['videoClip'];
-        $this->clipFilesToRemove[] = $secondFilename;
+        $this->clipFilesToRemove[] = $data2['videoClip'];
+        $this->imageFilesToRemove[] = $data2['image'];
 
-        self::assertNotSame($firstFilename, $secondFilename);
-        self::assertFileExists($this->productsDir . '/' . $secondFilename);
-        self::assertFileDoesNotExist($this->productsDir . '/' . $firstFilename, 'old clip must be deleted on replace');
+        self::assertNotSame($firstClip, $data2['videoClip']);
+        self::assertFileDoesNotExist($this->productsDir . '/' . $firstClip, 'old clip must be deleted on replace');
+        self::assertFileDoesNotExist($this->productsDir . '/' . $firstPoster, 'old poster must be deleted on replace');
 
         $this->em->clear();
         $product = $this->em->getRepository(Product::class)->find($productId);
-        self::assertSame($secondFilename, $product->getVideoClip());
-        self::assertNull($product->getImage(), 'the clip endpoint must never touch the image column');
+        self::assertSame($data2['videoClip'], $product->getVideoClip());
+        self::assertSame($data2['image'], $product->getImage());
+        self::assertSame(round(320 / 240, 4), $product->getVideoAspectRatio(), 'dimensions are read with ffprobe on upload');
+    }
+
+    public function testAClipOverSixSecondsIsTrimmedInsteadOfRejected(): void
+    {
+        [$owner, $productId] = $this->makeRestaurantWithOwnerAndProduct('Clip Trim Test');
+        $this->client->loginUser($owner);
+
+        $this->client->request('POST', "/admin/products/{$productId}/clip", [], [
+            'clip' => $this->realClipUpload(10),
+        ]);
+        self::assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->clipFilesToRemove[] = $data['videoClip'];
+        $this->imageFilesToRemove[] = $data['image'];
+
+        self::assertTrue($data['trimmed']);
+        self::assertLessThanOrEqual(6.05, $this->storedDurationSeconds($data['videoClip']), 'stored clip must be cut to the first 6 s');
+        self::assertGreaterThan(5.5, $this->storedDurationSeconds($data['videoClip']), 'trim keeps the first 6 s, not less');
+
+        $this->em->clear();
+        self::assertSame($data['videoClip'], $this->em->getRepository(Product::class)->find($productId)->getVideoClip());
+    }
+
+    public function testWhenFfmpegFailsNothingIsPersistedOrLeftOnDisk(): void
+    {
+        [$owner, $productId] = $this->makeRestaurantWithOwnerAndProduct('Clip Ffmpeg Failure Test');
+        $this->client->loginUser($owner);
+        $filesBefore = scandir($this->productsDir);
+
+        // Header-only MP4: passes the validator, but has no frame FFmpeg can
+        // extract a poster from.
+        $this->client->request('POST', "/admin/products/{$productId}/clip", [], [
+            'clip' => $this->clipUpload(3.0),
+        ]);
+        self::assertResponseStatusCodeSame(500);
+        self::assertSame($filesBefore, scandir($this->productsDir), 'no orphaned clip/poster file may be left behind');
+
+        $this->em->clear();
+        $product = $this->em->getRepository(Product::class)->find($productId);
+        self::assertNull($product->getVideoClip());
+        self::assertNull($product->getImage());
     }
 
     public function testUploadingAPhotoAfterAClipClearsVideoClipAndDeletesItsFile(): void
@@ -224,12 +296,22 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         $this->client->loginUser($owner);
 
         $this->client->request('POST', "/admin/products/{$productId}/clip", [], [
-            'clip' => $this->clipUpload(3.0),
+            'clip' => $this->realClipUpload(3),
         ]);
         self::assertResponseIsSuccessful();
-        $clipFilename = json_decode($this->client->getResponse()->getContent(), true)['videoClip'];
+        $clipData = json_decode($this->client->getResponse()->getContent(), true);
+        $clipFilename = $clipData['videoClip'];
         $this->clipFilesToRemove[] = $clipFilename;
+        $this->imageFilesToRemove[] = $clipData['image'];
         self::assertFileExists($this->productsDir . '/' . $clipFilename);
+
+        // Framing belongs to the clip — set some so the photo upload below
+        // has something to clear.
+        $this->em->clear();
+        $framed = $this->em->getRepository(Product::class)->find($productId);
+        $framed->setVideoFocus(30, 80);
+        $this->em->flush();
+        $this->em->clear();
 
         // A manually chosen photo must win outright — image and videoClip
         // are never allowed to point at unrelated media (see
@@ -250,6 +332,8 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         $product = $this->em->getRepository(Product::class)->find($productId);
         self::assertSame($imageFilename, $product->getImage());
         self::assertNull($product->getVideoClip(), 'uploading a photo must clear a previously-set videoClip');
+        self::assertNull($product->getVideoFocusX(), 'the clip\'s framing goes with it');
+        self::assertNull($product->getVideoFocusY(), 'the clip\'s framing goes with it');
     }
 
     public function testUploadingAPhotoWithNoExistingClipNeverTouchesVideoClip(): void
@@ -289,13 +373,13 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         self::assertNull($product->getVideoClip(), "another tenant's upload must not have reached this product");
     }
 
-    public function testDurationOverTenSecondsIsRejectedOverHttpAndNeverPersisted(): void
+    public function testDurationOverTheSixtySecondInputCapIsRejectedOverHttpAndNeverPersisted(): void
     {
         [$owner, $productId] = $this->makeRestaurantWithOwnerAndProduct('Clip Duration Test');
         $this->client->loginUser($owner);
 
         $this->client->request('POST', "/admin/products/{$productId}/clip", [], [
-            'clip' => $this->clipUpload(15.0),
+            'clip' => $this->clipUpload(65.0),
         ]);
         self::assertResponseStatusCodeSame(400);
 

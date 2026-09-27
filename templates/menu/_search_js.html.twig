@@ -69,6 +69,11 @@ function openDishModal(card) {
     photoWrap.innerHTML = '';
     body.innerHTML = '';
     if (photoNode) {
+        // A zoomed clip's blurred fill (see clipVideo() in
+        // standard/show.html.twig) sits right before it in the template —
+        // only photoNode itself is picked above, so bring it along.
+        const backdrop = photoNode.previousElementSibling;
+        if (backdrop?.classList.contains('clip-backdrop')) photoWrap.appendChild(backdrop);
         photoWrap.appendChild(photoNode);
         // The grid's own clips are gated by the IntersectionObserver above
         // (several could be on screen at once); the modal only ever shows

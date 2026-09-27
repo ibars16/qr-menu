@@ -190,12 +190,17 @@ smart_waiter:
 upload:
     aria: Enviar foto ou clipe do prato
     hint: Arrasta ou clica para enviar uma foto ou um clipe
-    limits: 'Foto: JPEG, PNG ou WebP (máx. 8 MB, mín. 400×400 px) · Clipe: MP4 (máx. 8 MB, máx. 10 s)'
+    limits: 'Foto: JPEG, PNG ou WebP (máx. 8 MB, mín. 400×400 px) · Vídeo: MP4 (máx. 60 MB)'
     change: Alterar
 
 clip:
-    poster_capture_failed: Não foi possível gerar automaticamente uma miniatura a partir do clipe. Envia uma foto para que apareça na carta.
-    duration_warning: Este clipe dura mais de 10 s — o servidor vai rejeitá-lo ao guardar.
+    duration_warning: 'Este vídeo dura mais de 6 s — ao guardar será cortado para os primeiros 6 segundos.'
+    processing: 'A enviar e processar o vídeo…'
+    trimmed: 'Prato guardado. O vídeo foi cortado para os primeiros 6 segundos.'
+    trim_notice: 'Os vídeos com mais de 6 s são cortados automaticamente para os primeiros 6 segundos.'
+    frame_badge: 'Arraste para enquadrar'
+    frame_hint: 'Arraste o vídeo para escolher que parte aparece e use o zoom para o ajustar à caixa. Dica: grave na horizontal para que se veja mais completo.'
+    zoom_label: 'Zoom'
 
 error:
     category_name_required: O nome é obrigatório.
@@ -211,8 +216,8 @@ error:
     image_upload_failed: Não foi possível enviar a imagem. Tente novamente.
     clip_invalid: Não foi selecionado um vídeo válido.
     clip_unsupported_type: Formato de vídeo não suportado. Usa MP4.
-    clip_too_large: O vídeo é demasiado grande (máx. 8 MB).
-    clip_duration_too_long: O vídeo é demasiado longo (máx. 10 s).
+    clip_too_large: 'O vídeo é demasiado grande (máx. 60 MB).'
+    clip_duration_too_long: 'O vídeo é demasiado longo (máx. 60 s).'
     clip_upload_failed: Não foi possível enviar o vídeo. Tenta novamente.
     unexpected: Ocorreu um erro. Tente novamente.
     nutrition_value_invalid: 'O valor deve ser um número entre 0 e 9999.9, com no máximo uma casa decimal.'

@@ -15,8 +15,17 @@
 <script>
     const SPICY_LABELS = {{ ['spicy.none','spicy.mild','spicy.medium','spicy.hot','spicy.very_hot','spicy.extreme']|map(k => k|trans({}, 'admin_menu'))|json_encode|raw }};
 
-    const CLIP_MAX_DURATION_SECONDS = 10;
+    // Mirrors UploadValidator's dish_clip limits: over CLIP_MAX_DURATION_SECONDS
+    // is trimmed server-side, over CLIP_MAX_INPUT_DURATION_SECONDS is rejected.
+    const CLIP_MAX_DURATION_SECONDS = 6;
+    const CLIP_MAX_INPUT_DURATION_SECONDS = 60;
+    // A freshly picked clip starts halfway between "whole clip" and "box
+    // filled" — full cover zoomed a vertical phone clip in too far.
+    const CLIP_DEFAULT_ZOOM = 50;
     const MSG_CLIP_DURATION_WARNING = "{{ 'clip.duration_warning'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_CLIP_TOO_LONG = "{{ 'error.clip_duration_too_long'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_CLIP_PROCESSING = "{{ 'clip.processing'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_CLIP_TRIMMED = "{{ 'clip.trimmed'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_NEW_PRODUCT        = "{{ 'modal.product.new_title'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_EDIT_PRODUCT       = "{{ 'modal.product.edit_title'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_ERROR_LOADING_PRODUCT = "{{ 'js.error_loading_product'|trans({}, 'admin_menu')|e('js') }}";
@@ -135,6 +144,8 @@
                 if (data.calories != null || data.fat != null || data.protein != null || data.carbohydrates != null || data.sugars != null) {
                     revealNutrition();
                 }
+                // A saved clip with no zoom yet keeps its old full-cover look.
+                S.clipFocus = { x: data.videoFocusX ?? 50, y: data.videoFocusY ?? 50, zoom: data.videoZoom ?? 100 };
                 renderProductMedia(data.image, data.videoClip);
 
                 document.querySelectorAll('.tag-pill').forEach(p =>
@@ -441,6 +452,9 @@
             sugars:         getVal('p-sugars') || null,
             nutritionVisible: panel.querySelector('[id="p-nutrition-visible"]')?.checked ?? true,
             spicyLevel:  S.spicy || null,
+            // Only while a clip is in the box — undefined is dropped by
+            // JSON.stringify, leaving the saved framing untouched otherwise.
+            videoFocus:  panelEl('img-upload-area')?.classList.contains('framing') ? S.clipFocus : undefined,
             active:      true,
             translations,
             tags,
@@ -453,30 +467,39 @@
 
         // One control, one pick — the file's real MIME (already checked
         // once in previewMedia(), re-checked here since it's what decides
-        // which endpoint(s) to call) decides photo vs. clip. A clip's own
-        // auto-captured poster (S.stagedPosterFile, set by
-        // capturePosterFromClip()) uploads FIRST: uploadProductImage()
-        // clears any previous videoClip as its own invariant, so the clip
-        // uploaded right after is the one that ends up winning. If capture
-        // failed, S.stagedPosterFile stays null and image is left
-        // untouched entirely — see capturePosterFromClip()'s own fallback
-        // contract — the clip itself still saves.
+        // which endpoint to call) decides photo vs. clip. A clip's poster
+        // (Product::$image) is extracted server-side by the clip endpoint
+        // itself, in the same request — clip and poster are saved together
+        // or not at all (see MenuAdminController::uploadProductClip()).
         const mediaFile = panelEl('p-img-input')?.files?.[0];
+        let mediaError = null;
+        let clipTrimmed = false;
         if (mediaFile && mediaFile.type.startsWith('video/')) {
-            if (S.stagedPosterFile) {
-                const imgData = await uploadProductImage(data.id, S.stagedPosterFile);
-                if (imgData.error) showToast(imgData.error, 'error');
-            }
+            showToast(MSG_CLIP_PROCESSING);
             const clipData = await uploadProductClip(data.id, mediaFile);
-            if (clipData.error) showToast(clipData.error, 'error');
+            mediaError = clipData.error ?? null;
+            clipTrimmed = !mediaError && clipData.trimmed === true;
         } else if (mediaFile) {
             const imgData = await uploadProductImage(data.id, mediaFile);
-            if (imgData.error) showToast(imgData.error, 'error');
+            mediaError = imgData.error ?? null;
         }
 
-        showToast(S.productId ? MSG_PRODUCT_SAVED : MSG_PRODUCT_CREATED, 'success');
+        // The dish itself IS saved at this point — only its media failed.
+        // Keep the editor open (the old close + reload hid the error before
+        // it could be read) with the error pinned under the media box, and
+        // adopt the new id so saving again updates this dish instead of
+        // creating a duplicate. The picked file stays in the input, so a
+        // second save simply retries the upload.
+        if (mediaError) {
+            S.productId = data.id;
+            showMediaError(mediaError);
+            showToast(mediaError, 'error');
+            return;
+        }
+
+        showToast(clipTrimmed ? MSG_CLIP_TRIMMED : (S.productId ? MSG_PRODUCT_SAVED : MSG_PRODUCT_CREATED), 'success');
         ProductUI.closeProduct();
-        setTimeout(() => location.reload(), 700);
+        setTimeout(() => location.reload(), clipTrimmed ? 2000 : 700);
     }
 
     async function toggleProduct(id, btn) {
@@ -1232,7 +1255,8 @@
     // poster — never a leftover from a different, unrelated pick.
     function clearMediaPreview(area) {
         area.querySelectorAll('img, video').forEach(el => el.remove());
-        area.classList.remove('loading');
+        area.classList.remove('loading', 'framing', 'dragging');
+        area.closest('.field').querySelectorAll('.clip-frame-hint, .clip-zoom').forEach(el => el.classList.remove('show'));
     }
 
     // Shared by previewMedia() (local file, instant via ObjectURL) and
@@ -1264,26 +1288,125 @@
     // Same fixed 16/9 box as the photo, unconditionally — a clip preview
     // must not resize the box (an adaptive-box-per-clip-orientation
     // approach was tried and fully reverted; see the commit that removed
-    // it). object-fit:cover crops the clip the same way it already crops
-    // a photo, no special-casing needed.
+    // it). Inside it the clip is sized by the owner's zoom and placed by
+    // their framing (.clip-fit, same formula as the public carta's
+    // .dish-clip--fit), over a blurred, cover-fit copy of itself filling any
+    // gap — see initClipFraming().
     function showClipInArea(area, src) {
         clearMediaPreview(area);
-        const video = document.createElement('video');
-        video.muted = true;
-        video.loop = true;
-        video.autoplay = true;
-        video.playsInline = true;
-        area.appendChild(video);
-        area.classList.add('loading');
+        const makeVideo = () => {
+            const v = document.createElement('video');
+            v.muted = true;
+            v.loop = true;
+            v.autoplay = true;
+            v.playsInline = true;
+            return v;
+        };
+        const backdrop = makeVideo();
+        backdrop.className = 'clip-backdrop';
+        backdrop.setAttribute('aria-hidden', 'true');
+        const video = makeVideo();
+        video.className = 'clip-fit';
+        applyClipFit(video);
+        area.append(backdrop, video);
+        area.classList.add('loading', 'framing');
+        // The browser reports the display size (rotation already applied),
+        // same as ffprobe does server-side for the carta.
+        video.onloadedmetadata = () => {
+            if (video.videoWidth && video.videoHeight) video.style.setProperty('--ar', video.videoWidth / video.videoHeight);
+        };
         video.onloadeddata = () => { video.classList.add('loaded'); area.classList.remove('loading'); };
+        backdrop.onloadeddata = () => backdrop.classList.add('loaded');
+        backdrop.src = src;
         video.src = src;
         area.querySelector('.img-upload-hint').style.display = 'none';
-        const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
+        const field = area.closest('.field');
+        field.querySelector('.clip-frame-hint')?.classList.add('show');
+        const zoom = field.querySelector('.clip-zoom');
+        if (zoom) {
+            zoom.classList.add('show');
+            zoom.querySelector('input').value = S.clipFocus.zoom;
+        }
+        const changeBtn = field.querySelector('.img-upload-change-btn');
         if (changeBtn) changeBtn.style.display = '';
     }
 
-    function showClipPosterWarning(show) {
-        document.querySelectorAll('[id="clip-poster-warning"]').forEach(el => el.classList.toggle('show', show));
+    function applyClipFit(video) {
+        video.style.setProperty('--z', S.clipFocus.zoom / 100);
+        video.style.setProperty('--fx', S.clipFocus.x / 100);
+        video.style.setProperty('--fy', S.clipFocus.y / 100);
+    }
+
+    // Clip zoom + framing, stored as Product::$videoZoom (0 = whole clip
+    // visible, 100 = box fully covered) and $videoFocusX/Y (0–100, where the
+    // clip sits: 0 = left/top edge, 100 = right/bottom). All three are
+    // fractions of the box, not pixels, so what's set in this 16/9 preview
+    // carries over to the public card and detail sheet at their own sizes.
+    // Drag moves the clip on whichever axis it doesn't exactly fill; the
+    // slider under the box sets the zoom. Delegated on document since the
+    // editor markup exists twice (desktop modal + mobile sheet). Arrow keys
+    // nudge the framing too, for keyboard users.
+    (function initClipFraming() {
+        const clamp = v => Math.max(0, Math.min(100, v));
+        const apply = () => document.querySelectorAll('[id="img-upload-area"] video.clip-fit').forEach(applyClipFit);
+        // Box size minus clip size on each axis at the current zoom — the
+        // range a 0→1 focus moves the clip across (negative when the clip
+        // overflows the box). Same geometry as the CSS in _product_modal_css.
+        const slack = (area, video) => {
+            const bw = area.clientWidth, bh = area.clientHeight;
+            const ar = video.videoWidth / video.videoHeight;
+            if (!ar) return { x: 0, y: 0 };
+            const min = Math.min(bw, bh * ar), max = Math.max(bw, bh * ar);
+            const w = min + S.clipFocus.zoom / 100 * (max - min);
+            return { x: bw - w, y: bh - w / ar };
+        };
+        let drag = null;
+        document.addEventListener('pointerdown', e => {
+            const area = e.target.closest('.img-upload.framing');
+            const video = area?.querySelector('video.clip-fit');
+            if (!video) return;
+            e.preventDefault();
+            area.setPointerCapture(e.pointerId);
+            area.classList.add('dragging');
+            drag = { area, px: e.clientX, py: e.clientY, fx: S.clipFocus.x, fy: S.clipFocus.y, sl: slack(area, video) };
+        });
+        document.addEventListener('pointermove', e => {
+            if (!drag) return;
+            // left = slack × focus, so a drag of d px changes focus by d / slack
+            // — which also gets the direction right both when the clip
+            // overflows the box (slack < 0) and when it leaves a gap (> 0).
+            if (Math.abs(drag.sl.x) > 1) S.clipFocus.x = Math.round(clamp(drag.fx + (e.clientX - drag.px) / drag.sl.x * 100));
+            if (Math.abs(drag.sl.y) > 1) S.clipFocus.y = Math.round(clamp(drag.fy + (e.clientY - drag.py) / drag.sl.y * 100));
+            apply();
+        });
+        const end = () => { if (drag) { drag.area.classList.remove('dragging'); drag = null; } };
+        document.addEventListener('pointerup', end);
+        document.addEventListener('pointercancel', end);
+        document.addEventListener('input', e => {
+            if (!e.target.matches('.clip-zoom input')) return;
+            S.clipFocus.zoom = clamp(parseInt(e.target.value, 10) || 0);
+            document.querySelectorAll('.clip-zoom input').forEach(i => { if (i !== e.target) i.value = S.clipFocus.zoom; });
+            apply();
+        });
+        document.addEventListener('keydown', e => {
+            const area = e.target.closest?.('.img-upload.framing');
+            if (!area) return;
+            const step = { ArrowUp: [0, -5], ArrowDown: [0, 5], ArrowLeft: [-5, 0], ArrowRight: [5, 0] }[e.key];
+            if (!step) return;
+            e.preventDefault();
+            S.clipFocus.x = clamp(S.clipFocus.x + step[0]);
+            S.clipFocus.y = clamp(S.clipFocus.y + step[1]);
+            apply();
+        });
+    })();
+
+    // Pinned under the media box (not just a toast) — see saveProduct().
+    // null hides it.
+    function showMediaError(message) {
+        document.querySelectorAll('[id="media-upload-error"]').forEach(el => {
+            el.querySelector('.media-upload-error-text').textContent = message ?? '';
+            el.classList.toggle('show', !!message);
+        });
     }
 
     // previewMedia() only shows the picked file locally — the actual
@@ -1296,13 +1419,13 @@
     function previewMedia(input) {
         if (!input.files?.length) return;
         const file = input.files[0];
-        S.stagedPosterFile = null;
-        showClipPosterWarning(false);
+        showMediaError(null);
 
         if (file.type.startsWith('video/')) {
             const src = URL.createObjectURL(file);
+            S.clipFocus = { x: 50, y: 50, zoom: CLIP_DEFAULT_ZOOM };
             showClipInArea(panelEl('img-upload-area'), src);
-            capturePosterFromClip(file, src);
+            checkClipDuration(src);
         } else {
             showImageInArea(panelEl('img-upload-area'), URL.createObjectURL(file));
         }
@@ -1372,72 +1495,24 @@
         }
     }
 
-    // Captures a poster frame from a freshly-picked clip entirely in the
-    // browser (hidden <video> + <canvas>, ~0.1s in) and stashes it in
-    // S.stagedPosterFile — read by saveProduct(), which uploads it via the
-    // SAME uploadProductImage()/endpoint the photo path already uses. No
-    // separate poster endpoint on the server at all. Kept as its own JS
-    // variable rather than staged into p-img-input (DataTransfer trick the
-    // old two-field version used) because that input now holds the clip
-    // itself — overwriting it with the poster would lose the owner's pick.
-    //
-    // Fallback contract if capture fails for any reason (exotic codec,
-    // browser quirk, zero-dimension video): S.stagedPosterFile stays null,
-    // so saveProduct() below leaves image completely untouched — whatever
-    // photo was already saved keeps showing exactly as it was — and
-    // #clip-poster-warning is shown so the owner knows to add one manually.
-    // This is what keeps a clip from ever reaching the public carta with a
-    // <video poster> pointing at nothing (see layouts/standard/show.html.twig's
-    // own videoClip + image guard).
-    function capturePosterFromClip(file, srcUrl) {
+    // UX-only heads-up as soon as a clip is picked — the server's own
+    // moov/mvhd parse (UploadValidator::readMp4DurationSeconds()) is the
+    // real guarantee. Over the stored cap: an info toast that it will be
+    // trimmed; over the input cap: the same error the server would return,
+    // shown under the box before a long upload is wasted on it.
+    function checkClipDuration(srcUrl) {
         const probe = document.createElement('video');
         probe.muted = true;
-        probe.playsInline = true;
-        probe.preload = 'auto';
-        probe.src = srcUrl;
-
-        let settled = false;
-        const fail = () => {
-            if (settled) return;
-            settled = true;
-            showClipPosterWarning(true);
-        };
-        const timeoutId = setTimeout(fail, 5000);
-
+        probe.preload = 'metadata';
         probe.addEventListener('loadedmetadata', () => {
-            if (Number.isFinite(probe.duration) && probe.duration > CLIP_MAX_DURATION_SECONDS) {
-                // UX-only heads-up — the server's own moov/mvhd parse in
-                // UploadValidator::readMp4DurationSeconds() is the real
-                // guarantee, this just saves the owner a wasted save attempt.
-                showToast(MSG_CLIP_DURATION_WARNING, 'error');
-            }
-            try {
-                probe.currentTime = Math.min(0.1, (probe.duration || 0.2) / 2);
-            } catch (e) { fail(); }
-        });
-
-        probe.addEventListener('seeked', () => {
-            if (settled) return;
-            try {
-                const canvas = document.createElement('canvas');
-                canvas.width = probe.videoWidth;
-                canvas.height = probe.videoHeight;
-                if (!canvas.width || !canvas.height) throw new Error('no video dimensions');
-                canvas.getContext('2d').drawImage(probe, 0, 0);
-                canvas.toBlob(blob => {
-                    clearTimeout(timeoutId);
-                    if (settled) return;
-                    settled = true;
-                    if (!blob) { showClipPosterWarning(true); return; }
-                    S.stagedPosterFile = new File([blob], 'clip-poster.jpg', { type: 'image/jpeg' });
-                }, 'image/jpeg', 0.85);
-            } catch (e) {
-                clearTimeout(timeoutId);
-                fail();
+            if (!Number.isFinite(probe.duration)) return;
+            if (probe.duration > CLIP_MAX_INPUT_DURATION_SECONDS) {
+                showMediaError(MSG_CLIP_TOO_LONG);
+            } else if (probe.duration > CLIP_MAX_DURATION_SECONDS) {
+                showToast(MSG_CLIP_DURATION_WARNING);
             }
         });
-
-        probe.addEventListener('error', () => { clearTimeout(timeoutId); fail(); });
+        probe.src = srcUrl;
     }
 
     // ── Reset ──────────────────────────────────────────────────────────────────
@@ -1501,8 +1576,8 @@
         // stays in the <input> and saveProduct() would silently attach the
         // previous dish's media to whichever dish is opened next.
         document.querySelectorAll('[id="p-img-input"]').forEach(el => { el.value = ''; });
-        S.stagedPosterFile = null;
-        showClipPosterWarning(false);
+        S.clipFocus = { x: 50, y: 50, zoom: CLIP_DEFAULT_ZOOM };
+        showMediaError(null);
         S.productId=null; S.categoryId=null; S.menuSectionId=null; S.spicy=0;
         // Reset steps visibility
         ['product-modal-steps','product-sheet-steps'].forEach(id => {

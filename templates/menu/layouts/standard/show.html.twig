@@ -5,26 +5,10 @@
 {# Filters-panel chip icon (diet/allergy/other/evitar chips below). Icons are
    free-text data (Tag::$icon / Allergen::$icon, admin-set, usually an emoji)
    — there's no fixed key to map to a monoline SVG set, so maison contains
-   the emoji as-is in a parchment disc (.aicon, already used for the dish-card
-   allergen row) instead of inventing an icon lookup. Other themes/layouts
-   keep the original bare "icon + space + name" text exactly. #}
+   the emoji as-is in a parchment disc (.aicon) instead of inventing an icon
+   lookup. Other themes/layouts keep the original bare "icon + space + name"
+   text exactly. #}
 {% macro chipIcon(icon, theme) %}{% if theme == 'maison' %}<span class="aicon">{{ icon }}</span>{% else %}{{ icon }} {% endif %}{% endmacro %}
-{# Card-front allergen tease — "[shield] Gluten, Crustáceos, Huevos" (maison
-   only, both .dish-card and .dish-row — see cardAllergens above the
-   dish-card div below). One shared macro so the shield icon/list markup
-   isn't duplicated across the two front-face branches. Renders nothing at
-   all when cardAllergens is empty — no icon, no line, no invented content.
-
-   No text label ("Contiene:"/"CONTIENE:") any more (2026-09-06, see
-   conversation) — the shield alone now carries that meaning, so it can no
-   longer be aria-hidden: it's `role="img"` with an `aria-label` sourced
-   from the existing `dish.allergens` key (already translated in all 20
-   menu_public.*.yaml locales — reused rather than adding a new key, since
-   it already says exactly "Allergens"/"Alérgenos"/etc.). A screen reader
-   reads the icon's label followed by the plain-text allergen names, e.g.
-   "Alérgenos, Gluten, Crustáceos, Huevos" — equivalent meaning to the
-   removed visible label, without re-adding a visible word. #}
-{% macro dishContains(cardAllergens, locale) %}{% if cardAllergens|length > 0 %}<div class="dish-contains"><i class="ti ti-shield-check dish-contains-icon" role="img" aria-label="{{ 'dish.allergens'|trans({}, 'menu_public', locale) }}"></i><span class="dish-contains-list">{{ cardAllergens|map(a => a.name)|join(', ') }}</span></div>{% endif %}{% endmacro %}
 {# Maison nutrition panel (dish-detail modal only) — presentation-only trim
    of a whole-number decimal's trailing ".0" ("20.0" -> "20", "0.0" -> "0"),
    never touching the stored value: fat/protein/carbohydrates/sugars are
@@ -34,6 +18,23 @@
    shortens the "no real fraction typed" case so the public menu reads as
    an editorial "20g" rather than a nutrition-label "20.0g". A value with an
    actual fraction (anything not ending ".0") is printed byte-for-byte. #}
+{# A dish clip, as rendered in both the card and the detail sheet. With the
+   clip's own dimensions known (Product::getVideoAspectRatio()), it's sized by
+   the owner's zoom + framing (.dish-clip--fit, see the CSS) over a blurred
+   copy of its poster that fills any gap; without them it falls back to the
+   plain object-fit:cover every clip used before zoom existed. #}
+{% macro clipVideo(product) %}
+    {%- set ar = product.videoAspectRatio -%}
+    {%- set poster = asset('uploads/products/' ~ product.image) -%}
+    {%- if ar -%}
+        <div class="clip-backdrop" style="background-image: url('{{ poster }}')" aria-hidden="true"></div>
+    {%- endif -%}
+    <video class="dish-clip{{ ar ? ' dish-clip--fit' }}" muted loop playsinline preload="none"
+           style="{% if ar %}--ar: {{ ar }}; --z: {{ (product.videoZoom ?? 100) / 100 }}; --fx: {{ (product.videoFocusX ?? 50) / 100 }}; --fy: {{ (product.videoFocusY ?? 50) / 100 }}{% else %}object-position: {{ product.videoObjectPosition }}{% endif %}"
+           poster="{{ poster }}"
+           data-clip-src="{{ asset('uploads/products/' ~ product.videoClip) }}"
+           aria-hidden="true"></video>
+{%- endmacro %}
 {% macro nutritionValue(raw) %}{{- raw ends with '.0' ? raw|slice(0, -2) : raw -}}{% endmacro %}
 <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -379,8 +380,30 @@
        adaptive box sized to the clip's own aspect ratio across three
        commits; reverted in full — see the commit that removed it for
        why). object-fit:cover crops a clip's frame the same way it already
-       crops a photo, no special-casing needed. */
+       crops a photo; which part of the clip stays visible is the owner's
+       own framing (Product::$videoFocusX/Y), set inline as object-position.
+       A clip with known dimensions (.dish-clip--fit, below) is sized by the
+       owner's zoom instead. */
     .dish-card .front-img img, .dish-card .front-img video.dish-clip { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
+    /* Zoomed clip (Product::$videoZoom): --z runs from 0 = whole clip
+       visible (contain width) to 1 = box fully covered (cover width), both
+       computed from the box's own size in container units and the clip's
+       aspect ratio --ar, so the same values fit the card, the detail sheet
+       and the admin preview alike. --fx/--fy place it like object-position
+       does (0 = left/top edge, 1 = right/bottom). Any gap left around it is
+       filled by .clip-backdrop, its poster blurred, at z-index:-1 inside an
+       isolated box (above the box background, below the clip). */
+    .dish-card .front-img:has(> video.dish-clip--fit), .dish-modal-photo:has(> video.dish-clip--fit) { container-type: size; isolation: isolate; }
+    .dish-card .front-img video.dish-clip.dish-clip--fit, .dish-modal-photo video.dish-clip.dish-clip--fit {
+        --fit-min: min(100cqw, 100cqh * var(--ar));
+        --fit-max: max(100cqw, 100cqh * var(--ar));
+        --w: calc(var(--fit-min) + var(--z) * (var(--fit-max) - var(--fit-min)));
+        position: absolute; max-width: none; object-fit: fill;
+        width: var(--w); height: calc(var(--w) / var(--ar));
+        left: calc((100cqw - var(--w)) * var(--fx));
+        top: calc((100cqh - var(--w) / var(--ar)) * var(--fy));
+    }
+    .clip-backdrop { position: absolute; inset: -24px; z-index: -1; background: center / cover no-repeat; filter: blur(18px) brightness(0.85); pointer-events: none; }
     .dish-card:hover .front-img img, .dish-card:hover .front-img video.dish-clip { transform: scale(1.045); }
 
     /* No-photo placeholder — a warm brand-colored panel with an icon and
@@ -797,30 +820,20 @@
                                 {% endif %}
                             {% endif %}
                             {% set maisonRow = theme == 'maison' and not product.image %}
-                            {# Allergens shown on the card front (maison only): the same
-                               productAllergens entries the detail sheet uses, already
-                               translated to the active locale server-side, minus
-                               free_from (a card teases what to watch for, not what's
-                               safe — that nuance stays in the detail sheet's 3-state
-                               list). Rendered as a "Contiene: X, Y" text line (see
-                               .dish-contains in maison/overrides.html.twig) rather than
-                               the old bare icon-only row, and shared by both the photo
-                               card and the no-photo .dish-row for the same reason the
-                               description/"Ver más" treatment is shared below: one card,
-                               two layouts. #}
-                            {% set cardAllergens = theme == 'maison' ? productAllergens[product.id]|default([])|filter(a => a.presence != 'free_from') : [] %}
                             <div class="dish-card{{ maisonRow ? ' dish-row' : '' }}" onclick="openDishModal(this)" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': pT.name}, 'menu_public', locale) }}" data-product-id="{{ product.id }}" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}" data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
                                 {% if maisonRow %}
                                     {# No photo, maison: a plain text row (see conversation
                                        2026-09-02) instead of a card with an empty image frame —
-                                       no .front-img at all, just name+price/"Contiene…"/"Ver más"
-                                       straight on the section background. Description dropped
-                                       from the card front (2026-09-05): it stays in the detail
-                                       sheet only, same as the photo card below. #}
+                                       no .front-img at all, just name+price/"Ver más" straight on
+                                       the section background. Description (2026-09-05) and
+                                       allergens (2026-09-26) dropped from the card front: both
+                                       stay in the detail sheet only, same as the photo card
+                                       below — on the card, a bare allergen list read as the
+                                       dish's ingredients. The allergen filter doesn't need them
+                                       here: it reads the card's own data-allergens attribute. #}
                                     <div class="row-head">
                                         <div class="row-left">
                                             <div class="front-name">{{ pT.name }}</div>
-                                            {{ _self.dishContains(cardAllergens, locale) }}
                                             <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
                                         </div>
                                         <div class="row-price-col">
@@ -833,13 +846,10 @@
                                     {# videoClip requires image too — image is the <video poster> AND
                                        the fallback for anything that can't/shouldn't play a clip (see
                                        Product::$videoClip's own docblock). A clip with no poster never
-                                       reaches here: the editor's own fallback (capturePosterFromClip())
-                                       keeps that pairing honest at save time. #}
+                                       reaches here: MenuAdminController::uploadProductClip() saves the
+                                       clip and its server-extracted poster together or not at all. #}
                                     {% if product.videoClip and product.image %}
-                                        <video class="dish-clip" muted loop playsinline preload="none"
-                                               poster="{{ asset('uploads/products/' ~ product.image) }}"
-                                               data-clip-src="{{ asset('uploads/products/' ~ product.videoClip) }}"
-                                               aria-hidden="true"></video>
+                                        {{ _self.clipVideo(product) }}
                                     {% elseif product.image %}
                                         <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">
                                     {% else %}
@@ -851,11 +861,11 @@
                                 </div>
                                 <div class="front-info">
                                     <div class="front-name">{{ pT.name }}{% if theme != 'maison' and product.supplementPrice %} <span class="supplement-badge">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }} {{ currencyDisplay }}</span>{% endif %}</div>
-                                    {# Description dropped from the maison card front (2026-09-05,
-                                       see conversation) — it stays in the detail sheet only.
-                                       Other themes keep showing it here unchanged. #}
+                                    {# Description (2026-09-05) and allergens (2026-09-26) dropped
+                                       from the maison card front — both stay in the detail sheet
+                                       only (see the .dish-row branch above for why). Other themes
+                                       keep showing the description here unchanged. #}
                                     {% if pT.description and theme != 'maison' %}<div class="front-desc">{{ pT.description }}</div>{% endif %}
-                                    {{ _self.dishContains(cardAllergens, locale) }}
                                     <div class="dish-bottom">
                                         {% if theme == 'maison' %}
                                             <div class="dish-price-col">
@@ -871,10 +881,7 @@
                                 {% endif %}
                                 <template class="dish-tpl">
                                     {% if product.videoClip and product.image %}
-                                        <video class="dish-clip" muted loop playsinline preload="none"
-                                               poster="{{ asset('uploads/products/' ~ product.image) }}"
-                                               data-clip-src="{{ asset('uploads/products/' ~ product.videoClip) }}"
-                                               aria-hidden="true"></video>
+                                        {{ _self.clipVideo(product) }}
                                     {% elseif product.image %}
                                         <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">
                                     {% elseif theme == 'maison' %}

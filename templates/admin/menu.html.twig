@@ -383,10 +383,9 @@
             spicy:       0,
             allergenOverrides: [],
             ingredientAllergenCache: {},
-            // Canvas-captured poster for a freshly-picked clip, staged here
-            // (not in an <input>) since #p-img-input holds the clip file
-            // itself — see capturePosterFromClip() in _product_js.html.twig.
-            stagedPosterFile: null,
+            // Clip framing (object-position %) — see initClipFraming() in
+            // _product_js.html.twig and Product::$videoFocusX/Y.
+            clipFocus: { x: 50, y: 50, zoom: 50 },
         };
     </script>
     {% include 'admin/_admin_js_utils.html.twig' %}

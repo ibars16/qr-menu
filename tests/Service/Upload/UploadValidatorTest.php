@@ -239,18 +239,31 @@ final class UploadValidatorTest extends TestCase
         self::assertMatchesRegularExpression('/^[0-9a-f]{32}\.mp4$/', $result->safeFilename);
     }
 
-    public function testAcceptsAClipRightAtTheDurationCap(): void
+    public function testAcceptsAClipOverTheStoredCapAndReportsItsDurationForTrimming(): void
     {
-        $file = $this->mp4Upload(10.0);
+        // Over the 6 s stored cap but under the 60 s input cap: accepted,
+        // with the parsed duration handed back so the controller trims it
+        // (ClipTranscoder) instead of rejecting it.
+        $file = $this->mp4Upload(8.5);
+
+        $result = $this->validator()->validate($file, UploadProfile::DishClip);
+
+        self::assertTrue($result->isValid);
+        self::assertEqualsWithDelta(8.5, $result->durationSeconds, 0.001);
+    }
+
+    public function testAcceptsAClipRightAtTheInputDurationCap(): void
+    {
+        $file = $this->mp4Upload(60.0);
 
         $result = $this->validator()->validate($file, UploadProfile::DishClip);
 
         self::assertTrue($result->isValid);
     }
 
-    public function testRejectsAClipOverTheDurationCap(): void
+    public function testRejectsAClipOverTheInputDurationCap(): void
     {
-        $file = $this->mp4Upload(10.1);
+        $file = $this->mp4Upload(60.1);
 
         $result = $this->validator()->validate($file, UploadProfile::DishClip);
 
@@ -273,10 +286,16 @@ final class UploadValidatorTest extends TestCase
     public function testRejectsFileOverTheClipProfileSizeLimit(): void
     {
         $file = $this->mp4Upload(3.0);
-        // Pad past dish_clip's 8MB cap with trailing bytes after mdat — finfo
-        // only looks at the header/early boxes, so this stays detected as
-        // video/mp4 while filesystem size exceeds the limit.
-        file_put_contents($file->getPathname(), str_repeat("\0", 9 * 1024 * 1024), FILE_APPEND);
+        // Pad past dish_clip's 60MB input cap with trailing bytes after mdat —
+        // finfo only looks at the header/early boxes, so this stays detected
+        // as video/mp4 while filesystem size exceeds the limit.
+        // Extended with ftruncate (zero-filled, never held in memory) —
+        // a 61MB str_repeat blows the suite's memory_limit.
+        clearstatcache();
+        $handle = fopen($file->getPathname(), 'r+');
+        ftruncate($handle, filesize($file->getPathname()) + 61 * 1024 * 1024);
+        fclose($handle);
+        clearstatcache();
 
         $result = $this->validator()->validate($file, UploadProfile::DishClip);
 

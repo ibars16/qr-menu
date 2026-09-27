@@ -190,12 +190,17 @@ smart_waiter:
 upload:
     aria: Carica foto o clip del piatto
     hint: Trascina o clicca per caricare una foto o una clip
-    limits: 'Foto: JPEG, PNG o WebP (max 8 MB, min 400×400 px) · Clip: MP4 (max 8 MB, max 10 s)'
+    limits: 'Foto: JPEG, PNG o WebP (max 8 MB, min 400×400 px) · Video: MP4 (max 60 MB)'
     change: Cambia
 
 clip:
-    poster_capture_failed: Impossibile generare automaticamente una miniatura dalla clip. Carica una foto perché venga mostrata nel menu.
-    duration_warning: Questa clip dura più di 10 s — il server la rifiuterà al salvataggio.
+    duration_warning: 'Questo video dura più di 6 s — al salvataggio verrà tagliato ai primi 6 secondi.'
+    processing: 'Caricamento ed elaborazione del video…'
+    trimmed: 'Piatto salvato. Il video è stato tagliato ai primi 6 secondi.'
+    trim_notice: 'I video più lunghi di 6 s vengono tagliati automaticamente ai primi 6 secondi.'
+    frame_badge: 'Trascina per inquadrare'
+    frame_hint: 'Trascina il video per scegliere quale parte si vede e usa lo zoom per adattarlo al riquadro. Consiglio: registralo in orizzontale perché si veda più intero.'
+    zoom_label: 'Zoom'
 
 error:
     category_name_required: Il nome è obbligatorio.
@@ -211,8 +216,8 @@ error:
     image_upload_failed: Impossibile caricare l'immagine. Riprova.
     clip_invalid: Non è stato selezionato un video valido.
     clip_unsupported_type: Formato video non supportato. Usa MP4.
-    clip_too_large: Il video è troppo grande (max 8 MB).
-    clip_duration_too_long: Il video è troppo lungo (max 10 s).
+    clip_too_large: 'Il video è troppo grande (max 60 MB).'
+    clip_duration_too_long: 'Il video è troppo lungo (max 60 s).'
     clip_upload_failed: Impossibile caricare il video. Riprova.
     unexpected: Qualcosa è andato storto. Riprova.
     nutrition_value_invalid: 'Il valore deve essere un numero compreso tra 0 e 9999.9, con al massimo un decimale.'

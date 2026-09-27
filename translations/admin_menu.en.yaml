@@ -190,12 +190,17 @@ smart_waiter:
 upload:
     aria: Upload dish photo or clip
     hint: Drag or click to upload a photo or a clip
-    limits: 'Photo: JPEG, PNG or WebP (max 8 MB, min 400×400 px) · Clip: MP4 (max 8 MB, max 10s)'
+    limits: 'Photo: JPEG, PNG or WebP (max 8 MB, min 400×400 px) · Video: MP4 (max 60 MB)'
     change: Change
 
 clip:
-    poster_capture_failed: Couldn't automatically generate a thumbnail from the clip. Upload a photo so it shows on the menu.
-    duration_warning: This clip is longer than 10s — the server will reject it when you save.
+    duration_warning: 'This video is longer than 6s — it will be trimmed to its first 6 seconds when you save.'
+    processing: 'Uploading and processing the video…'
+    trimmed: 'Dish saved. The video was trimmed to its first 6 seconds.'
+    trim_notice: 'Videos longer than 6s are automatically trimmed to their first 6 seconds.'
+    frame_badge: 'Drag to frame'
+    frame_hint: 'Drag the video to choose which part shows, and use the zoom to fit it to the box. Tip: record it horizontally so more of it is visible.'
+    zoom_label: 'Zoom'
 
 error:
     category_name_required: Name is required.
@@ -211,8 +216,8 @@ error:
     image_upload_failed: The image could not be uploaded. Please try again.
     clip_invalid: No valid video was selected.
     clip_unsupported_type: Unsupported video format. Use MP4.
-    clip_too_large: The video is too large (max 8 MB).
-    clip_duration_too_long: The video is too long (max 10s).
+    clip_too_large: 'The video is too large (max 60 MB).'
+    clip_duration_too_long: 'The video is too long (max 60s).'
     clip_upload_failed: The video could not be uploaded. Please try again.
     unexpected: Something went wrong. Please try again.
     nutrition_value_invalid: 'The value must be a number between 0 and 9999.9, with at most one decimal.'

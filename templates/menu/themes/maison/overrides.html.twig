@@ -444,10 +444,10 @@
        Fraunces' baseline sits slightly below its em-box top, and that
        offset showed up once .front-name and .row-price were compared
        baseline-to-baseline). Now .front-name lives inside .row-left
-       alongside "Ver más" and (optionally) .dish-contains, so it's
-       .row-left's own box being aligned against .row-price-col; measured
-       with flex-start, name-top and price-top now land on the exact same
-       pixel (0px diff), tighter than baseline's -2px. The bigger reason
+       alongside "Ver más", so it's .row-left's own box being aligned
+       against .row-price-col; measured with flex-start, name-top and
+       price-top now land on the exact same pixel (0px diff), tighter than
+       baseline's -2px. The bigger reason
        for the switch is what baseline never addressed either way: it only
        pins the TOP, so a short 1-line title next to a tall price+
        supplement block still left "Ver más" hanging ~30px below the title
@@ -456,11 +456,13 @@
        just the correct, exact version of the top-alignment baseline was
        already approximating. */
     .row-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
-    /* Left column of a no-photo row — name, allergen tease, "Ver más" all
-       stacked here (2026-09-19, "profesionalización" pass; previously
-       .front-name was .row-head's own flex child and .dish-contains/
-       .more-hint were its own next SIBLINGS after .row-head closed, so
-       their vertical position was set by .row-head's total flex height —
+    /* Left column of a no-photo row — name and "Ver más" stacked here
+       (2026-09-19, "profesionalización" pass; the card-front allergen line
+       that also lived here was removed 2026-09-26 — allergens stay in the
+       detail sheet only; previously .front-name was .row-head's own flex
+       child and the allergen line/.more-hint were its own next SIBLINGS
+       after .row-head closed, so their vertical position was set by
+       .row-head's total flex height —
        i.e. by whichever of .front-name or .row-price-col was taller, not
        by .front-name's own height. A short 1-line title next to a tall
        price+supplement block on the right left "Ver más" stranded ~30px
@@ -486,12 +488,6 @@
        .dish-price/.dish-detail-price siblings above (2026-09-19) — unified
        micro-tag typography, see the comment there. */
     .row-price .price-item-value { color: var(--cn); }
-    /* Description dropped from .dish-row's front (2026-09-05, see
-       conversation) for the same reason as the photo card's .front-desc
-       below — it stays in the detail sheet only. .dish-contains fills the
-       gap it left; .more-hint keeps its own row-scale sizing. */
-    .dish-row .dish-contains { margin: 5px 0 0; }
-
     /* "Ver más" in .dish-row — a wine text link with a trailing arrow,
        not the filled pill .dish-card/.banner keep (2026-09-06, see
        conversation): the pill repeated on every row of a long list pulled
@@ -532,52 +528,13 @@
        from the base layout's 15px. */
     .dish-detail-desc { font-size: calc(13.5px * var(--font-scale)); }
 
-    /* .aicon itself is unrelated to the card-front allergen row removed
-       below — it's the parchment-disc icon geometry shared by the filter
+    /* .aicon — the parchment-disc icon geometry shared by the filter
        panel's diet/type/allergen chips and the detail sheet's tag chips
-       (_self.chipIcon() in standard/show.html.twig), so it stays even
-       though .allergen-icons (its one card-front consumer) goes away. */
+       (_self.chipIcon() in standard/show.html.twig). The card front no
+       longer shows allergens at all (2026-09-26) — detail sheet only. */
     .aicon {
         width: 22px; height: 22px; border-radius: 50%; background: var(--bg);
         display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0;
-    }
-
-    /* "[shield] Gluten, Crustáceos, Huevos" — the card-front allergen tease,
-       replacing the old icon-per-allergen .allergen-icons/.aicon row
-       (2026-09-05, see conversation): bare icons with only a native
-       title="" tooltip were illegible on touch, so this reuses the same
-       productAllergens entries (already translated to the active locale,
-       minus free_from) as one discreet line instead. A single shield glyph
-       anchors it — the exact same `ti-shield-check` the "¿Alergias o
-       dietas?" button already uses (standard/show.html.twig, .diet-allergy-
-       btn i), not a new icon. Flex row so only the allergen list
-       (.dish-contains-list) truncates with an ellipsis on overflow — the
-       icon never gets clipped. Not the full safety list (that stays in the
-       detail sheet's .bsec with its 3-state chips) — a tease. Only
-       rendered when the dish actually has allergens (see the Twig
-       `cardAllergens|length > 0` guard, macro dishContains()) — never an
-       empty line and nothing invented.
-
-       No visible text label any more (2026-09-06, see conversation — the
-       "CONTIENE:" kicker from the previous round was dropped): the shield
-       carries that meaning instead, via `role="img"` + a translated
-       `aria-label` on the `<i>` itself (see the macro in
-       standard/show.html.twig) rather than a second DOM node here. Its
-       *visual* color stays --cf-hborder (brass, ~3.03:1 against --cf-bg/
-       --bg) — a decorative glyph only needs the 3:1 non-text-contrast bar,
-       which it clears; there's no longer any label text at this size for
-       the earlier 4.5:1 AA-text shortfall to apply to. Allergen names stay
-       --fg-2 (~5.4:1, comfortably AA). */
-    .dish-contains {
-        display: flex; align-items: center; gap: 0.375rem;
-        font-family: var(--font-body); font-size: calc(12.5px * var(--font-scale));
-        overflow: hidden; max-width: 100%;
-    }
-    .dish-contains-icon {
-        color: var(--cf-hborder); font-size: 0.8125rem; flex-shrink: 0;
-    }
-    .dish-contains-list {
-        color: var(--fg-2); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
     /* Hero kicker/CTA — carta-estilo's .cta-explore is a small filled wine
@@ -945,10 +902,10 @@
     /* Chip icons — Tag::$icon / Allergen::$icon are free-text (admin-set,
        usually an emoji), not a fixed key, so there's no reliable emoji→SVG
        map to build without inventing one. Containing the emoji in the same
-       parchment disc (.aicon) the dish-card allergen row already uses (see
-       further up this file) reads as a deliberate icon system instead of
-       raw emoji, at zero data-model cost — see standard/show.html.twig's
-       chipIcon() macro for where this disc gets added, maison-only. */
+       parchment disc (.aicon, defined further up this file) reads as a
+       deliberate icon system instead of raw emoji, at zero data-model
+       cost — see standard/show.html.twig's chipIcon() macro for where
+       this disc gets added, maison-only. */
     .filters-panel .diet-filter,
     .filters-panel .type-filter {
         gap: 8px;
@@ -1218,12 +1175,14 @@
        bottom fade dissolves the photo into the parchment body instead of
        cutting in a hard line. */
     .dish-modal-photo { position: relative; height: 300px; }
+    /* z-index:1 on both scrims: a zoomed clip (.dish-clip--fit) is itself
+       absolutely positioned, and would otherwise paint over them. */
     .dish-modal-photo::before {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5rem;
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5rem; z-index: 1;
         background: linear-gradient(rgba(20,14,11,0.35), transparent); pointer-events: none;
     }
     .dish-modal-photo::after {
-        content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4.5rem;
+        content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4.5rem; z-index: 1;
         background: linear-gradient(transparent, var(--cb-bg)); pointer-events: none;
     }
     /* No-photo collapse (2026-09-07) — openDishModal() (_search_js.html.twig)

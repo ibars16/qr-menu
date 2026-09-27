@@ -11,13 +11,15 @@ final class UploadValidationResult
         public readonly array $warnings,
         public readonly ?string $safeFilename,
         public readonly ?string $mimeType,
+        /** Clip profile only — read from the file itself; null for images. */
+        public readonly ?float $durationSeconds = null,
     ) {
     }
 
     /** @param UploadQualityWarning[] $warnings quality issues found — empty for a clean upload, non-empty only once the caller has confirmed them (see needsConfirmation()) */
-    public static function success(string $safeFilename, string $mimeType, array $warnings = []): self
+    public static function success(string $safeFilename, string $mimeType, array $warnings = [], ?float $durationSeconds = null): self
     {
-        return new self(true, null, $warnings, $safeFilename, $mimeType);
+        return new self(true, null, $warnings, $safeFilename, $mimeType, $durationSeconds);
     }
 
     /** A hard, security-relevant rejection. Never overridable by a quality-warning confirmation flag. */

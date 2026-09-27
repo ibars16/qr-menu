@@ -190,12 +190,17 @@ smart_waiter:
 upload:
     aria: Ajouter une photo ou un clip du plat
     hint: Cliquez ou glissez une photo ou un clip ici
-    limits: 'Photo : JPEG, PNG ou WebP (8 Mo max, 400×400 px min) · Clip : MP4 (8 Mo max, 10 s max)'
+    limits: 'Photo : JPEG, PNG ou WebP (8 Mo max, 400×400 px min) · Vidéo : MP4 (60 Mo max)'
     change: Changer
 
 clip:
-    poster_capture_failed: Impossible de générer automatiquement une miniature à partir du clip. Ajoutez une photo pour qu'elle s'affiche sur la carte.
-    duration_warning: Ce clip dépasse 10 s — le serveur le refusera à l'enregistrement.
+    duration_warning: 'Cette vidéo dépasse 6 s — elle sera coupée à ses 6 premières secondes à l''enregistrement.'
+    processing: 'Envoi et traitement de la vidéo…'
+    trimmed: 'Plat enregistré. La vidéo a été coupée à ses 6 premières secondes.'
+    trim_notice: 'Les vidéos de plus de 6 s sont automatiquement coupées à leurs 6 premières secondes.'
+    frame_badge: 'Glissez pour cadrer'
+    frame_hint: 'Faites glisser la vidéo pour choisir la partie visible et utilisez le zoom pour l''ajuster au cadre. Astuce : filmez à l''horizontale pour qu''elle apparaisse plus en entier.'
+    zoom_label: 'Zoom'
 
 error:
     category_name_required: Le nom est obligatoire.
@@ -211,8 +216,8 @@ error:
     image_upload_failed: Impossible d'envoyer l'image. Veuillez réessayer.
     clip_invalid: Aucune vidéo valide n'a été sélectionnée.
     clip_unsupported_type: Format vidéo non pris en charge. Utilisez MP4.
-    clip_too_large: La vidéo est trop volumineuse (max. 8 Mo).
-    clip_duration_too_long: La vidéo est trop longue (max. 10 s).
+    clip_too_large: 'La vidéo est trop volumineuse (max. 60 Mo).'
+    clip_duration_too_long: 'La vidéo est trop longue (max. 60 s).'
     clip_upload_failed: Impossible d'envoyer la vidéo. Veuillez réessayer.
     unexpected: Une erreur est survenue. Veuillez réessayer.
     nutrition_value_invalid: 'La valeur doit être un nombre entre 0 et 9999.9, avec au maximum une décimale.'

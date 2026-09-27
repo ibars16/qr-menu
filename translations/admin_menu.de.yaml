@@ -190,12 +190,17 @@ smart_waiter:
 upload:
     aria: Foto oder Clip des Gerichts hochladen
     hint: Klicke oder ziehe ein Foto oder einen Clip hierher
-    limits: 'Foto: JPEG, PNG oder WebP (max. 8 MB, min. 400×400 px) · Clip: MP4 (max. 8 MB, max. 10 s)'
+    limits: 'Foto: JPEG, PNG oder WebP (max. 8 MB, min. 400×400 px) · Video: MP4 (max. 60 MB)'
     change: Ändern
 
 clip:
-    poster_capture_failed: Die Miniaturansicht konnte nicht automatisch aus dem Clip erstellt werden. Lade ein Foto hoch, damit es auf der Karte angezeigt wird.
-    duration_warning: Dieser Clip ist länger als 10 s — der Server wird ihn beim Speichern ablehnen.
+    duration_warning: 'Dieses Video ist länger als 6 s — beim Speichern wird es auf die ersten 6 Sekunden gekürzt.'
+    processing: 'Video wird hochgeladen und verarbeitet…'
+    trimmed: 'Gericht gespeichert. Das Video wurde auf die ersten 6 Sekunden gekürzt.'
+    trim_notice: 'Videos über 6 s werden automatisch auf die ersten 6 Sekunden gekürzt.'
+    frame_badge: 'Zum Ausrichten ziehen'
+    frame_hint: 'Ziehe das Video, um den sichtbaren Ausschnitt zu wählen, und passe es mit dem Zoom an den Rahmen an. Tipp: Im Querformat aufnehmen, damit mehr davon zu sehen ist.'
+    zoom_label: 'Zoom'
 
 error:
     category_name_required: Der Name ist erforderlich.
@@ -211,8 +216,8 @@ error:
     image_upload_failed: Das Bild konnte nicht hochgeladen werden. Bitte versuche es erneut.
     clip_invalid: Es wurde kein gültiges Video ausgewählt.
     clip_unsupported_type: Nicht unterstütztes Videoformat. Verwende MP4.
-    clip_too_large: Das Video ist zu groß (max. 8 MB).
-    clip_duration_too_long: Das Video ist zu lang (max. 10 s).
+    clip_too_large: 'Das Video ist zu groß (max. 60 MB).'
+    clip_duration_too_long: 'Das Video ist zu lang (max. 60 s).'
     clip_upload_failed: Das Video konnte nicht hochgeladen werden. Bitte versuche es erneut.
     unexpected: Etwas ist schiefgelaufen. Bitte versuche es erneut.
     nutrition_value_invalid: 'Der Wert muss eine Zahl zwischen 0 und 9999.9 mit höchstens einer Dezimalstelle sein.'

@@ -22,6 +22,7 @@ use App\Repository\AllergenRepository;
 use App\Service\CategoryTranslationService;
 use App\Service\ProductAllergenResolver;
 use App\Service\ProductTranslationService;
+use App\Service\Upload\ClipTranscoder;
 use App\Service\Upload\UploadProfile;
 use App\Service\Upload\UploadValidationError;
 use App\Service\Upload\UploadValidator;
@@ -47,6 +48,7 @@ class MenuAdminController extends AbstractController
         private readonly ProductTranslationService $productTranslationService,
         private readonly CategoryTranslationService $categoryTranslationService,
         private readonly UploadValidator $uploadValidator,
+        private readonly ClipTranscoder $clipTranscoder,
         private readonly string $kernelEnvironment,
     ) {
     }
@@ -376,6 +378,9 @@ class MenuAdminController extends AbstractController
             'categoryId'        => $product->getCategory()->getId(),
             'image'             => $product->getImage(),
             'videoClip'         => $product->getVideoClip(),
+            'videoFocusX'       => $product->getVideoFocusX(),
+            'videoFocusY'       => $product->getVideoFocusY(),
+            'videoZoom'         => $product->getVideoZoom(),
             'basePrice'         => $product->getBasePrice(),
             'supplementPrice'   => $product->getSupplementPrice(),
             'basePriceLabel'    => $product->getBasePriceLabel(),
@@ -594,6 +599,9 @@ class MenuAdminController extends AbstractController
                 unlink($oldClipPath);
             }
             $product->setVideoClip(null);
+            $product->setVideoFocus(null, null);
+            $product->setVideoZoom(null);
+            $product->setVideoDimensions(null, null);
         }
 
         $product->setImage($newFilename);
@@ -608,6 +616,13 @@ class MenuAdminController extends AbstractController
      * called after saveProduct() has an id), writing to Product::$videoClip
      * instead of $image — a distinct, optional field, not a replacement for
      * the photo (see Product.php's docblock on $videoClip).
+     *
+     * A clip over the stored caps (UploadValidator::clipMaxDurationSeconds()
+     * / clipMaxStoredSizeBytes()) is trimmed to its first N seconds here
+     * rather than rejected, and its poster (Product::$image) is extracted
+     * from the stored clip server-side — both with FFmpeg (ClipTranscoder).
+     * All-or-nothing: if either step fails, every new file is deleted and
+     * the product keeps its previous clip AND photo untouched.
      */
     #[Route('/products/{id}/clip', name: 'product_clip_upload', methods: ['POST'])]
     public function uploadProductClip(Product $product, Request $request, EntityManagerInterface $em): JsonResponse
@@ -629,32 +644,60 @@ class MenuAdminController extends AbstractController
             return $this->json(['error' => $this->translator->trans($this->productClipErrorKey($result->error), domain: 'admin_menu')], 400);
         }
 
-        $newFilename = $result->safeFilename;
-
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/products';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
 
+        $processingFailed = fn () => $this->json(['error' => $this->translator->trans('error.clip_upload_failed', domain: 'admin_menu')], 500);
+
+        $newFilename = $result->safeFilename;
         try {
             $file->move($uploadDir, $newFilename);
         } catch (FileException) {
-            return $this->json(['error' => $this->translator->trans('error.clip_upload_failed', domain: 'admin_menu')], 500);
+            return $processingFailed();
+        }
+        $newPath = $uploadDir . '/' . $newFilename;
+
+        $trimmed = $result->durationSeconds > UploadValidator::clipMaxDurationSeconds()
+            || filesize($newPath) > UploadValidator::clipMaxStoredSizeBytes();
+        if ($trimmed) {
+            $trimmedFilename = bin2hex(random_bytes(16)) . '.mp4';
+            $trimmedPath = $uploadDir . '/' . $trimmedFilename;
+            $ok = $this->clipTranscoder->trim($newPath, $trimmedPath, UploadValidator::clipMaxDurationSeconds());
+            unlink($newPath);
+            if (!$ok || filesize($trimmedPath) > UploadValidator::clipMaxStoredSizeBytes()) {
+                if (is_file($trimmedPath)) {
+                    unlink($trimmedPath);
+                }
+
+                return $processingFailed();
+            }
+            $newFilename = $trimmedFilename;
+            $newPath = $trimmedPath;
         }
 
-        $oldClip = $product->getVideoClip();
-        if ($oldClip) {
-            $oldPath = $uploadDir . '/' . $oldClip;
-            if (is_file($oldPath)) {
-                unlink($oldPath);
+        $posterFilename = bin2hex(random_bytes(16)) . '.jpg';
+        if (!$this->clipTranscoder->extractPoster($newPath, $uploadDir . '/' . $posterFilename)) {
+            unlink($newPath);
+
+            return $processingFailed();
+        }
+
+        foreach ([$product->getVideoClip(), $product->getImage()] as $old) {
+            if ($old && is_file($uploadDir . '/' . $old)) {
+                unlink($uploadDir . '/' . $old);
             }
         }
 
         $product->setVideoClip($newFilename);
+        $product->setImage($posterFilename);
+        // Null dimensions just mean the carta falls back to plain cover.
+        $product->setVideoDimensions(...($this->clipTranscoder->probeDimensions($newPath) ?? [null, null]));
         $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
-        return $this->json(['videoClip' => $newFilename]);
+        return $this->json(['videoClip' => $newFilename, 'image' => $posterFilename, 'trimmed' => $trimmed]);
     }
 
     /**
@@ -884,6 +927,27 @@ class MenuAdminController extends AbstractController
         if (array_key_exists('sugars',        $data)) $product->setSugars($data['sugars'] !== null && $data['sugars'] !== '' ? (string) $data['sugars'] : null);
         if (array_key_exists('nutritionVisible', $data)) $product->setNutritionVisible((bool) $data['nutritionVisible']);
         if (array_key_exists('spicyLevel', $data)) $product->setSpicyLevel($data['spicyLevel'] ?: null);
+        // Clip framing (object-position %, see Product::$videoFocusX) — sent
+        // with the main save, before any clip upload, so a freshly-picked
+        // clip lands already framed. Clamped in the setter.
+        if (is_array($data['videoFocus'] ?? null)) {
+            $fx = $data['videoFocus']['x'] ?? null;
+            $fy = $data['videoFocus']['y'] ?? null;
+            $product->setVideoFocus(is_numeric($fx) ? (int) round((float) $fx) : null, is_numeric($fy) ? (int) round((float) $fy) : null);
+            $fz = $data['videoFocus']['zoom'] ?? null;
+            $product->setVideoZoom(is_numeric($fz) ? (int) round((float) $fz) : null);
+
+            // Zoom only renders once the clip's dimensions are known — clips
+            // uploaded before they were recorded get them read here, the
+            // first time their framing is saved.
+            $clip = $product->getVideoClip();
+            if ($clip && $product->getVideoAspectRatio() === null) {
+                $clipPath = $this->getParameter('kernel.project_dir') . '/public/uploads/products/' . $clip;
+                if (is_file($clipPath)) {
+                    $product->setVideoDimensions(...($this->clipTranscoder->probeDimensions($clipPath) ?? [null, null]));
+                }
+            }
+        }
         if (isset($data['active']))                 $product->setActive((bool) $data['active']);
 
         // Translations — the admin form only ever submits the restaurant's

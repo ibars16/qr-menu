@@ -187,7 +187,7 @@
            auto-generado si lo que se sube es un clip — video_clip guarda la
            animación si la hay, y nunca conviven una foto elegida a mano con
            un clip distinto). Un único input#p-img-input decide por el MIME
-           real del archivo qué subir; ver previewMedia()/capturePosterFromClip()
+           real del archivo qué subir; ver previewMedia()/checkClipDuration()
            en _product_js.html.twig. ═══ #}
         <div class="product-tab-panel" role="tabpanel" data-tab="photo"
              id="{{ tab_prefix }}-tabpanel-photo" aria-labelledby="{{ tab_prefix }}-tab-photo">
@@ -198,7 +198,7 @@
                 </label>
                 <div class="img-upload"
                      id="img-upload-area"
-                     onclick="document.getElementById('p-img-input').click()"
+                     onclick="if (!this.classList.contains('framing')) document.getElementById('p-img-input').click()"
                      ondragover="event.preventDefault(); this.classList.add('drag-over')"
                      ondragleave="this.classList.remove('drag-over')"
                      ondrop="handleMediaDrop(event, this)"
@@ -211,7 +211,17 @@
                         <span class="img-upload-hint-limits">{{ 'upload.limits'|trans({}, 'admin_menu') }}</span>
                     </div>
                     <div class="img-upload-spinner" aria-hidden="true"></div>
+                    {# Clip framing — shown only while a clip is in the box
+                       (.framing, see initClipFraming() in _product_js). #}
+                    <span class="img-upload-frame-badge" aria-hidden="true"><i class="ti ti-arrows-move"></i> {{ 'clip.frame_badge'|trans({}, 'admin_menu') }}</span>
                 </div>
+                <label class="clip-zoom">
+                    <span class="clip-zoom-label">{{ 'clip.zoom_label'|trans({}, 'admin_menu') }}</span>
+                    <i class="ti ti-zoom-out" aria-hidden="true"></i>
+                    <input type="range" min="0" max="100" step="1" value="50">
+                    <i class="ti ti-zoom-in" aria-hidden="true"></i>
+                </label>
+                <p class="clip-frame-hint" id="clip-frame-hint">{{ 'clip.frame_hint'|trans({}, 'admin_menu') }}</p>
                 {# Below the photo/clip, not over it — only shown once there's
                    media (previewMedia()/renderProductMedia() reveal it), the
                    dropzone's own hint is the call to action until then. #}
@@ -219,13 +229,13 @@
                         onclick="document.getElementById('p-img-input').click()">
                     <i class="ti ti-pencil" aria-hidden="true"></i> {{ 'upload.change'|trans({}, 'admin_menu') }}
                 </button>
-                {# Honest fallback when a clip's canvas poster capture fails
-                   (exotic codec, browser quirk) — see capturePosterFromClip().
-                   The clip itself still gets staged/saved either way; this
-                   just tells the owner the photo wasn't auto-filled from it. #}
-                <p class="field-error" id="clip-poster-warning">
-                    <i class="ti ti-alert-triangle" aria-hidden="true"></i> {{ 'clip.poster_capture_failed'|trans({}, 'admin_menu') }}
+                {# A failed photo/clip upload, pinned here (not only a toast) —
+                   the dish itself was already saved and the editor stays
+                   open; see saveProduct() in _product_js.html.twig. #}
+                <p class="field-error" id="media-upload-error">
+                    <i class="ti ti-alert-triangle" aria-hidden="true"></i> <span class="media-upload-error-text"></span>
                 </p>
+                <p class="clip-trim-notice"><i class="ti ti-scissors" aria-hidden="true"></i> {{ 'clip.trim_notice'|trans({}, 'admin_menu') }}</p>
                 <input type="file"
                        id="p-img-input"
                        accept="image/*,video/*"
@@ -545,8 +555,13 @@
                 </div>
 
                 {# Collapsed by default — the vast majority of dishes need nothing here at all;
-                   see toggleAllergenAdvanced() in menu.html.twig. #}
-                <div class="allergen-accordion">
+                   see toggleAllergenAdvanced() in menu.html.twig.
+                   Hidden for now (2026-09-28, product decision), not removed: markup, JS
+                   and translations all stay so it can come back by dropping `hidden`.
+                   Existing exceptions keep applying and survive a save — they're sent
+                   from S.allergenOverrides (loaded from the server), not read from this
+                   DOM. #}
+                <div class="allergen-accordion" hidden>
                     <div class="allergen-accordion-toggle" onclick="toggleAllergenAdvanced(this)" role="button" tabindex="0" aria-expanded="false">
                         <i class="ti ti-chevron-right allergen-accordion-chevron" aria-hidden="true"></i>
                         <div class="allergen-accordion-toggle-text">

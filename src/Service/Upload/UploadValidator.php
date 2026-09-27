@@ -95,16 +95,23 @@ final class UploadValidator
          * with sound/controls (see MenuAdminController::uploadProductClip()).
          * No dimension check (checkDimensions: false, same as
          * menu_import_page — resolution isn't the concern here); duration
-         * is, since "short" is the entire product promise. maxDurationSeconds
-         * is enforced server-side by reading the file's own moov/mvhd box
-         * (readMp4DurationSeconds() below) — never trust a client-reported
-         * duration for this, only the client-side hint that saves the owner
-         * a wasted upload.
+         * is, since "short" is the entire product promise.
+         *
+         * Two tiers since clips are trimmed server-side (ClipTranscoder):
+         * maxSizeBytes / maxInputDurationSeconds bound what an owner may
+         * upload at all (a raw phone video, rejected above these); a clip
+         * accepted here but over maxDurationSeconds or maxStoredSizeBytes
+         * is cut to its first maxDurationSeconds and re-encoded before it
+         * is ever stored. Duration is read server-side from the file's own
+         * moov/mvhd box (readMp4DurationSeconds() below) — never trust a
+         * client-reported one.
          */
         'dish_clip' => [
-            'maxSizeBytes'       => 8 * 1024 * 1024,
-            'checkDimensions'    => false,
-            'maxDurationSeconds' => 10,
+            'maxSizeBytes'            => 60 * 1024 * 1024,
+            'checkDimensions'         => false,
+            'maxInputDurationSeconds' => 60,
+            'maxDurationSeconds'      => 6,
+            'maxStoredSizeBytes'      => 8 * 1024 * 1024,
         ],
     ];
 
@@ -124,6 +131,17 @@ final class UploadValidator
     public static function minDimension(UploadProfile $profile): int
     {
         return self::LIMITS[$profile->value]['minWidth'];
+    }
+
+    /** A stored dish clip's caps — anything over either is trimmed (see LIMITS['dish_clip']). */
+    public static function clipMaxDurationSeconds(): int
+    {
+        return self::LIMITS['dish_clip']['maxDurationSeconds'];
+    }
+
+    public static function clipMaxStoredSizeBytes(): int
+    {
+        return self::LIMITS['dish_clip']['maxStoredSizeBytes'];
     }
 
     /**
@@ -169,6 +187,7 @@ final class UploadValidator
         }
 
         $warnings = [];
+        $durationSeconds = null;
 
         if ($isVideo) {
             // Fail closed: a clip we can't confidently read a duration out
@@ -179,7 +198,9 @@ final class UploadValidator
             if ($durationSeconds === null) {
                 return UploadValidationResult::failure(UploadValidationError::UnsupportedType);
             }
-            if ($durationSeconds > $limits['maxDurationSeconds']) {
+            // Only the input ceiling rejects — anything between the stored
+            // cap and this is accepted and trimmed by the caller.
+            if ($durationSeconds > $limits['maxInputDurationSeconds']) {
                 return UploadValidationResult::failure(UploadValidationError::DurationTooLong);
             }
         }
@@ -227,7 +248,7 @@ final class UploadValidator
 
         $safeFilename = bin2hex(random_bytes(16)) . '.' . $allowedExtensions[$mimeType];
 
-        return UploadValidationResult::success($safeFilename, $mimeType, $warnings);
+        return UploadValidationResult::success($safeFilename, $mimeType, $warnings, $durationSeconds);
     }
 
     /**
