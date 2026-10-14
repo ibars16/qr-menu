@@ -26,6 +26,12 @@ class CategoriesController extends AbstractController
     #[Route('/categories', name: 'categories')]
     public function index(): Response
     {
+        // Screen hidden from the admin (2026-09-28, owner decision): no nav
+        // link and 404 by URL. Only this page — the POST endpoints below stay
+        // live because the Carta screen and the dish editor still use them.
+        // The rest of this method is kept as-is so re-enabling is one line.
+        throw $this->createNotFoundException();
+
         $restaurant = $this->restaurant();
         $languages  = require $this->getParameter('kernel.project_dir') . '/config/languages.php';
 

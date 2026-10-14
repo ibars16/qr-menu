@@ -339,14 +339,6 @@
                 <i class="ti ti-book-2" aria-hidden="true"></i> {{ 'nav.item.menus'|trans({}, 'admin_base') }}
             </a>
         {% endif %}
-        <a href="{{ path('admin_categories') }}"
-           class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_categor' ? 'active' : '' }}">
-            <i class="ti ti-category" aria-hidden="true"></i> {{ 'nav.item.categories'|trans({}, 'admin_base') }}
-        </a>
-        <a href="{{ path('admin_tags') }}"
-           class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_tag' ? 'active' : '' }}">
-            <i class="ti ti-tag" aria-hidden="true"></i> {{ 'nav.item.tags'|trans({}, 'admin_base') }}
-        </a>
         <a href="{{ path('admin_theme') }}"
            class="nav-item {{ app.request.attributes.get('_route') == 'admin_theme' ? 'active' : '' }}">
             <i class="ti ti-palette" aria-hidden="true"></i> {{ 'nav.item.theme'|trans({}, 'admin_base') }}
@@ -436,14 +428,6 @@
             <i class="ti ti-book-2" aria-hidden="true"></i> {{ 'bottom_nav.menus'|trans({}, 'admin_base') }}
         </a>
     {% endif %}
-    <a href="{{ path('admin_categories') }}"
-       class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_categor' ? 'active' : '' }}">
-        <i class="ti ti-category" aria-hidden="true"></i> {{ 'bottom_nav.categories'|trans({}, 'admin_base') }}
-    </a>
-    <a href="{{ path('admin_tags') }}"
-       class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_tag' ? 'active' : '' }}">
-        <i class="ti ti-tag" aria-hidden="true"></i> {{ 'bottom_nav.tags'|trans({}, 'admin_base') }}
-    </a>
     <a href="{{ path('admin_stats') }}"
        class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_stats' ? 'active' : '' }}">
         <i class="ti ti-chart-bar" aria-hidden="true"></i> {{ 'bottom_nav.stats'|trans({}, 'admin_base') }}
