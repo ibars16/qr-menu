@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Populär"
     supplement: "Tillägg"
+    price_from: "Från"
     view_more: "Visa mer"
     view_detail_aria: "Visa detaljer för %name%"
     modal_aria: "Rättdetaljer"

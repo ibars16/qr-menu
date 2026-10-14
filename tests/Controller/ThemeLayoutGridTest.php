@@ -5,6 +5,7 @@ namespace App\Tests\Controller;
 use App\Entity\Category;
 use App\Entity\CategoryTranslation;
 use App\Entity\Product;
+use App\Entity\ProductPriceVariant;
 use App\Entity\ProductTranslation;
 use App\Entity\Restaurant;
 use App\Entity\User;
@@ -257,5 +258,63 @@ final class ThemeLayoutGridTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('[id^="lcard-"]'));
         self::assertCount(8, $crawler->filter('[id^="tcard-"]'));
+    }
+
+    /**
+     * Turns the restaurant's one test dish into a photo card (a maison dish
+     * without image renders as a .dish-row, not the card this covers) with
+     * base price 12,00 € plus the given variants, in cents.
+     */
+    private function makeMultiprice(Restaurant $restaurant, array $variantPrices): void
+    {
+        $product = $this->em->getRepository(Product::class)->findOneBy(['category' => $restaurant->getCategories()->first()]);
+        $product->setImage('grid-test.jpg');
+        $product->setBasePriceLabel('Botella');
+        foreach ($variantPrices as $i => $price) {
+            $variant = new ProductPriceVariant();
+            $variant->setLabel('Variante ' . $i);
+            $variant->setPrice($price);
+            $variant->setPosition($i);
+            $product->addPriceVariant($variant);
+        }
+        $this->em->flush();
+        $this->em->clear();
+    }
+
+    public function testGridMultipriceCardShowsFromAndTheLowestPriceButTheListDoesNot(): void
+    {
+        $grid = $this->makeRestaurant('maison', 'grid');
+        $this->makeMultiprice($grid, [2210, 450]);
+
+        $crawler = $this->client->request('GET', '/r/' . $grid->getSlug() . '?lang=es&currency=EUR');
+
+        self::assertResponseIsSuccessful();
+        $bottom = $crawler->filter('.cards-grid--2up .dish-card .dish-bottom');
+        self::assertCount(1, $bottom);
+        self::assertSame('Desde', trim($bottom->filter('.dish-from')->text()));
+        self::assertSame('4,50€', trim($bottom->filter('.dish-price')->text()));
+        self::assertCount(0, $bottom->filter('.price-stack'), 'the grid card shows only the lowest price');
+        self::assertCount(1, $crawler->filter('.dish-detail-price .price-stack'), 'the detail sheet still lists every price');
+
+        $list = $this->makeRestaurant('maison');
+        $this->makeMultiprice($list, [2210, 450]);
+
+        $crawler = $this->client->request('GET', '/r/' . $list->getSlug() . '?lang=es&currency=EUR');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('.dish-from'));
+        self::assertCount(1, $crawler->filter('.dish-card .dish-bottom .price-stack'), 'the list keeps every price row');
+    }
+
+    public function testGridMultipriceWithAllPricesEqualShowsNoFrom(): void
+    {
+        $restaurant = $this->makeRestaurant('maison', 'grid');
+        $this->makeMultiprice($restaurant, [1200]);
+
+        $crawler = $this->client->request('GET', '/r/' . $restaurant->getSlug() . '?lang=es&currency=EUR');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('.dish-from'));
+        self::assertSame('12,00€', trim($crawler->filter('.cards-grid--2up .dish-card .dish-bottom .dish-price')->text()));
     }
 }

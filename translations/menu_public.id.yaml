@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Populer"
     supplement: "Tambahan"
+    price_from: "Mulai dari"
     view_more: "Lihat selengkapnya"
     view_detail_aria: "Lihat detail %name%"
     modal_aria: "Detail hidangan"

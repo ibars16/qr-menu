@@ -38,6 +38,7 @@ results:
 dish:
     popular: "热门"
     supplement: "加价"
+    price_from: "起价"
     view_more: "查看更多"
     view_detail_aria: "查看%name%详情"
     modal_aria: "菜品详情"

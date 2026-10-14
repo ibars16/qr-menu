@@ -38,6 +38,7 @@ results:
 dish:
     popular: "ยอดนิยม"
     supplement: "ค่าเสริม"
+    price_from: "เริ่มต้น"
     view_more: "ดูเพิ่มเติม"
     view_detail_aria: "ดูรายละเอียดของ %name%"
     modal_aria: "รายละเอียดเมนู"

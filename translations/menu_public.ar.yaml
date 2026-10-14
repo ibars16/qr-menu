@@ -38,6 +38,7 @@ results:
 dish:
     popular: "الأكثر طلبًا"
     supplement: "إضافة"
+    price_from: "ابتداءً من"
     view_more: "عرض المزيد"
     view_detail_aria: "عرض تفاصيل %name%"
     modal_aria: "تفاصيل الطبق"

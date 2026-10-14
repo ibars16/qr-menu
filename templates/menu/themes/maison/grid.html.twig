@@ -47,11 +47,39 @@
     /* The supplement line may break in two here (the list keeps it on one
        line — overrides.html.twig's nowrap is only lifted under --2up). */
     .cards-grid--2up .dish-supplement { white-space: normal; }
-    /* Single-price dishes: the supplement goes above (markup order in
-       standard/show.html.twig, gridView branch), on a line of its own, so
-       price + button form the last line and sit at the same height as the
-       neighbouring card's. Multiprice keeps it inside .dish-price-col. */
-    .cards-grid--2up .dish-bottom > .dish-supplement { flex: 0 0 100%; }
+    /* Labels over the price — "Suplemento" and, for multiprice, "Desde"
+       (the card shows only the lowest price; the detail sheet keeps every
+       row). Markup puts them inside .dish-price-col, above the price
+       (standard/show.html.twig, gridView branch; DOM order = visual
+       order), so price + button stay the last line, pinned to the bottom
+       at the neighbouring card's height. Inside the column, the 32px
+       button can no longer open a gap between label and price (as a line
+       of their own, flex-end left 6.6px above the 25px price line). The
+       column takes the width beside the button (flex-basis 0) so a long
+       label wraps there instead of pushing the button down. The negative
+       margin eats the price's half-leading and the room above Fraunces'
+       digits, leaving 6px from the bottom of the label's text to the top
+       of the price's digits, so the label reads as attached to the price,
+       not as part of the dish name. Two values because the supplement's
+       last line ends in "+23,00 €", whose comma descends below the
+       baseline; "Desde" has no descenders. */
+    .cards-grid--2up .dish-price-col:has(> .dish-from, > .dish-supplement) { flex: 1 1 0; gap: 0; }
+    .cards-grid--2up .dish-price-col > .dish-from:has(+ .dish-price) { margin-bottom: calc(-4.8px * var(--font-scale)); }
+    .cards-grid--2up .dish-price-col > .dish-supplement:has(+ .dish-price) { margin-bottom: calc(-3.6px * var(--font-scale)); }
+    /* Multiprice + supplement: the supplement can't share the narrow column
+       with "Desde" (it broke as "Suplemento ·" / "+23,00 €"), so markup
+       puts it before .dish-price-col as a full-width line of its own. "· +X €"
+       stays together (.suppl-amount, nowrap): if it doesn't fit, it drops
+       whole and "Suplemento" stays alone. Margin: 10px from the bottom of
+       its text to the top of "Desde"'s text. */
+    .cards-grid--2up .dish-bottom > .dish-supplement { flex: 0 0 100%; margin-bottom: calc(-2.5px * var(--font-scale)); }
+    .cards-grid--2up .dish-bottom > .dish-supplement .suppl-amount { white-space: nowrap; }
+    /* "Desde" styled like the "Suplemento" label (overrides.html.twig's
+       .dish-supplement rule). */
+    .cards-grid--2up .dish-price-col > .dish-from {
+        font-family: var(--font-body); font-size: calc(11px * var(--font-scale)); font-weight: 400;
+        color: var(--fg-2); letter-spacing: 0.02em;
+    }
     /* "Ver más" in the grid: a round chevron button (markup: .more-hint--icon,
        label in .sr-only). Colours, border, hover (--wine-soft) and the focus
        ring are the list's own maison .more-hint rules, inherited untouched —

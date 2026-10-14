@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Popular"
     supplement: "Suplemento"
+    price_from: "Desde"
     view_more: "Ver más"
     view_detail_aria: "Ver detalle de %name%"
     modal_aria: "Detalle del plato"

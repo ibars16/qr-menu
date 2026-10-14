@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Popüler"
     supplement: "Ek ücret"
+    price_from: "En düşük"
     view_more: "Daha fazla gör"
     view_detail_aria: "%name% detayını gör"
     modal_aria: "Yemek detayı"

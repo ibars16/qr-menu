@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Beliebt"
     supplement: "Zuschlag"
+    price_from: "Ab"
     view_more: "Mehr erfahren"
     view_detail_aria: "Details zu %name% ansehen"
     modal_aria: "Gerichtdetails"

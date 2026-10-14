@@ -38,6 +38,7 @@ results:
 dish:
     popular: "लोकप्रिय"
     supplement: "अतिरिक्त शुल्क"
+    price_from: "से शुरू"
     view_more: "और देखें"
     view_detail_aria: "%name% का विवरण देखें"
     modal_aria: "व्यंजन का विवरण"

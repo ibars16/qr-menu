@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Populair"
     supplement: "Toeslag"
+    price_from: "Vanaf"
     view_more: "Meer bekijken"
     view_detail_aria: "Details van %name% bekijken"
     modal_aria: "Gerechtdetails"

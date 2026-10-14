@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Phổ biến"
     supplement: "Phụ thu"
+    price_from: "Từ"
     view_more: "Xem thêm"
     view_detail_aria: "Xem chi tiết %name%"
     modal_aria: "Chi tiết món ăn"

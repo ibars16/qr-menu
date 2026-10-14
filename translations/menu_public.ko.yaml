@@ -38,6 +38,7 @@ results:
 dish:
     popular: "인기"
     supplement: "추가 요금"
+    price_from: "최저가"
     view_more: "더 보기"
     view_detail_aria: "%name% 상세 보기"
     modal_aria: "메뉴 상세 정보"

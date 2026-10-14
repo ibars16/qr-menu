@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Популярное"
     supplement: "Доплата"
+    price_from: "От"
     view_more: "Подробнее"
     view_detail_aria: "Подробнее о %name%"
     modal_aria: "Информация о блюде"

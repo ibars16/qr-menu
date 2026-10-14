@@ -38,6 +38,7 @@ results:
 dish:
     popular: "Populær"
     supplement: "Tillegg"
+    price_from: "Fra"
     view_more: "Se mer"
     view_detail_aria: "Se detaljer for %name%"
     modal_aria: "Rettdetaljer"
