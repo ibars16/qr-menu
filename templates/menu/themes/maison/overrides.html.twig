@@ -1437,3 +1437,6 @@
         }
     });
 </script>
+{# Cuadrícula view CSS lives in its own file and is only emitted when the
+   view is active, so the list view's HTML stays byte-identical. #}
+{% if gridView|default(false) %}{% include 'menu/themes/maison/grid.html.twig' %}{% endif %}

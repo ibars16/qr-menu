@@ -16,6 +16,7 @@ nav:
         menus: Set menus
         categories: Categories
         tags: Tags
+        structure: Structure
         theme: Customize menu
         stats: Statistics
         qr: My QR
@@ -35,6 +36,7 @@ bottom_nav:
     menus: Set menus
     categories: 'Categ.'
     tags: Tags
+    structure: Layout
     stats: Stats
     qr: QR
     users: Team

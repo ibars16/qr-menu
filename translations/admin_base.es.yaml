@@ -16,6 +16,7 @@ nav:
         menus: Menús
         categories: Categorías
         tags: Etiquetas
+        structure: Estructura
         theme: Personalizar carta
         stats: Estadísticas
         qr: Mi QR
@@ -35,6 +36,7 @@ bottom_nav:
     menus: Menús
     categories: 'Categ.'
     tags: 'Etiq.'
+    structure: 'Estruct.'
     stats: 'Estad.'
     qr: QR
     users: Equipo

@@ -1,0 +1,80 @@
+{# Maison — "Cuadrícula" view (Restaurant::$layout == 'grid'). Included at
+   the end of overrides.html.twig only when MenuController's gridView is
+   true, after its own <style>, so these rules win by source order where
+   specificity ties. #}
+<style>
+    /* ── "Cuadrícula" view (Restaurant::$layout == 'grid', maison only) ──
+       Not a layout of its own: MenuController renders the standard layout
+       and adds .cards-grid--2up to each section's .cards-grid, so every rule
+       here is scoped under that class and the list view never matches any of
+       them. 2 columns on phones, 3 from 640px (the list is already 2 there).
+       No grid-auto-flow: dense — a no-photo .dish-row still spans the full
+       width (overrides.html.twig) and the menu order is kept even if that leaves an
+       empty cell before it. minmax(0, 1fr), not 1fr: a long unbreakable
+       word in a name would otherwise widen its own column. */
+    .cards-grid.cards-grid--2up { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; }
+    @media (min-width: 640px) { .cards-grid.cards-grid--2up { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px 18px; } }
+    /* Column flex so .dish-bottom can sit at the card's bottom edge
+       (margin-top: auto below) — cards in one grid row stretch to the
+       tallest, and their prices line up instead of floating mid-card. */
+    .cards-grid--2up .dish-card:not(.dish-row) { display: flex; flex-direction: column; }
+    /* Square photo: the list's fixed 240px would be taller than wide at
+       ~170px. Clip cards share the same box, as in the list. */
+    .cards-grid--2up .dish-card .front-img { height: auto; aspect-ratio: 1 / 1; }
+    .cards-grid--2up .dish-card .front-info { flex: 1; padding: 12px 12px 14px; gap: 10px; }
+    /* Up to 3 lines, then an ellipsis — the full name is in the detail sheet. */
+    .cards-grid--2up .dish-card:not(.dish-row) .front-name {
+        font-size: calc(16px * var(--font-scale)); line-height: 1.25;
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    /* Card footer: prices at inline-start (single price, BOTELLA/COPA stack
+       and/or supplement line — any number of lines), "Ver más" at
+       inline-end, on the same line when both fit, bottom-aligned with the
+       last price line. When they don't (wide price such as 1.240,00, or a
+       long supplement line), flex-wrap drops the button onto a line of its
+       own; margin-inline-start: auto keeps it at inline-end (right in LTR,
+       left in RTL). Either way the button's bottom is the footer's bottom,
+       and margin-top: auto pins the footer to the card's bottom while cards
+       in one grid row stretch to the same height — so neighbouring cards'
+       buttons sit at exactly the same y, wrapped or not, whatever their
+       name's line count. */
+    .cards-grid--2up .dish-bottom {
+        display: flex; flex-wrap: wrap; align-items: flex-end;
+        justify-content: space-between; gap: 6px 8px; margin-top: auto;
+    }
+    .cards-grid--2up .dish-price-col { flex: 0 1 auto; min-width: 0; }
+    .cards-grid--2up .dish-bottom .more-hint--icon { flex-shrink: 0; margin-inline-start: auto; }
+    /* The supplement line may break in two here (the list keeps it on one
+       line — overrides.html.twig's nowrap is only lifted under --2up). */
+    .cards-grid--2up .dish-supplement { white-space: normal; }
+    /* Single-price dishes: the supplement goes above (markup order in
+       standard/show.html.twig, gridView branch), on a line of its own, so
+       price + button form the last line and sit at the same height as the
+       neighbouring card's. Multiprice keeps it inside .dish-price-col. */
+    .cards-grid--2up .dish-bottom > .dish-supplement { flex: 0 0 100%; }
+    /* "Ver más" in the grid: a round chevron button (markup: .more-hint--icon,
+       label in .sr-only). Colours, border, hover (--wine-soft) and the focus
+       ring are the list's own maison .more-hint rules, inherited untouched —
+       only the shape changes. Visual cue only: the whole card is the tap /
+       keyboard target (role="button"). */
+    .cards-grid--2up .more-hint.more-hint--icon {
+        display: grid; place-items: center; width: 32px; height: 32px; padding: 0;
+        border-radius: 50%; gap: 0;
+    }
+    .cards-grid--2up .more-hint.more-hint--icon i { font-size: 16px; line-height: 1; }
+    /* Icon-only recommendation badge (see the gridView branch in
+       standard/show.html.twig): a square chip, emoji at a readable size
+       instead of the 9px small caps the text version uses. */
+    .cards-grid--2up .dish-pill--icon { font-size: 13px; letter-spacing: 0; padding: 4px 6px; line-height: 1; }
+
+    /* Phones: tighter gaps and a slightly tighter text block. The grid
+       stays on the page's 20px gutter, flush with title, search and tabs. */
+    @media (max-width: 639.98px) {
+        .cards-grid.cards-grid--2up { gap: 16px 10px; }
+        /* Tighter text block: name→footer 6px (was 10), 8px under the
+           footer (was 14). Name one notch smaller and tighter-leaded; price,
+           supplement and "Ver más" sizes untouched. */
+        .cards-grid--2up .dish-card .front-info { padding: 10px 10px 8px; gap: 6px; }
+        .cards-grid--2up .dish-card:not(.dish-row) .front-name { font-size: calc(14.5px * var(--font-scale)); line-height: 1.18; }
+    }
+</style>

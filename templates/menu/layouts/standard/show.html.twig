@@ -794,7 +794,7 @@
                     {{ setMenuMacro.section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens) }}
                 {% else %}
                 <div class="cat-title">{{ catT.name }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(category.activeProductsSorted|length) }}</span>{% endif %}</div>
-                <div class="cards-grid">
+                <div class="cards-grid{{ gridView ? ' cards-grid--2up' : '' }}">
                     {% for product in category.activeProductsSorted %}
                         {% set pT = product.getTranslation(locale) %}
                         {% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}
@@ -855,7 +855,7 @@
                                     {% else %}
                                         <div class="dish-placeholder"><i class="ti {{ isDrink ? 'ti-glass' : 'ti-tools-kitchen-2' }}" aria-hidden="true"></i><span>{{ pT.name }}</span></div>
                                     {% endif %}
-                                    {% if theme == 'maison' ? maisonBadge == 'featured' : (featuredTag and tagNames[featuredTag.id] is defined) %}<span class="dish-pill">{{ featuredTag.icon }} {{ tagNames[featuredTag.id] }}</span>{% endif %}
+                                    {% if theme == 'maison' ? maisonBadge == 'featured' : (featuredTag and tagNames[featuredTag.id] is defined) %}{% if gridView %}{# Half-width card: the tag's full name ("Nuestra recomendación") doesn't fit, so icon only — name kept for screen readers and as a hover tooltip. #}<span class="dish-pill dish-pill--icon" title="{{ tagNames[featuredTag.id] }}"><span aria-hidden="true">{{ featuredTag.icon }}</span><span class="sr-only">{{ tagNames[featuredTag.id] }}</span></span>{% else %}<span class="dish-pill">{{ featuredTag.icon }} {{ tagNames[featuredTag.id] }}</span>{% endif %}{% endif %}
                                     {% if theme == 'maison' ? maisonBadge == 'spicy' : product.spicyLevel > 0 %}<div class="spicy-badge">{% if product.spicyLevel <= 2 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% elseif product.spicyLevel <= 4 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% else %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% endif %}</div>{% endif %}
                                     {% if theme == 'maison' ? maisonBadge == 'popular' : product.id in popularProductIds %}<div class="popular-badge">🔥 {{ 'dish.popular'|trans({}, 'menu_public', locale) }}</div>{% endif %}
                                 </div>
@@ -868,15 +868,15 @@
                                     {% if pT.description and theme != 'maison' %}<div class="front-desc">{{ pT.description }}</div>{% endif %}
                                     <div class="dish-bottom">
                                         {% if theme == 'maison' %}
-                                            <div class="dish-price-col">
+                                            {% set supplementFirst = gridView and product.supplementPrice and not product.hasPriceVariants %}{% if supplementFirst %}{# Grid, single price: supplement on its own line above price + button (see maison/grid.html.twig); DOM order = visual order for screen readers. #}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}<div class="dish-price-col">
                                                 <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
-                                                {% if product.supplementPrice %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}
+                                                {% if product.supplementPrice and not supplementFirst %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}
                                             </div>
                                         {% else %}
                                             <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
                                         {% endif %}
-                                        <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
-                                    </div>
+                                        {% if gridView %}{# Grid: round chevron-only button, label kept for screen readers (see maison/grid.html.twig). #}<div class="more-hint more-hint--icon"><span class="sr-only">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }}</span><i class="ti ti-chevron-right" aria-hidden="true"></i></div>{% else %}<div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
+{% endif %}                                    </div>
                                 </div>
                                 {% endif %}
                                 <template class="dish-tpl">

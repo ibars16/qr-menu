@@ -1,4 +1,5 @@
 title: Customize menu
+title_structure: Menu structure
 
 confirm:
     default_title: Apply change
@@ -22,17 +23,16 @@ preview:
     closed_toast: Preview closed
 
 section:
-    step1_eyebrow: Step 1 · Structure
     layout_title: Menu layout
     layout_desc: Choose how dishes are organized on screen.
-    step2_eyebrow: Step 2 · Appearance
     theme_title: Visual theme
-    theme_desc: Colors, backgrounds and style. Works with every layout.
+    theme_desc: Colors, backgrounds and style. The Grid view is only available with Maison.
 
 card:
     preview_action: Preview
     use_action: Use
     active_label: Active
+    requires_theme: 'Available with the %theme% theme'
 
 toast:
     save_error: Error saving
@@ -43,6 +43,9 @@ layout:
     standard:
         name: Standard
         desc: Cards with an image on top and the name below. Balanced and eye-catching.
+    grid:
+        name: Grid
+        desc: More visual. Recommended if most of your dishes have a photo. If your customers prefer something simpler, use the list.
 
 theme:
     classic-dark:

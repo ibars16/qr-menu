@@ -17,9 +17,16 @@ class ThemeController extends AbstractController
     // 'name' and 'desc' are NOT stored here — they're translated per-locale in
     // translations/admin_theme.*.yaml under keys layout.<key>.name/.desc and
     // theme.<key>.name/.desc, looked up in the template by array key.
+    // 'requires_theme': the layout only renders with that theme (any other
+    // theme falls back to the standard list — see MenuController's
+    // $gridView); the picker shows it disabled otherwise.
     public const LAYOUTS = [
         'standard' => [
             'icon' => '▤',
+        ],
+        'grid' => [
+            'icon'           => '▦',
+            'requires_theme' => 'maison',
         ],
     ];
 
@@ -98,8 +105,20 @@ class ThemeController extends AbstractController
         ],
     ];
 
+    #[Route('/structure', name: 'structure')]
+    public function structure(): Response
+    {
+        return $this->renderPicker('layout');
+    }
+
     #[Route('/theme', name: 'theme')]
     public function index(): Response
+    {
+        return $this->renderPicker('theme');
+    }
+
+    /** One template, two screens: 'layout' = Estructura, 'theme' = Personalizar carta. */
+    private function renderPicker(string $section): Response
     {
         $restaurant = $this->getUser()->getRestaurant();
         if (!$restaurant) {
@@ -113,6 +132,7 @@ class ThemeController extends AbstractController
             'layouts'     => self::LAYOUTS,
             'themes'      => self::THEMES,
             'previewBase' => $previewBase,
+            'section'     => $section,
         ]);
     }
 
@@ -128,11 +148,20 @@ class ThemeController extends AbstractController
         $layout = $data['layout'] ?? null;
         $theme  = $data['theme']  ?? null;
 
-        if ($layout && array_key_exists($layout, self::LAYOUTS)) {
-            $restaurant->setLayout($layout);
-        }
         if ($theme && array_key_exists($theme, self::THEMES)) {
             $restaurant->setTheme($theme);
+        }
+        if ($layout && array_key_exists($layout, self::LAYOUTS)) {
+            // Checked against the theme as it stands after this same request,
+            // so "Cuadrícula + Maison" applied together from the preview bar
+            // passes. Only when a layout is being chosen: switching theme
+            // alone later never gets blocked (a stored 'grid' then just
+            // renders as the list).
+            $requiredTheme = self::LAYOUTS[$layout]['requires_theme'] ?? null;
+            if ($requiredTheme && $restaurant->getTheme() !== $requiredTheme) {
+                return $this->json(['error' => 'Layout not available with this theme'], 400);
+            }
+            $restaurant->setLayout($layout);
         }
 
         if (!$layout && !$theme) {
