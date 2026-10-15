@@ -91,6 +91,17 @@ final class AdminHiddenScreensTest extends WebTestCase
         self::assertCount(0, $crawler->filter('a[href="/admin/tags"]'));
     }
 
+    public function testMobileBottomNavLinksToTheThemeScreen(): void
+    {
+        $crawler = $this->client->request('GET', '/admin/menu');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('.bottom-nav a.bottom-nav-tab[href="/admin/theme"]'));
+
+        $crawler = $this->client->request('GET', '/admin/theme');
+        self::assertCount(1, $crawler->filter('.bottom-nav a.bottom-nav-tab.active[href="/admin/theme"]'));
+    }
+
     public function testCategoryAndTagCreateEndpointsStillWork(): void
     {
         $this->client->request('POST', '/admin/categories/create', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode(['name' => 'Entrantes']));

@@ -1,5 +1,4 @@
 title: Personnaliser la carte
-title_structure: Structure de la carte
 
 confirm:
     default_title: Appliquer le changement
@@ -23,16 +22,13 @@ preview:
     closed_toast: Aperçu fermé
 
 section:
-    layout_title: Mise en page de la carte
-    layout_desc: Choisissez comment les plats sont organisés à l'écran.
     theme_title: Thème visuel
-    theme_desc: 'Couleurs, fonds et style. La vue Grille n''est disponible qu''avec Maison.'
+    theme_desc: Couleurs, fonds et style.
 
 card:
     preview_action: Aperçu
     use_action: Utiliser
     active_label: Actif
-    requires_theme: 'Disponible avec le thème %theme%'
 
 toast:
     save_error: Erreur lors de l'enregistrement
@@ -43,9 +39,6 @@ layout:
     standard:
         name: Standard
         desc: Cartes avec image en haut et nom en dessous. Équilibré et percutant.
-    grid:
-        name: Grille
-        desc: Plus visuelle. Recommandée si la plupart de vos plats ont une photo. Si votre clientèle préfère plus simple, utilisez la liste.
 
 theme:
     classic-dark:

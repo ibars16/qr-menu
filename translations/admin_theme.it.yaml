@@ -1,5 +1,4 @@
 title: Personalizza il menu
-title_structure: Struttura del menù
 
 confirm:
     default_title: Applica modifica
@@ -23,16 +22,13 @@ preview:
     closed_toast: Anteprima chiusa
 
 section:
-    layout_title: Layout del menu
-    layout_desc: Scegli come organizzare i piatti sullo schermo.
     theme_title: Tema visivo
-    theme_desc: Colori, sfondi e stile. La vista Griglia è disponibile solo con Maison.
+    theme_desc: Colori, sfondi e stile.
 
 card:
     preview_action: Anteprima
     use_action: Usa
     active_label: Attivo
-    requires_theme: 'Disponibile con il tema %theme%'
 
 toast:
     save_error: Errore durante il salvataggio
@@ -43,9 +39,6 @@ layout:
     standard:
         name: Standard
         desc: Schede con immagine sopra e nome sotto. Equilibrato ed efficace.
-    grid:
-        name: Griglia
-        desc: Più visiva. Consigliata se la maggior parte dei tuoi piatti ha una foto. Se la tua clientela preferisce qualcosa di più semplice, usa la lista.
 
 theme:
     classic-dark:

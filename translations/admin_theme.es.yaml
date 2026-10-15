@@ -1,5 +1,4 @@
 title: Personalizar carta
-title_structure: Estructura de la carta
 
 confirm:
     default_title: Aplicar cambio
@@ -23,16 +22,13 @@ preview:
     closed_toast: Vista previa cerrada
 
 section:
-    layout_title: Layout del menú
-    layout_desc: Elige cómo se organizan los platos en la pantalla.
     theme_title: Tema visual
-    theme_desc: Colores, fondos y estilo. La vista Cuadrícula solo está disponible con Maison.
+    theme_desc: Colores, fondos y estilo.
 
 card:
     preview_action: Vista previa
     use_action: Usar
     active_label: Activo
-    requires_theme: 'Disponible con el tema %theme%'
 
 toast:
     save_error: Error al guardar
@@ -43,9 +39,6 @@ layout:
     standard:
         name: Estándar
         desc: Tarjetas con imagen arriba y nombre abajo. Equilibrado e impactante.
-    grid:
-        name: Cuadrícula
-        desc: Más visual. Recomendada si la mayoría de tus platos tienen foto. Si tu clientela prefiere algo más sencillo, usa la lista.
 
 theme:
     classic-dark:

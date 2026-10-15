@@ -461,7 +461,7 @@ class MenuController extends AbstractController
         );
 
         // Layout + theme (with preview support)
-        $validLayouts  = ['standard', 'grid'];
+        $validLayouts  = ['standard'];
         $validThemes   = ['classic-dark', 'classic-warm', 'glass', 'ocean', 'noir', 'forest', 'terra', 'maison'];
         // Same whitelist check as the preview-query guard below, applied to
         // the stored value too — belt and suspenders against any restaurant
@@ -494,14 +494,6 @@ class MenuController extends AbstractController
             }
         }
 
-        // 'grid' is not a template of its own: it's a CSS variant of the
-        // standard layout (2-up cards, see .cards-grid--2up in maison's
-        // overrides.html.twig), and maison-only for now. Any other theme
-        // with layout 'grid' stored just renders the standard list — same
-        // markup byte for byte — rather than erroring or half-styling it.
-        $gridView = $layout === 'grid' && $theme === 'maison';
-        $layout   = 'standard';
-
         $showTypeFilter = $categoryTypeFilterResolver->shouldShowFilter($categories);
 
         // "Popular" badge — the top few most-viewed dishes over the last 30
@@ -531,7 +523,6 @@ class MenuController extends AbstractController
             'menuAllergens' => $menuAllergens,
             'popularProductIds' => $popularProductIds,
             'layout'        => $layout,
-            'gridView'      => $gridView,
             'theme'         => $theme,
             'isPreview'     => $isPreview,
             'previewLayout' => $previewLayout,

@@ -1,0 +1,23 @@
+{# Content of one chef's-recommendation item — shared by the single .banner and
+   every .banner-slide of the carousel (standard/show.html.twig, maison
+   hero). Expects ri ({product, t, tagName}), currency, currencyDisplay,
+   locale. With a description: unchanged (description only). Without one:
+   the price on one line ("Desde" + lowest for multiprice) and, if any, the
+   supplement on its own line below it.
+   Thumbnail (the dish photo — also a clip's poster, as on the dish card)
+   and chevron are only shown >=1024px (overrides.html.twig); below that
+   the star icon stays, as before. No photo: star at every width. #}
+{% import 'menu/_price.html.twig' as priceMacro %}
+{% if ri.product.image %}<img class="bthumb" src="{{ asset('uploads/products/' ~ ri.product.image) }}" alt="" loading="lazy">{% endif %}
+<div class="bicon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.2 6.8.9-4.9 4.9 1.2 6.8L12 17.8l-6 3 1.2-6.8-4.9-4.9 6.8-.9z"/></svg></div>
+<div class="btext">
+    <div class="blabel">{{ ri.tagName }}</div>
+    <div class="bhead">{{ ri.t.name }}</div>
+    {% if ri.t.description %}
+        <div class="bsub">{{ ri.t.description }}</div>
+    {% else %}
+        <div class="bsub bsub--price">{{ priceMacro.oneLine(ri.product, currency, currencyDisplay, locale) }}</div>
+        {% if ri.product.supplementPrice %}{{ priceMacro.bannerSupplement(ri.product, currencyDisplay, locale) }}{% endif %}
+    {% endif %}
+</div>
+<i class="ti ti-chevron-right bchev" aria-hidden="true"></i>

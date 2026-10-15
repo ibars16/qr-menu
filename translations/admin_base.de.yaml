@@ -16,7 +16,6 @@ nav:
         menus: Set-Menüs
         categories: Kategorien
         tags: Tags
-        structure: Struktur
         theme: Speisekarte anpassen
         stats: Statistiken
         qr: Mein QR-Code
@@ -36,7 +35,7 @@ bottom_nav:
     menus: Set-Menüs
     categories: Kateg.
     tags: Tags
-    structure: Struktur
+    theme: Design
     stats: Statist.
     qr: QR
     users: Team

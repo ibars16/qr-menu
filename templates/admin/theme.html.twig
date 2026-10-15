@@ -1,10 +1,7 @@
 {% extends 'admin/base.html.twig' %}
 
-{# Shared by two admin screens (ThemeController): Estructura (section ==
-   'layout', the layout picker) and Personalizar carta (section == 'theme',
-   the theme picker). Same preview bar / confirm modal / JS for both. #}
-{% block title %}{{ (section == 'layout' ? 'title_structure' : 'title')|trans({}, 'admin_theme') }}{% endblock %}
-{% block page_title %}{{ (section == 'layout' ? 'title_structure' : 'title')|trans({}, 'admin_theme') }}{% endblock %}
+{% block title %}{{ 'title'|trans({}, 'admin_theme') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_theme') }}{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -114,21 +111,6 @@
     .lt-stdprice  { font-size: 8px; font-weight: 800; color: #C1440E; }
     .lt-stdhint   { height: 7px; width: 26px; background: #181818; border: 1px solid #252525; border-radius: 8px; }
 
-    /* Grid ("Cuadrícula"): 2-up square cards */
-    .lt-gridwrap  { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 9px; flex: 1; }
-    .lt-gridcard  { background: #111; border-radius: 8px; overflow: hidden; border: 1px solid #1e1e1e; display: flex; flex-direction: column; }
-    .lt-gridimg   { flex: 1; background: #181818; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-    .lt-gridbody  { padding: 4px 7px 5px; display: flex; flex-direction: column; gap: 3px; }
-    .lt-gridname  { height: 4px; background: #272727; border-radius: 3px; width: 70%; }
-
-    /* Layout that needs a theme the restaurant isn't using (LAYOUTS[].requires_theme) */
-    .sel-card.is-disabled { cursor: default; }
-    .sel-card.is-disabled:hover { border-color: var(--bd-1); transform: none; }
-    .sel-card.is-disabled .layout-thumb { opacity: 0.45; }
-    .btn-eye:disabled, .btn-use:disabled { cursor: not-allowed; background: var(--bg-hover); border: 1px solid var(--bd-1); color: var(--tx-3); }
-    .btn-eye:disabled:hover, .btn-use:disabled:hover { opacity: 1; border-color: var(--bd-1); color: var(--tx-3); background: var(--bg-hover); }
-    .card-note { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; color: var(--tx-2); line-height: 1.4; margin-bottom: 9px; }
-
     /* ── Theme cards ── */
     .themes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(218px,1fr)); gap: 10px; }
     @media (max-width: 500px) { .themes-grid { grid-template-columns: 1fr 1fr; } }
@@ -186,67 +168,6 @@
         </div>
     </div>
 
-    {% if section == 'layout' %}
-    {# ── Layouts ── #}
-    <div class="sec-hdr">
-        <div class="sec-title">{{ 'section.layout_title'|trans({}, 'admin_theme') }}</div>
-        <div class="sec-desc">{{ 'section.layout_desc'|trans({}, 'admin_theme') }}</div>
-    </div>
-
-    <div class="layouts-grid">
-        {% for key, layout in layouts %}
-            {% set layoutUnavailable = layout.requires_theme is defined and restaurant.theme != layout.requires_theme %}
-            <div class="sel-card {{ restaurant.layout == key ? 'is-active' : '' }}{{ layoutUnavailable ? ' is-disabled' : '' }}" id="lcard-{{ key }}">
-                <div class="layout-thumb">
-                    {% if key == 'grid' %}
-                    <div class="lt-gridwrap">
-                        {% for emoji in ['🥩', '🥗', '🍝', '🍰'] %}
-                        <div class="lt-gridcard">
-                            <div class="lt-gridimg">{{ emoji }}</div>
-                            <div class="lt-gridbody"><div class="lt-gridname"></div><div class="lt-stdprice">{{ 12 + loop.index * 3 }} €</div></div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="lt-stdstack">
-                        <div class="lt-stdcard">
-                            <div class="lt-stdimg">🥩</div>
-                            <div class="lt-stdbody">
-                                <div class="lt-stdname"></div>
-                                <div class="lt-stdbot"><div class="lt-stdprice">24 €</div><div class="lt-stdhint"></div></div>
-                            </div>
-                        </div>
-                        <div class="lt-stdcard">
-                            <div class="lt-stdimg">🥗</div>
-                            <div class="lt-stdbody">
-                                <div class="lt-stdname"></div>
-                                <div class="lt-stdbot"><div class="lt-stdprice">16 €</div><div class="lt-stdhint"></div></div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="card-footer">
-                    <div class="card-label">{{ layout.icon }} {{ ('layout.' ~ key ~ '.name')|trans({}, 'admin_theme') }}</div>
-                    <div class="card-desc">{{ ('layout.' ~ key ~ '.desc')|trans({}, 'admin_theme') }}</div>
-                    {% if restaurant.layout == key %}<div class="active-chip">✓ {{ 'card.active_label'|trans({}, 'admin_theme') }}</div>{% endif %}
-                    {% if layoutUnavailable %}<div class="card-note"><i class="ti ti-lock" aria-hidden="true"></i> {{ 'card.requires_theme'|trans({'%theme%': ('theme.' ~ layout.requires_theme ~ '.name')|trans({}, 'admin_theme')}, 'admin_theme') }}</div>{% endif %}
-                    <div class="card-actions">
-                        <button class="btn-eye" id="lprev-{{ key }}" onclick="previewLayout('{{ key }}')"{{ layoutUnavailable ? ' disabled' : '' }}>
-                            <i class="ti ti-eye"></i> {{ 'card.preview_action'|trans({}, 'admin_theme') }}
-                        </button>
-                        <button class="btn-use {{ restaurant.layout == key ? 'is-current' : '' }}" onclick="selectLayout('{{ key }}')"{{ layoutUnavailable ? ' disabled' : '' }}>
-                            {{ restaurant.layout == key ? '✓ ' ~ 'card.active_label'|trans({}, 'admin_theme') : 'card.use_action'|trans({}, 'admin_theme') }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-
-    {% endif %}
-
-    {% if section == 'theme' %}
     {# ── Themes ── #}
     <div class="sec-hdr">
         <div class="sec-title">{{ 'section.theme_title'|trans({}, 'admin_theme') }}</div>
@@ -312,7 +233,6 @@
             </div>
         {% endfor %}
     </div>
-    {% endif %}
 
 </div>
 {% endblock %}

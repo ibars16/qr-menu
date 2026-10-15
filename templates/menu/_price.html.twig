@@ -12,11 +12,17 @@
    "12.00 €". See also Product::hasPriceVariants(). #}
 {% macro price(product, currency, showCurrency, currencyDisplay, locale) %}{% if product.hasPriceVariants %}<span class="price-stack"><span class="price-row">{% if product.basePriceLabel %}<span class="price-item-label">{{ product.basePriceLabel }}</span>{% endif %}<span class="price-item-value">{{ (product.convertedPrice / 100)|menu_number(locale) }}{% if showCurrency %}<span class="price-currency">{{ currencyDisplay }}</span>{% endif %}</span></span>{% for variant in product.priceVariants %}<span class="price-row"><span class="price-item-label">{{ variant.label }}</span><span class="price-item-value">{{ (product.getConvertedVariantPrice(variant) / 100)|menu_number(locale) }}{% if showCurrency %}<span class="price-currency">{{ currencyDisplay }}</span>{% endif %}</span></span>{% endfor %}</span>{% else %}{{ (product.convertedPrice / 100)|menu_number(locale) }}{% if showCurrency %}<span class="price-currency">{{ currencyDisplay }}</span>{% endif %}{% endif %}{% endmacro %}
 {# One amount in cents, formatted exactly like price()'s single-price path
-   (same |menu_number, same .price-currency suffix). Used by the grid card's
-   "Desde" + lowest-price line (standard/show.html.twig, gridView branch). #}
+   (same |menu_number, same .price-currency suffix). Used by oneLine() below
+   for the banner's "Desde" + lowest-price line. #}
 {% macro amount(cents, currencyDisplay, locale) %}{{ (cents / 100)|menu_number(locale) }}<span class="price-currency">{{ currencyDisplay }}</span>{% endmacro %}
-{# The grid card's supplement line (standard/show.html.twig, gridView
-   branch). Same text as the list's .dish-supplement; "· +X €" is wrapped in
-   .suppl-amount so the grid can keep it together (white-space: nowrap in
-   maison/grid.html.twig) — a break then falls before the "·", never after. #}
-{% macro gridSupplement(product, currencyDisplay, locale) %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} <span class="suppl-amount">· <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></span></div>{% endmacro %}
+{# The maison recommendation banner's supplement line
+   (themes/maison/_banner_text.html.twig). Same text as the list's
+   .dish-supplement; "· +X €" is wrapped in .suppl-amount so the banner can
+   keep it together (white-space: nowrap in maison/overrides.html.twig) — a
+   break then falls before the "·", never after. #}
+{% macro bannerSupplement(product, currencyDisplay, locale) %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} <span class="suppl-amount">· <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></span></div>{% endmacro %}
+{# One-line price for the maison chef's-recommendation banner
+   (themes/maison/_banner_text.html.twig). Multiprice → "Desde" + the lowest
+   price: base price + every variant, converted; all equal → just the
+   price. Single price → price()'s own single-price output. #}
+{% macro oneLine(product, currency, currencyDisplay, locale) %}{% if product.hasPriceVariants %}{% set prices = [product.convertedPrice]|merge(product.priceVariants|map(v => product.getConvertedVariantPrice(v))) %}{% if min(prices) != max(prices) %}<span class="price-from">{{ 'dish.price_from'|trans({}, 'menu_public', locale) }}</span> {% endif %}{{ _self.amount(min(prices), currencyDisplay, locale) }}{% else %}{{ _self.price(product, currency, true, currencyDisplay, locale) }}{% endif %}{% endmacro %}

@@ -1,5 +1,4 @@
 title: Speisekarte anpassen
-title_structure: Aufbau der Speisekarte
 
 confirm:
     default_title: Änderung anwenden
@@ -23,16 +22,13 @@ preview:
     closed_toast: Vorschau geschlossen
 
 section:
-    layout_title: Menü-Layout
-    layout_desc: Wählen Sie, wie die Gerichte auf dem Bildschirm angeordnet werden.
     theme_title: Visuelles Design
-    theme_desc: Farben, Hintergründe und Stil. Die Rasteransicht ist nur mit Maison verfügbar.
+    theme_desc: Farben, Hintergründe und Stil.
 
 card:
     preview_action: Vorschau
     use_action: Verwenden
     active_label: Aktiv
-    requires_theme: 'Verfügbar mit dem Theme %theme%'
 
 toast:
     save_error: Fehler beim Speichern
@@ -43,9 +39,6 @@ layout:
     standard:
         name: Standard
         desc: Karten mit Bild oben und Namen unten. Ausgewogen und wirkungsvoll.
-    grid:
-        name: Raster
-        desc: Visueller. Empfohlen, wenn die meisten Ihrer Gerichte ein Foto haben. Wenn Ihre Gäste es lieber schlichter mögen, nutzen Sie die Liste.
 
 theme:
     classic-dark:

@@ -1,5 +1,4 @@
 title: Personalizar cardápio
-title_structure: Estrutura do menu
 
 confirm:
     default_title: Aplicar alteração
@@ -23,16 +22,13 @@ preview:
     closed_toast: Pré-visualização fechada
 
 section:
-    layout_title: Layout do cardápio
-    layout_desc: Escolha como os pratos são organizados no ecrã.
     theme_title: Tema visual
-    theme_desc: Cores, fundos e estilo. A vista Grelha só está disponível com Maison.
+    theme_desc: Cores, fundos e estilo.
 
 card:
     preview_action: Pré-visualizar
     use_action: Usar
     active_label: Ativo
-    requires_theme: 'Disponível com o tema %theme%'
 
 toast:
     save_error: Erro ao guardar
@@ -43,9 +39,6 @@ layout:
     standard:
         name: Padrão
         desc: Cartões com imagem em cima e nome em baixo. Equilibrado e impactante.
-    grid:
-        name: Grelha
-        desc: Mais visual. Recomendada se a maioria dos seus pratos tiver foto. Se a sua clientela preferir algo mais simples, use a lista.
 
 theme:
     classic-dark:

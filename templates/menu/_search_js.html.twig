@@ -152,10 +152,22 @@ if (dishScrollBox) {
 }
 document.addEventListener('keydown', function(e) {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    const card = e.target.closest ? e.target.closest('.dish-card') : null;
-    if (!card) return;
-    e.preventDefault();
-    openDishModal(card);
+    if (!e.target.closest) return;
+    const card = e.target.closest('.dish-card');
+    if (card) {
+        e.preventDefault();
+        openDishModal(card);
+        return;
+    }
+    // Maison chef's-recommendation banner / carousel slide: run its own
+    // onclick, which opens the matching dish card's detail. Only when the
+    // banner itself has focus — the carousel's prev/dots/next are real
+    // <button>s outside the slides and keep their native Enter/Space.
+    const banner = e.target.closest('.banner, .banner-slide');
+    if (banner && banner === e.target) {
+        e.preventDefault();
+        banner.click();
+    }
 });
 
 // Secondary filters (type/diet/allergens) bottom sheet — standard layout

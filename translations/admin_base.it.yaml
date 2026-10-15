@@ -16,7 +16,6 @@ nav:
         menus: Menù fissi
         categories: Categorie
         tags: Etichette
-        structure: Struttura
         theme: Personalizza il menu
         stats: Statistiche
         qr: Il mio QR
@@ -36,7 +35,7 @@ bottom_nav:
     menus: Fissi
     categories: Categ.
     tags: Etich.
-    structure: Struttura
+    theme: Tema
     stats: Statist.
     qr: QR
     users: Team

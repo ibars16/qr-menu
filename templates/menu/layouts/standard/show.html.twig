@@ -573,13 +573,8 @@
             {% endfor %}
             {% if recommendedItems|length == 1 %}
                 {% set ri = recommendedItems[0] %}
-                <div class="banner" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ ri.product.id }} + '\']'))" role="button" tabindex="0">
-                    <div class="bicon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.2 6.8.9-4.9 4.9 1.2 6.8L12 17.8l-6 3 1.2-6.8-4.9-4.9 6.8-.9z"/></svg></div>
-                    <div class="btext">
-                        <div class="blabel">{{ ri.tagName }}</div>
-                        <div class="bhead">{{ ri.t.name }}</div>
-                        <div class="bsub">{% if ri.t.description %}{{ ri.t.description }}{% else %}{{ priceMacro.price(ri.product, currency, true, currencyDisplay, locale) }}{% endif %}</div>
-                    </div>
+                <div class="banner" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ ri.product.id }} + '\']'))" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': ri.t.name}, 'menu_public', locale) }}">
+                    {% include 'menu/themes/maison/_banner_text.html.twig' %}
                 </div>
             {% elseif recommendedItems|length > 1 %}
                 {# Carousel variant — same per-slide material as the single-dish
@@ -594,13 +589,8 @@
                     <div class="banner-viewport">
                         <div class="banner-track" id="banner-track">
                             {% for ri in recommendedItems %}
-                                <div class="banner-slide{{ loop.first ? ' active' : '' }}" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ ri.product.id }} + '\']'))" role="button" tabindex="{{ loop.first ? '0' : '-1' }}" aria-hidden="{{ loop.first ? 'false' : 'true' }}">
-                                    <div class="bicon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.2 6.8.9-4.9 4.9 1.2 6.8L12 17.8l-6 3 1.2-6.8-4.9-4.9 6.8-.9z"/></svg></div>
-                                    <div class="btext">
-                                        <div class="blabel">{{ ri.tagName }}</div>
-                                        <div class="bhead">{{ ri.t.name }}</div>
-                                        <div class="bsub">{% if ri.t.description %}{{ ri.t.description }}{% else %}{{ priceMacro.price(ri.product, currency, true, currencyDisplay, locale) }}{% endif %}</div>
-                                    </div>
+                                <div class="banner-slide{{ loop.first ? ' active' : '' }}" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ ri.product.id }} + '\']'))" role="button" tabindex="{{ loop.first ? '0' : '-1' }}" aria-hidden="{{ loop.first ? 'false' : 'true' }}" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': ri.t.name}, 'menu_public', locale) }}">
+                                    {% include 'menu/themes/maison/_banner_text.html.twig' %}
                                 </div>
                             {% endfor %}
                         </div>
@@ -794,7 +784,7 @@
                     {{ setMenuMacro.section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens) }}
                 {% else %}
                 <div class="cat-title">{{ catT.name }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(category.activeProductsSorted|length) }}</span>{% endif %}</div>
-                <div class="cards-grid{{ gridView ? ' cards-grid--2up' : '' }}">
+                <div class="cards-grid">
                     {% for product in category.activeProductsSorted %}
                         {% set pT = product.getTranslation(locale) %}
                         {% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}
@@ -855,7 +845,7 @@
                                     {% else %}
                                         <div class="dish-placeholder"><i class="ti {{ isDrink ? 'ti-glass' : 'ti-tools-kitchen-2' }}" aria-hidden="true"></i><span>{{ pT.name }}</span></div>
                                     {% endif %}
-                                    {% if theme == 'maison' ? maisonBadge == 'featured' : (featuredTag and tagNames[featuredTag.id] is defined) %}{% if gridView %}{# Half-width card: the tag's full name ("Nuestra recomendación") doesn't fit, so icon only — name kept for screen readers and as a hover tooltip. #}<span class="dish-pill dish-pill--icon" title="{{ tagNames[featuredTag.id] }}"><span aria-hidden="true">{{ featuredTag.icon }}</span><span class="sr-only">{{ tagNames[featuredTag.id] }}</span></span>{% else %}<span class="dish-pill">{{ featuredTag.icon }} {{ tagNames[featuredTag.id] }}</span>{% endif %}{% endif %}
+                                    {% if theme == 'maison' ? maisonBadge == 'featured' : (featuredTag and tagNames[featuredTag.id] is defined) %}<span class="dish-pill">{{ featuredTag.icon }} {{ tagNames[featuredTag.id] }}</span>{% endif %}
                                     {% if theme == 'maison' ? maisonBadge == 'spicy' : product.spicyLevel > 0 %}<div class="spicy-badge">{% if product.spicyLevel <= 2 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% elseif product.spicyLevel <= 4 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% else %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% endif %}</div>{% endif %}
                                     {% if theme == 'maison' ? maisonBadge == 'popular' : product.id in popularProductIds %}<div class="popular-badge">🔥 {{ 'dish.popular'|trans({}, 'menu_public', locale) }}</div>{% endif %}
                                 </div>
@@ -868,15 +858,15 @@
                                     {% if pT.description and theme != 'maison' %}<div class="front-desc">{{ pT.description }}</div>{% endif %}
                                     <div class="dish-bottom">
                                         {% if theme == 'maison' %}
-                                            {% set gridFromPrices = gridView and product.hasPriceVariants ? [product.convertedPrice]|merge(product.priceVariants|map(v => product.getConvertedVariantPrice(v))) : [] %}{% set gridFrom = gridFromPrices and min(gridFromPrices) != max(gridFromPrices) %}{% set supplementFirst = gridView and product.supplementPrice %}{% if supplementFirst and gridFrom %}{# Grid, multiprice with "Desde": supplement as a full-width line of its own above "Desde" + price (see maison/grid.html.twig); DOM order = visual order for screen readers. #}{{ priceMacro.gridSupplement(product, currencyDisplay, locale) }}{% endif %}<div class="dish-price-col">{% if supplementFirst and not gridFrom %}{# Grid, single price: supplement above the price, inside the price column. #}{{ priceMacro.gridSupplement(product, currencyDisplay, locale) }}{% endif %}{% if gridFrom %}{# Grid, multiprice: "Desde" + the lowest price only; the detail sheet still lists every row. No "Desde" when all prices are equal. #}<div class="dish-from">{{ 'dish.price_from'|trans({}, 'menu_public', locale) }}</div>{% endif %}
-                                                <div class="dish-price">{% if gridFromPrices %}{{ priceMacro.amount(min(gridFromPrices), currencyDisplay, locale) }}{% else %}{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}{% endif %}</div>
-                                                {% if product.supplementPrice and not supplementFirst %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}
+                                            <div class="dish-price-col">
+                                                <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
+                                                {% if product.supplementPrice %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></div>{% endif %}
                                             </div>
                                         {% else %}
                                             <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
                                         {% endif %}
-                                        {% if gridView %}{# Grid: round chevron-only button, label kept for screen readers (see maison/grid.html.twig). #}<div class="more-hint more-hint--icon"><span class="sr-only">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }}</span><i class="ti ti-chevron-right" aria-hidden="true"></i></div>{% else %}<div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
-{% endif %}                                    </div>
+                                        <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
+                                    </div>
                                 </div>
                                 {% endif %}
                                 <template class="dish-tpl">

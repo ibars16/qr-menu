@@ -613,15 +613,24 @@
     }
     .bicon svg { width: 16px; height: 16px; }
     .btext { flex: 1; min-width: 0; }
-    .blabel { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cf-hborder); margin-bottom: 2px; }
+    /* --cf-hborder-text, not --cf-hborder: real 10px text (see vars.html.twig). */
+    .blabel { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cf-hborder-text); margin-bottom: 2px; }
+    /* Up to 2 lines, ellipsis only past that (was one nowrap line, which
+       cut most non-Spanish names). */
     .bhead {
         font-family: var(--font-display); font-weight: 500; font-size: calc(15px * var(--font-scale)); line-height: 1.2; color: var(--fg);
-        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .bsub {
         font-size: calc(12.5px * var(--font-scale)); color: var(--fg-2); margin-top: 2px;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
+    /* Supplement under the price line (_banner_text.html.twig): may wrap,
+       "· +X €" kept together (_price.html.twig's bannerSupplement). The negative
+       margin leaves 6px from the bottom of the price's text to the top of
+       the supplement's. */
+    .btext > .dish-supplement { white-space: normal; margin-top: calc(-1.75px * var(--font-scale)); }
+    .btext > .dish-supplement .suppl-amount { white-space: nowrap; }
 
     /* Chef's-recommendation carousel — same slide material as .banner above,
        used only when 2+ dishes carry 'recommended' (see show.html.twig's
@@ -782,6 +791,125 @@
        construction" property this comment describes. */
     .ui-wrap, .content, .cat-tabs { padding-left: 20px; padding-right: 20px; }
     @media (min-width: 768px) { .ui-wrap, .content, .cat-tabs { padding-left: 20px; padding-right: 20px; } }
+
+    /* ── Tablet / desktop ──────────────────────────────────────────────
+       Everything below is >=768px only (the phone layout is untouched),
+       except the first rule. */
+
+    /* The base layout's .hero::before glow (show.html.twig) is absolute with
+       z-index 0, so it painted over the static photo band and washed out its
+       centre. Lifting the band above it keeps the glow on the rest of the
+       hero (.hero-inner already sits at z-index 1). All widths. */
+    .hero-photo-band { position: relative; z-index: 1; }
+
+    @media (min-width: 768px) {
+        /* One column, 1200px of content + the 20px gutter, shared by header,
+           hero, search, tabs and menu: .ui-wrap/.content/.hero-inner are
+           border-box with that 20px padding inside (hence 1240), .header-row
+           sits inside .header's own 20px padding (hence 1200). Same left
+           edge for all of them at every width. */
+        .header-row { max-width: 1200px; }
+        .ui-wrap, .content, .hero-inner { max-width: 1240px; }
+        /* --surface-2 on .hero itself, a full-width band, instead of on
+           .hero-inner (where it drew a column-wide rectangle cut off at both
+           sides over the hero gradient). Same parchment as on phones, where
+           .hero-inner is already full width. The base .hero border-bottom
+           (1px --hero-border, as on phones) closes the band. */
+        .hero-inner { background: transparent; }
+        .hero { background: var(--surface-2); }
+        /* Sticky tab bar: background across the whole screen, tabs still in
+           the column — the bar itself is full width and its inline padding
+           puts the first tab on the column's edge. */
+        .cat-tabs {
+            max-width: none; margin-left: 0; margin-right: 0;
+            padding-inline: max(20px, calc((100% - 1200px) / 2));
+        }
+        /* Stacked hero (768–1023): the recommendation banner was 940px wide
+           with two thirds of it empty. */
+        .banner, .banner-multi { max-width: 480px; }
+    }
+
+    /* Two-column hero (>=1024): text + recommendation at inline-start, the
+       photo at inline-end (grid follows the writing direction, so it lands
+       on the left in RTL), ~45% of the column, 48px apart, vertically
+       centred on each other. Tracks: gutter | text | gap | photo | gutter,
+       the gutters sized so the text starts on the same edge as the rest. */
+    @media (min-width: 1024px) {
+        .hero {
+            display: grid; align-items: center; padding: 40px 0 44px;
+            grid-template-columns:
+                max(20px, calc((100% - 1200px) / 2))
+                minmax(0, 1fr)
+                48px
+                calc(min(1200px, 100% - 40px) * 0.45)
+                max(20px, calc((100% - 1200px) / 2));
+        }
+        .hero > .hero-inner { grid-column: 2; grid-row: 1; max-width: none; margin: 0; padding: 0; }
+        /* No photo: the text takes the whole column, no empty half. */
+        .hero:not(:has(> .hero-photo-band)) > .hero-inner { grid-column: 2 / 5; }
+        .hero > .hero-photo-band {
+            grid-column: 4; grid-row: 1;
+            height: auto; aspect-ratio: 3 / 2; border-bottom: 0; border-radius: var(--card-radius);
+        }
+        .banner, .banner-multi { max-width: none; }
+
+        /* Menu list: 3 cards per row (the shared base rule in
+           standard/show.html.twig stays at 2 from 640px for every theme).
+           Same gap; a no-photo .dish-row still spans the whole row. */
+        .cards-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+        /* Hero typography: a bigger, tighter Fraunces title; a thin brass
+           rule under it (pseudo-element, so decorative by construction);
+           the tagline in Fraunces italic, balanced, ~36ch; more air between
+           title, tagline, button and recommendation. */
+        .hero-name {
+            font-size: calc(62px * var(--font-scale)); letter-spacing: -0.02em; line-height: 1.05;
+            margin: 0;
+        }
+        .hero-name::after {
+            content: ''; display: block; width: 48px; height: 2px; margin-top: 24px;
+            background: var(--cf-hborder);
+        }
+        .tagline {
+            font-family: var(--font-display); font-style: italic; font-weight: 400;
+            font-size: calc(21px * var(--font-scale)); line-height: 1.45; color: var(--fg-2);
+            max-width: 36ch; text-wrap: balance; margin: 20px 0 0;
+        }
+        /* 44px tall (was 34): 15px text on a 20px line + 12px top/bottom,
+           padding and icon scaled with it. Same colours and pill shape. */
+        .cta-explore { margin-top: 30px; padding: 12px 22px; gap: 10px; font-size: 15px; line-height: 20px; }
+        .cta-explore i { font-size: 15px; }
+        .banner, .banner-multi { margin-top: 36px; }
+
+        /* Recommendation as a menu card: card surface, radius and border,
+           a soft resting shadow, the cards' own hover (lift + --cf-hshadow +
+           brass border). Dish thumbnail at inline-start (star only when the
+           dish has no photo) and the "Ver más" chevron at inline-end. */
+        .banner, .banner-slide {
+            gap: 16px; padding: 12px; padding-inline-end: 16px;
+            background: var(--cf-bg); border: 1px solid var(--cf-border); border-radius: var(--card-radius);
+            box-shadow: 0 1px 2px rgba(36,28,23,0.04), 0 8px 20px rgba(36,28,23,0.06);
+            transition: box-shadow 0.35s ease, transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.3s ease;
+        }
+        .banner:hover, .banner-slide:hover { box-shadow: var(--cf-hshadow); border-color: var(--cf-hborder); transform: translateY(-5px); }
+        .banner:focus-visible, .banner-slide:focus-visible { outline: 2px solid var(--cf-hborder); outline-offset: -2px; }
+        /* The carousel viewport clips its sliding track; give the lift and
+           the shadow room above and below without moving anything. */
+        .banner-viewport { padding: 6px 0 26px; margin: -6px 0 -26px; border-radius: 0; }
+        .bthumb {
+            display: block; flex-shrink: 0; width: 72px; height: 72px; object-fit: cover;
+            border-radius: var(--card-radius);
+        }
+        .bthumb ~ .bicon { display: none; }
+        .bchev {
+            display: block; flex-shrink: 0; font-size: 18px; color: var(--accent);
+            transition: transform 0.25s ease;
+        }
+        .banner:hover .bchev, .banner-slide:hover .bchev { transform: translateX(3px); }
+    }
+    /* Thumbnail and chevron exist in the markup at every width but only
+       show >=1024 (above); phones and tablets keep the star icon. */
+    @media (max-width: 1023.98px) { .bthumb, .bchev { display: none; } }
 
     /* Smart Waiter FAB (menu/_smart_waiter.html.twig, shared markup/JS
        across every theme — not touched here, only its visibility) — hidden
@@ -1025,6 +1153,24 @@
        content, so staying on its own row below avoids that risk for every
        language rather than only the short ones. */
     .filters-panel-header { padding-bottom: 0.5rem; }
+    /* Tablet / desktop (>=640): a centred card as tall as its content, up
+       to 85dvh. The 11rem body padding above (sized for the phone bottom
+       sheet) left a ~190px hole and pushed "Ver resultados" to the bottom
+       of an 88vh-tall sheet; here the button sits 24px under the last
+       block (10px body padding + the footer's 1px border + 13px padding).
+       The footer is sticky inside .filters-panel-scroll, so only when the
+       content doesn't fit does it pin to the bottom while the body
+       scrolls. Its fade is cut to the 10px of body padding so it never
+       covers the disclaimer when everything fits. Disclaimer in --fg-2:
+       --fg-3 was 2.29:1 on --cb-bg. */
+    @media (min-width: 640px) {
+        .filters-overlay { align-items: center; }
+        .filters-panel { max-height: 85dvh; border-radius: 1.25rem; }
+        .filters-panel-body { padding-bottom: 10px; }
+        .filters-panel-footer { padding-top: 13px; }
+        .filters-panel-footer::before { height: 10px; }
+        .filters-panel .allergen-disclaimer { color: var(--fg-2); }
+    }
     .filters-panel-clear-row { padding: 0.25rem 1.25rem 0; }
 
     /* ── Dish-detail sheet (.dish-modal) ──────────────────────────────────
@@ -1437,6 +1583,3 @@
         }
     });
 </script>
-{# Cuadrícula view CSS lives in its own file and is only emitted when the
-   view is active, so the list view's HTML stays byte-identical. #}
-{% if gridView|default(false) %}{% include 'menu/themes/maison/grid.html.twig' %}{% endif %}
