@@ -39,7 +39,40 @@
         }
         .field input:focus, .field select:focus { border-color: var(--tx-5); }
         .field input:focus-visible, .field select:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-        .field-hint { font-size: var(--fs-sm); color: var(--tx-muted); line-height: var(--lh-body); }
+        .field-hint { font-size: var(--fs-sm); color: var(--tx-3); line-height: var(--lh-body); }
+        /* Per-field errors — same tokens as the dish editor's .field-error /
+           input.error (--err-text / --err-border, AA in both modes, see
+           base.html.twig). */
+        .field input.error { border-color: var(--err-border); }
+        .field-error { font-size: var(--fs-sm); color: var(--err-text); line-height: var(--lh-body); }
+
+        /* Contacto y redes */
+        .field-group { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-2); border-top: 1px solid var(--bd-1); }
+        .field-group-title { font-size: var(--fs-base); font-weight: 600; color: var(--tx-hi); padding-top: var(--sp-2); }
+        .field label i { font-size: 16px; color: var(--tx-3); }
+        .hours { display: flex; flex-direction: column; gap: var(--sp-2); }
+        .hours-day {
+            display: flex; flex-direction: column; gap: var(--sp-2);
+            padding: var(--sp-3); border: 1px solid var(--bd-1); border-radius: var(--r-md); background: var(--bg-input);
+        }
+        .hours-day.has-error { border-color: var(--err-border); }
+        .hours-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+        .hours-name { font-size: var(--fs-base); font-weight: 600; color: var(--tx-hi); }
+        .hours-closed { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--tx-3); cursor: pointer; min-height: 32px; }
+        .hours-closed input { width: 18px; height: 18px; accent-color: var(--brand); }
+        .hours-shifts { display: flex; flex-direction: column; gap: var(--sp-2); }
+        .hours-day.is-closed .hours-shifts { display: none; }
+        .hours-shift { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--sp-2); }
+        .hours-shift-label { font-size: var(--fs-sm); color: var(--tx-3); }
+        .hours-sep { color: var(--tx-3); }
+        .hours-shift input {
+            background: var(--bg-card); border: 1px solid var(--bd-2); color: var(--tx-hi);
+            font-size: var(--fs-base); padding: var(--sp-2) var(--sp-3); border-radius: var(--r-sm);
+            width: 100%; min-width: 0; min-height: 40px; color-scheme: light dark;
+        }
+        .hours-shift input:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+        .hours-shift input[aria-invalid="true"] { border-color: var(--err-border); }
+        .hours-copy { align-self: flex-start; display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 40px; }
 
         /* Color picker */
         .color-wrap { display: flex; align-items: center; gap: var(--sp-3); }
@@ -191,10 +224,18 @@
     </style>
 {% endblock %}
 
+{# Per-field error helpers: the input gets aria-invalid + aria-describedby
+   and the .error border; the message sits right under it (same look as the
+   dish editor's .field-error). #}
+{% macro attrs(errors, key) %}{% if errors[key] is defined %}aria-invalid="true" aria-describedby="err-{{ key }}" class="error"{% endif %}{% endmacro %}
+{% macro message(errors, key) %}{% if errors[key] is defined %}<span class="field-error" id="err-{{ key }}">{{ errors[key]|trans({}, 'admin_settings') }}</span>{% endif %}{% endmacro %}
+
 {% block body %}
+{% import _self as fieldErr %}
     <div class="settings-wrap">
 
         <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="_token" value="{{ csrf_token('admin_settings') }}">
 
             {# ── Información del restaurante ── #}
             <div class="settings-section">
@@ -205,18 +246,22 @@
                         <label for="name">{{ 'field.name'|trans({}, 'admin_settings') }} <span class="req">*</span></label>
                         <input type="text"
                                id="name" name="name"
-                               value="{{ restaurant.name }}"
+                               value="{{ old ? old.name : restaurant.name }}"
                                placeholder="{{ 'field.name_placeholder'|trans({}, 'admin_settings') }}"
+                               {{ fieldErr.attrs(errors, 'name') }}
                                required>
+                        {{ fieldErr.message(errors, 'name') }}
                     </div>
 
                     <div class="field">
                         <label for="tagline">{{ 'field.tagline'|trans({}, 'admin_settings') }}</label>
                         <input type="text"
                                id="tagline" name="tagline"
-                               value="{{ restaurant.tagline }}"
+                               value="{{ old ? old.tagline : restaurant.tagline }}"
                                placeholder="{{ 'field.tagline_placeholder'|trans({}, 'admin_settings') }}"
+                               {{ fieldErr.attrs(errors, 'tagline') }}
                                maxlength="160">
+                        {{ fieldErr.message(errors, 'tagline') }}
                         <span class="field-hint">{{ 'hint.tagline'|trans({}, 'admin_settings') }}</span>
                     </div>
 
@@ -229,6 +274,102 @@
                                 <i class="ti ti-copy" aria-hidden="true"></i> {{ 'action.copy'|trans({}, 'admin_settings') }}
                             </button>
                         </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {# ── Contacto y redes ── #}
+            {% set socialValues = old ? old.social : (restaurant.socialLinks ?? {}) %}
+            {% set hoursValues = old ? old.hours : null %}
+            {% set storedHours = restaurant.openingHours ?? {} %}
+            <div class="settings-section">
+                <div class="settings-section-title">{{ 'section.contact'|trans({}, 'admin_settings') }}</div>
+                <div class="settings-body">
+
+                    <div class="field">
+                        <label for="address">{{ 'field.address'|trans({}, 'admin_settings') }}</label>
+                        <input type="text" id="address" name="address" maxlength="255" autocomplete="street-address"
+                               value="{{ old ? old.address : restaurant.address }}"
+                               placeholder="{{ 'field.address_placeholder'|trans({}, 'admin_settings') }}"
+                               {{ fieldErr.attrs(errors, 'address') }}>
+                        {{ fieldErr.message(errors, 'address') }}
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">{{ 'field.phone'|trans({}, 'admin_settings') }}</label>
+                        <input type="tel" id="phone" name="phone" maxlength="32" autocomplete="tel" inputmode="tel"
+                               value="{{ old ? old.phone : restaurant.phone }}"
+                               placeholder="{{ 'field.phone_placeholder'|trans({}, 'admin_settings') }}"
+                               {{ fieldErr.attrs(errors, 'phone') }}>
+                        {{ fieldErr.message(errors, 'phone') }}
+                        <span class="field-hint">{{ 'hint.phone'|trans({}, 'admin_settings') }}</span>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-group-title">{{ 'field.social'|trans({}, 'admin_settings') }}</div>
+                        <span class="field-hint">{{ 'hint.social'|trans({}, 'admin_settings') }}</span>
+                        {% for network, icon in {instagram: 'ti-brand-instagram', facebook: 'ti-brand-facebook', tiktok: 'ti-brand-tiktok', google: 'ti-brand-google', tripadvisor: 'ti-brand-tripadvisor', website: 'ti-world'} %}
+                            <div class="field">
+                                <label for="social-{{ network }}"><i class="ti {{ icon }}" aria-hidden="true"></i> {{ ('field.social_' ~ network)|trans({}, 'admin_settings') }}</label>
+                                <input type="text" id="social-{{ network }}" name="social[{{ network }}]" maxlength="255"
+                                       autocomplete="off" autocapitalize="off" spellcheck="false"
+                                       value="{{ socialValues[network] ?? '' }}"
+                                       placeholder="{{ ('field.social_' ~ network ~ '_placeholder')|trans({}, 'admin_settings') }}"
+                                       {{ fieldErr.attrs(errors, 'social_' ~ network) }}>
+                                {{ fieldErr.message(errors, 'social_' ~ network) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-group-title" id="hours-title">{{ 'field.hours'|trans({}, 'admin_settings') }}</div>
+                        <span class="field-hint">{{ 'hint.hours'|trans({}, 'admin_settings') }}</span>
+                        <div class="hours" role="group" aria-labelledby="hours-title">
+                            {% for day in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] %}
+                                {% set dayName = ('day.' ~ day)|trans({}, 'admin_settings') %}
+                                {% if hoursValues is not null %}
+                                    {% set dayIn = hoursValues[day] ?? {} %}
+                                    {% set closed = dayIn.closed is defined and dayIn.closed %}
+                                    {% set shifts = [[dayIn[0].open ?? '', dayIn[0].close ?? ''], [dayIn[1].open ?? '', dayIn[1].close ?? '']] %}
+                                {% else %}
+                                    {% set closed = storedHours[day] is defined and storedHours[day] is empty %}
+                                    {% set stored = storedHours[day] ?? [] %}
+                                    {% set shifts = [stored[0] ?? ['', ''], stored[1] ?? ['', '']] %}
+                                {% endif %}
+                                <div class="hours-day{{ closed ? ' is-closed' : '' }}{{ errors['hours_' ~ day] is defined ? ' has-error' : '' }}" data-day="{{ day }}">
+                                    <div class="hours-head">
+                                        <span class="hours-name" id="hours-{{ day }}-name">{{ dayName }}</span>
+                                        <label class="hours-closed">
+                                            <input type="checkbox" name="hours[{{ day }}][closed]" value="1" {{ closed ? 'checked' : '' }}
+                                                   aria-describedby="hours-{{ day }}-name">
+                                            {{ 'hours.closed'|trans({}, 'admin_settings') }}
+                                        </label>
+                                    </div>
+                                    <div class="hours-shifts">
+                                        {% for i in 0..1 %}
+                                            {% set n = i + 1 %}
+                                            <div class="hours-shift">
+                                                <span class="hours-shift-label">{{ (i == 0 ? 'hours.shift1' : 'hours.shift2')|trans({}, 'admin_settings') }}</span>
+                                                <input type="time" step="60" name="hours[{{ day }}][{{ i }}][open]" value="{{ shifts[i][0] }}"
+                                                       aria-label="{{ 'hours.open_aria'|trans({'%day%': dayName, '%n%': n}, 'admin_settings') }}"
+                                                       {% if errors['hours_' ~ day] is defined %}aria-invalid="true" aria-describedby="err-hours_{{ day }}"{% endif %}
+                                                       {{ closed ? 'disabled' : '' }}>
+                                                <span class="hours-sep" aria-hidden="true">–</span>
+                                                <input type="time" step="60" name="hours[{{ day }}][{{ i }}][close]" value="{{ shifts[i][1] }}"
+                                                       aria-label="{{ 'hours.close_aria'|trans({'%day%': dayName, '%n%': n}, 'admin_settings') }}"
+                                                       {% if errors['hours_' ~ day] is defined %}aria-invalid="true" aria-describedby="err-hours_{{ day }}"{% endif %}
+                                                       {{ closed ? 'disabled' : '' }}>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    {{ fieldErr.message(errors, 'hours_' ~ day) }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="copy-btn hours-copy" id="hours-copy-mon">
+                            <i class="ti ti-copy" aria-hidden="true"></i> {{ 'hours.copy_monday'|trans({}, 'admin_settings') }}
+                        </button>
                     </div>
 
                 </div>
@@ -335,17 +476,17 @@
                     <div class="field">
                         <label>{{ 'field.primary_color'|trans({}, 'admin_settings') }}</label>
                         <div class="color-wrap">
-                            <div class="color-preview" style="background:{{ restaurant.primaryColor }}">
+                            <div class="color-preview" style="background:{{ old ? old.primaryColor : restaurant.primaryColor }}">
                                 <input type="color"
                                        id="color-picker"
-                                       value="{{ restaurant.primaryColor }}"
+                                       value="{{ old ? old.primaryColor : restaurant.primaryColor }}"
                                        oninput="syncColor(this.value)">
                             </div>
                             <input type="text"
                                    class="color-hex"
                                    id="color-hex"
                                    name="primaryColor"
-                                   value="{{ restaurant.primaryColor }}"
+                                   value="{{ old ? old.primaryColor : restaurant.primaryColor }}"
                                    maxlength="7"
                                    placeholder="#C1440E"
                                    oninput="syncColorFromHex(this.value)">
@@ -366,7 +507,7 @@
                         <select id="defaultLanguage" name="defaultLanguage">
                             {% for code, lang in languages %}
                                 <option value="{{ code }}"
-                                    {{ restaurant.defaultLanguage == code ? 'selected' : '' }}>
+                                    {{ (old ? old.defaultLanguage : restaurant.defaultLanguage) == code ? 'selected' : '' }}>
                                     {{ lang.flag }} {{ lang.name }}
                                 </option>
                             {% endfor %}
@@ -381,7 +522,7 @@
                         <select id="adminLocale" name="adminLocale">
                             {% for code, lang in adminLocales %}
                                 <option value="{{ code }}"
-                                    {{ restaurant.adminLocale == code ? 'selected' : '' }}>
+                                    {{ (old ? old.adminLocale : restaurant.adminLocale) == code ? 'selected' : '' }}>
                                     {{ lang.flag }} {{ lang.name }}
                                 </option>
                             {% endfor %}
@@ -396,7 +537,7 @@
                         <select id="currency" name="currency">
                             {% for code, curr in currencies %}
                                 <option value="{{ code }}"
-                                    {{ restaurant.currency == code ? 'selected' : '' }}>
+                                    {{ (old ? old.currency : restaurant.currency) == code ? 'selected' : '' }}>
                                     {{ curr.symbol }} {{ code }} — {{ curr.name }}
                                 </option>
                             {% endfor %}
@@ -422,6 +563,32 @@
 
 {% block javascripts %}
     <script>
+        // ── Horario: "Cerrado" hides and disables that day's shifts (disabled
+        // inputs aren't submitted, so a closed day posts only its flag);
+        // "Copiar lunes" copies Monday's closed flag and times to every day. ──
+        (function () {
+            const days = Array.from(document.querySelectorAll('.hours-day'));
+            if (!days.length) return;
+            const setClosed = (dayEl, closed) => {
+                dayEl.classList.toggle('is-closed', closed);
+                dayEl.querySelectorAll('input[type="time"]').forEach(i => { i.disabled = closed; });
+            };
+            days.forEach(dayEl => {
+                const box = dayEl.querySelector('.hours-closed input');
+                box.addEventListener('change', () => setClosed(dayEl, box.checked));
+            });
+            document.getElementById('hours-copy-mon')?.addEventListener('click', () => {
+                const mon = days[0];
+                const monClosed = mon.querySelector('.hours-closed input').checked;
+                const monTimes = Array.from(mon.querySelectorAll('input[type="time"]')).map(i => i.value);
+                days.slice(1).forEach(dayEl => {
+                    dayEl.querySelector('.hours-closed input').checked = monClosed;
+                    dayEl.querySelectorAll('input[type="time"]').forEach((i, idx) => { i.value = monTimes[idx] ?? ''; });
+                    setClosed(dayEl, monClosed);
+                });
+            });
+        })();
+
         const MSG_LOGO_REMOVED       = "{{ 'toast.logo_removed'|trans({}, 'admin_settings')|e('js') }}";
         const MSG_HERO_IMAGE_REMOVED = "{{ 'toast.hero_image_removed'|trans({}, 'admin_settings')|e('js') }}";
         const MSG_URL_COPIED         = "{{ 'toast.url_copied'|trans({}, 'admin_settings')|e('js') }}";

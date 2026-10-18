@@ -130,6 +130,7 @@ final class SettingsControllerCrossTenantLogoTest extends WebTestCase
     private function submitLogo(Restaurant $restaurant, UploadedFile $logo): void
     {
         $this->client->request('POST', '/admin/settings', [
+            '_token' => $this->settingsToken(),
             'name'            => $restaurant->getName(),
             'primaryColor'    => '#000000',
             'currency'        => 'EUR',
@@ -255,5 +256,11 @@ final class SettingsControllerCrossTenantLogoTest extends WebTestCase
             count(array_unique($newFilenamesAssigned)),
             'a logo filename was reused across iterations: ' . json_encode($newFilenamesAssigned)
         );
+    }
+
+    /** The settings form's CSRF token, read from a real GET of the page (the form now requires it). */
+    private function settingsToken(): string
+    {
+        return $this->client->request('GET', '/admin/settings')->filter('input[name="_token"]')->attr('value');
     }
 }

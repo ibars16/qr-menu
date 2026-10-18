@@ -4,6 +4,7 @@ section:
     restaurant_info: Informations sur le restaurant
     appearance: Apparence
     language_currency: Langue et devise
+    contact: "Contact et réseaux"
 
 field:
     name: Nom
@@ -17,6 +18,24 @@ field:
     menu_language: Langue principale de la carte
     admin_language: "Langue du panneau d'administration"
     currency: Devise de base
+    address: "Adresse"
+    address_placeholder: "Rue, numéro, ville"
+    phone: "Téléphone"
+    phone_placeholder: "+33 1 23 45 67 89"
+    social: "Réseaux et avis"
+    social_instagram: "Instagram"
+    social_facebook: "Facebook"
+    social_tiktok: "TikTok"
+    social_google: "Google (avis ou carte)"
+    social_tripadvisor: "TripAdvisor"
+    social_website: "Site web"
+    social_instagram_placeholder: "@votrerestaurant ou lien"
+    social_facebook_placeholder: "Nom de la page ou lien"
+    social_tiktok_placeholder: "@votrerestaurant ou lien"
+    social_google_placeholder: "Lien Google Maps ou avis"
+    social_tripadvisor_placeholder: "Lien vers votre page TripAdvisor"
+    social_website_placeholder: "www.votrerestaurant.fr"
+    hours: "Horaires"
 
 action:
     copy: Copier
@@ -37,6 +56,9 @@ hint:
     menu_language: La langue dans laquelle vous saisissez les noms et descriptions des plats.
     admin_language: "La langue de ce panneau de gestion. Elle n'affecte pas la carte vue par vos clients."
     currency: Les prix sont enregistrés dans cette devise. Les clients peuvent voir la conversion en temps réel.
+    phone: "Vous pouvez utiliser +, des espaces, des tirets et des parenthèses."
+    social: "Collez le lien ou saisissez votre nom d'utilisateur. Laissez vide ce que vous n'utilisez pas."
+    hours: "Cochez « Fermé » ou indiquez un ou deux services. Si la fermeture est avant l'ouverture, le service se termine après minuit."
 
 flash:
     name_required: Le nom du restaurant est obligatoire.
@@ -53,8 +75,40 @@ flash:
     hero_image_warning_dimensions: "Cette image est petite et pourrait paraître floue sur un grand écran."
     hero_image_warning_portrait: "Elle est très verticale, le hero recadrera les côtés."
     saved: Paramètres enregistrés avec succès.
+    form_errors: "Vérifiez les champs signalés."
+    csrf_invalid: "Votre session a expiré. Veuillez réessayer."
 
 toast:
     logo_removed: "Logo supprimé à l'enregistrement"
     hero_image_removed: "Photo d'en-tête supprimée à l'enregistrement"
     url_copied: 'URL copiée ✓'
+
+hours:
+    closed: "Fermé"
+    shift1: "Service 1"
+    shift2: "Service 2"
+    open_aria: "%day%, service %n%, ouverture"
+    close_aria: "%day%, service %n%, fermeture"
+    copy_monday: "Copier le lundi sur tous les jours"
+
+day:
+    mon: "Lundi"
+    tue: "Mardi"
+    wed: "Mercredi"
+    thu: "Jeudi"
+    fri: "Vendredi"
+    sat: "Samedi"
+    sun: "Dimanche"
+
+error:
+    name_required: "Le nom du restaurant est obligatoire."
+    tagline_too_long: "160 caractères maximum."
+    address_too_long: "255 caractères maximum."
+    phone_invalid: "Saisissez un numéro valide (7 à 15 chiffres)."
+    social_invalid: "Ce lien ou nom d'utilisateur n'est pas valide."
+    social_wrong_domain: "Ce lien n'appartient pas à ce réseau."
+    social_too_long: "Le lien est trop long."
+    hours_incomplete: "Il manque l'heure d'ouverture ou de fermeture."
+    hours_invalid: "Heure non valide."
+    hours_overlap: "Les deux services se chevauchent."
+    hours_same_time: "L'ouverture et la fermeture ne peuvent pas être identiques."

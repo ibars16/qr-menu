@@ -44,6 +44,35 @@ class Restaurant
     #[ORM\Column(length: 160, nullable: true)]
     private ?string $tagline = null;
 
+    /**
+     * Social/review links edited in Configuración, already normalized by
+     * ContactDetailsNormalizer: network key (instagram, facebook, tiktok,
+     * google, tripadvisor, website) => absolute https URL. A network that
+     * isn't set has no key; nothing set at all is null.
+     *
+     * @var array<string, string>|null
+     */
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $socialLinks = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $address = null;
+
+    /** As typed by the owner (trimmed); validated to hold 7–15 digits. */
+    #[ORM\Column(length: 32, nullable: true)]
+    private ?string $phone = null;
+
+    /**
+     * Weekly opening hours: day key (mon…sun) => list of [open, close] "HH:MM"
+     * pairs, at most 2; [] = closed that day. A close earlier than its open
+     * runs past midnight. A day that isn't configured has no key; nothing
+     * configured at all is null.
+     *
+     * @var array<string, list<array{0: string, 1: string}>>|null
+     */
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $openingHours = null;
+
     #[ORM\Column(length: 20)]
     private string $primaryColor = '#000000';
 
@@ -165,6 +194,50 @@ class Restaurant
     public function setTagline(?string $tagline): void
     {
         $this->tagline = $tagline;
+    }
+
+    /** @return array<string, string>|null */
+    public function getSocialLinks(): ?array
+    {
+        return $this->socialLinks;
+    }
+
+    /** @param array<string, string>|null $socialLinks */
+    public function setSocialLinks(?array $socialLinks): void
+    {
+        $this->socialLinks = $socialLinks ?: null;
+    }
+
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    public function setAddress(?string $address): void
+    {
+        $this->address = $address;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(?string $phone): void
+    {
+        $this->phone = $phone;
+    }
+
+    /** @return array<string, list<array{0: string, 1: string}>>|null */
+    public function getOpeningHours(): ?array
+    {
+        return $this->openingHours;
+    }
+
+    /** @param array<string, list<array{0: string, 1: string}>>|null $openingHours */
+    public function setOpeningHours(?array $openingHours): void
+    {
+        $this->openingHours = $openingHours ?: null;
     }
 
     public function getPrimaryColor(): string

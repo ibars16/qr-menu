@@ -134,6 +134,7 @@ final class SettingsControllerTest extends WebTestCase
     private function submitLogo(Restaurant $restaurant, UploadedFile $logo): void
     {
         $this->client->request('POST', '/admin/settings', [
+            '_token' => $this->settingsToken(),
             'name'            => $restaurant->getName(),
             'primaryColor'    => '#000000',
             'currency'        => 'EUR',
@@ -176,6 +177,7 @@ final class SettingsControllerTest extends WebTestCase
     private function submitHeroImage(Restaurant $restaurant, UploadedFile $heroImage): void
     {
         $this->client->request('POST', '/admin/settings', [
+            '_token' => $this->settingsToken(),
             'name'            => $restaurant->getName(),
             'primaryColor'    => '#000000',
             'currency'        => 'EUR',
@@ -193,14 +195,14 @@ final class SettingsControllerTest extends WebTestCase
         $this->client->loginUser($owner);
 
         $this->submitLogo($restaurant, $this->logoUpload());
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         $firstLogo = $restaurant->getLogo();
         $this->logoFilesToRemove[] = $firstLogo;
         self::assertNotNull($firstLogo);
         self::assertFileExists($this->logoDir . '/' . $firstLogo);
 
         $this->submitLogo($restaurant, $this->logoUpload());
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         $secondLogo = $restaurant->getLogo();
         $this->logoFilesToRemove[] = $secondLogo;
 
@@ -218,7 +220,7 @@ final class SettingsControllerTest extends WebTestCase
         self::assertNull($restaurant->getLogo());
 
         $this->submitLogo($restaurant, $this->logoUpload());
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         $logo = $restaurant->getLogo();
         $this->logoFilesToRemove[] = $logo;
 
@@ -233,12 +235,12 @@ final class SettingsControllerTest extends WebTestCase
         $this->client->loginUser($owner);
 
         $this->submitLogo($restaurant, $this->logoUpload());
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         $firstLogo = $restaurant->getLogo();
         unlink($this->logoDir . '/' . $firstLogo); // simulate an already-orphaned/removed file
 
         $this->submitLogo($restaurant, $this->logoUpload());
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         $secondLogo = $restaurant->getLogo();
         $this->logoFilesToRemove[] = $secondLogo;
 
@@ -253,14 +255,14 @@ final class SettingsControllerTest extends WebTestCase
         $this->client->loginUser($owner);
 
         $this->submitHeroImage($restaurant, $this->heroImageUpload());
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         $firstHeroImage = $restaurant->getHeroImage();
         $this->heroImageFilesToRemove[] = $firstHeroImage;
         self::assertNotNull($firstHeroImage);
         self::assertFileExists($this->heroImageDir . '/' . $firstHeroImage);
 
         $this->submitHeroImage($restaurant, $this->heroImageUpload());
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         $secondHeroImage = $restaurant->getHeroImage();
         $this->heroImageFilesToRemove[] = $secondHeroImage;
 
@@ -278,7 +280,7 @@ final class SettingsControllerTest extends WebTestCase
         self::assertNull($restaurant->getHeroImage());
 
         $this->submitHeroImage($restaurant, $this->heroImageUpload());
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         $heroImage = $restaurant->getHeroImage();
         $this->heroImageFilesToRemove[] = $heroImage;
 
@@ -293,12 +295,12 @@ final class SettingsControllerTest extends WebTestCase
         $this->client->loginUser($owner);
 
         $this->submitHeroImage($restaurant, $this->heroImageUpload());
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         $firstHeroImage = $restaurant->getHeroImage();
         unlink($this->heroImageDir . '/' . $firstHeroImage); // simulate an already-orphaned/removed file
 
         $this->submitHeroImage($restaurant, $this->heroImageUpload());
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         $secondHeroImage = $restaurant->getHeroImage();
         $this->heroImageFilesToRemove[] = $secondHeroImage;
 
@@ -329,6 +331,7 @@ final class SettingsControllerTest extends WebTestCase
         $fakeImage = $this->fixtureUploadedFile('upload_fake_mime.png', 'fake.jpg', 'image/jpeg');
 
         $this->client->request('POST', '/admin/settings', [
+            '_token' => $this->settingsToken(),
             'name'                        => $restaurant->getName(),
             'primaryColor'                => '#000000',
             'currency'                    => 'EUR',
@@ -339,7 +342,7 @@ final class SettingsControllerTest extends WebTestCase
         ]);
         self::assertResponseRedirects('/admin/settings');
 
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         self::assertNull($restaurant->getHeroImage(), 'a security rejection must never persist a heroImage reference');
 
         $filesAfter = scandir($this->heroImageDir) ?: [];
@@ -363,6 +366,7 @@ final class SettingsControllerTest extends WebTestCase
         $goodImage = $this->fixtureUploadedFile('upload_hero_ok.jpg', 'hero.jpg', 'image/jpeg');
 
         $this->client->request('POST', '/admin/settings', [
+            '_token' => $this->settingsToken(),
             'name'            => $restaurant->getName(),
             'primaryColor'    => '#000000',
             'currency'        => 'EUR',
@@ -376,11 +380,31 @@ final class SettingsControllerTest extends WebTestCase
         self::assertSame([], $session->getFlashBag()->peek('warning'), 'a clean above-minimum image must not raise a quality warning');
         self::assertNotEmpty($session->getFlashBag()->peek('success'));
 
-        $this->em->refresh($restaurant);
+        $restaurant = $this->reloadRestaurant($restaurant);
         $heroImage = $restaurant->getHeroImage();
         $this->heroImageFilesToRemove[] = $heroImage;
 
         self::assertNotNull($heroImage);
         self::assertFileExists($this->heroImageDir . '/' . $heroImage);
+    }
+
+    /** The settings form's CSRF token, read from a real GET of the page (the form now requires it). */
+    private function settingsToken(): string
+    {
+        return $this->client->request('GET', '/admin/settings')->filter('input[name="_token"]')->attr('value');
+    }
+
+    /**
+     * Re-reads the restaurant from the current container's EntityManager.
+     * Each POST is now preceded by a GET (for the CSRF token), and the test
+     * client reboots the kernel between requests, which clears the EM this
+     * test captured in setUp() — refresh() on the old instance would fail
+     * with "entity is not managed".
+     */
+    private function reloadRestaurant(Restaurant $restaurant): Restaurant
+    {
+        $this->em = static::getContainer()->get(EntityManagerInterface::class);
+
+        return $this->em->getRepository(Restaurant::class)->find($restaurant->getId());
     }
 }

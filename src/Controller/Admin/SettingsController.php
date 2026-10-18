@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Restaurant;
 use App\Service\AdminLocaleResolver;
+use App\Service\ContactDetailsNormalizer;
 use App\Service\Upload\UploadProfile;
 use App\Service\Upload\UploadQualityWarning;
 use App\Service\Upload\UploadValidationError;
@@ -28,6 +29,7 @@ class SettingsController extends AbstractController
         UploadValidator $uploadValidator,
         AdminLocaleResolver $adminLocaleResolver,
         TranslatorInterface $translator,
+        ContactDetailsNormalizer $contactNormalizer,
     ): Response {
         $restaurant = $this->getUser()->getRestaurant();
         if (!$restaurant) {
@@ -38,6 +40,11 @@ class SettingsController extends AbstractController
         $currencies = require $this->getParameter('kernel.project_dir') . '/config/currencies.php';
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('admin_settings', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', $translator->trans('flash.csrf_invalid', domain: 'admin_settings'));
+                return $this->redirectToRoute('admin_settings');
+            }
+
             $name        = trim($request->request->get('name', ''));
             $tagline     = trim($request->request->get('tagline', ''));
             $color       = $request->request->get('primaryColor', '#C1440E');
@@ -45,13 +52,76 @@ class SettingsController extends AbstractController
             $language    = $request->request->get('defaultLanguage', 'es');
             $adminLocale = $request->request->get('adminLocale', $adminLocaleResolver->getDefaultLocale());
 
-            if (!$name) {
-                $this->addFlash('error', $translator->trans('flash.name_required', domain: 'admin_settings'));
-                return $this->redirectToRoute('admin_settings');
+            // Every text field is validated before anything is saved or any
+            // file is moved; on error the form is re-rendered with what was
+            // typed and a message under each failing field (nothing saved).
+            $errors = [];
+            if ($name === '') {
+                $errors['name'] = 'error.name_required';
+            }
+            if (mb_strlen($tagline) > 160) {
+                $errors['tagline'] = 'error.tagline_too_long';
+            }
+
+            [$address, $error] = $contactNormalizer->normalizeAddress((string) $request->request->get('address', ''));
+            if ($error) {
+                $errors['address'] = 'error.address_' . $error;
+            }
+            [$phone, $error] = $contactNormalizer->normalizePhone((string) $request->request->get('phone', ''));
+            if ($error) {
+                $errors['phone'] = 'error.phone_' . $error;
+            }
+
+            $socialInput = $request->request->all('social');
+            $socialLinks = [];
+            foreach (ContactDetailsNormalizer::NETWORKS as $network) {
+                [$url, $error] = $contactNormalizer->normalizeSocial($network, (string) ($socialInput[$network] ?? ''));
+                if ($error) {
+                    $errors['social_' . $network] = 'error.social_' . $error;
+                } elseif ($url !== null) {
+                    $socialLinks[$network] = $url;
+                }
+            }
+
+            $hoursInput = $request->request->all('hours');
+            [$openingHours, $hourErrors] = $contactNormalizer->normalizeOpeningHours($hoursInput);
+            foreach ($hourErrors as $day => $error) {
+                $errors['hours_' . $day] = 'error.hours_' . $error;
+            }
+
+            if ($errors !== []) {
+                $this->addFlash('error', $translator->trans('flash.form_errors', domain: 'admin_settings'));
+
+                return $this->render('admin/settings.html.twig', [
+                    'restaurant'            => $restaurant,
+                    'languages'             => $languages,
+                    'currencies'            => $currencies,
+                    'adminLocales'          => $adminLocaleResolver->getLocales(),
+                    'heroImageMinDimension' => UploadValidator::minDimension(UploadProfile::HeroImage),
+                    'errors'                => $errors,
+                    'old'                   => [
+                        'name'    => $name,
+                        'tagline' => $tagline,
+                        'address' => (string) $request->request->get('address', ''),
+                        'phone'   => (string) $request->request->get('phone', ''),
+                        'social'  => array_map('strval', array_filter($socialInput, 'is_scalar')),
+                        'hours'   => $hoursInput,
+                        // Re-selected as posted; the colour goes into a
+                        // style attribute, so only a well-formed hex is echoed.
+                        'primaryColor'    => preg_match('/^#[0-9A-Fa-f]{6}$/', $color) ? $color : $restaurant->getPrimaryColor(),
+                        'defaultLanguage' => $language,
+                        'adminLocale'     => $adminLocale,
+                        'currency'        => $currency,
+                    ],
+                ], new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY));
             }
 
             $restaurant->setName($name);
             $restaurant->setTagline($tagline !== '' ? $tagline : null);
+            $restaurant->setAddress($address);
+            $restaurant->setPhone($phone);
+            $restaurant->setSocialLinks($socialLinks);
+            $restaurant->setOpeningHours($openingHours);
             $restaurant->setPrimaryColor($color);
             $restaurant->setCurrency($currency);
             $restaurant->setDefaultLanguage($language);
@@ -165,8 +235,9 @@ class SettingsController extends AbstractController
                 $restaurant->setHeroImage(null);
             }
 
-            // name/tagline/logo/heroImage/primaryColor/currency/defaultLanguage all
-            // appear on the public menu; adminLocale is the only field here
+            // name/tagline/logo/heroImage/primaryColor/currency/defaultLanguage
+            // (and the contact details, for the menu footer) appear on the
+            // public menu; adminLocale is the only field here
             // that doesn't. One flush covers all of them, so bump
             // unconditionally rather than trying to detect which fields
             // actually changed.
@@ -182,6 +253,8 @@ class SettingsController extends AbstractController
             'currencies'            => $currencies,
             'adminLocales'          => $adminLocaleResolver->getLocales(),
             'heroImageMinDimension' => UploadValidator::minDimension(UploadProfile::HeroImage),
+            'errors'                => [],
+            'old'                   => null,
         ]);
     }
 

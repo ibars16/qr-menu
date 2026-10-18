@@ -4,6 +4,7 @@ section:
     restaurant_info: Restaurant information
     appearance: Appearance
     language_currency: Language and currency
+    contact: "Contact & social"
 
 field:
     name: Name
@@ -17,6 +18,24 @@ field:
     menu_language: Menu's main language
     admin_language: Admin Panel language
     currency: Base currency
+    address: "Address"
+    address_placeholder: "Street, number, city"
+    phone: "Phone"
+    phone_placeholder: "+44 20 7946 0958"
+    social: "Social & reviews"
+    social_instagram: "Instagram"
+    social_facebook: "Facebook"
+    social_tiktok: "TikTok"
+    social_google: "Google (reviews or map)"
+    social_tripadvisor: "TripAdvisor"
+    social_website: "Website"
+    social_instagram_placeholder: "@yourrestaurant or link"
+    social_facebook_placeholder: "Page name or link"
+    social_tiktok_placeholder: "@yourrestaurant or link"
+    social_google_placeholder: "Google Maps or reviews link"
+    social_tripadvisor_placeholder: "Link to your TripAdvisor page"
+    social_website_placeholder: "www.yourrestaurant.com"
+    hours: "Opening hours"
 
 action:
     copy: Copy
@@ -37,6 +56,9 @@ hint:
     menu_language: The language you use to enter dish names and descriptions.
     admin_language: The language of this management panel. It doesn't affect the menu your customers see.
     currency: Prices are stored in this currency. Customers can see a live conversion.
+    phone: "You can use +, spaces, hyphens and brackets."
+    social: "Paste the link or type your username. Leave empty what you don't use."
+    hours: "Tick \"Closed\" or enter one or two shifts. A closing time earlier than the opening time runs past midnight."
 
 flash:
     name_required: The restaurant name is required.
@@ -53,8 +75,40 @@ flash:
     hero_image_warning_dimensions: This image is small and may look blurry on large screens.
     hero_image_warning_portrait: It's very vertical and the hero will crop the sides.
     saved: Settings saved successfully.
+    form_errors: "Please check the highlighted fields."
+    csrf_invalid: "Your session has expired. Please try again."
 
 toast:
     logo_removed: Logo will be removed on save
     hero_image_removed: Hero photo will be removed on save
     url_copied: 'URL copied ✓'
+
+hours:
+    closed: "Closed"
+    shift1: "Shift 1"
+    shift2: "Shift 2"
+    open_aria: "%day%, shift %n%, opening"
+    close_aria: "%day%, shift %n%, closing"
+    copy_monday: "Copy Monday to every day"
+
+day:
+    mon: "Monday"
+    tue: "Tuesday"
+    wed: "Wednesday"
+    thu: "Thursday"
+    fri: "Friday"
+    sat: "Saturday"
+    sun: "Sunday"
+
+error:
+    name_required: "The restaurant name is required."
+    tagline_too_long: "Maximum 160 characters."
+    address_too_long: "Maximum 255 characters."
+    phone_invalid: "Enter a valid phone number (7 to 15 digits)."
+    social_invalid: "This link or username is not valid."
+    social_wrong_domain: "This link is not from this network."
+    social_too_long: "The link is too long."
+    hours_incomplete: "The opening or closing time is missing."
+    hours_invalid: "Invalid time."
+    hours_overlap: "The two shifts overlap."
+    hours_same_time: "Opening and closing time cannot be the same."

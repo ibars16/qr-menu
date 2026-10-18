@@ -4,6 +4,7 @@ section:
     restaurant_info: Informazioni sul ristorante
     appearance: Aspetto
     language_currency: Lingua e valuta
+    contact: "Contatti e social"
 
 field:
     name: Nome
@@ -17,6 +18,24 @@ field:
     menu_language: Lingua principale del menu
     admin_language: Lingua del pannello di amministrazione
     currency: Valuta base
+    address: "Indirizzo"
+    address_placeholder: "Via, numero, città"
+    phone: "Telefono"
+    phone_placeholder: "+39 06 1234 5678"
+    social: "Social e recensioni"
+    social_instagram: "Instagram"
+    social_facebook: "Facebook"
+    social_tiktok: "TikTok"
+    social_google: "Google (recensioni o mappa)"
+    social_tripadvisor: "TripAdvisor"
+    social_website: "Sito web"
+    social_instagram_placeholder: "@iltuoristorante o link"
+    social_facebook_placeholder: "Nome della pagina o link"
+    social_tiktok_placeholder: "@iltuoristorante o link"
+    social_google_placeholder: "Link di Google Maps o delle recensioni"
+    social_tripadvisor_placeholder: "Link alla tua pagina TripAdvisor"
+    social_website_placeholder: "www.iltuoristorante.it"
+    hours: "Orari"
 
 action:
     copy: Copia
@@ -37,6 +56,9 @@ hint:
     menu_language: La lingua in cui inserisci nomi e descrizioni dei piatti.
     admin_language: La lingua di questo pannello di gestione. Non influisce sul menu visto dai tuoi clienti.
     currency: I prezzi vengono salvati in questa valuta. I clienti possono vedere la conversione in tempo reale.
+    phone: "Puoi usare +, spazi, trattini e parentesi."
+    social: "Incolla il link o scrivi il tuo nome utente. Lascia vuoto ciò che non usi."
+    hours: "Seleziona «Chiuso» o indica uno o due turni. Se la chiusura è prima dell'apertura, si intende dopo la mezzanotte."
 
 flash:
     name_required: Il nome del ristorante è obbligatorio.
@@ -53,8 +75,40 @@ flash:
     hero_image_warning_dimensions: Questa immagine è piccola e potrebbe apparire sfocata su schermi grandi.
     hero_image_warning_portrait: È molto verticale, l'hero ritaglierà i lati.
     saved: Impostazioni salvate correttamente.
+    form_errors: "Controlla i campi evidenziati."
+    csrf_invalid: "La sessione è scaduta. Riprova."
 
 toast:
     logo_removed: Logo rimosso al salvataggio
     hero_image_removed: Foto di intestazione rimossa al salvataggio
     url_copied: 'URL copiato ✓'
+
+hours:
+    closed: "Chiuso"
+    shift1: "Turno 1"
+    shift2: "Turno 2"
+    open_aria: "%day%, turno %n%, apertura"
+    close_aria: "%day%, turno %n%, chiusura"
+    copy_monday: "Copia il lunedì su tutti i giorni"
+
+day:
+    mon: "Lunedì"
+    tue: "Martedì"
+    wed: "Mercoledì"
+    thu: "Giovedì"
+    fri: "Venerdì"
+    sat: "Sabato"
+    sun: "Domenica"
+
+error:
+    name_required: "Il nome del ristorante è obbligatorio."
+    tagline_too_long: "Massimo 160 caratteri."
+    address_too_long: "Massimo 255 caratteri."
+    phone_invalid: "Inserisci un numero valido (da 7 a 15 cifre)."
+    social_invalid: "Questo link o nome utente non è valido."
+    social_wrong_domain: "Questo link non appartiene a questo social."
+    social_too_long: "Il link è troppo lungo."
+    hours_incomplete: "Manca l'orario di apertura o di chiusura."
+    hours_invalid: "Orario non valido."
+    hours_overlap: "I due turni si sovrappongono."
+    hours_same_time: "Apertura e chiusura non possono coincidere."
