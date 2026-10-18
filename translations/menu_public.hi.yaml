@@ -76,3 +76,18 @@ chat:
     send: "भेजें"
     disclaimer: "AI द्वारा दिए गए उत्तर। गंभीर एलर्जी होने पर कृपया स्टाफ से पुष्टि करें।"
     error_fallback: "क्षमा करें, अभी जवाब देने में समस्या हो रही है — कृपया स्टाफ से पूछें।"
+footer:
+    visit: "हमसे मिलें"
+    hours: "खुलने का समय"
+    follow: "हमें फ़ॉलो करें"
+    closed: "बंद"
+    website: "वेबसाइट"
+    social_aria: "%network% पर %restaurant%"
+    day:
+        mon: "सोम"
+        tue: "मंगल"
+        wed: "बुध"
+        thu: "गुरु"
+        fri: "शुक्र"
+        sat: "शनि"
+        sun: "रवि"

@@ -76,3 +76,18 @@ chat:
     send: "发送"
     disclaimer: "回答由AI生成。如有严重过敏，请务必与工作人员确认。"
     error_fallback: "抱歉，目前暂时无法回答 —— 请咨询我们的工作人员。"
+footer:
+    visit: "到店地址"
+    hours: "营业时间"
+    follow: "关注我们"
+    closed: "休息"
+    website: "网站"
+    social_aria: "%restaurant%的%network%"
+    day:
+        mon: "周一"
+        tue: "周二"
+        wed: "周三"
+        thu: "周四"
+        fri: "周五"
+        sat: "周六"
+        sun: "周日"

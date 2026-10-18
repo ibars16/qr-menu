@@ -205,8 +205,11 @@
     .filters-apply-btn[aria-disabled="true"]:hover { opacity: 1; }
 
     /* ── Content ── */
-    .content { padding: 0 18px 120px; }
-    @media (min-width: 768px) { .content { padding: 0 24px 120px; max-width: 980px; margin: 0 auto; } }
+    /* Bottom padding was 120px to keep the last dishes clear of the chat
+       button; the footer now follows and carries that clearance itself
+       (.site-footer below), so this is just the gap before it. */
+    .content { padding: 0 18px 56px; }
+    @media (min-width: 768px) { .content { padding: 0 24px 56px; max-width: 980px; margin: 0 auto; } }
 
     .cat-section { padding-top: 50px; }
     .cat-title { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; font-family: var(--font-display, inherit); font-size: 11px; font-weight: 800; color: var(--cat-title); text-transform: uppercase; letter-spacing: 0.15em; }
@@ -464,6 +467,50 @@
     .dish-detail-price .price-item-label, .dish-detail-price .price-item-value { color: #fff; }
     .dish-detail-desc { font-size: 0.9375rem; font-weight: 400; color: var(--bdesc); line-height: 1.6; }
     .dish-allergen-box { background: var(--allergen-box-bg, rgba(214,69,69,0.06)); border: 1px solid var(--allergen-box-b, rgba(214,69,69,0.16)); border-radius: 0.875rem; padding: 0.875rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+    /* ── Footer (menu/_footer.html.twig) ──
+       Full-width --surface-2 band, its content in the same column and gutter
+       as .content. Phones: one centred stack; 640+: brand | contact + hours;
+       1024+: brand | contact | hours. Muted text is --ft-muted where a theme
+       defines it (glass, noir: their --fg-2 is under 4.5:1 on this band),
+       else --fg-2. Bottom padding = the chat button's 18px offset + its 56px
+       + 16px of air, so at the end of the scroll it sits below everything. */
+    .site-footer { background: var(--surface-2); border-top: 1px solid var(--hero-border); color: var(--fg); padding: 40px 0 calc(90px + env(safe-area-inset-bottom, 0px)); }
+    .ft-inner { display: grid; gap: 28px; padding: 0 18px; text-align: center; }
+    @media (min-width: 768px) { .ft-inner { max-width: 980px; margin: 0 auto; padding: 0 24px; } }
+    .ft-name { font-family: var(--font-display, inherit); font-size: 20px; font-weight: 800; letter-spacing: -0.3px; line-height: 1.2; overflow-wrap: anywhere; }
+    .ft-tagline { margin-top: 6px; font-size: 14px; line-height: 1.5; color: var(--ft-muted, var(--fg-2)); }
+    .ft-info { display: flex; flex-direction: column; gap: 28px; }
+    .ft-block { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .ft-brand .ft-block { margin-top: 20px; gap: 10px; }
+    .ft-label { font-family: var(--font-display, inherit); font-size: 11px; font-weight: 800; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ft-muted, var(--fg-2)); }
+    .ft-social { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+    .ft-social a { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--b2); color: var(--fg); font-size: 20px; text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
+    .ft-social a:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .ft-link { display: inline-flex; align-items: flex-start; gap: 8px; min-height: 44px; padding: 11px 0; color: var(--fg); font-size: 14px; line-height: 22px; text-decoration: none; overflow-wrap: anywhere; }
+    .ft-link span { text-decoration: underline; text-decoration-color: var(--b2); text-underline-offset: 3px; }
+    .ft-link:hover span { text-decoration-color: currentColor; }
+    .ft-link i { font-size: 18px; line-height: 22px; color: var(--ft-muted, var(--fg-2)); flex-shrink: 0; }
+    .ft-social a:focus-visible, .ft-link:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+    .ft-hours-list { display: grid; grid-template-columns: auto auto; justify-content: center; column-gap: 16px; row-gap: 6px; margin-top: 6px; font-size: 14px; line-height: 1.5; }
+    .ft-hours-row { display: contents; }
+    .ft-hours-list dt { font-weight: 600; text-align: end; }
+    .ft-hours-list dd { text-align: start; font-variant-numeric: tabular-nums; }
+    .ft-copy { padding-top: 20px; border-top: 1px solid var(--b1); font-size: 12px; color: var(--ft-muted, var(--fg-2)); }
+    @media (min-width: 640px) {
+        .ft-inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 32px; text-align: start; }
+        .ft-block { align-items: flex-start; }
+        .ft-social { justify-content: flex-start; }
+        .ft-hours-list { justify-content: start; }
+        .ft-hours-list dt { text-align: start; }
+        .ft-copy { grid-column: 1 / -1; }
+    }
+    @media (min-width: 1024px) {
+        .ft-inner { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .ft-info { display: contents; }
+        .ft-contact { grid-column: 2; }
+        .ft-hours { grid-column: 3; }
+    }
 </style>
 {% include 'menu/themes/' ~ theme ~ '/overrides.html.twig' ignore missing %}
 
@@ -967,6 +1014,8 @@
     {% endfor %}
 </div>
 </div>
+
+{% include 'menu/_footer.html.twig' %}
 
 <div class="dish-modal-overlay" id="dish-modal-overlay" aria-hidden="true" onclick="if(event.target===this) closeDishModal()">
     <div class="dish-modal" role="dialog" aria-modal="true" aria-label="{{ 'dish.modal_aria'|trans({}, 'menu_public', locale) }}">

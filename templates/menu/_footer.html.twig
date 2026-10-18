@@ -1,0 +1,73 @@
+{# Public menu footer — every theme, included by the layout right after
+   .content (outside .menu-body, so maison's sticky tab bar unpins before
+   it). Base styling lives in the layout's own <style> block (so a theme's
+   overrides.html.twig, loaded after it, wins); maison restyles it there.
+   Every block renders only when the restaurant has that data; with no
+   contact details, links or hours at all it's just the name and ©.
+   Data comes from Configuración → "Contacto y redes" (Restaurant::
+   $address/$phone/$socialLinks/$openingHours). #}
+{% set ftSocial = restaurant.socialLinks ?? {} %}
+{% set ftHours = opening_hours_groups(restaurant.openingHours) %}
+{% set ftHasContact = restaurant.address or restaurant.phone %}
+{% set ftHasAny = ftHasContact or ftSocial is not empty or ftHours is not empty %}
+{% set ftIcons = {instagram: 'ti-brand-instagram', facebook: 'ti-brand-facebook', tiktok: 'ti-brand-tiktok', google: 'ti-brand-google', tripadvisor: 'ti-brand-tripadvisor', website: 'ti-world'} %}
+{% set ftNames = {instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', google: 'Google', tripadvisor: 'Tripadvisor', website: 'footer.website'|trans({}, 'menu_public', locale)} %}
+<footer class="site-footer">
+    <div class="ft-inner">
+        <div class="ft-brand">
+            <p class="ft-name">{{ restaurant.name }}</p>
+            {% if ftHasAny and restaurant.tagline %}<p class="ft-tagline">{{ restaurant.tagline }}</p>{% endif %}
+            {% if ftSocial is not empty %}
+                <div class="ft-block">
+                    <h2 class="ft-label">{{ 'footer.follow'|trans({}, 'menu_public', locale) }}</h2>
+                    <ul class="ft-social">
+                        {% for network, icon in ftIcons %}
+                            {% if ftSocial[network] is defined %}
+                                <li><a href="{{ ftSocial[network] }}" target="_blank" rel="noopener noreferrer"
+                                       aria-label="{{ 'footer.social_aria'|trans({'%network%': ftNames[network], '%restaurant%': restaurant.name}, 'menu_public', locale) }}"><i class="ti {{ icon }}" aria-hidden="true"></i></a></li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if ftHasContact or ftHours is not empty %}
+        <div class="ft-info">
+        {% if ftHasContact %}
+            <div class="ft-block ft-contact">
+                <h2 class="ft-label">{{ 'footer.visit'|trans({}, 'menu_public', locale) }}</h2>
+                {% if restaurant.address %}
+                    {# The owner's own Google link (Maps or reviews) when set, else a Maps search for the address. #}
+                    <a class="ft-link" href="{{ ftSocial.google ?? ('https://www.google.com/maps/search/?api=1&query=' ~ restaurant.address|url_encode) }}" target="_blank" rel="noopener noreferrer">
+                        <i class="ti ti-map-pin" aria-hidden="true"></i><span>{{ restaurant.address }}</span>
+                    </a>
+                {% endif %}
+                {% if restaurant.phone %}
+                    <a class="ft-link" href="{{ restaurant.phone|tel_href }}">
+                        <i class="ti ti-phone" aria-hidden="true"></i><span dir="ltr">{{ restaurant.phone }}</span>
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if ftHours is not empty %}
+            <div class="ft-block ft-hours">
+                <h2 class="ft-label">{{ 'footer.hours'|trans({}, 'menu_public', locale) }}</h2>
+                <dl class="ft-hours-list">
+                    {% for g in ftHours %}
+                        <div class="ft-hours-row">
+                            <dt>{{ ('footer.day.' ~ g.from)|trans({}, 'menu_public', locale) }}{% if g.to != g.from %}–{{ ('footer.day.' ~ g.to)|trans({}, 'menu_public', locale) }}{% endif %}</dt>
+                            {# dir="ltr": in a right-to-left context "13:00–16:00" would otherwise be reordered to read 16:00–13:00. #}
+                            <dd>{% if g.closed %}{{ 'footer.closed'|trans({}, 'menu_public', locale) }}{% else %}<span dir="ltr">{% for s in g.shifts %}{{ s[0] }}–{{ s[1] }}{% if not loop.last %} · {% endif %}{% endfor %}</span>{% endif %}</dd>
+                        </div>
+                    {% endfor %}
+                </dl>
+            </div>
+        {% endif %}
+        </div>
+        {% endif %}
+
+        <p class="ft-copy">© {{ 'now'|date('Y') }} {{ restaurant.name }}</p>
+    </div>
+</footer>

@@ -76,3 +76,18 @@ chat:
     send: "Enviar"
     disclaimer: "Respostas geradas por IA. Em caso de alergia grave, confirme com a equipa."
     error_fallback: "Desculpe, não consigo responder agora — pergunte à nossa equipa."
+footer:
+    visit: "Visite-nos"
+    hours: "Horário"
+    follow: "Siga-nos"
+    closed: "Fechado"
+    website: "Site"
+    social_aria: "%restaurant% no %network%"
+    day:
+        mon: "Seg"
+        tue: "Ter"
+        wed: "Qua"
+        thu: "Qui"
+        fri: "Sex"
+        sat: "Sáb"
+        sun: "Dom"

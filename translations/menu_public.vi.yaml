@@ -76,3 +76,18 @@ chat:
     send: "Gửi"
     disclaimer: "Câu trả lời do AI tạo ra. Nếu bạn bị dị ứng nặng, vui lòng xác nhận với nhân viên."
     error_fallback: "Xin lỗi, hiện tại tôi gặp sự cố khi trả lời — vui lòng hỏi nhân viên của chúng tôi."
+footer:
+    visit: "Ghé thăm chúng tôi"
+    hours: "Giờ mở cửa"
+    follow: "Theo dõi chúng tôi"
+    closed: "Đóng cửa"
+    website: "Trang web"
+    social_aria: "%restaurant% trên %network%"
+    day:
+        mon: "T2"
+        tue: "T3"
+        wed: "T4"
+        thu: "T5"
+        fri: "T6"
+        sat: "T7"
+        sun: "CN"

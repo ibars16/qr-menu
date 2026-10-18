@@ -76,3 +76,18 @@ chat:
     send: "Senden"
     disclaimer: "KI-generierte Antworten. Bei schweren Allergien bitte beim Personal nachfragen."
     error_fallback: "Entschuldigung, im Moment keine Antwort möglich — bitte fragen Sie unser Personal."
+footer:
+    visit: "Besuchen Sie uns"
+    hours: "Öffnungszeiten"
+    follow: "Folgen Sie uns"
+    closed: "Geschlossen"
+    website: "Website"
+    social_aria: "%restaurant% auf %network%"
+    day:
+        mon: "Mo"
+        tue: "Di"
+        wed: "Mi"
+        thu: "Do"
+        fri: "Fr"
+        sat: "Sa"
+        sun: "So"

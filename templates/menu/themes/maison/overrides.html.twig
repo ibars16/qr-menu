@@ -1495,6 +1495,41 @@
        is simply the last thing reached — no artificial clearance needed
        on #dish-modal-body any more (that was only for the old sticky
        footer's overlap). */
+
+    /* ── Menu footer (menu/_footer.html.twig) ──
+       The base layout already paints it as a full-width --surface-2 band
+       with a 1px --hero-border line on top, like the hero; here it takes the
+       hero's typography: Fraunces name with the short brass rule under it
+       (same 48×2 --cf-hborder as .hero-name::after), Fraunces italic
+       tagline, wine labels as in .filters-section-title, and the social
+       links as wine circles like .cta-explore (hover --wine-soft). Focus
+       ring is --cf-hborder-text, not .cta-explore's --cf-hborder: on this
+       band --cf-hborder is 2.4:1, under the 3:1 a focus indicator needs.
+       Same 20px gutter / 1240px column as .content. */
+    .ft-inner { padding-left: 20px; padding-right: 20px; }
+    @media (min-width: 768px) { .ft-inner { max-width: 1240px; padding-left: 20px; padding-right: 20px; } }
+    .ft-name {
+        font-family: var(--font-display); font-weight: 500; letter-spacing: -0.01em; line-height: 1.1;
+        font-size: calc(30px * var(--font-scale));
+    }
+    .ft-name::after {
+        content: ''; display: block; width: 48px; height: 2px; margin: 16px auto 0;
+        background: var(--cf-hborder);
+    }
+    .ft-tagline {
+        font-family: var(--font-display); font-style: italic; color: var(--fg-2);
+        font-size: calc(17px * var(--font-scale)); line-height: 1.45; margin-top: 14px; text-wrap: balance;
+    }
+    .ft-label { font-family: var(--font-body); font-weight: 600; letter-spacing: 0.18em; color: var(--accent); }
+    .ft-social a { background: var(--accent); border: none; color: #fff; font-size: 19px; transition: background 0.2s; }
+    .ft-social a:hover { background: var(--wine-soft); transform: none; }
+    .ft-social a:focus-visible, .ft-link:focus-visible { outline: 2px solid var(--cf-hborder-text); outline-offset: 2px; }
+    .ft-link i { color: var(--accent); }
+    .ft-hours-list dt { font-weight: 500; }
+    .ft-copy { border-top-color: var(--line-soft); color: var(--fg-2); letter-spacing: 0.04em; }
+    @media (min-width: 640px) {
+        .ft-name::after { margin-inline: 0; }
+    }
 </style>
 <script>
     /* Keeps --header-h (used by .cat-tabs' sticky top and the scroll-margin

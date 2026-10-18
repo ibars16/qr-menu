@@ -76,3 +76,18 @@ chat:
     send: "Gönder"
     disclaimer: "Yanıtlar yapay zeka tarafından oluşturulmuştur. Ciddi bir alerjiniz varsa lütfen personelle teyit edin."
     error_fallback: "Üzgünüm, şu anda yanıt vermekte sorun yaşıyorum — lütfen personelimize sorun."
+footer:
+    visit: "Bizi ziyaret edin"
+    hours: "Çalışma saatleri"
+    follow: "Bizi takip edin"
+    closed: "Kapalı"
+    website: "Web sitesi"
+    social_aria: "%network% hesabı: %restaurant%"
+    day:
+        mon: "Pzt"
+        tue: "Sal"
+        wed: "Çar"
+        thu: "Per"
+        fri: "Cum"
+        sat: "Cmt"
+        sun: "Paz"

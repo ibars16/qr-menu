@@ -76,3 +76,18 @@ chat:
     send: "ส่ง"
     disclaimer: "คำตอบสร้างโดย AI หากคุณแพ้อาหารรุนแรง กรุณายืนยันกับพนักงาน"
     error_fallback: "ขออภัย ขณะนี้ไม่สามารถตอบได้ — กรุณาสอบถามพนักงาน"
+footer:
+    visit: "แวะมาหาเรา"
+    hours: "เวลาเปิดทำการ"
+    follow: "ติดตามเรา"
+    closed: "ปิด"
+    website: "เว็บไซต์"
+    social_aria: "%restaurant% บน %network%"
+    day:
+        mon: "จ."
+        tue: "อ."
+        wed: "พ."
+        thu: "พฤ."
+        fri: "ศ."
+        sat: "ส."
+        sun: "อา."

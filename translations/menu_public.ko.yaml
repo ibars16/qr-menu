@@ -76,3 +76,18 @@ chat:
     send: "보내기"
     disclaimer: "AI가 생성한 답변입니다. 심각한 알레르기가 있다면 직원에게 확인해 주세요."
     error_fallback: "죄송합니다, 지금은 답변드리기 어렵습니다 — 직원에게 문의해 주세요."
+footer:
+    visit: "찾아오시는 길"
+    hours: "영업시간"
+    follow: "팔로우하기"
+    closed: "휴무"
+    website: "웹사이트"
+    social_aria: "%network%의 %restaurant%"
+    day:
+        mon: "월"
+        tue: "화"
+        wed: "수"
+        thu: "목"
+        fri: "금"
+        sat: "토"
+        sun: "일"

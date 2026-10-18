@@ -76,3 +76,18 @@ chat:
     send: "Kirim"
     disclaimer: "Jawaban dihasilkan oleh AI. Jika Anda memiliki alergi parah, mohon konfirmasi dengan staf."
     error_fallback: "Maaf, saat ini kami mengalami kendala menjawab — silakan tanya staf kami."
+footer:
+    visit: "Kunjungi kami"
+    hours: "Jam buka"
+    follow: "Ikuti kami"
+    closed: "Tutup"
+    website: "Situs web"
+    social_aria: "%restaurant% di %network%"
+    day:
+        mon: "Sen"
+        tue: "Sel"
+        wed: "Rab"
+        thu: "Kam"
+        fri: "Jum"
+        sat: "Sab"
+        sun: "Min"

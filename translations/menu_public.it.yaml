@@ -76,3 +76,18 @@ chat:
     send: "Invia"
     disclaimer: "Risposte generate dall'IA. In caso di allergie gravi, verifica con il personale."
     error_fallback: "Spiacenti, al momento non riesco a rispondere — chiedi al personale."
+footer:
+    visit: "Vieni a trovarci"
+    hours: "Orari"
+    follow: "Seguici"
+    closed: "Chiuso"
+    website: "Sito web"
+    social_aria: "%restaurant% su %network%"
+    day:
+        mon: "Lun"
+        tue: "Mar"
+        wed: "Mer"
+        thu: "Gio"
+        fri: "Ven"
+        sat: "Sab"
+        sun: "Dom"

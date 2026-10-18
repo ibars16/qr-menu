@@ -76,3 +76,18 @@ chat:
     send: "Send"
     disclaimer: "AI-generated answers. Please confirm with staff if you have a severe allergy."
     error_fallback: "Sorry, I'm having trouble answering right now — please ask a member of staff."
+footer:
+    visit: "Visit us"
+    hours: "Opening hours"
+    follow: "Follow us"
+    closed: "Closed"
+    website: "Website"
+    social_aria: "%restaurant% on %network%"
+    day:
+        mon: "Mon"
+        tue: "Tue"
+        wed: "Wed"
+        thu: "Thu"
+        fri: "Fri"
+        sat: "Sat"
+        sun: "Sun"

@@ -76,3 +76,18 @@ chat:
     send: "Skicka"
     disclaimer: "AI-genererade svar. Bekräfta med personalen vid allvarlig allergi."
     error_fallback: "Tyvärr har jag problem att svara just nu — fråga gärna vår personal."
+footer:
+    visit: "Besök oss"
+    hours: "Öppettider"
+    follow: "Följ oss"
+    closed: "Stängt"
+    website: "Webbplats"
+    social_aria: "%restaurant% på %network%"
+    day:
+        mon: "Mån"
+        tue: "Tis"
+        wed: "Ons"
+        thu: "Tor"
+        fri: "Fre"
+        sat: "Lör"
+        sun: "Sön"

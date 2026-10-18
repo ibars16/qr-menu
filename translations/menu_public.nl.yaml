@@ -76,3 +76,18 @@ chat:
     send: "Verzenden"
     disclaimer: "Door AI gegenereerde antwoorden. Controleer bij een ernstige allergie altijd bij het personeel."
     error_fallback: "Sorry, ik kan nu even niet antwoorden — vraag het gerust aan ons personeel."
+footer:
+    visit: "Bezoek ons"
+    hours: "Openingstijden"
+    follow: "Volg ons"
+    closed: "Gesloten"
+    website: "Website"
+    social_aria: "%restaurant% op %network%"
+    day:
+        mon: "Ma"
+        tue: "Di"
+        wed: "Wo"
+        thu: "Do"
+        fri: "Vr"
+        sat: "Za"
+        sun: "Zo"
