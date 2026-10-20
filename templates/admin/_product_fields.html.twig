@@ -293,22 +293,6 @@
                     {{ 'field.tags'|trans({}, 'admin_menu') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menu') }})</span>
                 </label>
                 <div class="tag-pills">
-                    {% for tag in genericTags %}
-                        {% set tagT = null %}
-                        {% for tr in tag.translations %}
-                            {% if tr.locale == locale %}{% set tagT = tr %}{% endif %}
-                        {% endfor %}
-                        {% if tagT %}
-                            <div class="tag-pill"
-                                 data-tag-id="{{ tag.id }}"
-                                 data-tag-code="{{ tag.code }}"
-                                 onclick="toggleTagPill(this)"
-                                 role="checkbox"
-                                 aria-checked="false">
-                                {{ tag.icon }} {{ tagT.name }}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
                     {# Inline "create a tag without leaving the dish" — POSTs to
                        TagsController::create() (same endpoint as the Etiquetas
                        screen, so the tag belongs to this restaurant and shows up
@@ -369,6 +353,22 @@
                             <i class="ti ti-x" aria-hidden="true"></i>
                         </button>
                     </div>
+                    {% for tag in genericTags %}
+                        {% set tagT = null %}
+                        {% for tr in tag.translations %}
+                            {% if tr.locale == locale %}{% set tagT = tr %}{% endif %}
+                        {% endfor %}
+                        {% if tagT %}
+                            <div class="tag-pill"
+                                 data-tag-id="{{ tag.id }}"
+                                 data-tag-code="{{ tag.code }}"
+                                 onclick="toggleTagPill(this)"
+                                 role="checkbox"
+                                 aria-checked="false">
+                                {{ tag.icon }} {{ tagT.name }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
                 </div>
             </div>
 

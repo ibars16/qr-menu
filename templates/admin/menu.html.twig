@@ -168,7 +168,7 @@
             .price-currency { font-size:var(--fs-sm); }
         }
 
-        .add-row { padding:var(--sp-1) var(--sp-2) var(--sp-2); }
+        .add-row { padding:var(--sp-2) var(--sp-2) var(--sp-1); }
         .add-product-btn {
             width:100%; padding:var(--sp-2); border:1px dashed var(--bd-2); border-radius:var(--r-sm);
             background:none; color:var(--tx-muted); font-weight:500; font-size:var(--fs-sm); cursor:pointer;
@@ -258,6 +258,13 @@
                             </div>
                         </div>
 
+                        <div class="add-row">
+                            <button class="add-product-btn" onclick="ProductUI.openNewProduct({{ category.id }})">
+                                <i class="ti ti-plus" aria-hidden="true"></i>
+                                {{ 'product.add_to_category'|trans({'%category%': catName}, 'admin_menu') }}
+                            </button>
+                        </div>
+
                         <div class="products-list" id="prods-{{ category.id }}">
                             {% for product in category.products %}
                                 {% set pT = product.getDisplayTranslation(locale) %}
@@ -287,12 +294,6 @@
                             {% endfor %}
                         </div>
 
-                        <div class="add-row">
-                            <button class="add-product-btn" onclick="ProductUI.openNewProduct({{ category.id }})">
-                                <i class="ti ti-plus" aria-hidden="true"></i>
-                                {{ 'product.add_to_category'|trans({'%category%': catName}, 'admin_menu') }}
-                            </button>
-                        </div>
                     </div>
                 {% endfor %}
             </div>

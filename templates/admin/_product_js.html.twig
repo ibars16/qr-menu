@@ -580,7 +580,7 @@
     // The "+ Nueva etiqueta" pill swaps itself for a small input; Enter (or ✓)
     // POSTs to /admin/tags/create — the same endpoint the Etiquetas screen
     // uses, which ties the tag to the logged-in user's restaurant — then
-    // appends the new pill to EVERY .tag-pills (desktop modal + mobile sheet
+    // adds the new pill (first, right after "+") to EVERY .tag-pills (desktop modal + mobile sheet
     // copies of _product_fields.html.twig) already switched on, so it's saved
     // with the dish by the normal `.tag-pill.on` collection in saveProduct().
     // A name matching an existing pill (case-insensitive) just switches that
@@ -733,7 +733,7 @@
                 pill.setAttribute('aria-checked', 'true');
                 pill.onclick = () => toggleTagPill(pill);
                 pill.textContent = `${data.icon} ${data.name}`;
-                list.insertBefore(pill, list.querySelector('.tag-pill-add'));
+                list.querySelector('.tag-new').after(pill); // right after the "+ add" pill, first in the list
             });
             closeNewTag(input);
         } catch (err) {
