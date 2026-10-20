@@ -15,8 +15,8 @@
 <footer class="site-footer">
     <div class="ft-inner">
         <div class="ft-brand">
-            <p class="ft-name">{{ restaurant.name }}</p>
-            {% if ftHasAny and restaurant.tagline %}<p class="ft-tagline">{{ restaurant.tagline }}</p>{% endif %}
+            <p class="ft-name">{{ autoOpen|raw }}{{ restaurant.name }}{{ autoClose|raw }}</p>
+            {% if ftHasAny and restaurant.tagline %}<p class="ft-tagline">{{ autoOpen|raw }}{{ restaurant.tagline }}{{ autoClose|raw }}</p>{% endif %}
             {% if ftSocial is not empty %}
                 <div class="ft-block">
                     <h2 class="ft-label">{{ 'footer.follow'|trans({}, 'menu_public', locale) }}</h2>
@@ -40,7 +40,7 @@
                 {% if restaurant.address %}
                     {# The owner's own Google link (Maps or reviews) when set, else a Maps search for the address. #}
                     <a class="ft-link" href="{{ ftSocial.google ?? ('https://www.google.com/maps/search/?api=1&query=' ~ restaurant.address|url_encode) }}" target="_blank" rel="noopener noreferrer">
-                        <i class="ti ti-map-pin" aria-hidden="true"></i><span>{{ restaurant.address }}</span>
+                        <i class="ti ti-map-pin" aria-hidden="true"></i><span{% if dir == 'rtl' %} dir="auto"{% endif %}>{{ restaurant.address }}</span>
                     </a>
                 {% endif %}
                 {% if restaurant.phone %}

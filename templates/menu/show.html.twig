@@ -1,5 +1,12 @@
+{% set dir = menu_dir(locale) -%}
+{#- Owner text that may stay untranslated (name, tagline, address…): on RTL
+    menus it's wrapped in <span dir="auto"> so a Spanish line keeps its own
+    direction (punctuation at its end) while the block keeps its
+    right-aligned layout. Empty on LTR menus. -#}
+{% set autoOpen = dir == 'rtl' ? '<span dir="auto">' : '' -%}
+{% set autoClose = autoOpen ? '</span>' : '' -%}
 <!DOCTYPE html>
-<html lang="{{ locale }}">
+<html lang="{{ locale }}" dir="{{ dir }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +17,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     {% include 'menu/themes/' ~ theme ~ '/fonts.html.twig' ignore missing %}
+    {%- if dir == 'rtl' %}
+        {# Arabic-script fallbacks for the theme fonts (none of Plus Jakarta
+           Sans / Inter / Fraunces has Arabic glyphs). Listed AFTER the
+           theme's Latin font in each stack (layout's body rule, maison's
+           --font-body/--font-display), so digits and prices keep the theme
+           font and only Arabic glyphs fall through to these. #}
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700{% if theme == 'maison' %}&family=Noto+Naskh+Arabic:wght@400;500;600{% endif %}&display=swap" rel="stylesheet">
+    {%- endif %}
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { margin: 0; padding: 0; }
@@ -19,7 +34,7 @@
         <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
         <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
         <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-    {% endif %}
+    {%- endif %}
 </head>
 <body data-menu-lang="{{ locale }}" data-menu-currency="{{ currency }}" data-menu-show-prefs-dialog="{{ showPrefsDialog ? '1' : '0' }}">
 

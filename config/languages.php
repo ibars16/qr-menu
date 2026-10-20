@@ -62,9 +62,12 @@ return [
         'flag' => '🇹🇭',
     ],
 
+    // 'dir' is only set for right-to-left scripts; absent means 'ltr'
+    // (MenuPreferencesResolver::getTextDirection()).
     'ar' => [
         'name' => 'العربية',
         'flag' => '🇸🇦',
+        'dir'  => 'rtl',
     ],
 
     'hi' => [

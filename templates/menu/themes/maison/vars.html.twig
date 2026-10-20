@@ -168,4 +168,11 @@
     /* ── Spicy ── */
     --dot-on: #7A1E28; --dot-off: rgba(36,28,23,0.14); --spicy-t: #A99B8A;
 }
+/* Right-to-left menus: Arabic-script fallbacks AFTER Fraunces/Inter, so
+   Latin text and digits keep the theme fonts. Loaded only on RTL
+   (show.html.twig <head>). Same specificity as :root, wins by order. */
+[dir="rtl"] {
+    --font-display: 'Fraunces', 'Noto Naskh Arabic', Georgia, serif;
+    --font-body: 'Inter', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
 </style>

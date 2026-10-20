@@ -47,7 +47,8 @@ dish:
     ingredients: "المكونات"
     tags: "الوسوم"
     allergens: "مسببات الحساسية"
-    spicy: "درجة الحرارة"
+    # REVISIÓN NATIVA: "درجة الحرارة" se leía como "temperatura". Alternativa: "مستوى الفلفل الحار".
+    spicy: "مستوى التوابل الحارة"
     calories: "السعرات الحرارية"
     nutrition_facts: "القيمة الغذائية"
     fat: "الدهون"
@@ -58,7 +59,8 @@ dish:
     spice_2: "متوسط"
     spice_3: "حار"
     spice_4: "حار جدًا"
-    spice_5: "شديد الحرارة"
+    # REVISIÓN NATIVA: "شديد الحرارة" también se leía como temperatura muy alta. Alternativa: "حارّ للغاية".
+    spice_5: "ناري"
 nav:
     back: "رجوع"
     next: "التالي"

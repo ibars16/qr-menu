@@ -22,7 +22,12 @@
 } %}
 
 <style>
+    /* The chat is fixed to the viewport, so its side is set physically and
+       mirrored explicitly for right-to-left menus (bubble and desktop panel
+       bottom-left), rather than with inset-inline-*: the full-screen mobile
+       panel below then has exactly the same left/right in every direction. */
     .sw-widget { position: fixed; right: 18px; bottom: 18px; z-index: 2000; }
+    [dir="rtl"] .sw-widget { right: auto; left: 18px; }
 
     .sw-bubble {
         width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer;
@@ -38,6 +43,7 @@
         animation: sw-pulse 2s ease-in-out infinite;
     }
     @keyframes sw-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+    [dir="rtl"] .sw-bubble.has-badge::after { right: auto; left: 2px; }
     @media (prefers-reduced-motion: reduce) { .sw-bubble.has-badge::after { animation: none; } }
 
     .sw-panel {
@@ -47,6 +53,7 @@
         border-radius: var(--card-radius, 16px); box-shadow: 0 12px 40px rgba(0,0,0,0.45);
         display: flex; flex-direction: column; overflow: hidden;
     }
+    [dir="rtl"] .sw-panel { right: auto; left: 18px; }
     .sw-panel[hidden] { display: none; }
 
     .sw-header {
@@ -63,8 +70,8 @@
 
     .sw-messages { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
     .sw-msg { max-width: 84%; padding: 9px 12px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; white-space: pre-wrap; }
-    .sw-msg.assistant { align-self: flex-start; background: var(--surface-2, rgba(127,127,127,0.1)); color: var(--bn, var(--fg)); border-bottom-left-radius: 4px; }
-    .sw-msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+    .sw-msg.assistant { align-self: flex-start; background: var(--surface-2, rgba(127,127,127,0.1)); color: var(--bn, var(--fg)); border-end-start-radius: 4px; }
+    .sw-msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-end-end-radius: 4px; }
 
     .sw-typing { align-self: flex-start; display: flex; gap: 4px; padding: 9px 12px; }
     .sw-typing[hidden] { display: none; }
@@ -89,11 +96,16 @@
         cursor: pointer; flex-shrink: 0; font-size: 15px; display: flex; align-items: center; justify-content: center;
     }
     .sw-send:disabled { opacity: 0.5; cursor: default; }
+    /* The paper plane points along the reading direction. */
+    [dir="rtl"] .sw-send i { display: inline-block; transform: scaleX(-1); }
 
-    .sw-disclaimer { padding: 0 16px 12px; font-size: 10.5px; color: var(--btt, var(--fg-2)); line-height: 1.4; flex-shrink: 0; }
+    /* --ft-muted where a theme's --fg-2 misses AA on this panel (glass,
+       noir), same convention as the footer's muted text; --btt (the old
+       color) measured 1.5–2.4:1 on every theme. */
+    .sw-disclaimer { padding: 0 16px 12px; font-size: 10.5px; color: var(--ft-muted, var(--fg-2)); line-height: 1.4; flex-shrink: 0; overflow-wrap: anywhere; }
 
     @media (max-width: 480px) {
-        .sw-panel {
+        .sw-panel, [dir="rtl"] .sw-panel {
             right: 10px; left: 10px; bottom: 10px; width: auto; max-width: none;
             height: auto; top: 10px; max-height: none;
         }

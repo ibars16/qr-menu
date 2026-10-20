@@ -503,11 +503,14 @@ sections.forEach(s => obs.observe(s));
 
                 function check() {
                     if (horiz) {
+                        // Math.abs: on a right-to-left page scrollLeft runs
+                        // from 0 (start) down to negative values.
                         const canScroll = body.scrollWidth > body.clientWidth + 4;
-                        const atStart = body.scrollLeft < 4;
-                        const atEnd   = body.scrollLeft + body.clientWidth >= body.scrollWidth - 4;
-                        scroll.classList.toggle('can-right', canScroll && !atEnd);
-                        scroll.classList.toggle('can-left',  canScroll && !atStart);
+                        const scrolled = Math.abs(body.scrollLeft);
+                        const atStart = scrolled < 4;
+                        const atEnd   = scrolled + body.clientWidth >= body.scrollWidth - 4;
+                        scroll.classList.toggle('can-end',   canScroll && !atEnd);
+                        scroll.classList.toggle('can-start', canScroll && !atStart);
                     } else {
                         const canScroll = body.scrollHeight > body.clientHeight + 4;
                         const atTop    = body.scrollTop < 4;
@@ -524,7 +527,10 @@ sections.forEach(s => obs.observe(s));
         });
     });
 
-    // All scroll-cue clicks handled in capture phase to prevent card from unflipping
+    // All scroll-cue clicks handled in capture phase to prevent card from unflipping.
+    // -h scrolls toward the end, -l toward the start: negative scrollLeft
+    // is "forward" on a right-to-left page.
+    const fwd = getComputedStyle(document.body).direction === 'rtl' ? -1 : 1;
     document.addEventListener('click', function(e) {
         if (e.target.closest('.scroll-cue-dn')) {
             e.stopPropagation();
@@ -538,12 +544,12 @@ sections.forEach(s => obs.observe(s));
         }
         if (e.target.closest('.scroll-cue-h')) {
             e.stopPropagation();
-            e.target.closest('.back-scroll')?.querySelector('.back-body')?.scrollBy({ left: 180, behavior: 'smooth' });
+            e.target.closest('.back-scroll')?.querySelector('.back-body')?.scrollBy({ left: 180 * fwd, behavior: 'smooth' });
             return;
         }
         if (e.target.closest('.scroll-cue-l')) {
             e.stopPropagation();
-            e.target.closest('.back-scroll')?.querySelector('.back-body')?.scrollBy({ left: -180, behavior: 'smooth' });
+            e.target.closest('.back-scroll')?.querySelector('.back-body')?.scrollBy({ left: -180 * fwd, behavior: 'smooth' });
         }
     }, true);
 })();
@@ -571,7 +577,10 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') lbClo
 // see show.html.twig's recommendedItems/.banner-multi). No-op everywhere
 // else since getElementById returns null. No auto-play, no wraparound:
 // bannerGoTo() clamps to [0, slides.length-1], same as the disabled state
-// on the prev/next buttons at either end.
+// on the prev/next buttons at either end. Right-to-left menus: the flex
+// track lays slides out right to left, so the track slides the other way,
+// and "next" is ArrowLeft / a left-to-right swipe (fwd = -1); prev/next
+// order and the dots already follow the page direction via flexbox.
 (function () {
     var track = document.getElementById('banner-track');
     var carousel = document.getElementById('banner-carousel');
@@ -582,9 +591,10 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') lbClo
     var prevBtn  = carousel.querySelector('.banner-prev');
     var nextBtn  = carousel.querySelector('.banner-next');
     var index    = 0;
+    var fwd      = getComputedStyle(carousel).direction === 'rtl' ? -1 : 1;
 
     function render() {
-        track.style.transform = 'translateX(-' + (index * 100) + '%)';
+        track.style.transform = 'translateX(' + (fwd === 1 ? '-' : '') + (index * 100) + '%)';
         slides.forEach(function (slide, i) {
             var active = i === index;
             slide.classList.toggle('active', active);
@@ -611,8 +621,8 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') lbClo
     window.bannerNav = function (delta) { window.bannerGoTo(index + delta); };
 
     carousel.addEventListener('keydown', function (e) {
-        if (e.key === 'ArrowLeft')  { e.preventDefault(); window.bannerNav(-1); }
-        if (e.key === 'ArrowRight') { e.preventDefault(); window.bannerNav(1); }
+        if (e.key === 'ArrowLeft')  { e.preventDefault(); window.bannerNav(-fwd); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); window.bannerNav(fwd); }
     });
 
     // Swipe — a mostly-horizontal drag past a small threshold pages the
@@ -628,7 +638,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') lbClo
         var dy = e.changedTouches[0].clientY - touchStartY;
         touchStartX = touchStartY = null;
         if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
-        window.bannerNav(dx < 0 ? 1 : -1);
+        window.bannerNav(dx < 0 ? fwd : -fwd);
     });
 
     render();

@@ -56,7 +56,7 @@
        that it overflows horizontally, so an edge tab (e.g. "Asados y
        guisos") just gets hard-clipped by the scroll container with no cue
        there's more. Two pseudo-elements, shown/hidden by
-       .has-more-left/.has-more-right (toggled by the scroll listener at
+       .has-more-start/.has-more-end (toggled by the scroll listener at
        the end of this file, alongside the existing .is-stuck one — same
        pattern as .dish-modal-fade's scroll listener in _search_js.html.twig,
        just horizontal and maison-only instead of vertical and shared).
@@ -75,19 +75,20 @@
        drag-scroll pass straight through to the tab/scroll container
        beneath. See .cat-tab:focus-visible below for why a focused tab still
        needs its own z-index to ring clearly through this.
-       Logic (scrollLeft/scrollWidth-based, not an LTR "right = more"
-       assumption) lives in the script below — this app has no dir="rtl"
-       today, but the classes themselves stay meaningful either way: a
-       future RTL pass would only need to swap which physical edge each
-       class paints on, not touch the JS that sets them. */
+       Logic lives in the script below. Start/end are logical: ::before sits
+       on the inline-start edge (left in LTR, right in RTL) and ::after on
+       the inline-end edge; gradients have no logical direction, so the
+       [dir="rtl"] pair below flips them. */
     .cat-tabs::before, .cat-tabs::after {
         content: ''; position: absolute; top: 0; bottom: 0; width: 32px;
         pointer-events: none; z-index: 1; opacity: 0; transition: opacity 0.15s;
     }
-    .cat-tabs::before { left: 0; background: linear-gradient(to right, var(--hdr-bg), transparent); }
-    .cat-tabs::after { right: 0; background: linear-gradient(to left, var(--hdr-bg), transparent); }
-    .cat-tabs.has-more-left::before { opacity: 1; }
-    .cat-tabs.has-more-right::after { opacity: 1; }
+    .cat-tabs::before { inset-inline-start: 0; background: linear-gradient(to right, var(--hdr-bg), transparent); }
+    .cat-tabs::after { inset-inline-end: 0; background: linear-gradient(to left, var(--hdr-bg), transparent); }
+    [dir="rtl"] .cat-tabs::before { background: linear-gradient(to left, var(--hdr-bg), transparent); }
+    [dir="rtl"] .cat-tabs::after { background: linear-gradient(to right, var(--hdr-bg), transparent); }
+    .cat-tabs.has-more-start::before { opacity: 1; }
+    .cat-tabs.has-more-end::after { opacity: 1; }
     /* Target of the hero CTA's native `href="#cat-tabs"` jump — without
        this, the browser would scroll as if landing at y:0 (unaware the bar
        is sticky and can't actually go above --header-h), overshooting by
@@ -234,8 +235,8 @@
        left, which is also what keeps .price-stack's own left edge flush
        with .front-name's — see column-gap note below for the label→price
        gap this reopens on a short label like "COPA". */
-    .price-item-label { text-align: left; }
-    .price-item-value { text-align: right; font-variant-numeric: tabular-nums; }
+    .price-item-label { text-align: start; }
+    .price-item-value { text-align: end; font-variant-numeric: tabular-nums; }
     /* Options separated by air, not a rule — card and detail sheet now use
        the SAME criterion (2026-09-16, owner request: the card still had the
        hairline border-top from an earlier pass; removed here so neither
@@ -257,7 +258,7 @@
        --surface/--bg/--surface-2). --fg-2 still reads distinctly quieter
        than the price's own --cn (5.33–5.95:1 vs 12.7–15.8:1) while clearing
        AA everywhere it's used. */
-    .price-currency { font-size: calc(10px * var(--font-scale)); color: var(--fg-2); font-family: var(--font-body); font-weight: 400; margin-left: 4px; }
+    .price-currency { font-size: calc(10px * var(--font-scale)); color: var(--fg-2); font-family: var(--font-body); font-weight: 400; margin-inline-start: 4px; }
 
     /* Suplemento — grouped with the price, not the dish name (2026-09-18,
        owner request). The old badge sat next to .front-name/.dish-detail-name
@@ -363,11 +364,18 @@
        badge used and which reads as alarm/discount red here. */
     .row-supplement .suppl-value, .dish-supplement .suppl-value, .dish-detail-supplement .suppl-value {
         font-family: var(--font-display); font-size: calc(13px * var(--font-scale)); font-weight: 400;
-        color: var(--cn); margin-left: 3px;
+        color: var(--cn); margin-inline-start: 3px;
     }
     .row-supplement .price-currency, .dish-supplement .price-currency, .dish-detail-supplement .price-currency {
         font-size: calc(10px * var(--font-scale));
     }
+    /* RTL: the amount is wrapped in an LTR-isolated .price-ltr bdi
+       (_price.html.twig supplement()), where .suppl-value's inline-start is
+       the unit's far (left) edge. The 3px belongs between "·" and the
+       amount, i.e. on the wrapper's right — physical on purpose, since the
+       wrapper's own direction is ltr. */
+    [dir="rtl"] :is(.row-supplement, .dish-supplement, .dish-detail-supplement) .suppl-value { margin-inline-start: 0; }
+    [dir="rtl"] :is(.row-supplement, .dish-supplement, .dish-detail-supplement) .price-ltr { margin-right: 3px; }
 
     /* "Ver más" — filled wine pill, white text, same pattern as
        .filters-clear-link ("Borrar todo"): solid var(--accent) fill,
@@ -390,7 +398,7 @@
        to the card's own edge, keeps that "one target" model intact. */
     .dish-card:focus-visible .more-hint { outline: 2px solid var(--cf-hborder); outline-offset: 2px; }
     .more-hint i { transition: transform 0.25s ease; }
-    .dish-card:hover .more-hint i { transform: translateX(3px); }
+    .dish-card:hover .more-hint i { transform: translateX(calc(3px * var(--dir-sign))); }
 
     /* Photo frame — 150px → 210px (2026-09-05) → 240px (2026-09-06, one more
        notch of presence). .dish-card has no fixed height/overflow-y of its
@@ -691,7 +699,7 @@
        top-left slot (carta-estilo .badges{top:10px;left:10px}) rather
        than each keeping its own base-layout corner. */
     .dish-pill, .spicy-badge, .popular-badge {
-        top: 0.625rem; right: auto; bottom: auto; left: 0.625rem;
+        top: 0.625rem; inset-inline-end: auto; bottom: auto; inset-inline-start: 0.625rem;
         background: rgba(20,14,11,0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
         color: #f6eee2; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
         padding: 4px 8px; border-radius: 2px; font-weight: 600; border: none; box-shadow: none;
@@ -710,7 +718,7 @@
     .diet-allergy-btn:hover { border-color: var(--cf-hborder); box-shadow: none; }
     .diet-allergy-btn.has-active { border-color: var(--accent); }
     .diet-allergy-btn i { color: var(--accent); }
-    .allergy-arrow { margin-left: auto; color: var(--fg-2); }
+    .allergy-arrow { margin-inline-start: auto; color: var(--fg-2); }
 
     /* Rhythm from the category tabs down through the allergy filter to the
        first section header (see conversation 2026-09-02: the previous
@@ -762,7 +770,7 @@
     }
     .search-wrap:focus-within { border-color: var(--in-focus-border); }
     .search-icon {
-        position: static; top: auto; left: auto; display: block; flex-shrink: 0;
+        position: static; top: auto; left: auto; transform: none; display: block; flex-shrink: 0;
         font-size: 15px; color: var(--fg-3); pointer-events: none;
     }
     .search-input {
@@ -905,7 +913,7 @@
             display: block; flex-shrink: 0; font-size: 18px; color: var(--accent);
             transition: transform 0.25s ease;
         }
-        .banner:hover .bchev, .banner-slide:hover .bchev { transform: translateX(3px); }
+        .banner:hover .bchev, .banner-slide:hover .bchev { transform: translateX(calc(3px * var(--dir-sign))); }
     }
     /* Thumbnail and chevron exist in the markup at every width but only
        show >=1024 (above); phones and tablets keep the star icon. */
@@ -1080,7 +1088,7 @@
     .filters-panel .diet-filter.active::before,
     .filters-panel .type-filter.active::before {
         content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-        background: var(--cf-hborder); margin-right: 7px; flex-shrink: 0;
+        background: var(--cf-hborder); margin-inline-end: 7px; flex-shrink: 0;
     }
 
     /* Footer — sticky espresso CTA (stays sticky here on purpose: this is a
@@ -1431,7 +1439,7 @@
        progress indicator. */
     .spicy-row { gap: 6px; }
     .dot { width: 8px; height: 8px; }
-    .spicy-txt { margin-left: 2px; }
+    .spicy-txt { margin-inline-start: 2px; }
 
     /* Calories — was the one section still in a filled/bordered pill
        (.nut, --nut-bg/--nut-b — already palette-correct tokens, just the
@@ -1530,6 +1538,8 @@
     @media (min-width: 640px) {
         .ft-name::after { margin-inline: 0; }
     }
+    /* Arabic has no italic: the three italic spots above render upright. */
+    :lang(ar) .tagline, :lang(ar) .ft-tagline, :lang(ar) .search-input::placeholder { font-style: normal; }
 </style>
 <script>
     /* Keeps --header-h (used by .cat-tabs' sticky top and the scroll-margin
@@ -1595,20 +1605,18 @@
            ::after above) — same shape as .dish-modal-scroll's fade listener
            in _search_js.html.twig (one update function, called once up
            front then re-run on scroll), just horizontal and driven by two
-           edges instead of one bottom edge. scrollLeft/scrollWidth are the
-           real measured values, not an assumed "right edge = more content"
-           — this app has no dir="rtl" today (see that file's own note), but
-           reading the actual scroll position rather than hardcoding an
-           edge means this keeps working unchanged if that ever changes; a
-           future RTL pass would only need to swap which class paints on
-           which physical side in the CSS above, not this logic. The 1px
-           tolerance absorbs sub-pixel scroll-position rounding that would
-           otherwise leave a fade faintly stuck on at a scroll extreme. */
+           edges instead of one bottom edge. Math.abs(scrollLeft): on a
+           right-to-left page scrollLeft starts at 0 and goes NEGATIVE as
+           you scroll toward the end, so its magnitude is the distance from
+           the start in both directions. The 1px tolerance absorbs sub-pixel
+           scroll-position rounding that would otherwise leave a fade
+           faintly stuck on at a scroll extreme. */
         if (catTabs) {
             var updateCatTabsFade = function () {
                 var maxScroll = catTabs.scrollWidth - catTabs.clientWidth;
-                catTabs.classList.toggle('has-more-left', catTabs.scrollLeft > 1);
-                catTabs.classList.toggle('has-more-right', catTabs.scrollLeft < maxScroll - 1);
+                var scrolled  = Math.abs(catTabs.scrollLeft);
+                catTabs.classList.toggle('has-more-start', scrolled > 1);
+                catTabs.classList.toggle('has-more-end', scrolled < maxScroll - 1);
             };
             updateCatTabsFade();
             catTabs.addEventListener('scroll', updateCatTabsFade, { passive: true });

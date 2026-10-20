@@ -9,18 +9,32 @@
    MenuPreferencesResolver::getCurrencyDisplay()) rather than the raw
    $currency code, so a menu mixing simple and variant-priced dishes shows
    one consistent currency label throughout instead of "12.00 EUR" next to
-   "12.00 €". See also Product::hasPriceVariants(). #}
-{% macro price(product, currency, showCurrency, currencyDisplay, locale) %}{% if product.hasPriceVariants %}<span class="price-stack"><span class="price-row">{% if product.basePriceLabel %}<span class="price-item-label">{{ product.basePriceLabel }}</span>{% endif %}<span class="price-item-value">{{ (product.convertedPrice / 100)|menu_number(locale) }}{% if showCurrency %}<span class="price-currency">{{ currencyDisplay }}</span>{% endif %}</span></span>{% for variant in product.priceVariants %}<span class="price-row"><span class="price-item-label">{{ variant.label }}</span><span class="price-item-value">{{ (product.getConvertedVariantPrice(variant) / 100)|menu_number(locale) }}{% if showCurrency %}<span class="price-currency">{{ currencyDisplay }}</span>{% endif %}</span></span>{% endfor %}</span>{% else %}{{ (product.convertedPrice / 100)|menu_number(locale) }}{% if showCurrency %}<span class="price-currency">{{ currencyDisplay }}</span>{% endif %}{% endif %}{% endmacro %}
+   "12.00 €". See also Product::hasPriceVariants().
+
+   Right-to-left menus (menu_dir(locale) == 'rtl'): every amount + its
+   currency (+ a supplement's leading "+") is wrapped in
+   <bdi dir="ltr" class="price-ltr"> as one unit, so the bidi algorithm
+   can't move the currency or the "+" to the other side of the digits. It
+   sits INSIDE .price-item-value, which keeps the page's direction — its
+   text-align:end still means the outer edge. Left-to-right menus render
+   exactly the markup they always did (ltrOpen/ltrClose are empty).
+   Price labels (owner text, never translated) get <span dir="auto"> on
+   RTL menus for the same reason as show.html.twig's autoOpen. #}
+{% macro price(product, currency, showCurrency, currencyDisplay, locale) %}{% set ltrOpen = menu_dir(locale) == 'rtl' ? '<bdi dir="ltr" class="price-ltr">' : '' %}{% set ltrClose = ltrOpen ? '</bdi>' : '' %}{% set autoOpen = ltrOpen ? '<span dir="auto">' : '' %}{% set autoClose = ltrOpen ? '</span>' : '' %}{% if product.hasPriceVariants %}<span class="price-stack"><span class="price-row">{% if product.basePriceLabel %}<span class="price-item-label">{{ autoOpen|raw }}{{ product.basePriceLabel }}{{ autoClose|raw }}</span>{% endif %}<span class="price-item-value">{{ ltrOpen|raw }}{{ (product.convertedPrice / 100)|menu_number(locale) }}{% if showCurrency %}<span class="price-currency">{{ currencyDisplay }}</span>{% endif %}{{ ltrClose|raw }}</span></span>{% for variant in product.priceVariants %}<span class="price-row"><span class="price-item-label">{{ autoOpen|raw }}{{ variant.label }}{{ autoClose|raw }}</span><span class="price-item-value">{{ ltrOpen|raw }}{{ (product.getConvertedVariantPrice(variant) / 100)|menu_number(locale) }}{% if showCurrency %}<span class="price-currency">{{ currencyDisplay }}</span>{% endif %}{{ ltrClose|raw }}</span></span>{% endfor %}</span>{% else %}{{ ltrOpen|raw }}{{ (product.convertedPrice / 100)|menu_number(locale) }}{% if showCurrency %}<span class="price-currency">{{ currencyDisplay }}</span>{% endif %}{{ ltrClose|raw }}{% endif %}{% endmacro %}
 {# One amount in cents, formatted exactly like price()'s single-price path
    (same |menu_number, same .price-currency suffix). Used by oneLine() below
    for the banner's "Desde" + lowest-price line. #}
-{% macro amount(cents, currencyDisplay, locale) %}{{ (cents / 100)|menu_number(locale) }}<span class="price-currency">{{ currencyDisplay }}</span>{% endmacro %}
+{% macro amount(cents, currencyDisplay, locale) %}{% set ltrOpen = menu_dir(locale) == 'rtl' ? '<bdi dir="ltr" class="price-ltr">' : '' %}{% set ltrClose = ltrOpen ? '</bdi>' : '' %}{{ ltrOpen|raw }}{{ (cents / 100)|menu_number(locale) }}<span class="price-currency">{{ currencyDisplay }}</span>{{ ltrClose|raw }}{% endmacro %}
+{# A dish's "+X €" supplement amount — the one markup behind every
+   .dish-supplement/.row-supplement/.dish-detail-supplement in the layout
+   and the banner's bannerSupplement() below. #}
+{% macro supplement(product, currencyDisplay, locale) %}{% set ltrOpen = menu_dir(locale) == 'rtl' ? '<bdi dir="ltr" class="price-ltr">' : '' %}{% set ltrClose = ltrOpen ? '</bdi>' : '' %}{{ ltrOpen|raw }}<span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span>{{ ltrClose|raw }}{% endmacro %}
 {# The maison recommendation banner's supplement line
    (themes/maison/_banner_text.html.twig). Same text as the list's
    .dish-supplement; "· +X €" is wrapped in .suppl-amount so the banner can
    keep it together (white-space: nowrap in maison/overrides.html.twig) — a
    break then falls before the "·", never after. #}
-{% macro bannerSupplement(product, currencyDisplay, locale) %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} <span class="suppl-amount">· <span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span></span></div>{% endmacro %}
+{% macro bannerSupplement(product, currencyDisplay, locale) %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} <span class="suppl-amount">· {{ _self.supplement(product, currencyDisplay, locale) }}</span></div>{% endmacro %}
 {# One-line price for the maison chef's-recommendation banner
    (themes/maison/_banner_text.html.twig). Multiprice → "Desde" + the lowest
    price: base price + every variant, converted; all equal → just the

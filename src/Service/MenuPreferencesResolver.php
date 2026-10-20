@@ -16,7 +16,7 @@ class MenuPreferencesResolver
 {
     public const COOKIE_NAME = 'menu_prefs';
 
-    /** @var array<string, array{name: string, flag: string}> */
+    /** @var array<string, array{name: string, flag: string, dir?: 'rtl'}> */
     private array $languages;
 
     /** @var array<string, array{symbol: string, name: string}> */
@@ -32,7 +32,7 @@ class MenuPreferencesResolver
         $this->localeCurrencyMap = require $projectDir . '/config/locale_currency_map.php';
     }
 
-    /** @return array<string, array{name: string, flag: string}> */
+    /** @return array<string, array{name: string, flag: string, dir?: 'rtl'}> */
     public function getLanguages(): array
     {
         return $this->languages;
@@ -47,6 +47,16 @@ class MenuPreferencesResolver
     public function isLanguageSupported(?string $code): bool
     {
         return $code !== null && isset($this->languages[$code]);
+    }
+
+    /**
+     * 'rtl' or 'ltr' for a public-menu language, from config/languages.php's
+     * optional 'dir' key — the one place a language is marked right-to-left,
+     * so templates never hardcode a locale code. Unknown codes are 'ltr'.
+     */
+    public function getTextDirection(string $code): string
+    {
+        return ($this->languages[$code]['dir'] ?? null) === 'rtl' ? 'rtl' : 'ltr';
     }
 
     public function isCurrencySupported(?string $code): bool

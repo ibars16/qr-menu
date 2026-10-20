@@ -24,30 +24,35 @@
    ever renders, muted, on the row's right edge.
 #}
 {% macro pill(category, locale, restaurant, currencyDisplay) %}
+    {#- Amount + currency isolated as one left-to-right unit on RTL menus, and
+        owner text that may be untranslated in <span dir="auto"> — see
+        _price.html.twig's note. #}
+    {%- set ltrOpen = menu_dir(locale) == 'rtl' ? '<bdi dir="ltr" class="price-ltr">' : '' %}{% set ltrClose = ltrOpen ? '</bdi>' : '' %}{% set autoOpen = ltrOpen ? '<span dir="auto">' : '' %}{% set autoClose = ltrOpen ? '</span>' : '' %}
     {% set t = category.getTranslation(locale) %}
     {% if not t %}{% set t = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
     {% if not t %}{% set t = category.translations.first %}{% endif %}
     {% if t %}
-        <a href="#cat-{{ category.id }}" class="cat-tab cat-tab-menu" data-cat="cat-{{ category.id }}">{{ t.name }} · {{ (category.convertedMenuPrice / 100)|menu_number(locale) }} {{ currencyDisplay }}</a>
+        <a href="#cat-{{ category.id }}" class="cat-tab cat-tab-menu" data-cat="cat-{{ category.id }}">{{ t.name }} · {{ ltrOpen|raw }}{{ (category.convertedMenuPrice / 100)|menu_number(locale) }} {{ currencyDisplay }}{{ ltrClose|raw }}</a>
     {% endif %}
 {% endmacro %}
 
 {% macro section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens) %}
+    {%- set ltrOpen = menu_dir(locale) == 'rtl' ? '<bdi dir="ltr" class="price-ltr">' : '' %}{% set ltrClose = ltrOpen ? '</bdi>' : '' %}{% set autoOpen = ltrOpen ? '<span dir="auto">' : '' %}{% set autoClose = ltrOpen ? '</span>' : '' %}
     {% set menuT = category.getTranslation(locale) %}
     {% if not menuT %}{% set menuT = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
     {% if not menuT %}{% set menuT = category.translations.first %}{% endif %}
     {% if menuT %}
         <div class="set-menu-header">
             <div class="set-menu-name">{{ menuT.name }}</div>
-            <div class="set-menu-price">{{ (category.convertedMenuPrice / 100)|menu_number(locale) }} {{ currencyDisplay }}</div>
+            <div class="set-menu-price">{{ ltrOpen|raw }}{{ (category.convertedMenuPrice / 100)|menu_number(locale) }} {{ currencyDisplay }}{{ ltrClose|raw }}</div>
         </div>
         {% if category.menuDescription %}
-            <div class="set-menu-desc">{{ category.menuDescription }}</div>
+            <div class="set-menu-desc">{{ autoOpen|raw }}{{ category.menuDescription }}{{ autoClose|raw }}</div>
         {% endif %}
         {% for entry in category.activeSectionsWithProducts %}
             {% if entry.products|length > 0 %}
                 <div class="set-menu-group">
-                    <div class="set-menu-group-label">{{ entry.section.label }}</div>
+                    <div class="set-menu-group-label">{{ autoOpen|raw }}{{ entry.section.label }}{{ autoClose|raw }}</div>
                     {% for product in entry.products %}
                         {{ _self.dish_row(product, locale, restaurant, currencyDisplay, tagNames, productAllergens) }}
                     {% endfor %}
@@ -58,6 +63,7 @@
 {% endmacro %}
 
 {% macro dish_row(product, locale, restaurant, currencyDisplay, tagNames, productAllergens) %}
+    {%- set ltrOpen = menu_dir(locale) == 'rtl' ? '<bdi dir="ltr" class="price-ltr">' : '' %}{% set ltrClose = ltrOpen ? '</bdi>' : '' %}{% set autoOpen = ltrOpen ? '<span dir="auto">' : '' %}{% set autoClose = ltrOpen ? '</span>' : '' %}
     {% set pT = product.getTranslation(locale) %}
     {% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}
     {% if not pT %}{% set pT = product.translations.first %}{% endif %}
@@ -75,19 +81,19 @@
                         {% if product.image %}
                             <div class="set-menu-thumb"><img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy"></div>
                         {% endif %}
-                        <div class="set-menu-name product-name">{{ pT.name }}</div>
+                        <div class="set-menu-name product-name">{{ autoOpen|raw }}{{ pT.name }}{{ autoClose|raw }}</div>
                         {% if product.supplementPrice %}
-                            <div class="set-menu-supplement">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }} {{ currencyDisplay }}</div>
+                            <div class="set-menu-supplement">{{ ltrOpen|raw }}+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }} {{ currencyDisplay }}{{ ltrClose|raw }}</div>
                         {% endif %}
-                        <div class="set-menu-chevron"><i class="ti ti-chevron-right" aria-hidden="true"></i></div>
+                        <div class="set-menu-chevron"><i class="ti ti-chevron-{{ menu_dir(locale) == 'rtl' ? 'left' : 'right' }}" aria-hidden="true"></i></div>
                     </div>
                 </div>
                 <div class="card-back">
                     <button class="back-close" onclick="unflipCard(event,this)" aria-label="{{ 'nav.back'|trans({}, 'menu_public', locale) }}"><i class="ti ti-x"></i></button>
                     <div class="back-scroll horiz">
                         <div class="back-body">
-                            <div class="bsec"><div class="bsec-title">{{ 'dish.name_label'|trans({}, 'menu_public', locale) }}</div><div class="back-desc" style="font-weight:600;font-size:13px;color:var(--bn)">{{ pT.name }}</div></div>
-                            {% if pT.description %}<div class="bsec"><div class="bsec-title">{{ 'dish.description'|trans({}, 'menu_public', locale) }}</div><div class="back-desc">{{ pT.description }}</div></div>{% endif %}
+                            <div class="bsec"><div class="bsec-title">{{ 'dish.name_label'|trans({}, 'menu_public', locale) }}</div><div class="back-desc" style="font-weight:600;font-size:13px;color:var(--bn)">{{ autoOpen|raw }}{{ pT.name }}{{ autoClose|raw }}</div></div>
+                            {% if pT.description %}<div class="bsec"><div class="bsec-title">{{ 'dish.description'|trans({}, 'menu_public', locale) }}</div><div class="back-desc">{{ autoOpen|raw }}{{ pT.description }}{{ autoClose|raw }}</div></div>{% endif %}
                             {% set ingredientNames = product.getIngredientNames(locale, restaurant.defaultLanguage) %}
                             {% if ingredientNames|length > 0 %}
                                 <div class="bsec"><div class="bsec-title">{{ 'dish.ingredients'|trans({}, 'menu_public', locale) }}</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>

@@ -20,4 +20,4 @@
         {% if ri.product.supplementPrice %}{{ priceMacro.bannerSupplement(ri.product, currencyDisplay, locale) }}{% endif %}
     {% endif %}
 </div>
-<i class="ti ti-chevron-right bchev" aria-hidden="true"></i>
+<i class="ti ti-chevron-{{ dir == 'rtl' ? 'left' : 'right' }} bchev" aria-hidden="true"></i>
