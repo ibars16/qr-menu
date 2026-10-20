@@ -25,11 +25,17 @@ final class MenuImportExtractionService
         private readonly MenuVisionPromptBuilder $promptBuilder,
         private readonly EntityManagerInterface $em,
         private readonly string $projectDir,
+        private readonly string $uploadsDir,
     ) {}
 
     public function analyzePage(MenuImportPage $page): void
     {
-        $absolutePath = $this->projectDir . '/public/' . $page->getImagePath();
+        // imagePath is stored relative to public/ ("uploads/menu-imports/…");
+        // the uploads part lives wherever app.uploads_dir points.
+        $imagePath    = $page->getImagePath();
+        $absolutePath = str_starts_with($imagePath, 'uploads/')
+            ? $this->uploadsDir . substr($imagePath, strlen('uploads'))
+            : $this->projectDir . '/public/' . $imagePath;
         if (!is_file($absolutePath)) {
             $page->setStatus(MenuImportPageStatus::FAILED);
             $page->setErrorMessage('Image file not found on disk.');

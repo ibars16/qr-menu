@@ -6,6 +6,7 @@ use App\Entity\Category;
 use App\Entity\Product;
 use App\Entity\Restaurant;
 use App\Entity\User;
+use App\Tests\Support\TestUploadsDir;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -29,6 +30,8 @@ use Symfony\Component\Process\Process;
  */
 final class MenuAdminControllerClipUploadTest extends WebTestCase
 {
+    use TestUploadsDir;
+
     private KernelBrowser $client;
     private EntityManagerInterface $em;
     private string $productsDir;
@@ -36,10 +39,10 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
     /** @var int[] */
     private array $restaurantIdsToRemove = [];
 
-    /** @var string[] */
+    /** @var array<string|null> filenames to delete in tearDown (null when an upload failed) */
     private array $clipFilesToRemove = [];
 
-    /** @var string[] */
+    /** @var array<string|null> */
     private array $imageFilesToRemove = [];
 
     protected function setUp(): void
@@ -47,24 +50,18 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         parent::setUp();
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
-        $this->productsDir = static::getContainer()->getParameter('kernel.project_dir') . '/public/uploads/products';
+        // var/test-uploads/products, never public/uploads (see TestUploadsDir).
+        $this->productsDir = self::testUploadsDir('products') . '/products';
     }
 
     protected function tearDown(): void
     {
-        foreach ($this->clipFilesToRemove as $filename) {
-            $path = $this->productsDir . '/' . $filename;
-            if (is_file($path)) {
-                unlink($path);
+        foreach ([...$this->clipFilesToRemove, ...$this->imageFilesToRemove] as $filename) {
+            if ($filename && is_file($this->productsDir . '/' . $filename)) {
+                unlink($this->productsDir . '/' . $filename);
             }
         }
-
-        foreach ($this->imageFilesToRemove as $filename) {
-            $path = $this->productsDir . '/' . $filename;
-            if (is_file($path)) {
-                unlink($path);
-            }
-        }
+        self::emptyTestUploadsDir();
 
         foreach ($this->restaurantIdsToRemove as $id) {
             $restaurant = $this->em->getRepository(Restaurant::class)->find($id);
@@ -217,12 +214,12 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         $this->client->request('POST', "/admin/products/{$productId}/clip", [], [
             'clip' => $this->realClipUpload(3),
         ]);
-        self::assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
-        $firstClip = $data['videoClip'];
-        $firstPoster = $data['image'];
+        $firstClip = $data['videoClip'] ?? null;
+        $firstPoster = $data['image'] ?? null;
         $this->clipFilesToRemove[] = $firstClip;
         $this->imageFilesToRemove[] = $firstPoster;
+        self::assertResponseIsSuccessful();
         self::assertFalse($data['trimmed'], 'a clip under the cap is stored as-is');
         self::assertFileExists($this->productsDir . '/' . $firstClip);
         self::assertFileExists($this->productsDir . '/' . $firstPoster, 'the poster is extracted server-side, same request');
@@ -233,10 +230,10 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         $this->client->request('POST', "/admin/products/{$productId}/clip", [], [
             'clip' => $this->realClipUpload(4),
         ]);
-        self::assertResponseIsSuccessful();
         $data2 = json_decode($this->client->getResponse()->getContent(), true);
-        $this->clipFilesToRemove[] = $data2['videoClip'];
-        $this->imageFilesToRemove[] = $data2['image'];
+        $this->clipFilesToRemove[] = $data2['videoClip'] ?? null;
+        $this->imageFilesToRemove[] = $data2['image'] ?? null;
+        self::assertResponseIsSuccessful();
 
         self::assertNotSame($firstClip, $data2['videoClip']);
         self::assertFileDoesNotExist($this->productsDir . '/' . $firstClip, 'old clip must be deleted on replace');
@@ -257,10 +254,10 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         $this->client->request('POST', "/admin/products/{$productId}/clip", [], [
             'clip' => $this->realClipUpload(10),
         ]);
-        self::assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
-        $this->clipFilesToRemove[] = $data['videoClip'];
-        $this->imageFilesToRemove[] = $data['image'];
+        $this->clipFilesToRemove[] = $data['videoClip'] ?? null;
+        $this->imageFilesToRemove[] = $data['image'] ?? null;
+        self::assertResponseIsSuccessful();
 
         self::assertTrue($data['trimmed']);
         self::assertLessThanOrEqual(6.05, $this->storedDurationSeconds($data['videoClip']), 'stored clip must be cut to the first 6 s');
@@ -298,11 +295,11 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         $this->client->request('POST', "/admin/products/{$productId}/clip", [], [
             'clip' => $this->realClipUpload(3),
         ]);
-        self::assertResponseIsSuccessful();
         $clipData = json_decode($this->client->getResponse()->getContent(), true);
-        $clipFilename = $clipData['videoClip'];
+        $clipFilename = $clipData['videoClip'] ?? null;
         $this->clipFilesToRemove[] = $clipFilename;
-        $this->imageFilesToRemove[] = $clipData['image'];
+        $this->imageFilesToRemove[] = $clipData['image'] ?? null;
+        self::assertResponseIsSuccessful();
         self::assertFileExists($this->productsDir . '/' . $clipFilename);
 
         // Framing belongs to the clip — set some so the photo upload below
@@ -319,11 +316,11 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         $this->client->request('POST', "/admin/products/{$productId}/image", [], [
             'image' => $this->photoUpload(),
         ]);
-        self::assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
-        self::assertNull($data['videoClip'], 'the response itself must report the clip as cleared');
-        $imageFilename = $data['image'];
+        $imageFilename = $data['image'] ?? null;
         $this->imageFilesToRemove[] = $imageFilename;
+        self::assertResponseIsSuccessful();
+        self::assertNull($data['videoClip'], 'the response itself must report the clip as cleared');
 
         self::assertFileExists($this->productsDir . '/' . $imageFilename);
         self::assertFileDoesNotExist($this->productsDir . '/' . $clipFilename, 'the orphaned clip file must be deleted, not just unlinked from the row');
@@ -347,9 +344,9 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
         $this->client->request('POST', "/admin/products/{$productId}/image", [], [
             'image' => $this->photoUpload(),
         ]);
-        self::assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
-        $this->imageFilesToRemove[] = $data['image'];
+        $this->imageFilesToRemove[] = $data['image'] ?? null;
+        self::assertResponseIsSuccessful();
         self::assertNull($data['videoClip']);
 
         $this->em->clear();

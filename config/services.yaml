@@ -3,6 +3,10 @@ parameters:
     gemini_api_key:    '%env(GEMINI_API_KEY)%'
     mailer_from_email:      '%env(MAILER_FROM_EMAIL)%'
     platform_admin_email:   '%env(PLATFORM_ADMIN_EMAIL)%'
+    # Physical folder for every uploaded file (logos/, heroes/, products/,
+    # menu-imports/). Public URLs and the paths stored in the DB stay
+    # "uploads/..." — only the folder on disk moves (see when@test below).
+    app.uploads_dir:        '%kernel.project_dir%/public/uploads'
 
 services:
 
@@ -48,7 +52,7 @@ services:
 
     App\Command\CleanOrphanLogosCommand:
         arguments:
-            $projectDir: '%kernel.project_dir%'
+            $uploadsDir: '%app.uploads_dir%'
 
     App\Command\GenerateGlobalIngredientsDatasetCommand:
         arguments:
@@ -124,6 +128,7 @@ services:
     App\Service\MenuImportExtractionService:
         arguments:
             $projectDir: '%kernel.project_dir%'
+            $uploadsDir: '%app.uploads_dir%'
 
     App\Controller\Admin\MenuAdminController:
         arguments:
@@ -144,3 +149,9 @@ services:
 
     App\Service\Upload\ContentModerationInterface:
         alias: App\Service\Upload\NullContentModeration
+
+# Tests never write into the real public/uploads: upload tests use this
+# folder and empty it in their tearDown.
+when@test:
+    parameters:
+        app.uploads_dir: '%kernel.project_dir%/var/test-uploads'

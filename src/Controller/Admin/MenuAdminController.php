@@ -564,7 +564,7 @@ class MenuAdminController extends AbstractController
 
         $newFilename = $result->safeFilename;
 
-        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/products';
+        $uploadDir = $this->getParameter('app.uploads_dir') . '/products';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
@@ -644,7 +644,7 @@ class MenuAdminController extends AbstractController
             return $this->json(['error' => $this->translator->trans($this->productClipErrorKey($result->error), domain: 'admin_menu')], 400);
         }
 
-        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/products';
+        $uploadDir = $this->getParameter('app.uploads_dir') . '/products';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
@@ -942,7 +942,7 @@ class MenuAdminController extends AbstractController
             // first time their framing is saved.
             $clip = $product->getVideoClip();
             if ($clip && $product->getVideoAspectRatio() === null) {
-                $clipPath = $this->getParameter('kernel.project_dir') . '/public/uploads/products/' . $clip;
+                $clipPath = $this->getParameter('app.uploads_dir') . '/products/' . $clip;
                 if (is_file($clipPath)) {
                     $product->setVideoDimensions(...($this->clipTranscoder->probeDimensions($clipPath) ?? [null, null]));
                 }

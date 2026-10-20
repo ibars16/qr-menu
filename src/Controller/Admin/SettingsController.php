@@ -168,7 +168,7 @@ class SettingsController extends AbstractController
                     return $this->redirectToRoute('admin_settings');
                 }
 
-                $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logos';
+                $uploadDir = $this->getParameter('app.uploads_dir') . '/logos';
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0755, true);
                 }
@@ -236,7 +236,7 @@ class SettingsController extends AbstractController
                     return $this->redirectToRoute('admin_settings');
                 }
 
-                $heroUploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/heroes';
+                $heroUploadDir = $this->getParameter('app.uploads_dir') . '/heroes';
                 if (!is_dir($heroUploadDir)) {
                     mkdir($heroUploadDir, 0755, true);
                 }

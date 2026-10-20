@@ -39,14 +39,19 @@ final class UploadValidatorTest extends TestCase
         return new UploadValidator($moderation ?? new NullContentModeration());
     }
 
+    /**
+     * A temp COPY of tests/fixtures/upload_png_{W}x{H}.png (solid-color PNGs
+     * checked in, so these tests don't need ext-gd, which the container
+     * doesn't have). Never the fixture itself: UploadedFile::move() in test
+     * mode renames its source.
+     */
     private function pngUpload(int $width, int $height, string $originalName = 'photo.png'): UploadedFile
     {
-        $image = imagecreatetruecolor($width, $height);
-        imagefill($image, 0, 0, imagecolorallocate($image, 120, 60, 200));
+        $fixture = dirname(__DIR__, 2) . "/fixtures/upload_png_{$width}x{$height}.png";
+        self::assertFileExists($fixture, "no PNG fixture for {$width}x{$height}");
 
         $path = tempnam(sys_get_temp_dir(), 'upload_test_');
-        imagepng($image, $path);
-        imagedestroy($image);
+        copy($fixture, $path);
 
         $this->tempFiles[] = $path;
 

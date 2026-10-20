@@ -93,8 +93,8 @@ class MenuImportController extends AbstractController
         $em->persist($batch);
         $em->flush(); // assign an id — used in the storage path below
 
-        $uploadDir = $this->getParameter('kernel.project_dir')
-            . '/public/uploads/menu-imports/' . $restaurant->getId() . '/' . $batch->getId();
+        $uploadDir = $this->getParameter('app.uploads_dir')
+            . '/menu-imports/' . $restaurant->getId() . '/' . $batch->getId();
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }

@@ -35,7 +35,7 @@ final class CleanOrphanLogosCommand extends Command
     public function __construct(
         private readonly RestaurantRepository $restaurantRepo,
         private readonly OrphanUploadFinder    $orphanFinder,
-        private readonly string                $projectDir,
+        private readonly string                $uploadsDir,
     ) {
         parent::__construct();
     }
@@ -53,7 +53,7 @@ final class CleanOrphanLogosCommand extends Command
 
         $force = (bool) $input->getOption('force') && !$input->getOption('dry-run');
 
-        $logoDir = $this->projectDir . '/public/uploads/logos';
+        $logoDir = $this->uploadsDir . '/logos';
 
         if (!is_dir($logoDir)) {
             $io->success('public/uploads/logos/ does not exist — nothing to clean.');

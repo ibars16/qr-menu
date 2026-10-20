@@ -4,6 +4,7 @@ namespace App\Tests\Controller;
 
 use App\Entity\Restaurant;
 use App\Entity\User;
+use App\Tests\Support\TestUploadsDir;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -22,17 +23,15 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  * exact same validate/move/delete-old logic in its own public/uploads/heroes/
  * directory, so its tests mirror the logo ones one-for-one.
  *
- * NOTE on this environment: pdo_pgsql is available (via the project's
- * docker compose stack), but GD (imagecreatetruecolor) is not, so the
- * replacement/cleanup tests above that synthesize images with GD still
- * don't run here — verified instead via a standalone simulation of the
- * exact move/unlink logic (see task report) covering the same three cases.
- * The quality-warning HTTP tests below use static fixture files instead of
- * GD (see UploadValidatorQualityWarningTest's own docblock for why those
- * fixtures exist) and do run here.
+ * Files land in app.uploads_dir's test folder (var/test-uploads, never
+ * public/uploads — see TestUploadsDir), emptied after every test. Images
+ * are checked-in fixtures (tests/fixtures/upload_png_*.png and the hero
+ * JPEGs), not generated: the container has no GD.
  */
 final class SettingsControllerTest extends WebTestCase
 {
+    use TestUploadsDir;
+
     private const FIXTURES_DIR = __DIR__ . '/../fixtures';
 
     private KernelBrowser $client;
@@ -44,10 +43,10 @@ final class SettingsControllerTest extends WebTestCase
     /** @var int[] restaurant ids, not entities — logging in via loginUser() can detach the original object */
     private array $restaurantIdsToRemove = [];
 
-    /** @var string[] logo filenames created during a test, cleaned up regardless of pass/fail */
+    /** @var array<string|null> logo filenames created during a test, cleaned up regardless of pass/fail */
     private array $logoFilesToRemove = [];
 
-    /** @var string[] hero image filenames created during a test, cleaned up regardless of pass/fail */
+    /** @var array<string|null> hero image filenames created during a test, cleaned up regardless of pass/fail */
     private array $heroImageFilesToRemove = [];
 
     protected function setUp(): void
@@ -56,25 +55,28 @@ final class SettingsControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
         $this->hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
-        $this->logoDir = static::getContainer()->getParameter('kernel.project_dir') . '/public/uploads/logos';
-        $this->heroImageDir = static::getContainer()->getParameter('kernel.project_dir') . '/public/uploads/heroes';
+        $uploadsDir = self::testUploadsDir('logos', 'heroes');
+        $this->logoDir = $uploadsDir . '/logos';
+        $this->heroImageDir = $uploadsDir . '/heroes';
     }
 
     protected function tearDown(): void
     {
+        // Registered files first (null/'' never reaches unlink()), then
+        // the whole test folder, which also catches anything a failing test
+        // stored before it could register it.
         foreach ($this->logoFilesToRemove as $filename) {
-            $path = $this->logoDir . '/' . $filename;
-            if (is_file($path)) {
-                unlink($path);
+            if ($filename && is_file($this->logoDir . '/' . $filename)) {
+                unlink($this->logoDir . '/' . $filename);
             }
         }
 
         foreach ($this->heroImageFilesToRemove as $filename) {
-            $path = $this->heroImageDir . '/' . $filename;
-            if (is_file($path)) {
-                unlink($path);
+            if ($filename && is_file($this->heroImageDir . '/' . $filename)) {
+                unlink($this->heroImageDir . '/' . $filename);
             }
         }
+        self::emptyTestUploadsDir();
 
         foreach ($this->restaurantIdsToRemove as $restaurantId) {
             $restaurant = $this->em->getRepository(Restaurant::class)->find($restaurantId);
@@ -121,14 +123,7 @@ final class SettingsControllerTest extends WebTestCase
 
     private function logoUpload(string $originalName = 'logo.png'): UploadedFile
     {
-        $image = imagecreatetruecolor(150, 150);
-        imagefill($image, 0, 0, imagecolorallocate($image, 10, 20, 30));
-
-        $path = tempnam(sys_get_temp_dir(), 'settings_logo_test_');
-        imagepng($image, $path);
-        imagedestroy($image);
-
-        return new UploadedFile($path, $originalName, 'image/png', null, true);
+        return $this->fixtureUploadedFile('upload_png_150x150.png', $originalName, 'image/png');
     }
 
     private function submitLogo(Restaurant $restaurant, UploadedFile $logo): void
@@ -148,14 +143,7 @@ final class SettingsControllerTest extends WebTestCase
     /** DishImage profile requires >=400x400 (unlike Logo's >=100x100), so this is deliberately bigger than logoUpload()'s. */
     private function heroImageUpload(string $originalName = 'hero.png'): UploadedFile
     {
-        $image = imagecreatetruecolor(500, 500);
-        imagefill($image, 0, 0, imagecolorallocate($image, 30, 20, 10));
-
-        $path = tempnam(sys_get_temp_dir(), 'settings_hero_image_test_');
-        imagepng($image, $path);
-        imagedestroy($image);
-
-        return new UploadedFile($path, $originalName, 'image/png', null, true);
+        return $this->fixtureUploadedFile('upload_png_500x500.png', $originalName, 'image/png');
     }
 
     /**
@@ -237,6 +225,8 @@ final class SettingsControllerTest extends WebTestCase
         $this->submitLogo($restaurant, $this->logoUpload());
         $restaurant = $this->reloadRestaurant($restaurant);
         $firstLogo = $restaurant->getLogo();
+        $this->logoFilesToRemove[] = $firstLogo;
+        self::assertNotNull($firstLogo);
         unlink($this->logoDir . '/' . $firstLogo); // simulate an already-orphaned/removed file
 
         $this->submitLogo($restaurant, $this->logoUpload());
@@ -297,6 +287,8 @@ final class SettingsControllerTest extends WebTestCase
         $this->submitHeroImage($restaurant, $this->heroImageUpload());
         $restaurant = $this->reloadRestaurant($restaurant);
         $firstHeroImage = $restaurant->getHeroImage();
+        $this->heroImageFilesToRemove[] = $firstHeroImage;
+        self::assertNotNull($firstHeroImage);
         unlink($this->heroImageDir . '/' . $firstHeroImage); // simulate an already-orphaned/removed file
 
         $this->submitHeroImage($restaurant, $this->heroImageUpload());
@@ -374,15 +366,14 @@ final class SettingsControllerTest extends WebTestCase
         ], [
             'heroImage' => $goodImage,
         ]);
-        self::assertResponseRedirects('/admin/settings');
-
         $session = $this->client->getRequest()->getSession();
-        self::assertSame([], $session->getFlashBag()->peek('warning'), 'a clean above-minimum image must not raise a quality warning');
-        self::assertNotEmpty($session->getFlashBag()->peek('success'));
-
         $restaurant = $this->reloadRestaurant($restaurant);
         $heroImage = $restaurant->getHeroImage();
-        $this->heroImageFilesToRemove[] = $heroImage;
+        $this->heroImageFilesToRemove[] = $heroImage; // before any assertion, so a failure still cleans up
+
+        self::assertResponseRedirects('/admin/settings');
+        self::assertSame([], $session->getFlashBag()->peek('warning'), 'a clean above-minimum image must not raise a quality warning');
+        self::assertNotEmpty($session->getFlashBag()->peek('success'));
 
         self::assertNotNull($heroImage);
         self::assertFileExists($this->heroImageDir . '/' . $heroImage);

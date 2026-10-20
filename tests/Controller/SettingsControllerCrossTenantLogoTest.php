@@ -4,6 +4,7 @@ namespace App\Tests\Controller;
 
 use App\Entity\Restaurant;
 use App\Entity\User;
+use App\Tests\Support\TestUploadsDir;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -40,6 +41,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  */
 final class SettingsControllerCrossTenantLogoTest extends WebTestCase
 {
+    use TestUploadsDir;
+
     private const ITERATIONS = 10;
 
     private KernelBrowser $client;
@@ -56,17 +59,18 @@ final class SettingsControllerCrossTenantLogoTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
         $this->hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
-        $this->logoDir = static::getContainer()->getParameter('kernel.project_dir') . '/public/uploads/logos';
+        // var/test-uploads/logos, never public/uploads (see TestUploadsDir).
+        $this->logoDir = self::testUploadsDir('logos') . '/logos';
     }
 
     protected function tearDown(): void
     {
         foreach ($this->logoFilesToRemove as $filename) {
-            $path = $this->logoDir . '/' . $filename;
-            if (is_file($path)) {
-                unlink($path);
+            if ($filename && is_file($this->logoDir . '/' . $filename)) {
+                unlink($this->logoDir . '/' . $filename);
             }
         }
+        self::emptyTestUploadsDir();
 
         foreach ($this->restaurantIdsToRemove as $restaurantId) {
             $restaurant = $this->em->getRepository(Restaurant::class)->find($restaurantId);
@@ -196,6 +200,17 @@ final class SettingsControllerCrossTenantLogoTest extends WebTestCase
                 $bUploadedAtLeastOnce = true;
             }
 
+            // Registered for cleanup right after the upload, before any
+            // assertion below can fail.
+            $this->em->clear();
+            $currentFilenameA = $this->em->getRepository(Restaurant::class)->find($idA)?->getLogo();
+            $currentFilenameB = $this->em->getRepository(Restaurant::class)->find($idB)?->getLogo();
+            foreach ([$currentFilenameA, $currentFilenameB] as $filename) {
+                if ($filename !== null) {
+                    $this->logoFilesToRemove[] = $filename;
+                }
+            }
+
             $actualHashA = $this->currentLogoHash($idA);
             $actualHashB = $this->currentLogoHash($idB);
 
@@ -226,23 +241,15 @@ final class SettingsControllerCrossTenantLogoTest extends WebTestCase
             self::assertNotSame($actualHashA, $hashB, "iteration {$i}: restaurant A ended up holding restaurant B's fixture bytes");
             self::assertNotSame($actualHashB, $hashA, "iteration {$i}: restaurant B ended up holding restaurant A's fixture bytes");
 
-            $this->em->clear();
-            $freshA = $this->em->getRepository(Restaurant::class)->find($idA);
-            $freshB = $this->em->getRepository(Restaurant::class)->find($idB);
-            $currentFilenameA = $freshA?->getLogo();
-            $currentFilenameB = $freshB?->getLogo();
-
             // Only a genuinely NEW filename (one this restaurant didn't
             // already have last iteration) counts as "assigned" — the
             // restaurant that wasn't touched this iteration keeps its old
             // filename unchanged, which is expected, not a collision.
             if ($currentFilenameA !== null && $currentFilenameA !== $lastFilenameA) {
                 $newFilenamesAssigned[] = $currentFilenameA;
-                $this->logoFilesToRemove[] = $currentFilenameA;
             }
             if ($currentFilenameB !== null && $currentFilenameB !== $lastFilenameB) {
                 $newFilenamesAssigned[] = $currentFilenameB;
-                $this->logoFilesToRemove[] = $currentFilenameB;
             }
             $lastFilenameA = $currentFilenameA;
             $lastFilenameB = $currentFilenameB;
