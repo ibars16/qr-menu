@@ -22,6 +22,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_OWNER')]
 class SettingsController extends AbstractController
 {
+    /** Values of the per-section save buttons (name="section"). */
+    private const SECTIONS = ['info', 'contact', 'social', 'hours', 'appearance', 'language'];
+
     #[Route('/settings', name: 'settings')]
     public function settings(
         Request $request,
@@ -52,41 +55,58 @@ class SettingsController extends AbstractController
             $language    = $request->request->get('defaultLanguage', 'es');
             $adminLocale = $request->request->get('adminLocale', $adminLocaleResolver->getDefaultLocale());
 
+            // Each section has its own "Guardar" button (name="section");
+            // the footer button posts no section and saves everything. A
+            // per-section save only validates and applies that section's
+            // fields — whatever was typed elsewhere is left unsaved.
+            $section = $request->request->get('section');
+            if (!in_array($section, self::SECTIONS, true)) {
+                $section = null;
+            }
+            $saves = static fn (string $s): bool => $section === null || $section === $s;
+
             // Every text field is validated before anything is saved or any
             // file is moved; on error the form is re-rendered with what was
             // typed and a message under each failing field (nothing saved).
             $errors = [];
-            if ($name === '') {
+            if ($saves('info') && $name === '') {
                 $errors['name'] = 'error.name_required';
             }
-            if (mb_strlen($tagline) > 160) {
+            if ($saves('info') && mb_strlen($tagline) > 160) {
                 $errors['tagline'] = 'error.tagline_too_long';
             }
 
-            [$address, $error] = $contactNormalizer->normalizeAddress((string) $request->request->get('address', ''));
-            if ($error) {
-                $errors['address'] = 'error.address_' . $error;
-            }
-            [$phone, $error] = $contactNormalizer->normalizePhone((string) $request->request->get('phone', ''));
-            if ($error) {
-                $errors['phone'] = 'error.phone_' . $error;
-            }
-
             $socialInput = $request->request->all('social');
-            $socialLinks = [];
-            foreach (ContactDetailsNormalizer::NETWORKS as $network) {
-                [$url, $error] = $contactNormalizer->normalizeSocial($network, (string) ($socialInput[$network] ?? ''));
+            $hoursInput  = $request->request->all('hours');
+
+            if ($saves('contact')) {
+                [$address, $error] = $contactNormalizer->normalizeAddress((string) $request->request->get('address', ''));
                 if ($error) {
-                    $errors['social_' . $network] = 'error.social_' . $error;
-                } elseif ($url !== null) {
-                    $socialLinks[$network] = $url;
+                    $errors['address'] = 'error.address_' . $error;
+                }
+                [$phone, $error] = $contactNormalizer->normalizePhone((string) $request->request->get('phone', ''));
+                if ($error) {
+                    $errors['phone'] = 'error.phone_' . $error;
                 }
             }
 
-            $hoursInput = $request->request->all('hours');
-            [$openingHours, $hourErrors] = $contactNormalizer->normalizeOpeningHours($hoursInput);
-            foreach ($hourErrors as $day => $error) {
-                $errors['hours_' . $day] = 'error.hours_' . $error;
+            if ($saves('social')) {
+                $socialLinks = [];
+                foreach (ContactDetailsNormalizer::NETWORKS as $network) {
+                    [$url, $error] = $contactNormalizer->normalizeSocial($network, (string) ($socialInput[$network] ?? ''));
+                    if ($error) {
+                        $errors['social_' . $network] = 'error.social_' . $error;
+                    } elseif ($url !== null) {
+                        $socialLinks[$network] = $url;
+                    }
+                }
+            }
+
+            if ($saves('hours')) {
+                [$openingHours, $hourErrors] = $contactNormalizer->normalizeOpeningHours($hoursInput);
+                foreach ($hourErrors as $day => $error) {
+                    $errors['hours_' . $day] = 'error.hours_' . $error;
+                }
             }
 
             if ($errors !== []) {
@@ -116,19 +136,31 @@ class SettingsController extends AbstractController
                 ], new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY));
             }
 
-            $restaurant->setName($name);
-            $restaurant->setTagline($tagline !== '' ? $tagline : null);
-            $restaurant->setAddress($address);
-            $restaurant->setPhone($phone);
-            $restaurant->setSocialLinks($socialLinks);
-            $restaurant->setOpeningHours($openingHours);
-            $restaurant->setPrimaryColor($color);
-            $restaurant->setCurrency($currency);
-            $restaurant->setDefaultLanguage($language);
-            $restaurant->setAdminLocale($adminLocaleResolver->resolve($adminLocale));
+            if ($saves('info')) {
+                $restaurant->setName($name);
+                $restaurant->setTagline($tagline !== '' ? $tagline : null);
+            }
+            if ($saves('contact')) {
+                $restaurant->setAddress($address);
+                $restaurant->setPhone($phone);
+            }
+            if ($saves('social')) {
+                $restaurant->setSocialLinks($socialLinks);
+            }
+            if ($saves('hours')) {
+                $restaurant->setOpeningHours($openingHours);
+            }
+            if ($saves('appearance')) {
+                $restaurant->setPrimaryColor($color);
+            }
+            if ($saves('language')) {
+                $restaurant->setCurrency($currency);
+                $restaurant->setDefaultLanguage($language);
+                $restaurant->setAdminLocale($adminLocaleResolver->resolve($adminLocale));
+            }
 
             // Handle logo upload
-            $logoFile = $request->files->get('logo');
+            $logoFile = $saves('appearance') ? $request->files->get('logo') : null;
             if ($logoFile) {
                 $result = $uploadValidator->validate($logoFile, UploadProfile::Logo);
                 if (!$result->isValid) {
@@ -163,7 +195,7 @@ class SettingsController extends AbstractController
             }
 
             // Handle logo removal
-            if ($request->request->get('removeLogoFlag') === '1') {
+            if ($saves('appearance') && $request->request->get('removeLogoFlag') === '1') {
                 $restaurant->setLogo(null);
             }
 
@@ -174,7 +206,7 @@ class SettingsController extends AbstractController
             // purpose (see UploadProfile::HeroImage's own comment) — a hero
             // band just needs a not-tiny image, not the same bar as a
             // dish photo meant to be cropped square/tall.
-            $heroImageFile = $request->files->get('heroImage');
+            $heroImageFile = $saves('appearance') ? $request->files->get('heroImage') : null;
             if ($heroImageFile) {
                 // Only ever lets a QUALITY warning (small/portrait) through —
                 // see UploadValidator::validate()'s own docblock for why this
@@ -231,7 +263,7 @@ class SettingsController extends AbstractController
             }
 
             // Handle hero image removal
-            if ($request->request->get('removeHeroImageFlag') === '1') {
+            if ($saves('appearance') && $request->request->get('removeHeroImageFlag') === '1') {
                 $restaurant->setHeroImage(null);
             }
 
@@ -243,8 +275,10 @@ class SettingsController extends AbstractController
             // actually changed.
             $restaurant->bumpMenuContentVersion();
             $em->flush();
-            $this->addFlash('success', $translator->trans('flash.saved', domain: 'admin_settings'));
-            return $this->redirectToRoute('admin_settings');
+            $this->addFlash('success', $translator->trans($section ? 'flash.section_saved' : 'flash.saved', domain: 'admin_settings'));
+
+            // Back to the section just saved, not the top of a long page.
+            return $this->redirectToRoute('admin_settings', $section ? ['_fragment' => 'section-' . $section] : []);
         }
 
         return $this->render('admin/settings.html.twig', [

@@ -4,7 +4,9 @@ section:
     restaurant_info: Informations sur le restaurant
     appearance: Apparence
     language_currency: Langue et devise
-    contact: "Contact et réseaux"
+    contact: "Contact"
+    social: "Réseaux et avis"
+    hours: "Horaires"
 
 field:
     name: Nom
@@ -22,7 +24,6 @@ field:
     address_placeholder: "Rue, numéro, ville"
     phone: "Téléphone"
     phone_placeholder: "+33 1 23 45 67 89"
-    social: "Réseaux et avis"
     social_instagram: "Instagram"
     social_facebook: "Facebook"
     social_tiktok: "TikTok"
@@ -35,7 +36,6 @@ field:
     social_google_placeholder: "Lien Google Maps ou avis"
     social_tripadvisor_placeholder: "Lien vers votre page TripAdvisor"
     social_website_placeholder: "www.votrerestaurant.fr"
-    hours: "Horaires"
 
 action:
     copy: Copier
@@ -47,6 +47,7 @@ action:
     remove_hero_image: "Supprimer la photo d'en-tête"
     upload_anyway: Ajouter quand même
     save: Enregistrer les modifications
+    save_section: Enregistrer la section
 
 hint:
     logo_format: 'PNG ou JPG, 2 Mo max.'
@@ -58,7 +59,7 @@ hint:
     currency: Les prix sont enregistrés dans cette devise. Les clients peuvent voir la conversion en temps réel.
     phone: "Vous pouvez utiliser +, des espaces, des tirets et des parenthèses."
     social: "Collez le lien ou saisissez votre nom d'utilisateur. Laissez vide ce que vous n'utilisez pas."
-    hours: "Cochez « Fermé » ou indiquez un ou deux services. Si la fermeture est avant l'ouverture, le service se termine après minuit."
+    hours: "Activez les jours d'ouverture et indiquez un ou deux services. Si la fermeture est avant l'ouverture, le service se termine après minuit."
 
 flash:
     name_required: Le nom du restaurant est obligatoire.
@@ -75,6 +76,7 @@ flash:
     hero_image_warning_dimensions: "Cette image est petite et pourrait paraître floue sur un grand écran."
     hero_image_warning_portrait: "Elle est très verticale, le hero recadrera les côtés."
     saved: Paramètres enregistrés avec succès.
+    section_saved: Section enregistrée avec succès.
     form_errors: "Vérifiez les champs signalés."
     csrf_invalid: "Votre session a expiré. Veuillez réessayer."
 
@@ -85,8 +87,10 @@ toast:
 
 hours:
     closed: "Fermé"
-    shift1: "Service 1"
-    shift2: "Service 2"
+    open: "Ouvert"
+    closed_aria: "%day% : fermé"
+    add_shift: "Ajouter un service"
+    remove_shift: "Retirer le service"
     open_aria: "%day%, service %n%, ouverture"
     close_aria: "%day%, service %n%, fermeture"
     copy_monday: "Copier le lundi sur tous les jours"

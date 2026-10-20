@@ -4,7 +4,9 @@ section:
     restaurant_info: Informações do restaurante
     appearance: Aparência
     language_currency: Idioma e moeda
-    contact: "Contacto e redes"
+    contact: "Contacto"
+    social: "Redes e avaliações"
+    hours: "Horário"
 
 field:
     name: Nome
@@ -22,7 +24,6 @@ field:
     address_placeholder: "Rua, número, cidade"
     phone: "Telefone"
     phone_placeholder: "+351 912 345 678"
-    social: "Redes e avaliações"
     social_instagram: "Instagram"
     social_facebook: "Facebook"
     social_tiktok: "TikTok"
@@ -35,7 +36,6 @@ field:
     social_google_placeholder: "Link do Google Maps ou das avaliações"
     social_tripadvisor_placeholder: "Link da sua página no TripAdvisor"
     social_website_placeholder: "www.oseurestaurante.pt"
-    hours: "Horário"
 
 action:
     copy: Copiar
@@ -47,6 +47,7 @@ action:
     remove_hero_image: Remover foto de cabeçalho
     upload_anyway: Enviar mesmo assim
     save: Guardar alterações
+    save_section: Guardar secção
 
 hint:
     logo_format: 'PNG ou JPG, máx. 2 MB'
@@ -58,7 +59,7 @@ hint:
     currency: Os preços são guardados nesta moeda. Os clientes podem ver a conversão em tempo real.
     phone: "Pode usar +, espaços, hífenes e parênteses."
     social: "Cole o link ou escreva o seu nome de utilizador. Deixe vazio o que não usar."
-    hours: "Marque «Fechado» ou indique um ou dois turnos. Se o fecho for antes da abertura, entende-se que passa da meia-noite."
+    hours: "Ative os dias em que abre e indique um ou dois turnos. Se o fecho for antes da abertura, entende-se que passa da meia-noite."
 
 flash:
     name_required: O nome do restaurante é obrigatório.
@@ -75,6 +76,7 @@ flash:
     hero_image_warning_dimensions: Esta imagem é pequena e pode ficar desfocada em ecrãs grandes.
     hero_image_warning_portrait: É muito vertical e o hero vai cortar as laterais.
     saved: Configurações guardadas com sucesso.
+    section_saved: Secção guardada com sucesso.
     form_errors: "Verifique os campos assinalados."
     csrf_invalid: "A sessão expirou. Tente novamente."
 
@@ -85,8 +87,10 @@ toast:
 
 hours:
     closed: "Fechado"
-    shift1: "Turno 1"
-    shift2: "Turno 2"
+    open: "Aberto"
+    closed_aria: "%day%: fechado"
+    add_shift: "Adicionar turno"
+    remove_shift: "Remover turno"
     open_aria: "%day%, turno %n%, abertura"
     close_aria: "%day%, turno %n%, fecho"
     copy_monday: "Copiar segunda-feira para todos os dias"

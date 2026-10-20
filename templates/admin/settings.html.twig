@@ -47,32 +47,77 @@
         .field-error { font-size: var(--fs-sm); color: var(--err-text); line-height: var(--lh-body); }
 
         /* Contacto y redes */
-        .field-group { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-2); border-top: 1px solid var(--bd-1); }
-        .field-group-title { font-size: var(--fs-base); font-weight: 600; color: var(--tx-hi); padding-top: var(--sp-2); }
         .field label i { font-size: 16px; color: var(--tx-3); }
-        .hours { display: flex; flex-direction: column; gap: var(--sp-2); }
+        /* Horario — one bordered list, a row per day: name · switch · shifts */
+        .hours-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3); }
+        .hours-copy { flex-shrink: 0; display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 36px; white-space: nowrap; }
+        .hours { border: 1px solid var(--bd-1); border-radius: var(--r-md); overflow: hidden; background: var(--bg-input); }
         .hours-day {
-            display: flex; flex-direction: column; gap: var(--sp-2);
-            padding: var(--sp-3); border: 1px solid var(--bd-1); border-radius: var(--r-md); background: var(--bg-input);
+            display: grid; grid-template-columns: 6rem 7rem minmax(0, 1fr); align-items: center;
+            column-gap: var(--sp-3); row-gap: var(--sp-2); padding: var(--sp-3) var(--sp-4);
+            transition: background 0.15s;
         }
-        .hours-day.has-error { border-color: var(--err-border); }
-        .hours-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+        .hours-day + .hours-day { border-top: 1px solid var(--bd-1); }
+        .hours-day { min-height: 61px; }
+        .hours-day.has-error { box-shadow: inset 3px 0 0 var(--err-border); }
+        .hours-day .field-error { grid-column: 1 / -1; }
         .hours-name { font-size: var(--fs-base); font-weight: 600; color: var(--tx-hi); }
-        .hours-closed { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--tx-3); cursor: pointer; min-height: 32px; }
-        .hours-closed input { width: 18px; height: 18px; accent-color: var(--brand); }
-        .hours-shifts { display: flex; flex-direction: column; gap: var(--sp-2); }
+        .hours-day.is-closed .hours-name { color: var(--tx-3); }
+
+        /* Switch: the "closed" checkbox drawn inverted — track on = open. */
+        .hours-toggle { position: relative; display: inline-flex; align-items: center; gap: var(--sp-2); cursor: pointer; min-height: 36px; user-select: none; }
+        .hours-closed-input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+        .hours-switch {
+            position: relative; flex-shrink: 0; width: 36px; height: 20px; border-radius: var(--r-pill);
+            background: var(--brand); transition: background 0.15s;
+        }
+        .hours-switch::after {
+            content: ''; position: absolute; top: 2px; left: 18px; width: 16px; height: 16px; border-radius: 50%;
+            background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.3); transition: left 0.15s;
+        }
+        .hours-closed-input:checked + .hours-switch { background: var(--bd-2); }
+        .hours-closed-input:checked + .hours-switch::after { left: 2px; }
+        .hours-closed-input:focus-visible + .hours-switch { outline: 2px solid var(--brand); outline-offset: 2px; }
+        .hours-state { font-size: var(--fs-sm); color: var(--tx-3); }
+        .hours-state-open { color: var(--tx-hi); font-weight: 500; }
+        .hours-state-closed,
+        .hours-closed-input:checked ~ .hours-state-open { display: none; }
+        .hours-closed-input:checked ~ .hours-state-closed { display: inline; }
+
+        .hours-shifts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); min-width: 0; }
         .hours-day.is-closed .hours-shifts { display: none; }
-        .hours-shift { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--sp-2); }
-        .hours-shift-label { font-size: var(--fs-sm); color: var(--tx-3); }
-        .hours-sep { color: var(--tx-3); }
+        .hours-shift { display: inline-flex; align-items: center; gap: var(--sp-1); }
+        .hours-shift[hidden], .hours-add[hidden] { display: none; }
+        .hours-sep { color: var(--tx-3); padding: 0 2px; }
         .hours-shift input {
             background: var(--bg-card); border: 1px solid var(--bd-2); color: var(--tx-hi);
-            font-size: var(--fs-base); padding: var(--sp-2) var(--sp-3); border-radius: var(--r-sm);
-            width: 100%; min-width: 0; min-height: 40px; color-scheme: light dark;
+            font-size: var(--fs-base); font-variant-numeric: tabular-nums;
+            padding: 0 var(--sp-2); border-radius: var(--r-sm);
+            width: 6.25rem; min-height: 36px; color-scheme: light dark;
         }
+        .hours-shift input:hover { border-color: var(--tx-6); }
         .hours-shift input:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
         .hours-shift input[aria-invalid="true"] { border-color: var(--err-border); }
-        .hours-copy { align-self: flex-start; display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 40px; }
+        .hours-icon-btn, .hours-add {
+            display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-1);
+            background: transparent; border: 0; color: var(--tx-3); font: inherit; font-size: var(--fs-sm);
+            cursor: pointer; border-radius: var(--r-sm); min-height: 36px;
+        }
+        .hours-icon-btn { width: 32px; }
+        .hours-add { width: 32px; border: 1px dashed var(--bd-2); }
+        .hours-add-text { display: none; }
+        .hours-icon-btn:hover, .hours-add:hover { color: var(--tx-hi); background: var(--bg-hover); }
+        .hours-icon-btn:focus-visible, .hours-add:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+        @media (max-width: 600px) {
+            .hours-toolbar { flex-direction: column; }
+            .hours-day { grid-template-columns: minmax(0, 1fr) auto; padding: var(--sp-3); }
+            .hours-shifts { grid-column: 1 / -1; }
+            .hours-shift { flex: 1 1 100%; }
+            .hours-shift input { flex: 1; width: auto; min-width: 0; min-height: 40px; }
+            .hours-add { width: auto; padding: 0 var(--sp-3); }
+            .hours-add-text { display: inline; }
+        }
 
         /* Color picker */
         .color-wrap { display: flex; align-items: center; gap: var(--sp-3); }
@@ -216,8 +261,27 @@
         .copy-btn:hover { color: var(--tx-hi); border-color: var(--tx-6); }
         .copy-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
+        .implicit-submit { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+        /* Per-section save — secondary next to the footer's "save all" */
+        .section-save {
+            display: flex; justify-content: flex-end;
+            padding: var(--sp-3) var(--sp-5);
+            border-top: 1px solid var(--bd-1);
+        }
+        .section-save-btn {
+            display: inline-flex; align-items: center; gap: var(--sp-2);
+            padding: var(--sp-2) var(--sp-4); border-radius: var(--r-md);
+            font-size: var(--fs-base); font-weight: 600; cursor: pointer;
+            border: 1px solid rgba(193,68,14,0.45); background: transparent; color: #E0703F;
+            transition: background 0.15s;
+        }
+        .section-save-btn:hover { background: rgba(193,68,14,0.10); }
+        .section-save-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
         @media (max-width: 767px) {
             .settings-body { padding: var(--sp-4); gap: var(--sp-4); }
+            .section-save { padding: var(--sp-3) var(--sp-4); }
             .settings-footer { justify-content: stretch; }
             .save-btn { flex: 1; padding: var(--sp-3); font-size: var(--fs-lg); }
         }
@@ -236,9 +300,12 @@
 
         <form method="post" enctype="multipart/form-data">
             <input type="hidden" name="_token" value="{{ csrf_token('admin_settings') }}">
+            {# Enter in a field submits via the form's FIRST submit button; this
+               keeps that a full save instead of the first section's button. #}
+            <button type="submit" class="implicit-submit" tabindex="-1" aria-hidden="true"></button>
 
             {# ── Información del restaurante ── #}
-            <div class="settings-section">
+            <div class="settings-section" id="section-info">
                 <div class="settings-section-title">{{ 'section.restaurant_info'|trans({}, 'admin_settings') }}</div>
                 <div class="settings-body">
 
@@ -277,13 +344,18 @@
                     </div>
 
                 </div>
+                <div class="section-save">
+                    <button type="submit" name="section" value="info" class="section-save-btn">
+                        <i class="ti ti-device-floppy" aria-hidden="true"></i> {{ 'action.save_section'|trans({}, 'admin_settings') }}
+                    </button>
+                </div>
             </div>
 
-            {# ── Contacto y redes ── #}
+            {# ── Contacto ── #}
             {% set socialValues = old ? old.social : (restaurant.socialLinks ?? {}) %}
             {% set hoursValues = old ? old.hours : null %}
             {% set storedHours = restaurant.openingHours ?? {} %}
-            <div class="settings-section">
+            <div class="settings-section" id="section-contact">
                 <div class="settings-section-title">{{ 'section.contact'|trans({}, 'admin_settings') }}</div>
                 <div class="settings-body">
 
@@ -306,77 +378,16 @@
                         <span class="field-hint">{{ 'hint.phone'|trans({}, 'admin_settings') }}</span>
                     </div>
 
-                    <div class="field-group">
-                        <div class="field-group-title">{{ 'field.social'|trans({}, 'admin_settings') }}</div>
-                        <span class="field-hint">{{ 'hint.social'|trans({}, 'admin_settings') }}</span>
-                        {% for network, icon in {instagram: 'ti-brand-instagram', facebook: 'ti-brand-facebook', tiktok: 'ti-brand-tiktok', google: 'ti-brand-google', tripadvisor: 'ti-brand-tripadvisor', website: 'ti-world'} %}
-                            <div class="field">
-                                <label for="social-{{ network }}"><i class="ti {{ icon }}" aria-hidden="true"></i> {{ ('field.social_' ~ network)|trans({}, 'admin_settings') }}</label>
-                                <input type="text" id="social-{{ network }}" name="social[{{ network }}]" maxlength="255"
-                                       autocomplete="off" autocapitalize="off" spellcheck="false"
-                                       value="{{ socialValues[network] ?? '' }}"
-                                       placeholder="{{ ('field.social_' ~ network ~ '_placeholder')|trans({}, 'admin_settings') }}"
-                                       {{ fieldErr.attrs(errors, 'social_' ~ network) }}>
-                                {{ fieldErr.message(errors, 'social_' ~ network) }}
-                            </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="field-group">
-                        <div class="field-group-title" id="hours-title">{{ 'field.hours'|trans({}, 'admin_settings') }}</div>
-                        <span class="field-hint">{{ 'hint.hours'|trans({}, 'admin_settings') }}</span>
-                        <div class="hours" role="group" aria-labelledby="hours-title">
-                            {% for day in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] %}
-                                {% set dayName = ('day.' ~ day)|trans({}, 'admin_settings') %}
-                                {% if hoursValues is not null %}
-                                    {% set dayIn = hoursValues[day] ?? {} %}
-                                    {% set closed = dayIn.closed is defined and dayIn.closed %}
-                                    {% set shifts = [[dayIn[0].open ?? '', dayIn[0].close ?? ''], [dayIn[1].open ?? '', dayIn[1].close ?? '']] %}
-                                {% else %}
-                                    {% set closed = storedHours[day] is defined and storedHours[day] is empty %}
-                                    {% set stored = storedHours[day] ?? [] %}
-                                    {% set shifts = [stored[0] ?? ['', ''], stored[1] ?? ['', '']] %}
-                                {% endif %}
-                                <div class="hours-day{{ closed ? ' is-closed' : '' }}{{ errors['hours_' ~ day] is defined ? ' has-error' : '' }}" data-day="{{ day }}">
-                                    <div class="hours-head">
-                                        <span class="hours-name" id="hours-{{ day }}-name">{{ dayName }}</span>
-                                        <label class="hours-closed">
-                                            <input type="checkbox" name="hours[{{ day }}][closed]" value="1" {{ closed ? 'checked' : '' }}
-                                                   aria-describedby="hours-{{ day }}-name">
-                                            {{ 'hours.closed'|trans({}, 'admin_settings') }}
-                                        </label>
-                                    </div>
-                                    <div class="hours-shifts">
-                                        {% for i in 0..1 %}
-                                            {% set n = i + 1 %}
-                                            <div class="hours-shift">
-                                                <span class="hours-shift-label">{{ (i == 0 ? 'hours.shift1' : 'hours.shift2')|trans({}, 'admin_settings') }}</span>
-                                                <input type="time" step="60" name="hours[{{ day }}][{{ i }}][open]" value="{{ shifts[i][0] }}"
-                                                       aria-label="{{ 'hours.open_aria'|trans({'%day%': dayName, '%n%': n}, 'admin_settings') }}"
-                                                       {% if errors['hours_' ~ day] is defined %}aria-invalid="true" aria-describedby="err-hours_{{ day }}"{% endif %}
-                                                       {{ closed ? 'disabled' : '' }}>
-                                                <span class="hours-sep" aria-hidden="true">–</span>
-                                                <input type="time" step="60" name="hours[{{ day }}][{{ i }}][close]" value="{{ shifts[i][1] }}"
-                                                       aria-label="{{ 'hours.close_aria'|trans({'%day%': dayName, '%n%': n}, 'admin_settings') }}"
-                                                       {% if errors['hours_' ~ day] is defined %}aria-invalid="true" aria-describedby="err-hours_{{ day }}"{% endif %}
-                                                       {{ closed ? 'disabled' : '' }}>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                    {{ fieldErr.message(errors, 'hours_' ~ day) }}
-                                </div>
-                            {% endfor %}
-                        </div>
-                        <button type="button" class="copy-btn hours-copy" id="hours-copy-mon">
-                            <i class="ti ti-copy" aria-hidden="true"></i> {{ 'hours.copy_monday'|trans({}, 'admin_settings') }}
-                        </button>
-                    </div>
-
+                </div>
+                <div class="section-save">
+                    <button type="submit" name="section" value="contact" class="section-save-btn">
+                        <i class="ti ti-device-floppy" aria-hidden="true"></i> {{ 'action.save_section'|trans({}, 'admin_settings') }}
+                    </button>
                 </div>
             </div>
 
             {# ── Apariencia ── #}
-            <div class="settings-section">
+            <div class="settings-section" id="section-appearance">
                 <div class="settings-section-title">{{ 'section.appearance'|trans({}, 'admin_settings') }}</div>
                 <div class="settings-body">
 
@@ -495,10 +506,15 @@
                     </div>
 
                 </div>
+                <div class="section-save">
+                    <button type="submit" name="section" value="appearance" class="section-save-btn">
+                        <i class="ti ti-device-floppy" aria-hidden="true"></i> {{ 'action.save_section'|trans({}, 'admin_settings') }}
+                    </button>
+                </div>
             </div>
 
             {# ── Idioma y moneda ── #}
-            <div class="settings-section">
+            <div class="settings-section" id="section-language">
                 <div class="settings-section-title">{{ 'section.language_currency'|trans({}, 'admin_settings') }}</div>
                 <div class="settings-body">
 
@@ -548,6 +564,117 @@
                     </div>
 
                 </div>
+                <div class="section-save">
+                    <button type="submit" name="section" value="language" class="section-save-btn">
+                        <i class="ti ti-device-floppy" aria-hidden="true"></i> {{ 'action.save_section'|trans({}, 'admin_settings') }}
+                    </button>
+                </div>
+            </div>
+
+            {# ── Redes y reseñas ── #}
+            <div class="settings-section" id="section-social">
+                <div class="settings-section-title">{{ 'section.social'|trans({}, 'admin_settings') }}</div>
+                <div class="settings-body">
+
+                    <span class="field-hint">{{ 'hint.social'|trans({}, 'admin_settings') }}</span>
+                    {% for network, icon in {instagram: 'ti-brand-instagram', facebook: 'ti-brand-facebook', tiktok: 'ti-brand-tiktok', google: 'ti-brand-google', tripadvisor: 'ti-brand-tripadvisor', website: 'ti-world'} %}
+                        <div class="field">
+                            <label for="social-{{ network }}"><i class="ti {{ icon }}" aria-hidden="true"></i> {{ ('field.social_' ~ network)|trans({}, 'admin_settings') }}</label>
+                            <input type="text" id="social-{{ network }}" name="social[{{ network }}]" maxlength="255"
+                                   autocomplete="off" autocapitalize="off" spellcheck="false"
+                                   value="{{ socialValues[network] ?? '' }}"
+                                   placeholder="{{ ('field.social_' ~ network ~ '_placeholder')|trans({}, 'admin_settings') }}"
+                                   {{ fieldErr.attrs(errors, 'social_' ~ network) }}>
+                            {{ fieldErr.message(errors, 'social_' ~ network) }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+                <div class="section-save">
+                    <button type="submit" name="section" value="social" class="section-save-btn">
+                        <i class="ti ti-device-floppy" aria-hidden="true"></i> {{ 'action.save_section'|trans({}, 'admin_settings') }}
+                    </button>
+                </div>
+            </div>
+
+            {# ── Horario ── #}
+            <div class="settings-section" id="section-hours">
+                <div class="settings-section-title" id="hours-title">{{ 'section.hours'|trans({}, 'admin_settings') }}</div>
+                <div class="settings-body">
+
+                    <div class="hours-toolbar">
+                        <span class="field-hint">{{ 'hint.hours'|trans({}, 'admin_settings') }}</span>
+                        <button type="button" class="copy-btn hours-copy" id="hours-copy-mon">
+                            <i class="ti ti-copy" aria-hidden="true"></i> {{ 'hours.copy_monday'|trans({}, 'admin_settings') }}
+                        </button>
+                    </div>
+                    {# One row per day: name · switch · shifts. The switch IS the
+                       hours[day][closed] checkbox, drawn inverted (track "on" =
+                       open, i.e. unchecked) so the form contract is unchanged.
+                       Shift 2 stays hidden behind "+ Añadir turno" until it has
+                       a value (or an error); hidden inputs still post empty. #}
+                    <div class="hours" role="group" aria-labelledby="hours-title">
+                        {% for day in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] %}
+                            {% set dayName = ('day.' ~ day)|trans({}, 'admin_settings') %}
+                            {% set dayErr = errors['hours_' ~ day] is defined %}
+                            {% if hoursValues is not null %}
+                                {% set dayIn = hoursValues[day] ?? {} %}
+                                {% set closed = dayIn.closed is defined and dayIn.closed %}
+                                {% set shifts = [[dayIn[0].open ?? '', dayIn[0].close ?? ''], [dayIn[1].open ?? '', dayIn[1].close ?? '']] %}
+                            {% else %}
+                                {% set closed = storedHours[day] is defined and storedHours[day] is empty %}
+                                {% set stored = storedHours[day] ?? [] %}
+                                {% set shifts = [stored[0] ?? ['', ''], stored[1] ?? ['', '']] %}
+                            {% endif %}
+                            {% set showShift2 = shifts[1][0] != '' or shifts[1][1] != '' %}
+                            <div class="hours-day{{ closed ? ' is-closed' : '' }}{{ dayErr ? ' has-error' : '' }}" data-day="{{ day }}">
+                                <span class="hours-name" id="hours-{{ day }}-name">{{ dayName }}</span>
+                                <label class="hours-toggle">
+                                    <input type="checkbox" class="hours-closed-input" name="hours[{{ day }}][closed]" value="1" {{ closed ? 'checked' : '' }}
+                                           aria-label="{{ 'hours.closed_aria'|trans({'%day%': dayName}, 'admin_settings') }}">
+                                    <span class="hours-switch" aria-hidden="true"></span>
+                                    <span class="hours-state hours-state-open" aria-hidden="true">{{ 'hours.open'|trans({}, 'admin_settings') }}</span>
+                                    <span class="hours-state hours-state-closed" aria-hidden="true">{{ 'hours.closed'|trans({}, 'admin_settings') }}</span>
+                                </label>
+                                <div class="hours-shifts">
+                                    {% for i in 0..1 %}
+                                        {% set n = i + 1 %}
+                                        <div class="hours-shift"{% if i == 1 and not showShift2 %} hidden{% endif %}>
+                                            <input type="time" step="60" name="hours[{{ day }}][{{ i }}][open]" value="{{ shifts[i][0] }}"
+                                                   aria-label="{{ 'hours.open_aria'|trans({'%day%': dayName, '%n%': n}, 'admin_settings') }}"
+                                                   {% if dayErr %}aria-invalid="true" aria-describedby="err-hours_{{ day }}"{% endif %}
+                                                   {{ closed ? 'disabled' : '' }}>
+                                            <span class="hours-sep" aria-hidden="true">–</span>
+                                            <input type="time" step="60" name="hours[{{ day }}][{{ i }}][close]" value="{{ shifts[i][1] }}"
+                                                   aria-label="{{ 'hours.close_aria'|trans({'%day%': dayName, '%n%': n}, 'admin_settings') }}"
+                                                   {% if dayErr %}aria-invalid="true" aria-describedby="err-hours_{{ day }}"{% endif %}
+                                                   {{ closed ? 'disabled' : '' }}>
+                                            {% if i == 1 %}
+                                                <button type="button" class="hours-icon-btn hours-remove"
+                                                        title="{{ 'hours.remove_shift'|trans({}, 'admin_settings') }}"
+                                                        aria-label="{{ 'hours.remove_shift'|trans({}, 'admin_settings') }} · {{ dayName }}">
+                                                    <i class="ti ti-x" aria-hidden="true"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                    <button type="button" class="hours-add"{% if showShift2 %} hidden{% endif %}
+                                            title="{{ 'hours.add_shift'|trans({}, 'admin_settings') }}"
+                                            aria-label="{{ 'hours.add_shift'|trans({}, 'admin_settings') }} · {{ dayName }}">
+                                        <i class="ti ti-plus" aria-hidden="true"></i><span class="hours-add-text">{{ 'hours.add_shift'|trans({}, 'admin_settings') }}</span>
+                                    </button>
+                                </div>
+                                {{ fieldErr.message(errors, 'hours_' ~ day) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+                <div class="section-save">
+                    <button type="submit" name="section" value="hours" class="section-save-btn">
+                        <i class="ti ti-device-floppy" aria-hidden="true"></i> {{ 'action.save_section'|trans({}, 'admin_settings') }}
+                    </button>
+                </div>
             </div>
 
             <div class="settings-footer">
@@ -563,26 +690,42 @@
 
 {% block javascripts %}
     <script>
-        // ── Horario: "Cerrado" hides and disables that day's shifts (disabled
-        // inputs aren't submitted, so a closed day posts only its flag);
-        // "Copiar lunes" copies Monday's closed flag and times to every day. ──
+        // ── Horario: the switch is the "closed" checkbox — closing a day hides
+        // and disables its shifts (disabled inputs aren't submitted, so a closed
+        // day posts only its flag). "+ Añadir turno" reveals shift 2, ✕ clears
+        // and hides it again. "Copiar lunes" copies Monday's flag, times and
+        // shift-2 visibility to every other day. ──
         (function () {
             const days = Array.from(document.querySelectorAll('.hours-day'));
             if (!days.length) return;
+            const parts = dayEl => {
+                const shifts = dayEl.querySelectorAll('.hours-shift');
+                return { box: dayEl.querySelector('.hours-closed-input'), shift2: shifts[1], add: dayEl.querySelector('.hours-add') };
+            };
             const setClosed = (dayEl, closed) => {
                 dayEl.classList.toggle('is-closed', closed);
                 dayEl.querySelectorAll('input[type="time"]').forEach(i => { i.disabled = closed; });
             };
+            const setShift2 = (dayEl, show) => {
+                const { shift2, add } = parts(dayEl);
+                shift2.hidden = !show;
+                add.hidden = show;
+                if (!show) shift2.querySelectorAll('input').forEach(i => { i.value = ''; });
+            };
             days.forEach(dayEl => {
-                const box = dayEl.querySelector('.hours-closed input');
+                const { box, shift2, add } = parts(dayEl);
                 box.addEventListener('change', () => setClosed(dayEl, box.checked));
+                add.addEventListener('click', () => { setShift2(dayEl, true); shift2.querySelector('input').focus(); });
+                shift2.querySelector('.hours-remove').addEventListener('click', () => { setShift2(dayEl, false); add.focus(); });
             });
             document.getElementById('hours-copy-mon')?.addEventListener('click', () => {
                 const mon = days[0];
-                const monClosed = mon.querySelector('.hours-closed input').checked;
+                const monClosed = parts(mon).box.checked;
+                const monShift2 = !parts(mon).shift2.hidden;
                 const monTimes = Array.from(mon.querySelectorAll('input[type="time"]')).map(i => i.value);
                 days.slice(1).forEach(dayEl => {
-                    dayEl.querySelector('.hours-closed input').checked = monClosed;
+                    parts(dayEl).box.checked = monClosed;
+                    setShift2(dayEl, monShift2);
                     dayEl.querySelectorAll('input[type="time"]').forEach((i, idx) => { i.value = monTimes[idx] ?? ''; });
                     setClosed(dayEl, monClosed);
                 });
@@ -731,6 +874,9 @@
         // "Guardar cambios" click silently round-trip to the server just to
         // get the same warning back as a flash.
         document.querySelector('form[method="post"]').addEventListener('submit', function (e) {
+            // A per-section save outside Apariencia never sends the photo.
+            const section = e.submitter?.name === 'section' ? e.submitter.value : null;
+            if (section && section !== 'appearance') return;
             const warningBox = document.getElementById('hero-quality-warning');
             const confirmBox = document.getElementById('hero-quality-confirmed');
             if (warningBox && !warningBox.hidden && confirmBox && !confirmBox.checked) {

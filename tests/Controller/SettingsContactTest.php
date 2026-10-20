@@ -210,4 +210,72 @@ final class SettingsContactTest extends WebTestCase
         self::assertSame('Settings Contact Test', $restaurant->getName());
         self::assertNull($restaurant->getPhone());
     }
+
+    public function testSectionSaveOnlyStoresThatSection(): void
+    {
+        $this->post([
+            'section'         => 'contact',
+            'name'            => 'Nombre sin guardar',
+            'primaryColor'    => '#123456',
+            'currency'        => 'USD',
+            'phone'           => '+34 600 123 456',
+            'social'          => ['instagram' => '@davidtest'],
+        ]);
+
+        self::assertResponseRedirects('/admin/settings#section-contact');
+        $restaurant = $this->reload();
+        self::assertSame('+34 600 123 456', $restaurant->getPhone());
+        self::assertSame([], $restaurant->getSocialLinks() ?? [], 'social links have their own section');
+        self::assertSame('Settings Contact Test', $restaurant->getName(), 'other sections are left as they were');
+        self::assertSame('#000000', $restaurant->getPrimaryColor());
+        self::assertSame('EUR', $restaurant->getCurrency());
+    }
+
+    public function testSocialAndHoursAreSeparateSections(): void
+    {
+        $hours = ['mon' => [['open' => '13:00', 'close' => '16:00']]];
+
+        $this->post(['section' => 'social', 'phone' => '+34 600 123 456', 'social' => ['instagram' => '@davidtest'], 'hours' => $hours]);
+        self::assertResponseRedirects('/admin/settings#section-social');
+        $restaurant = $this->reload();
+        self::assertSame(['instagram' => 'https://www.instagram.com/davidtest/'], $restaurant->getSocialLinks());
+        self::assertNull($restaurant->getPhone());
+        self::assertEmpty($restaurant->getOpeningHours());
+
+        $this->post(['section' => 'hours', 'social' => ['instagram' => '@otro'], 'hours' => $hours]);
+        self::assertResponseRedirects('/admin/settings#section-hours');
+        $restaurant = $this->reload();
+        self::assertNotEmpty($restaurant->getOpeningHours());
+        self::assertSame(['instagram' => 'https://www.instagram.com/davidtest/'], $restaurant->getSocialLinks());
+    }
+
+    public function testSectionSaveIgnoresErrorsInOtherSections(): void
+    {
+        $this->post(['section' => 'language', 'name' => '', 'phone' => '12', 'currency' => 'USD']);
+
+        self::assertResponseRedirects('/admin/settings#section-language');
+        $restaurant = $this->reload();
+        self::assertSame('USD', $restaurant->getCurrency());
+        self::assertSame('Settings Contact Test', $restaurant->getName());
+        self::assertNull($restaurant->getPhone());
+    }
+
+    public function testSectionSaveStillReportsItsOwnErrors(): void
+    {
+        $this->post(['section' => 'info', 'name' => '   ', 'currency' => 'USD']);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame('El nombre del restaurante es obligatorio.', $this->client->getCrawler()->filter('#err-name')->text());
+        self::assertSame('EUR', $this->reload()->getCurrency());
+    }
+
+    public function testUnknownSectionSavesEverything(): void
+    {
+        $this->post(['section' => 'bogus', 'name' => 'Nuevo nombre', 'currency' => 'USD']);
+
+        self::assertResponseRedirects('/admin/settings');
+        $restaurant = $this->reload();
+        self::assertSame('Nuevo nombre', $restaurant->getName());
+        self::assertSame('USD', $restaurant->getCurrency());
+    }
 }

@@ -4,7 +4,9 @@ section:
     restaurant_info: Restaurant information
     appearance: Appearance
     language_currency: Language and currency
-    contact: "Contact & social"
+    contact: "Contact"
+    social: "Social & reviews"
+    hours: "Opening hours"
 
 field:
     name: Name
@@ -22,7 +24,6 @@ field:
     address_placeholder: "Street, number, city"
     phone: "Phone"
     phone_placeholder: "+44 20 7946 0958"
-    social: "Social & reviews"
     social_instagram: "Instagram"
     social_facebook: "Facebook"
     social_tiktok: "TikTok"
@@ -35,7 +36,6 @@ field:
     social_google_placeholder: "Google Maps or reviews link"
     social_tripadvisor_placeholder: "Link to your TripAdvisor page"
     social_website_placeholder: "www.yourrestaurant.com"
-    hours: "Opening hours"
 
 action:
     copy: Copy
@@ -47,6 +47,7 @@ action:
     remove_hero_image: Remove hero photo
     upload_anyway: Upload anyway
     save: Save changes
+    save_section: Save section
 
 hint:
     logo_format: 'PNG or JPG, max. 2 MB'
@@ -58,7 +59,7 @@ hint:
     currency: Prices are stored in this currency. Customers can see a live conversion.
     phone: "You can use +, spaces, hyphens and brackets."
     social: "Paste the link or type your username. Leave empty what you don't use."
-    hours: "Tick \"Closed\" or enter one or two shifts. A closing time earlier than the opening time runs past midnight."
+    hours: "Switch on the days you open and enter one or two shifts. A closing time earlier than the opening time runs past midnight."
 
 flash:
     name_required: The restaurant name is required.
@@ -75,6 +76,7 @@ flash:
     hero_image_warning_dimensions: This image is small and may look blurry on large screens.
     hero_image_warning_portrait: It's very vertical and the hero will crop the sides.
     saved: Settings saved successfully.
+    section_saved: Section saved successfully.
     form_errors: "Please check the highlighted fields."
     csrf_invalid: "Your session has expired. Please try again."
 
@@ -85,8 +87,10 @@ toast:
 
 hours:
     closed: "Closed"
-    shift1: "Shift 1"
-    shift2: "Shift 2"
+    open: "Open"
+    closed_aria: "%day%: closed"
+    add_shift: "Add shift"
+    remove_shift: "Remove shift"
     open_aria: "%day%, shift %n%, opening"
     close_aria: "%day%, shift %n%, closing"
     copy_monday: "Copy Monday to every day"

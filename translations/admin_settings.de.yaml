@@ -4,7 +4,9 @@ section:
     restaurant_info: Restaurantinformationen
     appearance: Erscheinungsbild
     language_currency: Sprache und Währung
-    contact: "Kontakt & soziale Netzwerke"
+    contact: "Kontakt"
+    social: "Netzwerke & Bewertungen"
+    hours: "Öffnungszeiten"
 
 field:
     name: Name
@@ -22,7 +24,6 @@ field:
     address_placeholder: "Straße, Hausnummer, Ort"
     phone: "Telefon"
     phone_placeholder: "+49 30 12345678"
-    social: "Netzwerke & Bewertungen"
     social_instagram: "Instagram"
     social_facebook: "Facebook"
     social_tiktok: "TikTok"
@@ -35,7 +36,6 @@ field:
     social_google_placeholder: "Link zu Google Maps oder Bewertungen"
     social_tripadvisor_placeholder: "Link zu Ihrer TripAdvisor-Seite"
     social_website_placeholder: "www.ihrrestaurant.de"
-    hours: "Öffnungszeiten"
 
 action:
     copy: Kopieren
@@ -47,6 +47,7 @@ action:
     remove_hero_image: Header-Foto entfernen
     upload_anyway: Trotzdem hochladen
     save: Änderungen speichern
+    save_section: Abschnitt speichern
 
 hint:
     logo_format: 'PNG oder JPG, max. 2 MB'
@@ -58,7 +59,7 @@ hint:
     currency: Preise werden in dieser Währung gespeichert. Kunden sehen die Umrechnung in Echtzeit.
     phone: "Sie können +, Leerzeichen, Bindestriche und Klammern verwenden."
     social: "Fügen Sie den Link ein oder geben Sie Ihren Benutzernamen ein. Lassen Sie Ungenutztes leer."
-    hours: "Markieren Sie „Geschlossen“ oder geben Sie ein oder zwei Zeiträume an. Liegt das Ende vor dem Beginn, geht es über Mitternacht."
+    hours: "Aktivieren Sie die Öffnungstage und geben Sie ein oder zwei Zeiträume an. Liegt das Ende vor dem Beginn, geht es über Mitternacht."
 
 flash:
     name_required: Der Restaurantname ist erforderlich.
@@ -75,6 +76,7 @@ flash:
     hero_image_warning_dimensions: Dieses Bild ist klein und könnte auf großen Bildschirmen unscharf wirken.
     hero_image_warning_portrait: Es ist sehr hochformatig — der Hero-Bereich schneidet die Seiten ab.
     saved: Einstellungen erfolgreich gespeichert.
+    section_saved: Abschnitt erfolgreich gespeichert.
     form_errors: "Bitte prüfen Sie die markierten Felder."
     csrf_invalid: "Ihre Sitzung ist abgelaufen. Bitte versuchen Sie es erneut."
 
@@ -85,8 +87,10 @@ toast:
 
 hours:
     closed: "Geschlossen"
-    shift1: "Zeit 1"
-    shift2: "Zeit 2"
+    open: "Geöffnet"
+    closed_aria: "%day%: geschlossen"
+    add_shift: "Zeitraum hinzufügen"
+    remove_shift: "Zeitraum entfernen"
     open_aria: "%day%, Zeitraum %n%, Öffnung"
     close_aria: "%day%, Zeitraum %n%, Schließung"
     copy_monday: "Montag auf alle Tage übertragen"
