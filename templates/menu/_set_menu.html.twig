@@ -47,12 +47,12 @@
             <div class="set-menu-price">{{ ltrOpen|raw }}{{ (category.convertedMenuPrice / 100)|menu_number(locale) }} {{ currencyDisplay }}{{ ltrClose|raw }}</div>
         </div>
         {% if category.menuDescription %}
-            <div class="set-menu-desc">{{ autoOpen|raw }}{{ category.menuDescription }}{{ autoClose|raw }}</div>
+            <div class="set-menu-desc">{{ owner_text(category.menuDescription, locale) }}</div>
         {% endif %}
         {% for entry in category.activeSectionsWithProducts %}
             {% if entry.products|length > 0 %}
                 <div class="set-menu-group">
-                    <div class="set-menu-group-label">{{ autoOpen|raw }}{{ entry.section.label }}{{ autoClose|raw }}</div>
+                    <div class="set-menu-group-label">{{ owner_text(entry.section.label, locale) }}</div>
                     {% for product in entry.products %}
                         {{ _self.dish_row(product, locale, restaurant, currencyDisplay, tagNames, productAllergens) }}
                     {% endfor %}

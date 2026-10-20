@@ -621,7 +621,7 @@
     <div class="hero-inner">
         {% if theme == 'maison' %}
             <div class="hero-name">{{ autoOpen|raw }}{{ restaurant.name }}{{ autoClose|raw }}</div>
-            {% if restaurant.tagline is defined and restaurant.tagline %}<p class="tagline">{{ autoOpen|raw }}{{ restaurant.tagline }}{{ autoClose|raw }}</p>{% endif %}
+            {% if restaurant.tagline is defined and restaurant.tagline %}<p class="tagline">{{ owner_text(restaurant.tagline, locale) }}</p>{% endif %}
             <a href="#cat-tabs" class="cta-explore"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> {{ 'hero.subtitle'|trans({}, 'menu_public', locale) }}</a>
             {# Chef's-recommendation banner — no DB field, no admin toggle:
                it exists only when at least one dish already carries the

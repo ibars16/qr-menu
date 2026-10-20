@@ -16,7 +16,7 @@
     <div class="ft-inner">
         <div class="ft-brand">
             <p class="ft-name">{{ autoOpen|raw }}{{ restaurant.name }}{{ autoClose|raw }}</p>
-            {% if ftHasAny and restaurant.tagline %}<p class="ft-tagline">{{ autoOpen|raw }}{{ restaurant.tagline }}{{ autoClose|raw }}</p>{% endif %}
+            {% if ftHasAny and restaurant.tagline %}<p class="ft-tagline">{{ owner_text(restaurant.tagline, locale) }}</p>{% endif %}
             {% if ftSocial is not empty %}
                 <div class="ft-block">
                     <h2 class="ft-label">{{ 'footer.follow'|trans({}, 'menu_public', locale) }}</h2>

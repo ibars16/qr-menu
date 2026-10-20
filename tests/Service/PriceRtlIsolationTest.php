@@ -10,9 +10,14 @@ use App\Entity\ProductPriceVariant;
 use App\Entity\ProductTranslation;
 use App\Entity\Restaurant;
 use App\Service\MenuNumberFormatter;
+use App\Repository\OwnerTextTranslationRepository;
 use App\Service\MenuPreferencesResolver;
+use App\Service\OwnerTextTranslationService;
+use App\Service\ProductTranslatorInterface;
 use App\Twig\MenuDirectionExtension;
 use App\Twig\MenuNumberExtension;
+use App\Twig\OwnerTextExtension;
+use Psr\Log\NullLogger;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Twig\Environment;
@@ -38,6 +43,16 @@ final class PriceRtlIsolationTest extends TestCase
         $this->twig = new Environment(new FilesystemLoader($projectDir . '/templates'));
         $this->twig->addExtension(new MenuNumberExtension(new MenuNumberFormatter()));
         $this->twig->addExtension(new MenuDirectionExtension(new MenuPreferencesResolver($projectDir)));
+        // owner_text() with nothing primed: no translations, no source
+        // locale — owner texts render as before (dir="auto" on RTL only).
+        $this->twig->addExtension(new OwnerTextExtension(
+            new OwnerTextTranslationService(
+                $this->createStub(OwnerTextTranslationRepository::class),
+                $this->createStub(ProductTranslatorInterface::class),
+                new NullLogger(),
+            ),
+            new MenuPreferencesResolver($projectDir),
+        ));
         $this->twig->addFunction(new TwigFunction('asset', static fn (string $path) => '/' . $path));
         $this->twig->addFilter(new TwigFilter('trans', static fn (string $id, array $params = [], ?string $domain = null, ?string $locale = null) => $id));
     }

@@ -1,8 +1,10 @@
 {% set dir = menu_dir(locale) -%}
-{#- Owner text that may stay untranslated (name, tagline, address…): on RTL
-    menus it's wrapped in <span dir="auto"> so a Spanish line keeps its own
-    direction (punctuation at its end) while the block keeps its
-    right-aligned layout. Empty on LTR menus. -#}
+{#- Owner data that is never translated (name, address, a set-menu dish's
+    fallback name…): on RTL menus it's wrapped in <span dir="auto"> so a
+    Spanish line keeps its own direction (punctuation at its end) while the
+    block keeps its right-aligned layout. Empty on LTR menus. Translatable
+    owner texts (tagline, price labels, set-menu description/sections) go
+    through owner_text() instead — see OwnerTextExtension. -#}
 {% set autoOpen = dir == 'rtl' ? '<span dir="auto">' : '' -%}
 {% set autoClose = autoOpen ? '</span>' : '' -%}
 <!DOCTYPE html>

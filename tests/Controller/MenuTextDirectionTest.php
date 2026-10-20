@@ -167,7 +167,9 @@ final class MenuTextDirectionTest extends WebTestCase
         self::assertSame($theme === 'maison', str_contains($html, 'family=Noto+Naskh+Arabic'), 'Naskh is maison-only');
         self::assertMatchesRegularExpression('#class="more-hint">[^<]*<i class="ti ti-chevron-left"#u', $html, '"Ver más" points the reading way');
         self::assertDoesNotMatchRegularExpression('#class="more-hint">[^<]*<i class="ti ti-chevron-right"#u', $html);
-        self::assertStringContainsString('<p class="ft-tagline"><span dir="auto">Cocina de mercado.</span></p>', $html);
+        // Not translated (nothing behind the loading screen ran): the
+        // original, marked as Spanish and with its own direction.
+        self::assertStringContainsString('<p class="ft-tagline"><span lang="es" dir="auto">Cocina de mercado.</span></p>', $html);
         self::assertStringContainsString('<span dir="auto">Calle Mayor 1, Madrid</span>', $html);
         if ($theme === 'maison') {
             self::assertStringContainsString('<span class="allergy-arrow" aria-hidden="true">←</span>', $html);

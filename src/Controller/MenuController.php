@@ -11,6 +11,7 @@ use App\Service\CategoryTranslationService;
 use App\Service\CategoryTypeFilterResolver;
 use App\Service\CurrencyConverter;
 use App\Service\MenuPreferencesResolver;
+use App\Service\OwnerTextTranslationService;
 use App\Service\ProductAllergenResolver;
 use App\Service\ProductTranslationService;
 use App\Service\TagTranslationService;
@@ -77,13 +78,14 @@ class MenuController extends AbstractController
         ProductAllergenResolver $allergenResolver,
         CategoryTypeFilterResolver $categoryTypeFilterResolver,
         TranslatorInterface $translator,
+        OwnerTextTranslationService $ownerTextTranslationService,
     ): Response {
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
             throw $this->createNotFoundException('Restaurante no encontrado.');
         }
 
-        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $productTranslationService, $categoryTranslationService, $productRepo, $productViewRepo, $menuPreferencesResolver, $allergenResolver, $categoryTypeFilterResolver, $translator);
+        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $productTranslationService, $categoryTranslationService, $productRepo, $productViewRepo, $menuPreferencesResolver, $allergenResolver, $categoryTypeFilterResolver, $translator, $ownerTextTranslationService);
     }
 
     // Backwards-compat redirect for QR codes already printed with the old table URL.
@@ -110,6 +112,7 @@ class MenuController extends AbstractController
         ProductTranslationService $productTranslationService,
         CategoryTranslationService $categoryTranslationService,
         MenuPreferencesResolver $menuPreferencesResolver,
+        OwnerTextTranslationService $ownerTextTranslationService,
     ): JsonResponse {
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
@@ -132,6 +135,9 @@ class MenuController extends AbstractController
             $restaurant->getCategories()->filter(fn($c) => $c->isActive())->toArray(),
             $locale
         );
+
+        // Last: one batch for every owner text still missing in $locale.
+        $ownerTextTranslationService->translateMissing($restaurant, $locale);
 
         return $this->json(['ok' => true]);
     }
@@ -215,6 +221,7 @@ class MenuController extends AbstractController
         ProductAllergenResolver $allergenResolver,
         CategoryTypeFilterResolver $categoryTypeFilterResolver,
         TranslatorInterface $translator,
+        OwnerTextTranslationService $ownerTextTranslationService,
     ): Response {
         $languages  = $menuPreferencesResolver->getLanguages();
         $currencies = $menuPreferencesResolver->getCurrencies();
@@ -255,7 +262,8 @@ class MenuController extends AbstractController
         if ($request->query->get('mtw') !== '1'
             && $locale !== $restaurant->getDefaultLanguage()
             && ($productRepo->hasAnyMissingTranslation($restaurant, $locale)
-                || $categoryTranslationService->hasAnyMissing($restaurant, $activeCategoriesForCheck, $locale, $cacheKeyPrefix))
+                || $categoryTranslationService->hasAnyMissing($restaurant, $activeCategoriesForCheck, $locale, $cacheKeyPrefix)
+                || $ownerTextTranslationService->hasAnyMissing($restaurant, $locale))
         ) {
             $nextParams        = $request->query->all();
             $nextParams['mtw'] = '1';
@@ -507,6 +515,12 @@ class MenuController extends AbstractController
                 static fn (array $row) => $row['views'] >= self::POPULAR_BADGE_MIN_VIEWS
             )
         ));
+
+        // Owner texts (tagline, price labels, set-menu description/sections):
+        // read their stored translations for owner_text() — never the AI
+        // here, even with ?mtw=1; translating happens only behind the
+        // loading screen (warmTranslations()).
+        $ownerTextTranslationService->primeForMenu($restaurant, $locale);
 
         return $this->render('menu/show.html.twig', [
             'restaurant'    => $restaurant,
