@@ -148,7 +148,7 @@ final class AIProviderFactory
     {
         return match ($entry['adapter']) {
             'gemini' => new GeminiAdapter($this->httpClient, $entry['id'], $entry['model'], $apiKey),
-            'openai_compatible' => new OpenAICompatibleAdapter($this->httpClient, $entry['id'], $entry['model'], $entry['base_url'], $apiKey),
+            'openai_compatible' => new OpenAICompatibleAdapter($this->httpClient, $entry['id'], $entry['model'], $entry['base_url'], $apiKey, $entry['extra_params'] ?? []),
             default => throw new \RuntimeException(sprintf('Unknown AI provider adapter "%s" for provider "%s"', $entry['adapter'], $entry['id'])),
         };
     }

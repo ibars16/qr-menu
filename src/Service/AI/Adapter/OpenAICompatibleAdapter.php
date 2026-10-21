@@ -16,6 +16,12 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * shape — OpenAI itself, Groq, OpenRouter, Mistral, DeepSeek, and anything
  * else compatible added later purely via config/ai_providers.yaml
  * (base_url + model + api_key_env). Nothing provider-specific lives in code.
+ *
+ * $extraParams is the entry's optional `extra_params` map, merged into the
+ * request body for parameters only one provider/model accepts (e.g. Groq's
+ * reasoning_effort for gpt-oss) — sending them to every provider of this
+ * adapter would get a 400 from the others. It can't override the core
+ * fields (model, messages, max_tokens, temperature).
  */
 final class OpenAICompatibleAdapter implements AIProviderInterface
 {
@@ -25,6 +31,7 @@ final class OpenAICompatibleAdapter implements AIProviderInterface
         private readonly string $model,
         private readonly string $baseUrl,
         private readonly string $apiKey,
+        private readonly array $extraParams = [],
     ) {}
 
     public function getId(): string
@@ -57,7 +64,7 @@ final class OpenAICompatibleAdapter implements AIProviderInterface
                     'messages' => $messages,
                     'max_tokens' => $request->maxTokens,
                     'temperature' => $request->temperature,
-                ],
+                ] + $this->extraParams,
                 'timeout' => 20,
             ]);
 

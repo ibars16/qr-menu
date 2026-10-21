@@ -18,6 +18,11 @@
 # only. Leave null (not 0) for a free provider — SmartWaiterExchangeLog
 # stores estimated_cost as null rather than guessing when this is unset.
 #
+# extra_params: optional map merged into the request body of an
+# openai_compatible provider — for a parameter only that provider/model
+# accepts (see groq-llama). Never overrides model/messages/max_tokens/
+# temperature.
+#
 # supports_vision: true marks a provider AIProviderFactory::
 # getAvailableVisionProviders() will include for menu-photo extraction
 # (see MenuVisionAnalyzer). Not a separate model or endpoint — Gemini's
@@ -59,10 +64,16 @@ providers:
     tier: fast
     priority: 2
     base_url: https://api.groq.com/openai/v1
-    model: llama-3.3-70b-versatile
+    model: openai/gpt-oss-120b
     api_key_env: GROQ_API_KEY
-    cost_per_1m_input: null
-    cost_per_1m_output: null
+    cost_per_1m_input: 0.15
+    cost_per_1m_output: 0.60
+    # gpt-oss is a reasoning model and max_tokens counts its reasoning too:
+    # at the default (medium) effort it can spend Smart Waiter's whole
+    # 600-token budget thinking and return no content. extra_params is
+    # merged into this provider's request body only.
+    extra_params:
+      reasoning_effort: low
 
   - id: openrouter-free
     adapter: openai_compatible
