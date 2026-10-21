@@ -61,6 +61,7 @@ final class AiTagTranslator
             $t->setTag($tag);
             $t->setLocale($locale);
             $t->setName(trim($result));
+            $t->setSource(ProductTagTranslation::SOURCE_AI);
             $this->em->persist($t);
         }
 

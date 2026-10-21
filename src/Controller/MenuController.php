@@ -113,6 +113,7 @@ class MenuController extends AbstractController
         CategoryTranslationService $categoryTranslationService,
         MenuPreferencesResolver $menuPreferencesResolver,
         OwnerTextTranslationService $ownerTextTranslationService,
+        TagTranslationService $tagTranslationService,
     ): JsonResponse {
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
@@ -135,6 +136,11 @@ class MenuController extends AbstractController
             $restaurant->getCategories()->filter(fn($c) => $c->isActive())->toArray(),
             $locale
         );
+
+        // Tags: one AI call for every tag still missing in $locale (bumps the
+        // menu content version when it translated something — tag names are
+        // read through the menu-content cache).
+        $tagTranslationService->translateMissing($restaurant, $locale);
 
         // Last: one batch for every owner text still missing in $locale.
         $ownerTextTranslationService->translateMissing($restaurant, $locale);
@@ -263,6 +269,7 @@ class MenuController extends AbstractController
             && $locale !== $restaurant->getDefaultLanguage()
             && ($productRepo->hasAnyMissingTranslation($restaurant, $locale)
                 || $categoryTranslationService->hasAnyMissing($restaurant, $activeCategoriesForCheck, $locale, $cacheKeyPrefix)
+                || $tagTranslationService->hasAnyMissing($restaurant, $locale, $cacheKeyPrefix)
                 || $ownerTextTranslationService->hasAnyMissing($restaurant, $locale))
         ) {
             $nextParams        = $request->query->all();
@@ -394,7 +401,7 @@ class MenuController extends AbstractController
         $productTranslationService->resolveForMenu($restaurant, $allProducts, $locale);
         $categoryTranslationService->resolveForMenu($restaurant, $allActiveCategories, $locale, $cacheKeyPrefix);
 
-        // Tags — sorted + resolved names (with lazy-dispatch fallback for missing locales),
+        // Tags — sorted + resolved names (default-language fallback for missing locales),
         // then pruned to the ones actually carried by a product on this menu — offering a
         // filter chip that can never match anything (e.g. "Halal" when no dish has it) is
         // worse than not offering it. One pass over $allProducts' already-warmed tags

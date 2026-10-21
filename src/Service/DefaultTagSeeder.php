@@ -50,6 +50,7 @@ final class DefaultTagSeeder
                 $translation->setTag($tag);
                 $translation->setLocale($locale);
                 $translation->setName($name);
+                $translation->setSource(ProductTagTranslation::SOURCE_PRESET);
                 $this->em->persist($translation);
             }
 
@@ -62,6 +63,7 @@ final class DefaultTagSeeder
                 $fallback->setTag($tag);
                 $fallback->setLocale($defaultLocale);
                 $fallback->setName($preset['translations']['en']);
+                $fallback->setSource(ProductTagTranslation::SOURCE_PRESET);
                 $this->em->persist($fallback);
             }
         }

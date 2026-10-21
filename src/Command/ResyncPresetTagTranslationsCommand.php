@@ -130,6 +130,7 @@ final class ResyncPresetTagTranslationsCommand extends Command
                         $this->em->persist($translation);
                     }
                     $translation->setName($newName);
+                    $translation->setSource(ProductTagTranslation::SOURCE_PRESET);
                 }
 
                 $updatedCount++;

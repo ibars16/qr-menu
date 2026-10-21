@@ -22,7 +22,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  * appear on ar and nowhere else. Every dish/category/tag is translated into
  * es and ar on purpose: a missing dish translation is filled by a real,
  * synchronous AI call during the render (ProductTranslationService), and a
- * missing tag one queues a TranslateTagsMessage. Two 'recommended' dishes
+ * missing tag sends a first visit through the loading screen. Two 'recommended' dishes
  * give maison its banner carousel; the tag also makes the filters button
  * render.
  */

@@ -101,8 +101,8 @@ class TagsController extends AbstractController
         $restaurant->bumpMenuContentVersion();
         $em->flush();
 
-        // Translations into other locales are generated lazily on first customer
-        // request via TagTranslationService — no upfront AI cost needed here.
+        // Translations into other locales are generated on the first visit in
+        // each language, behind the menu's loading screen (warm-translations).
 
         return $this->json([
             'id'       => $tag->getId(),
@@ -132,6 +132,7 @@ class TagsController extends AbstractController
 
         $locale = $tag->getRestaurant()->getDefaultLanguage();
         $t      = $tag->getTranslation($locale);
+        $renamed = $t === null || $t->getName() !== $name;
 
         if (!$t) {
             $t = new ProductTagTranslation();
@@ -140,6 +141,20 @@ class TagsController extends AbstractController
             $em->persist($t);
         }
         $t->setName($name);
+
+        // A real rename makes every generated translation (AI, or the preset
+        // wording of a system tag) describe the old name: drop them so the
+        // next loading screen in each language regenerates them from this
+        // one. The owner's own ('human') rows — this one included — stay.
+        if ($renamed) {
+            $t->setSource(ProductTagTranslation::SOURCE_HUMAN);
+            foreach ($tag->getTranslations()->toArray() as $translation) {
+                if (in_array($translation->getSource(), [ProductTagTranslation::SOURCE_AI, ProductTagTranslation::SOURCE_PRESET], true)) {
+                    $tag->removeTranslation($translation);
+                    $em->remove($translation);
+                }
+            }
+        }
         $tag->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
 
