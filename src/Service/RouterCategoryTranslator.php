@@ -63,6 +63,10 @@ final class RouterCategoryTranslator implements CategoryTranslatorInterface
      * catch fabricated/garbled/merged words. Keeps the first-pass result if
      * this second pass can't run at all.
      *
+     * Its answer is MERGED into the first pass, never substituted for it
+     * (same fix as the dish translator): a category the check omits or
+     * blanks keeps its first-pass name, and an id it invents is ignored.
+     *
      * @param array<int, string> $translated
      * @param array<int, string> $sourceNames
      * @return array<int, string>
@@ -90,9 +94,14 @@ final class RouterCategoryTranslator implements CategoryTranslatorInterface
             return $translated;
         }
 
-        $fixed = $this->parse($content);
+        $merged = $translated;
+        foreach ($this->parse($content) as $id => $name) {
+            if (isset($merged[$id])) {
+                $merged[$id] = $name; // parse() already dropped blank names
+            }
+        }
 
-        return !empty($fixed) ? $fixed : $translated;
+        return $merged;
     }
 
     /**

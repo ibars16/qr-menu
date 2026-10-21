@@ -84,6 +84,14 @@ final class RouterProductTranslator implements ProductTranslatorInterface
      * the first-pass translation is kept as-is rather than discarded — an
      * unverified translation still beats none.
      *
+     * Its answer is MERGED into the first pass, never substituted for it:
+     * despite the prompt, a model may return only the items it changed (or
+     * blank some), and replacing the whole result with that silently lost
+     * every other translation. Only an item the check returns with a
+     * non-empty name overrides its first-pass translation; anything it
+     * omits or leaves empty keeps the first pass (a blank description in a
+     * correction keeps the first-pass description too).
+     *
      * @param array<int, array{name: string, description: ?string}> $translated
      * @param array<int, array{name: string, description: ?string}> $sourceProducts
      * @return array<int, array{name: string, description: ?string}>
@@ -112,9 +120,18 @@ final class RouterProductTranslator implements ProductTranslatorInterface
             return $translated;
         }
 
-        $fixed = $this->parse($content);
+        $merged = $translated;
+        foreach ($this->parse($content) as $id => $pair) {
+            if (!isset($merged[$id]) || trim($pair['name']) === '') {
+                continue; // unknown id, or blanked by the check: keep the first pass
+            }
+            $merged[$id] = [
+                'name'        => $pair['name'],
+                'description' => $pair['description'] ?? $merged[$id]['description'],
+            ];
+        }
 
-        return !empty($fixed) ? $fixed : $translated;
+        return $merged;
     }
 
     /**
