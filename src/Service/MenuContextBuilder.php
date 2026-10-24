@@ -39,6 +39,7 @@ final class MenuContextBuilder
     public function __construct(
         private readonly ProductAllergenResolver $allergenResolver,
         private readonly CurrencyConverter $currencyConverter,
+        private readonly OwnerTextTranslationService $ownerTexts,
     ) {}
 
     /**
@@ -66,6 +67,14 @@ final class MenuContextBuilder
             }
         }
         $allergensByProduct = $this->allergenResolver->resolveForProducts($allProducts);
+        // Same ingredient names, in the same order, as the menu's dish detail.
+        // Every product of the active categories, not just $allProducts: a
+        // set-menu section filters its dishes by its own rules.
+        $ingredientDictionary = $this->ownerTexts->ingredientDictionary(
+            $restaurant,
+            $locale,
+            array_merge([], ...array_map(fn (Category $c) => $c->getProducts()->toArray(), array_values($categories))),
+        );
 
         $result = [
             'restaurant_name' => $restaurant->getName(),
@@ -83,7 +92,7 @@ final class MenuContextBuilder
                     $sections[] = [
                         'label' => $entry['section']->getLabel(),
                         'dishes' => array_map(
-                            fn (Product $p) => $this->buildProduct($p, $locale, $restaurant, $currency, $allergensByProduct[$p->getId()] ?? [], true),
+                            fn (Product $p) => $this->buildProduct($p, $locale, $restaurant, $currency, $allergensByProduct[$p->getId()] ?? [], $ingredientDictionary, true),
                             $entry['products']
                         ),
                     ];
@@ -116,7 +125,7 @@ final class MenuContextBuilder
                 'name' => $this->categoryName($category, $locale, $restaurant),
                 'type' => $category->getType()?->value,
                 'products' => array_map(
-                    fn (Product $p) => $this->buildProduct($p, $locale, $restaurant, $currency, $allergensByProduct[$p->getId()] ?? []),
+                    fn (Product $p) => $this->buildProduct($p, $locale, $restaurant, $currency, $allergensByProduct[$p->getId()] ?? [], $ingredientDictionary),
                     $products
                 ),
             ];
@@ -158,7 +167,7 @@ final class MenuContextBuilder
      *   'menu_price'), replaced by 'part_of_set_menu' + 'supplement' (only
      *   ever an extra charge on top of the menu price, never a full price).
      */
-    private function buildProduct(Product $product, string $locale, Restaurant $restaurant, string $currency, array $allergenEntries, bool $isSetMenuDish = false): array
+    private function buildProduct(Product $product, string $locale, Restaurant $restaurant, string $currency, array $allergenEntries, \Closure $ingredientDictionary, bool $isSetMenuDish = false): array
     {
         $translation = $product->getTranslation($locale)
             ?? $product->getTranslation($restaurant->getDefaultLanguage())
@@ -174,23 +183,7 @@ final class MenuContextBuilder
             $dietaryTags[] = $this->tagName($tag, $locale, $restaurant);
         }
 
-        $ingredientNames = [];
-        foreach ($product->getIngredients() as $ingredient) {
-            $t = $ingredient->getTranslation($locale)
-                ?? $ingredient->getTranslation($restaurant->getDefaultLanguage())
-                ?? $ingredient->getTranslation('en');
-            if ($t) {
-                $ingredientNames[] = $t->getName();
-            }
-        }
-        foreach ($product->getGlobalIngredients() as $globalIngredient) {
-            $t = $globalIngredient->getTranslation($locale)
-                ?? $globalIngredient->getTranslation($restaurant->getDefaultLanguage())
-                ?? $globalIngredient->getTranslation('en');
-            if ($t) {
-                $ingredientNames[] = $t->getName();
-            }
-        }
+        $ingredientNames = $product->getIngredientNames($locale, $restaurant->getDefaultLanguage(), $ingredientDictionary);
 
         $allergens = array_map(fn (array $entry) => [
             'name' => $this->allergenName($entry['allergen'], $locale, $restaurant),

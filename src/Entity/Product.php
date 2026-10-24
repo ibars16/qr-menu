@@ -825,27 +825,76 @@ class Product
      * English (the one language the global library always has), then to the
      * ingredient's raw code if it somehow has no translation at all.
      *
+     * $dictionary(sourceLocale, sourceText): ?string, when given, is asked
+     * for the AI translation of an ingredient with no native $locale name
+     * (see ingredientTranslationSource()) before falling back — the public
+     * menu and Smart Waiter pass OwnerTextTranslationService's. Display
+     * only: allergens never come from a name (ProductAllergenResolver works
+     * on ingredient ids).
+     *
+     * @param (\Closure(string, string): ?string)|null $dictionary
      * @return string[]
      */
-    public function getIngredientNames(string $locale, string $fallbackLocale): array
+    public function getIngredientNames(string $locale, string $fallbackLocale, ?\Closure $dictionary = null): array
+    {
+        $names = [];
+
+        foreach ($this->getOrderedIngredients() as $ing) {
+            $source = $dictionary !== null ? self::ingredientTranslationSource($ing, $locale, $fallbackLocale) : null;
+            $translated = $source !== null ? $dictionary($source[0], $source[1]) : null;
+            $t = $ing->getTranslation($locale) ?? $ing->getTranslation($fallbackLocale) ?? $ing->getTranslation('en');
+            $names[] = $translated ?? $t?->getName() ?? $ing->getCode();
+        }
+
+        return $names;
+    }
+
+    /**
+     * Both ingredient sources ($ingredientLinks and $globalIngredientLinks),
+     * merged by their shared position column.
+     *
+     * @return array<Ingredient|GlobalIngredient>
+     */
+    public function getOrderedIngredients(): array
     {
         $entries = [];
 
         foreach ($this->ingredientLinks as $link) {
-            $ing = $link->getIngredient();
-            $t = $ing->getTranslation($locale) ?? $ing->getTranslation($fallbackLocale) ?? $ing->getTranslation('en');
-            $entries[] = ['position' => $link->getPosition(), 'name' => $t?->getName() ?? $ing->getCode()];
+            $entries[] = ['position' => $link->getPosition(), 'ingredient' => $link->getIngredient()];
         }
 
         foreach ($this->globalIngredientLinks as $link) {
-            $gIng = $link->getGlobalIngredient();
-            $t = $gIng->getTranslation($locale) ?? $gIng->getTranslation($fallbackLocale) ?? $gIng->getTranslation('en');
-            $entries[] = ['position' => $link->getPosition(), 'name' => $t?->getName() ?? $gIng->getCode()];
+            $entries[] = ['position' => $link->getPosition(), 'ingredient' => $link->getGlobalIngredient()];
         }
 
         usort($entries, static fn (array $a, array $b) => $a['position'] <=> $b['position']);
 
-        return array_map(static fn (array $entry) => $entry['name'], $entries);
+        return array_map(static fn (array $entry) => $entry['ingredient'], $entries);
+    }
+
+    /**
+     * What an ingredient's AI translation into $locale is made from: null
+     * when it already has a native $locale name (never translated), else
+     * [sourceLocale, name] — its $defaultLocale name, or its English one
+     * when it has none (so an English-only ingredient is translated into
+     * the default language too). Null when there's nothing to translate from.
+     *
+     * @return array{0: string, 1: string}|null
+     */
+    public static function ingredientTranslationSource(Ingredient|GlobalIngredient $ingredient, string $locale, string $defaultLocale): ?array
+    {
+        if ($ingredient->getTranslation($locale) !== null) {
+            return null;
+        }
+
+        foreach ([$defaultLocale, 'en'] as $sourceLocale) {
+            $name = trim((string) $ingredient->getTranslation($sourceLocale)?->getName());
+            if ($name !== '') {
+                return [$sourceLocale, $name];
+            }
+        }
+
+        return null;
     }
 
     public function getTags(): Collection

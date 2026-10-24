@@ -17,6 +17,7 @@ use App\Service\ProductTranslatorInterface;
 use App\Twig\MenuDirectionExtension;
 use App\Twig\MenuNumberExtension;
 use App\Twig\OwnerTextExtension;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\NullLogger;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -50,6 +51,7 @@ final class PriceRtlIsolationTest extends TestCase
                 $this->createStub(OwnerTextTranslationRepository::class),
                 $this->createStub(ProductTranslatorInterface::class),
                 new NullLogger(),
+                $this->createStub(EntityManagerInterface::class),
             ),
             new MenuPreferencesResolver($projectDir),
         ));

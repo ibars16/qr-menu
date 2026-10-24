@@ -94,7 +94,7 @@
                         <div class="back-body">
                             <div class="bsec"><div class="bsec-title">{{ 'dish.name_label'|trans({}, 'menu_public', locale) }}</div><div class="back-desc" style="font-weight:600;font-size:13px;color:var(--bn)">{{ autoOpen|raw }}{{ pT.name }}{{ autoClose|raw }}</div></div>
                             {% if pT.description %}<div class="bsec"><div class="bsec-title">{{ 'dish.description'|trans({}, 'menu_public', locale) }}</div><div class="back-desc">{{ autoOpen|raw }}{{ pT.description }}{{ autoClose|raw }}</div></div>{% endif %}
-                            {% set ingredientNames = product.getIngredientNames(locale, restaurant.defaultLanguage) %}
+                            {% set ingredientNames = ingredient_names(product, locale, restaurant.defaultLanguage) %}
                             {% if ingredientNames|length > 0 %}
                                 <div class="bsec"><div class="bsec-title">{{ 'dish.ingredients'|trans({}, 'menu_public', locale) }}</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>
                             {% endif %}

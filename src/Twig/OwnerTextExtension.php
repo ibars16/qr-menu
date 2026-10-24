@@ -2,6 +2,7 @@
 
 namespace App\Twig;
 
+use App\Entity\Product;
 use App\Service\MenuPreferencesResolver;
 use App\Service\OwnerTextTranslationService;
 use Twig\Extension\AbstractExtension;
@@ -18,6 +19,11 @@ use Twig\TwigFunction;
  *   so a Spanish line keeps its own direction inside an Arabic page;
  * - plain, unwrapped, when $locale is the text's own language.
  * Never calls the AI.
+ *
+ * ingredient_names(product, locale, defaultLocale): the dish's ingredient
+ * names for the public menu — Product::getIngredientNames() with the primed
+ * menu's ingredient dictionary (a native name first, then its stored
+ * translation, then today's fallback).
  */
 class OwnerTextExtension extends AbstractExtension
 {
@@ -31,6 +37,7 @@ class OwnerTextExtension extends AbstractExtension
     {
         return [
             new TwigFunction('owner_text', [$this, 'ownerText']),
+            new TwigFunction('ingredient_names', [$this, 'ingredientNames']),
         ];
     }
 
@@ -58,5 +65,11 @@ class OwnerTextExtension extends AbstractExtension
         $escaped = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 
         return new Markup($attrs === '' ? $escaped : '<span' . $attrs . '>' . $escaped . '</span>', 'UTF-8');
+    }
+
+    /** @return string[] */
+    public function ingredientNames(Product $product, string $locale, string $defaultLocale): array
+    {
+        return $product->getIngredientNames($locale, $defaultLocale, $this->ownerTexts->primedIngredientDictionary());
     }
 }

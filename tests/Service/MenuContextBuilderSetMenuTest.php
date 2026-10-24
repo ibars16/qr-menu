@@ -10,12 +10,16 @@ use App\Entity\ProductTranslation;
 use App\Entity\Restaurant;
 use App\Repository\AllergenRepository;
 use App\Repository\ExchangeRateRepository;
+use App\Repository\OwnerTextTranslationRepository;
 use App\Service\CurrencyConverter;
 use App\Service\MenuContextBuilder;
+use App\Service\OwnerTextTranslationService;
 use App\Service\ProductAllergenResolver;
+use App\Service\ProductTranslatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Log\NullLogger;
 
 /**
  * Covers the Smart Waiter data shape for fixed-price ("set") menu
@@ -104,7 +108,14 @@ final class MenuContextBuilderSetMenuTest extends TestCase
         );
         $currencyConverter = new CurrencyConverter($this->createStub(ExchangeRateRepository::class));
 
-        return new MenuContextBuilder($allergenResolver, $currencyConverter);
+        $ownerTexts = new OwnerTextTranslationService(
+            $this->createStub(OwnerTextTranslationRepository::class),
+            $this->createStub(ProductTranslatorInterface::class),
+            new NullLogger(),
+            $this->createStub(EntityManagerInterface::class),
+        );
+
+        return new MenuContextBuilder($allergenResolver, $currencyConverter, $ownerTexts);
     }
 
     public function testSetMenuCategoryEmitsMenuPriceAndDescriptionInsteadOfProducts(): void

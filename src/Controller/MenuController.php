@@ -142,7 +142,9 @@ class MenuController extends AbstractController
         // read through the menu-content cache).
         $tagTranslationService->translateMissing($restaurant, $locale);
 
-        // Last: one batch for every owner text still missing in $locale.
+        // Last: one batch for every owner text and ingredient name still
+        // missing in $locale (bumps the menu content version when it stored
+        // something).
         $ownerTextTranslationService->translateMissing($restaurant, $locale);
 
         return $this->json(['ok' => true]);
@@ -265,11 +267,14 @@ class MenuController extends AbstractController
         // marks that this page already took that detour, so a slow/failed
         // attempt can only ever cause one extra hop, never a redirect loop —
         // the retried load below just renders with whatever's cached).
+        // Owner texts sit outside the default-language check: an ingredient
+        // with only an English name is translated into the default language
+        // too (see OwnerTextTranslationService).
         if ($request->query->get('mtw') !== '1'
-            && $locale !== $restaurant->getDefaultLanguage()
-            && ($productRepo->hasAnyMissingTranslation($restaurant, $locale)
-                || $categoryTranslationService->hasAnyMissing($restaurant, $activeCategoriesForCheck, $locale, $cacheKeyPrefix)
-                || $tagTranslationService->hasAnyMissing($restaurant, $locale, $cacheKeyPrefix)
+            && (($locale !== $restaurant->getDefaultLanguage()
+                    && ($productRepo->hasAnyMissingTranslation($restaurant, $locale)
+                        || $categoryTranslationService->hasAnyMissing($restaurant, $activeCategoriesForCheck, $locale, $cacheKeyPrefix)
+                        || $tagTranslationService->hasAnyMissing($restaurant, $locale, $cacheKeyPrefix)))
                 || $ownerTextTranslationService->hasAnyMissing($restaurant, $locale))
         ) {
             $nextParams        = $request->query->all();
@@ -523,8 +528,9 @@ class MenuController extends AbstractController
             )
         ));
 
-        // Owner texts (tagline, price labels, set-menu description/sections):
-        // read their stored translations for owner_text() — never the AI
+        // Owner texts (tagline, price labels, set-menu description/sections)
+        // and ingredient names: read their stored translations for
+        // owner_text() / ingredient_names() — never the AI
         // here, even with ?mtw=1; translating happens only behind the
         // loading screen (warmTranslations()).
         $ownerTextTranslationService->primeForMenu($restaurant, $locale);
