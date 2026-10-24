@@ -48,8 +48,7 @@ final class GeminiVisionAdapter implements MenuVisionAnalyzer
                 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent',
                 $this->model,
             ), [
-                'query' => ['key' => $this->apiKey],
-                'headers' => ['Content-Type' => 'application/json'],
+                'headers' => ['Content-Type' => 'application/json', 'x-goog-api-key' => $this->apiKey],
                 'json' => [
                     'systemInstruction' => ['parts' => [['text' => $instructions]]],
                     'contents' => [

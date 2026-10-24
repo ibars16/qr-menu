@@ -43,8 +43,7 @@ final class GeminiIngredientTranslator implements IngredientTranslatorInterface
             . "\n\nNames: {$list}";
 
         $response = $this->httpClient->request('POST', self::ENDPOINT, [
-            'query'   => ['key' => $this->geminiApiKey],
-            'headers' => ['Content-Type' => 'application/json'],
+            'headers' => ['Content-Type' => 'application/json', 'x-goog-api-key' => $this->geminiApiKey],
             'json'    => [
                 'contents' => [
                     ['parts' => [['text' => $prompt]]],
