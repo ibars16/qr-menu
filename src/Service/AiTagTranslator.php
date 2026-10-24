@@ -24,7 +24,7 @@ final class AiTagTranslator
 
     /**
      * Finds all tags for the restaurant that lack a translation in $locale,
-     * generates them in a single batch API call, and persists the results.
+     * generates them in one batch (plus its check pass), and persists the results.
      */
     public function translateMissing(Restaurant $restaurant, string $locale): void
     {
@@ -44,8 +44,7 @@ final class AiTagTranslator
         $translated = $this->translator->translate($names, $locale);
 
         foreach ($missing as $tag) {
-            $sourceName = $names[$tag->getId()] ?? null;
-            $result     = $translated[$sourceName] ?? null;
+            $result = $translated[$tag->getId()] ?? null;
 
             if ($result === null || trim($result) === '') {
                 continue;

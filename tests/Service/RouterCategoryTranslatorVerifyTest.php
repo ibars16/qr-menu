@@ -5,6 +5,7 @@ namespace App\Tests\Service;
 use App\Service\AI\AIModelRouter;
 use App\Service\AI\AIProviderFactory;
 use App\Service\RouterCategoryTranslator;
+use App\Service\RouterLabelTranslator;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -67,7 +68,7 @@ final class RouterCategoryTranslatorVerifyTest extends TestCase
         });
         $factory = new AIProviderFactory($http, dirname(__DIR__, 2));
 
-        return new RouterCategoryTranslator(new AIModelRouter($factory, new NullLogger()), $factory, new NullLogger());
+        return new RouterCategoryTranslator(new RouterLabelTranslator(new AIModelRouter($factory, new NullLogger()), $factory, new NullLogger()));
     }
 
     public function testACheckThatReturnsOnlyOneOfThreeKeepsTheOtherTwo(): void

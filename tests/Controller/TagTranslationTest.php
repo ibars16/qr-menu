@@ -51,8 +51,8 @@ final class TagTranslationTest extends WebTestCase
             {
                 $this->calls[] = ['names' => array_values($names), 'locale' => $targetLocale];
                 $out = [];
-                foreach ($names as $name) {
-                    $out[$name] = "[{$targetLocale}] {$name}";
+                foreach ($names as $id => $name) {
+                    $out[$id] = "[{$targetLocale}] {$name}";
                 }
 
                 return $out;
