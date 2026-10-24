@@ -47,7 +47,7 @@ final class TagTranslationTest extends WebTestCase
             /** @var list<array{names: list<string>, locale: string}> */
             public array $calls = [];
 
-            public function translate(array $names, string $targetLocale): array
+            public function translate(array $names, string $targetLocale, array $sourceLocales = []): array
             {
                 $this->calls[] = ['names' => array_values($names), 'locale' => $targetLocale];
                 $out = [];
@@ -61,7 +61,7 @@ final class TagTranslationTest extends WebTestCase
         $this->fakeDishAi = new class implements ProductTranslatorInterface {
             public int $calls = 0;
 
-            public function translate(array $products, string $targetLocale): array
+            public function translate(array $products, string $targetLocale, array $sourceLocales = []): array
             {
                 ++$this->calls;
 

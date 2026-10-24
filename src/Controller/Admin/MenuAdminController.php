@@ -1024,7 +1024,9 @@ class MenuAdminController extends AbstractController
             // unique_product_ingredient / unique_product_global_ingredient.
             $em->flush();
 
-            $adminLocale          = $request->getLocale();
+            // A typed name is the restaurant's content, written in the menu's
+            // language — never the admin UI's (same as MenuImportAssembler).
+            $contentLocale        = $restaurant->getDefaultLanguage();
             $ingredientRepo       = $em->getRepository(Ingredient::class);
             $globalIngredientRepo = $em->getRepository(GlobalIngredient::class);
             $position             = 0;
@@ -1053,14 +1055,14 @@ class MenuAdminController extends AbstractController
                     if (!$name) continue;
 
                     // 1) The same ingredient concept may already exist for
-                    //    this restaurant under a different admin locale —
-                    //    reuse it rather than creating a duplicate.
+                    //    this restaurant under another locale — reuse it
+                    //    rather than creating a duplicate.
                     $ingredient = $ingredientRepo->findExistingByNameAnyLocale($restaurant, $name);
                     if ($ingredient) {
-                        if (!$ingredient->getTranslation($adminLocale)) {
+                        if (!$ingredient->getTranslation($contentLocale)) {
                             $ingT = new IngredientTranslation();
                             $ingT->setIngredient($ingredient);
-                            $ingT->setLocale($adminLocale);
+                            $ingT->setLocale($contentLocale);
                             $ingT->setName($name);
                             $ingredient->addTranslation($ingT);
                             $em->persist($ingT);
@@ -1087,7 +1089,7 @@ class MenuAdminController extends AbstractController
 
                     $ingT = new IngredientTranslation();
                     $ingT->setIngredient($ingredient);
-                    $ingT->setLocale($adminLocale);
+                    $ingT->setLocale($contentLocale);
                     $ingT->setName($name);
                     $ingredient->addTranslation($ingT);
                     $em->persist($ingT);

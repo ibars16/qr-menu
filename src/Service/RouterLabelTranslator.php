@@ -33,9 +33,11 @@ final class RouterLabelTranslator
      * @param  string             $verifyPrompt     system prompt for the check pass
      *                                              (items: {"id", "source_name", "translated_name"})
      * @param  string             $payloadLabel     e.g. "Categories" — prefixes the JSON item list
+     * @param  array<int, string> $sourceLocales    id → ISO 639-1 code the name is written in,
+     *                                              sent as each item's "source_locale"
      * @return array<int, string>                id → translated name
      */
-    public function translate(array $names, string $translatePrompt, string $verifyPrompt, string $payloadLabel, int $maxTokens = 1024): array
+    public function translate(array $names, string $translatePrompt, string $verifyPrompt, string $payloadLabel, int $maxTokens = 1024, array $sourceLocales = []): array
     {
         if (empty($names)) {
             return [];
@@ -43,7 +45,11 @@ final class RouterLabelTranslator
 
         $items = [];
         foreach ($names as $id => $name) {
-            $items[] = ['id' => (string) $id, 'name' => $name];
+            $item = ['id' => (string) $id, 'name' => $name];
+            if (isset($sourceLocales[$id])) {
+                $item['source_locale'] = $sourceLocales[$id];
+            }
+            $items[] = $item;
         }
         $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
 
@@ -57,7 +63,7 @@ final class RouterLabelTranslator
             return [];
         }
 
-        return $this->verifyAndFix($translated, $names, $verifyPrompt, $payloadLabel, $maxTokens);
+        return $this->verifyAndFix($translated, $names, $verifyPrompt, $payloadLabel, $maxTokens, $sourceLocales);
     }
 
     /**
@@ -72,17 +78,22 @@ final class RouterLabelTranslator
      *
      * @param array<int, string> $translated
      * @param array<int, string> $sourceNames
+     * @param array<int, string> $sourceLocales
      * @return array<int, string>
      */
-    private function verifyAndFix(array $translated, array $sourceNames, string $verifyPrompt, string $payloadLabel, int $maxTokens): array
+    private function verifyAndFix(array $translated, array $sourceNames, string $verifyPrompt, string $payloadLabel, int $maxTokens, array $sourceLocales): array
     {
         $items = [];
         foreach ($translated as $id => $name) {
-            $items[] = [
+            $item = [
                 'id'               => (string) $id,
                 'source_name'      => $sourceNames[$id] ?? '',
                 'translated_name'  => $name,
             ];
+            if (isset($sourceLocales[$id])) {
+                $item['source_locale'] = $sourceLocales[$id];
+            }
+            $items[] = $item;
         }
         $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
 

@@ -15,7 +15,9 @@ interface CategoryTranslatorInterface
      *
      * @param  array<int, string> $names  map of [categoryId => sourceName]
      * @param  string             $targetLocale  ISO 639-1 language code
+     * @param  array<int, string> $sourceLocales  map of [categoryId => ISO 639-1 code
+     *                                            the source name is written in]
      * @return array<int, string>  map of [categoryId => translatedName]
      */
-    public function translate(array $names, string $targetLocale): array;
+    public function translate(array $names, string $targetLocale, array $sourceLocales = []): array;
 }

@@ -32,14 +32,13 @@ final class AiCategoryTranslator
             return;
         }
 
-        $defaultLocale = $restaurant->getDefaultLanguage();
-        $names         = $this->buildNameMap($missing, $defaultLocale);
+        [$names, $sourceLocales] = $this->buildNameMap($missing, $restaurant->getDefaultLanguage(), $locale);
 
         if (empty($names)) {
             return;
         }
 
-        $translated = $this->translator->translate($names, $locale);
+        $translated = $this->translator->translate($names, $locale, $sourceLocales);
 
         foreach ($missing as $category) {
             $result = $translated[$category->getId()] ?? null;
@@ -77,18 +76,23 @@ final class AiCategoryTranslator
     }
 
     /**
+     * Source name per category — see TranslationSource::pick() — with its
+     * real language.
+     *
      * @param  Category[] $categories
-     * @return array<int, string>  categoryId → source name
+     * @return array{0: array<int, string>, 1: array<int, string>}  [categoryId → source name, categoryId → source locale]
      */
-    private function buildNameMap(array $categories, string $defaultLocale): array
+    private function buildNameMap(array $categories, string $defaultLocale, string $targetLocale): array
     {
-        $map = [];
+        $map     = [];
+        $locales = [];
         foreach ($categories as $category) {
-            $source = $category->getTranslation($defaultLocale);
-            if ($source !== null && trim($source->getName()) !== '') {
-                $map[$category->getId()] = $source->getName();
+            $source = TranslationSource::pick($category->getTranslations(), $defaultLocale, $targetLocale);
+            if ($source !== null) {
+                $map[$category->getId()]     = $source->getName();
+                $locales[$category->getId()] = $source->getLocale();
             }
         }
-        return $map;
+        return [$map, $locales];
     }
 }

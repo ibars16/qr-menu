@@ -42,8 +42,12 @@ final class CategoryTranslationService
         // categories' translations right after this call returns.
         $this->categoryRepository->warmTranslations($categories, $cacheKeyPrefix);
 
+        // Only a category with something to translate from counts — see
+        // TranslationSource; one with none would loop the loading screen.
         foreach ($categories as $category) {
-            if ($category->getTranslation($locale) === null) {
+            if ($category->getTranslation($locale) === null
+                && TranslationSource::pick($category->getTranslations(), $restaurant->getDefaultLanguage(), $locale) !== null
+            ) {
                 return true;
             }
         }

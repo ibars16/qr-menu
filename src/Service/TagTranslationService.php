@@ -26,8 +26,8 @@ final class TagTranslationService
     ) {}
 
     /**
-     * True when $locale isn't the default language and a tag that HAS a
-     * default-language name (i.e. can be translated) has no $locale one yet.
+     * True when $locale isn't the default language and a tag that can be
+     * translated (has a source — see TranslationSource) has no $locale name yet.
      */
     public function hasAnyMissing(Restaurant $restaurant, string $locale, ?string $cacheKeyPrefix = null): bool
     {
@@ -38,7 +38,9 @@ final class TagTranslationService
 
         $this->productTagRepository->warmTranslations($restaurant->getProductTags()->toArray(), $cacheKeyPrefix);
         foreach ($restaurant->getProductTags() as $tag) {
-            if ($tag->getTranslation($defaultLocale) !== null && $tag->getTranslation($locale) === null) {
+            if ($tag->getTranslation($locale) === null
+                && TranslationSource::pick($tag->getTranslations(), $defaultLocale, $locale) !== null
+            ) {
                 return true;
             }
         }

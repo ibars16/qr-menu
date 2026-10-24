@@ -169,9 +169,11 @@ final class MenuContextBuilder
      */
     private function buildProduct(Product $product, string $locale, Restaurant $restaurant, string $currency, array $allergenEntries, \Closure $ingredientDictionary, bool $isSetMenuDish = false): array
     {
+        // Same fallback as the menu (show.html.twig / _set_menu.html.twig):
+        // locale, default language, then whatever translation it has.
         $translation = $product->getTranslation($locale)
             ?? $product->getTranslation($restaurant->getDefaultLanguage())
-            ?? $product->getTranslation('en');
+            ?? ($product->getTranslations()->first() ?: null);
 
         $dietaryTags = [];
         $highlighted = [];
@@ -235,9 +237,10 @@ final class MenuContextBuilder
 
     private function categoryName(Category $category, string $locale, Restaurant $restaurant): string
     {
+        // Same fallback as the menu's section headings (show.html.twig).
         $t = $category->getTranslation($locale)
             ?? $category->getTranslation($restaurant->getDefaultLanguage())
-            ?? $category->getTranslation('en');
+            ?? ($category->getTranslations()->first() ?: null);
 
         return $t?->getName() ?? '';
     }

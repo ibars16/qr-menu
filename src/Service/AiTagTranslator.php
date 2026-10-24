@@ -34,14 +34,13 @@ final class AiTagTranslator
             return;
         }
 
-        $defaultLocale = $restaurant->getDefaultLanguage();
-        $names         = $this->buildNameMap($missing, $defaultLocale);
+        [$names, $sourceLocales] = $this->buildNameMap($missing, $restaurant->getDefaultLanguage(), $locale);
 
         if (empty($names)) {
             return;
         }
 
-        $translated = $this->translator->translate($names, $locale);
+        $translated = $this->translator->translate($names, $locale, $sourceLocales);
 
         foreach ($missing as $tag) {
             $result = $translated[$tag->getId()] ?? null;
@@ -80,17 +79,22 @@ final class AiTagTranslator
     }
 
     /**
-     * @return array<int, string>  tagId → source name
+     * Source name per tag — see TranslationSource::pick() — with its real
+     * language.
+     *
+     * @return array{0: array<int, string>, 1: array<int, string>}  [tagId → source name, tagId → source locale]
      */
-    private function buildNameMap(array $tags, string $defaultLocale): array
+    private function buildNameMap(array $tags, string $defaultLocale, string $targetLocale): array
     {
-        $map = [];
+        $map     = [];
+        $locales = [];
         foreach ($tags as $tag) {
-            $source = $tag->getTranslation($defaultLocale);
+            $source = TranslationSource::pick($tag->getTranslations(), $defaultLocale, $targetLocale);
             if ($source !== null) {
-                $map[$tag->getId()] = $source->getName();
+                $map[$tag->getId()]     = $source->getName();
+                $locales[$tag->getId()] = $source->getLocale();
             }
         }
-        return $map;
+        return [$map, $locales];
     }
 }

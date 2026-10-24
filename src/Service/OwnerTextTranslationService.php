@@ -129,13 +129,15 @@ final class OwnerTextTranslationService implements ResetInterface
             return;
         }
 
-        $source = [];
-        foreach ($missing as $i => [, $text]) {
-            $source[$i] = ['name' => $text, 'description' => null];
+        $source        = [];
+        $sourceLocales = [];
+        foreach ($missing as $i => [$sourceLocale, $text]) {
+            $source[$i]        = ['name' => $text, 'description' => null];
+            $sourceLocales[$i] = $sourceLocale;
         }
 
         try {
-            $translated = $this->translator->translate($source, $locale);
+            $translated = $this->translator->translate($source, $locale, $sourceLocales);
         } catch (\Throwable $e) {
             $this->logger->warning('Owner text translation failed; originals are shown meanwhile.', [
                 'restaurantId' => $restaurant->getId(),

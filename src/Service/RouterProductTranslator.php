@@ -23,7 +23,7 @@ use Psr\Log\LoggerInterface;
  * into one non-word ("ibericogris"), or an outright fabricated word
  * ("klippektoppektopus" for "rock octopus"). translate() always runs a
  * second pass afterwards (verifyAndFix()) that shows the same model its own
- * output next to the Spanish source and asks it to catch and correct
+ * output next to the source text and asks it to catch and correct
  * exactly that kind of error. No human ever sees or fixes this — it's part
  * of the one-time-per-locale warm-up (see ProductTranslationService), so
  * paying for a second AI call there is a one-off cost, forever, same
@@ -31,7 +31,9 @@ use Psr\Log\LoggerInterface;
  *
  * Sends every dish missing a given locale in a single API call, keyed by
  * product ID (not by name text) so identically-named dishes with different
- * descriptions never collide.
+ * descriptions never collide. Each item carries the language its text is
+ * written in ("source_locale") — never assumed to be Spanish, and a batch
+ * may mix languages (OwnerTextTranslationService's owner texts + ingredients).
  */
 final class RouterProductTranslator implements ProductTranslatorInterface
 {
@@ -41,7 +43,7 @@ final class RouterProductTranslator implements ProductTranslatorInterface
         private readonly LoggerInterface   $logger,
     ) {}
 
-    public function translate(array $products, string $targetLocale): array
+    public function translate(array $products, string $targetLocale, array $sourceLocales = []): array
     {
         if (empty($products)) {
             return [];
@@ -49,16 +51,21 @@ final class RouterProductTranslator implements ProductTranslatorInterface
 
         $items = [];
         foreach ($products as $id => $p) {
-            $items[] = [
+            $item = [
                 'id'          => (string) $id,
                 'name'        => $p['name'],
                 'description' => $p['description'] ?? '',
             ];
+            if (isset($sourceLocales[$id])) {
+                $item['source_locale'] = $sourceLocales[$id];
+            }
+            $items[] = $item;
         }
         $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
 
         $systemPrompt = 'You are a restaurant menu translator. '
             . "Translate the \"name\" and \"description\" of each dish below into the language with ISO 639-1 code \"{$targetLocale}\". "
+            . 'Each dish is written in the language whose ISO 639-1 code is its "source_locale" — translate from that language. '
             . 'Keep dish names natural for a menu (do not translate proper nouns / brand names). '
             . 'If "description" is empty, return it as an empty string. '
             . 'Return ONLY a valid JSON object mapping each "id" to {"name": ..., "description": ...} — no other text, '
@@ -74,11 +81,12 @@ final class RouterProductTranslator implements ProductTranslatorInterface
             return [];
         }
 
-        return $this->verifyAndFix($translated, $products, $targetLocale);
+        return $this->verifyAndFix($translated, $products, $targetLocale, $sourceLocales);
     }
 
     /**
-     * Shows the model its own translation next to the Spanish source and
+     * Shows the model its own translation next to the source text (and the
+     * language it's written in) and
      * asks it to catch fabricated/garbled/merged words or mistranslations
      * and fix them. If this pass fails outright (no provider available),
      * the first-pass translation is kept as-is rather than discarded — an
@@ -94,24 +102,29 @@ final class RouterProductTranslator implements ProductTranslatorInterface
      *
      * @param array<int, array{name: string, description: ?string}> $translated
      * @param array<int, array{name: string, description: ?string}> $sourceProducts
+     * @param array<int, string> $sourceLocales
      * @return array<int, array{name: string, description: ?string}>
      */
-    private function verifyAndFix(array $translated, array $sourceProducts, string $targetLocale): array
+    private function verifyAndFix(array $translated, array $sourceProducts, string $targetLocale, array $sourceLocales): array
     {
         $items = [];
         foreach ($translated as $id => $pair) {
-            $items[] = [
+            $item = [
                 'id'                     => (string) $id,
                 'source_name'            => $sourceProducts[$id]['name'] ?? '',
                 'translated_name'        => $pair['name'],
                 'translated_description' => $pair['description'] ?? '',
             ];
+            if (isset($sourceLocales[$id])) {
+                $item['source_locale'] = $sourceLocales[$id];
+            }
+            $items[] = $item;
         }
         $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
 
         $systemPrompt = 'You are a translation quality checker for a restaurant menu. '
-            . "You'll see, for each dish, its original Spanish name and a candidate translation into the language with ISO 639-1 code \"{$targetLocale}\". "
-            . 'For each one, check the candidate translation carefully: is "translated_name" and "translated_description" made of real, correctly-spelled words that actually exist in that language — not a fabricated string, and not two real words merged together with no space between them? Is it a fluent, natural, faithful translation of the Spanish original? '
+            . "You'll see, for each dish, its original name (written in the language whose ISO 639-1 code is its \"source_locale\") and a candidate translation into the language with ISO 639-1 code \"{$targetLocale}\". "
+            . 'For each one, check the candidate translation carefully: is "translated_name" and "translated_description" made of real, correctly-spelled words that actually exist in that language — not a fabricated string, and not two real words merged together with no space between them? Is it a fluent, natural, faithful translation of the original? '
             . 'If a candidate is already correct, return it completely unchanged. If it has a problem, replace it with a corrected translation. '
             . 'Return ONLY a valid JSON object mapping each "id" to {"name": ..., "description": ...} — no other text, no markdown code fences, no explanations.';
 

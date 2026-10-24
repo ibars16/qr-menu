@@ -149,7 +149,10 @@ class ProductRepository extends ServiceEntityRepository
     /**
      * Cheap existence check (no entity hydration) used to decide whether the
      * menu page needs to detour through the translating/loading screen — see
-     * MenuController::renderMenu().
+     * MenuController::renderMenu(). Only dishes with something to translate
+     * from count (a named translation in any language — see
+     * TranslationSource): one with none can never be translated, and
+     * counting it would send every visit through the loading screen.
      */
     public function hasAnyMissingTranslation(Restaurant $restaurant, string $locale): bool
     {
@@ -161,6 +164,7 @@ class ProductRepository extends ServiceEntityRepository
             ->andWhere('p.active = true')
             ->andWhere('c.active = true')
             ->andWhere('t.id IS NULL')
+            ->andWhere('EXISTS (SELECT s.id FROM App\Entity\ProductTranslation s WHERE s.product = p AND TRIM(s.name) <> \'\')')
             ->setParameter('restaurant', $restaurant)
             ->setParameter('locale', $locale)
             ->getQuery()

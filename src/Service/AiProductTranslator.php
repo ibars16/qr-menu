@@ -34,14 +34,13 @@ final class AiProductTranslator
             return;
         }
 
-        $defaultLocale = $restaurant->getDefaultLanguage();
-        $source        = $this->buildSourceMap($missing, $defaultLocale);
+        [$source, $sourceLocales] = $this->buildSourceMap($missing, $restaurant->getDefaultLanguage(), $locale);
 
         if (empty($source)) {
             return;
         }
 
-        $translated = $this->translator->translate($source, $locale);
+        $translated = $this->translator->translate($source, $locale, $sourceLocales);
 
         foreach ($missing as $product) {
             $result = $translated[$product->getId()] ?? null;
@@ -84,21 +83,27 @@ final class AiProductTranslator
     }
 
     /**
+     * Source text per product — see TranslationSource::pick() (default
+     * language, else one a person wrote, else any), with its real language.
+     *
      * @param  Product[] $products
-     * @return array<int, array{name: string, description: ?string}>  productId → source name/description
+     * @return array{0: array<int, array{name: string, description: ?string}>, 1: array<int, string>}
+     *         [productId → source name/description, productId → source locale]
      */
-    private function buildSourceMap(array $products, string $defaultLocale): array
+    private function buildSourceMap(array $products, string $defaultLocale, string $targetLocale): array
     {
-        $map = [];
+        $map     = [];
+        $locales = [];
         foreach ($products as $product) {
-            $source = $product->getTranslation($defaultLocale);
-            if ($source !== null && trim($source->getName()) !== '') {
+            $source = TranslationSource::pick($product->getTranslations(), $defaultLocale, $targetLocale);
+            if ($source !== null) {
                 $map[$product->getId()] = [
                     'name'        => $source->getName(),
                     'description' => $source->getDescription(),
                 ];
+                $locales[$product->getId()] = $source->getLocale();
             }
         }
-        return $map;
+        return [$map, $locales];
     }
 }

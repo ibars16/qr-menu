@@ -45,7 +45,7 @@ final class OwnerTextTranslationTest extends WebTestCase
             /** @var list<list<string>> */
             public array $batches = [];
 
-            public function translate(array $products, string $targetLocale): array
+            public function translate(array $products, string $targetLocale, array $sourceLocales = []): array
             {
                 $this->batches[] = array_values(array_map(static fn (array $p) => $p['name'], $products));
 

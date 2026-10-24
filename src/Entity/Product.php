@@ -822,8 +822,9 @@ class Product
      * combined list rather than within each source separately (see
      * MenuAdminController::getProduct(), which merges the same way for the
      * admin panel). Each name falls back from $locale to $fallbackLocale to
-     * English (the one language the global library always has), then to the
-     * ingredient's raw code if it somehow has no translation at all.
+     * English (the one language the global library always has), then to any
+     * name it has in another language, then to the ingredient's raw code if
+     * it somehow has no translation at all.
      *
      * $dictionary(sourceLocale, sourceText): ?string, when given, is asked
      * for the AI translation of an ingredient with no native $locale name
@@ -842,7 +843,7 @@ class Product
         foreach ($this->getOrderedIngredients() as $ing) {
             $source = $dictionary !== null ? self::ingredientTranslationSource($ing, $locale, $fallbackLocale) : null;
             $translated = $source !== null ? $dictionary($source[0], $source[1]) : null;
-            $t = $ing->getTranslation($locale) ?? $ing->getTranslation($fallbackLocale) ?? $ing->getTranslation('en');
+            $t = $ing->getTranslation($locale) ?? $ing->getTranslation($fallbackLocale) ?? $ing->getTranslation('en') ?? self::anyNamedTranslation($ing);
             $names[] = $translated ?? $t?->getName() ?? $ing->getCode();
         }
 
@@ -877,7 +878,8 @@ class Product
      * when it already has a native $locale name (never translated), else
      * [sourceLocale, name] — its $defaultLocale name, or its English one
      * when it has none (so an English-only ingredient is translated into
-     * the default language too). Null when there's nothing to translate from.
+     * the default language too), or else any name it has, in that name's
+     * own language. Null when there's nothing to translate from.
      *
      * @return array{0: string, 1: string}|null
      */
@@ -891,6 +893,20 @@ class Product
             $name = trim((string) $ingredient->getTranslation($sourceLocale)?->getName());
             if ($name !== '') {
                 return [$sourceLocale, $name];
+            }
+        }
+
+        $any = self::anyNamedTranslation($ingredient);
+
+        return $any !== null ? [$any->getLocale(), trim($any->getName())] : null;
+    }
+
+    /** The ingredient's first translation with a non-blank name, in whatever language. */
+    private static function anyNamedTranslation(Ingredient|GlobalIngredient $ingredient): IngredientTranslation|GlobalIngredientTranslation|null
+    {
+        foreach ($ingredient->getTranslations() as $translation) {
+            if (trim($translation->getName()) !== '') {
+                return $translation;
             }
         }
 

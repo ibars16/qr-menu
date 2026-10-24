@@ -15,7 +15,9 @@ interface TagTranslatorInterface
      *
      * @param  array<int, string> $names  map of [tagId => sourceName]
      * @param  string             $targetLocale  ISO 639-1 language code
+     * @param  array<int, string> $sourceLocales  map of [tagId => ISO 639-1 code
+     *                                            the source name is written in]
      * @return array<int, string>  map of [tagId => translatedName]
      */
-    public function translate(array $names, string $targetLocale): array;
+    public function translate(array $names, string $targetLocale, array $sourceLocales = []): array;
 }

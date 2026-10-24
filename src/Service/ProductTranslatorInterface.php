@@ -17,8 +17,11 @@ interface ProductTranslatorInterface
      * @param  array<int, array{name: string, description: ?string}> $products
      *         map of [productId => ['name' => ..., 'description' => ...]]
      * @param  string $targetLocale  ISO 639-1 language code
+     * @param  array<int, string> $sourceLocales  map of [productId => ISO 639-1
+     *         code the source text is written in] — never assumed, a batch
+     *         may mix languages (see OwnerTextTranslationService)
      * @return array<int, array{name: string, description: ?string}>
      *         map of [productId => ['name' => ..., 'description' => ...]]
      */
-    public function translate(array $products, string $targetLocale): array;
+    public function translate(array $products, string $targetLocale, array $sourceLocales = []): array;
 }
