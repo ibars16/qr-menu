@@ -33,6 +33,7 @@ class CategoryRepository extends ServiceEntityRepository
             ->andWhere('LOWER(t.name) = LOWER(:name)')
             ->setParameter('restaurant', $restaurant)
             ->setParameter('name', trim($name))
+            ->orderBy('c.id', 'ASC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();

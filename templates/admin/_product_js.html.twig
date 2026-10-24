@@ -59,13 +59,14 @@
     const MSG_INGREDIENT_ALLERGENS_SAVED = "{{ 'js.ingredient_allergens_saved'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_ALLERGEN_REMOVE = "{{ 'allergens.remove'|trans({}, 'admin_menu')|e('js') }}";
 
-    // Full allergen taxonomy, translated in the Admin Panel's content
-    // language — small, fixed reference data (14 rows), so it's cheap to
-    // send once rather than fetched per panel-open.
+    // Full allergen taxonomy, named in the Admin Panel's language (then the
+    // menu's, then English — serializeAllergen()'s chain, so a chip added
+    // here reads the same as one the server sent) — small, fixed reference
+    // data (14 rows), so it's cheap to send once rather than fetched per
+    // panel-open. The public menu names them in the customer's language.
     const ALLERGENS = [
         {% for allergen in allergens %}
-            {% set aT = allergen.getTranslation(locale) %}
-            {% if not aT %}{% set aT = allergen.getTranslation('en') %}{% endif %}
+            {% set aT = allergen.getTranslation(app.request.locale) ?? allergen.getTranslation(locale) ?? allergen.getTranslation('en') %}
             {% if aT %}
             { id: {{ allergen.id }}, code: "{{ allergen.code }}", icon: "{{ allergen.icon }}", name: "{{ aT.name|e('js') }}" },
             {% endif %}

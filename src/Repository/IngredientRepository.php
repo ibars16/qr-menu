@@ -74,6 +74,7 @@ class IngredientRepository extends ServiceEntityRepository
             ->andWhere('LOWER(t.name) = LOWER(:name)')
             ->setParameter('restaurant', $restaurant)
             ->setParameter('name', trim($name))
+            ->orderBy('i.id', 'ASC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();

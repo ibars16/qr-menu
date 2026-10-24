@@ -1073,9 +1073,12 @@ class MenuAdminController extends AbstractController
 
                     // 2) Never create a restaurant-private duplicate of
                     //    something the Global Ingredient Library already
-                    //    has — associate that instead. Restaurants can only
-                    //    ever read the global library, never write to it.
-                    $globalIngredient = $globalIngredientRepo->findExistingByNameAnyLocale($name);
+                    //    has — associate that instead, but only on an exact,
+                    //    unambiguous match in the menu's language (its
+                    //    allergens come with it, unconfirmed — see
+                    //    findUnambiguousByName()). Restaurants can only ever
+                    //    read the global library, never write to it.
+                    $globalIngredient = $globalIngredientRepo->findUnambiguousByName($name, $contentLocale);
                     if ($globalIngredient) {
                         $this->attachGlobalIngredient($em, $product, $globalIngredient, $position++);
                         continue;

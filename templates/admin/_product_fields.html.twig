@@ -584,8 +584,8 @@
                             <select id="p-allergen-add-select">
                                 <option value="">{{ 'allergens.select_allergen'|trans({}, 'admin_menu') }}</option>
                                 {% for allergen in allergens %}
-                                    {% set aT = allergen.getTranslation(locale) %}
-                                    {% if not aT %}{% set aT = allergen.getTranslation('en') %}{% endif %}
+                                    {# Admin Panel language first, same chain as ALLERGENS in _product_js.html.twig #}
+                                    {% set aT = allergen.getTranslation(app.request.locale) ?? allergen.getTranslation(locale) ?? allergen.getTranslation('en') %}
                                     {% if aT %}<option value="{{ allergen.id }}">{{ allergen.icon }} {{ aT.name }}</option>{% endif %}
                                 {% endfor %}
                             </select>

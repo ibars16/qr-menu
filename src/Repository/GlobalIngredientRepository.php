@@ -77,20 +77,29 @@ class GlobalIngredientRepository extends ServiceEntityRepository
     }
 
     /**
-     * Case-insensitive exact-name lookup across ALL locales. Used server-side
-     * at product-save time: if a restaurant admin types a "new" ingredient
-     * that already exists in the global library (just not yet surfaced by
-     * their search), associate that instead of creating a redundant
-     * restaurant-private duplicate.
+     * The one library ingredient a typed (product save) or imported name
+     * links to with nobody picking it — the ingredient's allergens come with
+     * it, so this is deliberately strict: a case-insensitive exact match in
+     * $locale (the restaurant's menu language) only, and none at all when
+     * two different ingredients share that name there (e.g. "Egg" vs
+     * "Chicken egg" both translating to one word, only one carrying the egg
+     * allergen). A name in another language — "salsa" is Spanish for sauce
+     * but English for the dip — never matches. Null means "create a private
+     * ingredient instead".
      */
-    public function findExistingByNameAnyLocale(string $name): ?GlobalIngredient
+    public function findUnambiguousByName(string $name, string $locale): ?GlobalIngredient
     {
-        return $this->createQueryBuilder('gi')
+        $matches = $this->createQueryBuilder('gi')
             ->innerJoin('gi.translations', 't')
+            ->andWhere('t.locale = :locale')
             ->andWhere('LOWER(t.name) = LOWER(:name)')
+            ->setParameter('locale', $locale)
             ->setParameter('name', trim($name))
-            ->setMaxResults(1)
+            ->orderBy('gi.id', 'ASC')
+            ->setMaxResults(2)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getResult();
+
+        return count($matches) === 1 ? $matches[0] : null;
     }
 }

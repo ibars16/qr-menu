@@ -284,7 +284,7 @@ final class MenuImportAssembler
             return;
         }
 
-        $globalIngredient = $this->globalIngredientRepository->findExistingByNameAnyLocale($name);
+        $globalIngredient = $this->globalIngredientRepository->findUnambiguousByName($name, $locale);
         if ($globalIngredient) {
             $this->attachGlobalIngredient($product, $globalIngredient, $position, $aiSuggested);
             return;

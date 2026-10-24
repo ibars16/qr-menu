@@ -326,6 +326,6 @@ final class IngredientTranslationTest extends WebTestCase
 
         self::assertNotNull($ingredients->findExistingByNameAnyLocale($restaurant, 'Nata casera'), 'sanity: the original name matches');
         self::assertNull($ingredients->findExistingByNameAnyLocale($restaurant, '[de] Nata casera'));
-        self::assertNull($globals->findExistingByNameAnyLocale('[de] Matcha powder'));
+        self::assertNull($globals->findUnambiguousByName('[de] Matcha powder', 'de'));
     }
 }

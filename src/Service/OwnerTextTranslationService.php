@@ -33,7 +33,7 @@ use Symfony\Contracts\Service\ResetInterface;
  * no native name in the locale (Product::ingredientTranslationSource()).
  * Their translations live ONLY here — never in ingredient_translation /
  * global_ingredient_translation, which the admin's name matching
- * (findExistingByNameAnyLocale) and therefore allergen assignment read.
+ * (findExistingByNameAnyLocale / findUnambiguousByName) and therefore allergen assignment read.
  * Unlike the owner texts, an ingredient's source may be English, and an
  * English-only one is translated into the default language too.
  */
