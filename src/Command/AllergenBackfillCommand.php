@@ -16,8 +16,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * Completes ingredient allergen links with AI — see
  * IngredientAllergenBackfill. Re-runnable: anything already reviewed (by
- * the YAML, a person or a previous run) is skipped, so a run interrupted
- * by a quota limit just carries on next time.
+ * the YAML, a person or a previous run) or waiting for review in
+ * AllergenReviewQueue is skipped, so a run interrupted by a quota limit
+ * just carries on next time without asking again about what's pending.
  *
  * Writes, under --out: <stamp>-revision.csv / .md (the short list a person
  * should check: every review item and suggestion, with the reason) and
@@ -25,6 +26,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  *
  * --recheck-applied makes no AI call: it runs the current rules over what
  * earlier runs already applied and withdraws what would now go to review.
+ * --import-review-list queues the review items of older -todo.csv files.
  */
 #[AsCommand(
     name: 'app:allergens:backfill',
@@ -51,6 +53,8 @@ final class AllergenBackfillCommand extends Command
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Max ingredients this run (quota/cost control)')
             ->addOption('batch-size', null, InputOption::VALUE_REQUIRED, 'Ingredients per AI call', 20)
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Call the AI and write the files, but change nothing in the database')
+            ->addOption('include-pending', null, InputOption::VALUE_NONE, 'Also send the ones already waiting for review (e.g. after changing the rules)')
+            ->addOption('import-review-list', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'No AI: queue the review items of these -todo.csv files (oldest first; the latest row per ingredient wins)')
             ->addOption('recheck-applied', null, InputOption::VALUE_NONE, 'No AI: re-check everything already applied by AI against the current rules and withdraw what would now go to review')
             ->addOption('out', null, InputOption::VALUE_REQUIRED, 'Output directory, relative to the project', 'var/allergen-backfill');
     }
@@ -59,6 +63,9 @@ final class AllergenBackfillCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        if ($input->getOption('import-review-list') !== []) {
+            return $this->importReviewList($io, $input->getOption('import-review-list'), (bool) $input->getOption('dry-run'));
+        }
         if ($input->getOption('recheck-applied')) {
             return $this->recheckApplied($io, (bool) $input->getOption('dry-run'), (string) $input->getOption('out'));
         }
@@ -97,7 +104,7 @@ final class AllergenBackfillCommand extends Command
         $limit = $input->getOption('limit') !== null ? max(1, (int) $input->getOption('limit')) : null;
         $dryRun = (bool) $input->getOption('dry-run');
 
-        $subjects = $this->backfill->findSubjects($globalCodes, $restaurantIds, (bool) $input->getOption('suggest-protected'), $limit, $privateCodes);
+        $subjects = $this->backfill->findSubjects($globalCodes, $restaurantIds, (bool) $input->getOption('suggest-protected'), $limit, $privateCodes, (bool) $input->getOption('include-pending'));
         $io->title(sprintf('Allergen backfill — %d ingredient(s)%s', count($subjects), $dryRun ? ', dry run (database untouched)' : ''));
         if ($subjects === []) {
             $io->success('Nothing to classify.');
@@ -138,6 +145,38 @@ final class AllergenBackfillCommand extends Command
             ['Estimated cost (USD)', sprintf('%.4f', $cost)],
         ]);
         $io->writeln(['Review list: ' . $reviewCsv, '             ' . $reviewMd, 'All decisions: ' . $allCsv]);
+
+        return Command::SUCCESS;
+    }
+
+    /** @param list<string> $files */
+    private function importReviewList(SymfonyStyle $io, array $files, bool $dryRun): int
+    {
+        $latest = [];
+        foreach ($files as $file) {
+            $path = str_starts_with($file, '/') ? $file : $this->projectDir . '/' . $file;
+            $fh = is_readable($path) ? fopen($path, 'r') : false;
+            if ($fh === false) {
+                $io->error("Can't read \"{$file}\".");
+                return Command::FAILURE;
+            }
+            $header = fgetcsv($fh, null, ',', '"', '');
+            $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+            while (($row = fgetcsv($fh, null, ',', '"', '')) !== false) {
+                $row = array_combine($header, $row);
+                $latest[$row['tipo'] . ':' . $row['id']] = $row;
+            }
+            fclose($fh);
+        }
+        $rows = array_values(array_filter($latest, static fn (array $r) => in_array($r['resultado'], [AllergenDecision::REVIEW, AllergenDecision::SUGGESTION], true)));
+
+        $io->title(sprintf('Allergen backfill — importing %d review item(s) into the queue%s', count($rows), $dryRun ? ', dry run (database untouched)' : ''));
+        $counts = $this->backfill->importReviewList($rows, $dryRun);
+        $io->table(['Outcome', 'Count'], [
+            ['Queued for review', $counts['queued']],
+            ['Re-applied (current rules allow it)', $counts['reapplied']],
+            ['Skipped (reviewed since, already queued or gone)', $counts['skipped']],
+        ]);
 
         return Command::SUCCESS;
     }

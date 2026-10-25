@@ -99,7 +99,6 @@ final class AllergenKeywordRulesTest extends TestCase
         yield 'extracto'             => ['Extracto de levadura', 'extracto'];
         yield 'powder'               => ['Garlic powder', 'powder'];
         yield 'en polvo'             => ['Ajo en polvo', 'polvo'];
-        yield 'from concentrate'     => ['Orange juice from concentrate', 'concentrate'];
         yield 'flakes'               => ['Potato flakes', 'flakes'];
         yield 'preparation'          => ['Powdered preparation with palm fat', 'powdered'];
         yield 'preparado'            => ['Preparado para flan', 'preparado'];
@@ -112,6 +111,29 @@ final class AllergenKeywordRulesTest extends TestCase
         yield 'starch'               => ['Modified starch', 'starch'];
         yield 'fibre'                => ['Citrus fibre', 'fibre'];
         yield 'puffed'               => ['quinoa inflada', 'inflada'];
+        yield 'dried fig'            => ['Dried fig', 'dried'];
+        yield 'raisins'              => ['Raisins', 'raisins'];
+        yield 'orejones'             => ['Orejones de albaricoque', 'orejones'];
+        yield 'pasas'                => ['Uvas pasas', 'pasas'];
+        yield 'prunes'               => ['Prunes from Agen', 'prunes'];
+        yield 'juice concentrate'    => ['Beetroot juice concentrate', 'concentrate'];
+        yield 'puree, not a juice'   => ['Mango puree from concentrate', 'concentrate'];
+        yield 'dried juice'          => ['Dried apple juice from concentrate', 'dried'];
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function juicesFromConcentrate(): iterable
+    {
+        foreach (['Orange juice from concentrate', 'Grapefruit juice based on concentrate', 'Organic orange juice from orange juice concentrate',
+            'Mandarin juice from concentrate', 'Zumo de naranja a base de concentrado', 'Zumo de manzana de concentrado'] as $name) {
+            yield $name => [$name];
+        }
+    }
+
+    #[DataProvider('juicesFromConcentrate')]
+    public function testJuiceFromConcentrateIsNotProcessed(string $name): void
+    {
+        self::assertNull((new AllergenKeywordRules())->evaluate($name)['processed']);
     }
 
     #[DataProvider('processedNames')]

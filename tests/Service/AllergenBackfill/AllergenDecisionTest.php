@@ -3,6 +3,7 @@
 namespace App\Tests\Service\AllergenBackfill;
 
 use App\Service\AllergenBackfill\AllergenDecision;
+use App\Service\AllergenBackfill\AllergenKeywordRules;
 use PHPUnit\Framework\TestCase;
 
 final class AllergenDecisionTest extends TestCase
@@ -51,6 +52,31 @@ final class AllergenDecisionTest extends TestCase
         $d = AllergenDecision::decide(self::pass(['eggs' => 'contains']), self::pass(['eggs' => 'contains']), $rules, self::CODES, null);
 
         self::assertSame(AllergenDecision::APPLIED, $d->outcome);
+    }
+
+    public function testJuiceFromConcentrateWithNoAllergensIsApplied(): void
+    {
+        $rules = (new AllergenKeywordRules())->evaluate('Orange juice from concentrate');
+        $d = AllergenDecision::decide(self::pass([]), self::pass([]), $rules, self::CODES, null);
+
+        self::assertSame(AllergenDecision::NO_ALLERGENS, $d->outcome);
+    }
+
+    public function testDriedFruitWithNoAllergensGoesToReview(): void
+    {
+        foreach (['Dried fig', 'Raisins', 'Orejones'] as $name) {
+            $d = AllergenDecision::decide(self::pass([]), self::pass([]), (new AllergenKeywordRules())->evaluate($name), self::CODES, null);
+
+            self::assertSame(AllergenDecision::REVIEW, $d->outcome, $name);
+        }
+    }
+
+    public function testParseIsTheReverseOfFormat(): void
+    {
+        self::assertSame([], AllergenDecision::parse('ninguno'));
+        self::assertNull(AllergenDecision::parse('—'));
+        $allergens = ['gluten' => 'contains', 'sulphites' => 'may_contain'];
+        self::assertSame($allergens, AllergenDecision::parse(AllergenDecision::format($allergens)));
     }
 
     public function testPassesDisagreeingGoesToReview(): void

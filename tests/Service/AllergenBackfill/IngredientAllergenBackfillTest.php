@@ -3,6 +3,7 @@
 namespace App\Tests\Service\AllergenBackfill;
 
 use App\Entity\Allergen;
+use App\Entity\ClassificationLog;
 use App\Entity\GlobalIngredient;
 use App\Entity\GlobalIngredientAllergen;
 use App\Entity\GlobalIngredientTranslation;
@@ -11,10 +12,12 @@ use App\Entity\IngredientAllergen;
 use App\Entity\IngredientTranslation;
 use App\Entity\Restaurant;
 use App\Enum\AllergenPresence;
+use App\Enum\ClassificationStatus;
 use App\Repository\AllergenRepository;
 use App\Service\AI\AIProviderFactory;
 use App\Service\AllergenBackfill\AllergenDecision;
 use App\Service\AllergenBackfill\AllergenKeywordRules;
+use App\Service\AllergenBackfill\AllergenReviewQueue;
 use App\Service\AllergenBackfill\GroqAllergenClassifier;
 use App\Service\AllergenBackfill\IngredientAllergenBackfill;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,7 +30,8 @@ use Symfony\Component\HttpClient\Response\MockResponse;
  * by a MockHttpClient that answers by ingredient name — no request can
  * reach a real API. Checks the write rules: only unambiguous answers are
  * written (source/reviewed_by 'ai'), YAML/hand-set ingredients are never
- * touched, and private ingredients are sent in their own language.
+ * touched, private ingredients are sent in their own language, and what
+ * goes to review is queued in classification_log and not sent again.
  */
 final class IngredientAllergenBackfillTest extends KernelTestCase
 {
@@ -58,6 +62,16 @@ final class IngredientAllergenBackfillTest extends KernelTestCase
     {
         if ($this->em !== null) {
             $this->em->clear();
+            $privateIds = $this->restaurantId === null ? [] : array_map(
+                static fn (Ingredient $i) => $i->getId(),
+                $this->em->getRepository(Ingredient::class)->findBy(['restaurant' => $this->restaurantId]),
+            );
+            foreach ([['global_ingredient', $this->globalIds], ['ingredient', $privateIds]] as [$type, $ids]) {
+                if ($ids !== []) {
+                    $this->em->createQuery('DELETE FROM ' . ClassificationLog::class . ' l WHERE l.classificationType = :t AND l.subjectType = :s AND l.subjectId IN (:ids)')
+                        ->execute(['t' => AllergenReviewQueue::CLASSIFICATION_TYPE, 's' => $type, 'ids' => $ids]);
+                }
+            }
             foreach ($this->globalIds as $id) {
                 if ($ingredient = $this->em->find(GlobalIngredient::class, $id)) {
                     $this->em->remove($ingredient);
@@ -178,12 +192,85 @@ final class IngredientAllergenBackfillTest extends KernelTestCase
         self::assertCount(1, $handSet->getAllergenLinks());
         self::assertSame('gluten', $handSet->getAllergenLinks()->first()->getAllergen()->getCode());
 
-        // A second run skips everything already reviewed or protected.
-        $again = array_filter(
-            $backfill->findSubjects(array_map(fn (int $id) => $this->em->find(GlobalIngredient::class, $id)->getCode(), $this->globalIds), [$this->restaurantId], false),
-            static fn (array $s) => str_contains($s['name'], $tag),
-        );
-        self::assertEqualsCanonicalizing(["Backfill mystery sauce {$tag}", "Backfill wine {$tag}"], array_column($again, 'name'));
+        // What went to review is queued with its proposal and reasons…
+        $wineLog = $this->pendingLog('global_ingredient', $wine);
+        self::assertNotNull($wineLog);
+        self::assertNull($wineLog->getLabel());
+        self::assertSame(['sulphites' => 'may_contain'], $wineLog->getAttributes()['proposal']);
+        self::assertContains('"puede contener"', $wineLog->getAttributes()['reasons']);
+        self::assertSame('review', $wineLog->getAttributes()['outcome']);
+        self::assertSame(['milk' => 'contains'], $this->pendingLog('global_ingredient', $split)->getAttributes()['first_pass']);
+        self::assertSame('suggestion', $this->pendingLog('global_ingredient', $soySauce->getId())->getAttributes()['outcome']);
+        self::assertSame('suggestion', $this->pendingLog('ingredient', $handSet->getId())->getAttributes()['outcome']);
+        self::assertNull($this->pendingLog('global_ingredient', $egg->getId()), 'applied ones are not queued');
+
+        // …and a second run skips everything reviewed, protected or pending: no AI call at all.
+        $codes = array_map(fn (int $id) => $this->em->find(GlobalIngredient::class, $id)->getCode(), $this->globalIds);
+        $again = array_filter($backfill->findSubjects($codes, [$this->restaurantId], false), static fn (array $s) => str_contains($s['name'], $tag));
+        self::assertSame([], $again);
+        $requestsBefore = count($this->requests);
+        self::assertSame([], $backfill->run(array_values($again), 20, false));
+        self::assertCount($requestsBefore, $this->requests);
+
+        // --include-pending sends them again; one that now passes leaves the queue.
+        $pending = array_values(array_filter($backfill->findSubjects($codes, [$this->restaurantId], false, null, null, true), static fn (array $s) => str_contains($s['name'], $tag)));
+        self::assertEqualsCanonicalizing(["Backfill mystery sauce {$tag}", "Backfill wine {$tag}"], array_column($pending, 'name'));
+        $this->backfill(['Backfill wine' => [['sulphites' => 'contains'], ['sulphites' => 'contains']]])->run(array_values(array_filter($pending, static fn ($s) => str_starts_with($s['name'], 'Backfill wine'))), 20, false);
+        $this->em->clear();
+        self::assertNull($this->pendingLog('global_ingredient', $wine));
+        self::assertSame('ai', $this->em->find(GlobalIngredient::class, $wine)->getAllergensReviewedBy());
+    }
+
+    public function testImportQueuesOldReviewItemsAndReappliesWithdrawnOnesTheRulesNowAllow(): void
+    {
+        self::bootKernel();
+        $this->em = static::getContainer()->get(EntityManagerInterface::class);
+        $tag = uniqid();
+
+        $juice = $this->global("Orange juice from concentrate {$tag}");
+        $fig = $this->global("Dried fig {$tag}");
+        $sauce = $this->global("Backfill mystery sauce {$tag}");
+        $reviewedSince = $this->global("Backfill egg {$tag}", ['eggs' => GlobalIngredientAllergen::SOURCE_AI]);
+
+        $row = static fn (int $id, string $result, string $first, string $second, string $why) => [
+            'tipo' => 'global', 'id' => (string) $id, 'resultado' => $result,
+            'propuesta_1a_pasada' => $first, 'propuesta_revision' => $second, 'motivo' => $why,
+        ];
+        $counts = $this->backfill([])->importReviewList([
+            $row($juice, 'review', 'ninguno', 'ninguno', 'DESAPLICADO — se había aplicado y con las reglas actuales va a revisión · producto procesado («concentrate»)'),
+            $row($fig, 'review', 'ninguno', 'ninguno', 'DESAPLICADO — se había aplicado y con las reglas actuales va a revisión · producto procesado («dried»)'),
+            $row($sauce, 'review', 'milk', 'eggs, milk', 'la 1ª pasada y la revisión no coinciden · compuesto'),
+            $row($reviewedSince, 'review', 'eggs', 'eggs', 'x'),
+        ], false);
+
+        self::assertSame(['queued' => 2, 'reapplied' => 1, 'skipped' => 1], $counts);
+        self::assertCount(0, $this->requests, 'no AI call');
+
+        $this->em->clear();
+        self::assertSame('ai', $this->em->find(GlobalIngredient::class, $juice)->getAllergensReviewedBy(), 'juice re-applied as "no allergens"');
+        self::assertNull($this->pendingLog('global_ingredient', $juice));
+        self::assertNull($this->em->find(GlobalIngredient::class, $fig)->getAllergensReviewedBy());
+        self::assertStringContainsString('dried', implode(' ', $this->pendingLog('global_ingredient', $fig)->getAttributes()['reasons']));
+        $sauceLog = $this->pendingLog('global_ingredient', $sauce);
+        self::assertSame(['eggs' => 'contains', 'milk' => 'contains'], $sauceLog->getAttributes()['proposal']);
+        self::assertSame(['milk' => 'contains'], $sauceLog->getAttributes()['first_pass']);
+        self::assertNull($this->pendingLog('global_ingredient', $reviewedSince));
+
+        // Importing again changes nothing.
+        self::assertSame(['queued' => 0, 'reapplied' => 0, 'skipped' => 4], $this->backfill([])->importReviewList([
+            $row($juice, 'review', 'ninguno', 'ninguno', 'DESAPLICADO'), $row($fig, 'review', 'ninguno', 'ninguno', 'DESAPLICADO'),
+            $row($sauce, 'review', 'milk', 'eggs, milk', 'x'), $row($reviewedSince, 'review', 'eggs', 'eggs', 'x'),
+        ], false));
+    }
+
+    private function pendingLog(string $subjectType, int $id): ?ClassificationLog
+    {
+        return $this->em->getRepository(ClassificationLog::class)->findOneBy([
+            'subjectType' => $subjectType,
+            'subjectId' => $id,
+            'classificationType' => AllergenReviewQueue::CLASSIFICATION_TYPE,
+            'status' => ClassificationStatus::PENDING_REVIEW,
+        ]);
     }
 
     public function testRecheckWithdrawsWhatTheCurrentRulesWouldSendToReview(): void
@@ -251,6 +338,10 @@ final class IngredientAllergenBackfillTest extends KernelTestCase
         $sauceEntity = $this->em->find(Ingredient::class, $sauce);
         self::assertNull($sauceEntity->getAllergensReviewedBy());
         self::assertCount(0, $sauceEntity->getAllergenLinks());
+        self::assertSame(['gluten' => 'contains', 'soybeans' => 'contains'], $this->pendingLog('ingredient', $sauce)->getAttributes()['proposal']);
+        self::assertStringStartsWith('DESAPLICADO', $this->pendingLog('ingredient', $sauce)->getAttributes()['reasons'][0]);
+        self::assertNotNull($this->pendingLog('global_ingredient', $extract));
+        self::assertNull($this->pendingLog('global_ingredient', $egg));
         self::assertGreaterThan($versionBefore, $this->em->find(Restaurant::class, $this->restaurantId)->getMenuContentVersion());
     }
 
@@ -279,7 +370,7 @@ final class IngredientAllergenBackfillTest extends KernelTestCase
 
         $classifier = new GroqAllergenClassifier(new AIProviderFactory($http, dirname(__DIR__, 3)), static fn () => null);
 
-        return new IngredientAllergenBackfill($this->em, static::getContainer()->get(AllergenRepository::class), $classifier, new AllergenKeywordRules());
+        return new IngredientAllergenBackfill($this->em, static::getContainer()->get(AllergenRepository::class), $classifier, new AllergenKeywordRules(), new AllergenReviewQueue($this->em));
     }
 
     /**

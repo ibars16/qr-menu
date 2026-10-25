@@ -176,7 +176,18 @@ final class AllergenKeywordRules
         'hidrolizad[oa]s?', 'autoly[sz]ed', 'isolates?', 'starch(?:es)?', 'almidon(?:es)?', 'dextrins?', 'dextrinated', 'dextrinas?',
         'fib(?:re|er)s?', 'fibras?', 'proteins?', 'proteinas?', 'puffed', 'inflad[oa]s?', 'extruded', 'granules?', 'granulad[oa]s?',
         'coated', 'coating', 'recubiert[oa]s?',
+        // dried fruit: sulphites are the usual preservative
+        'raisins?', 'sultanas?', 'pasas', 'panses', 'orejones?', 'prunes?', 'ciruelas pasas', 'figues seques',
     ];
+
+    /**
+     * "Orange juice from concentrate" is just juice: the concentrate is
+     * reconstituted with water. Stripped before the processed check, so a
+     * juice with no other processing word counts as unprocessed. A
+     * concentrate that isn't a juice drink ("Beetroot juice concentrate",
+     * "Mango puree from concentrate") still counts.
+     */
+    private const JUICE_FROM_CONCENTRATE = '/\b(?:juices?|zumos?|jugos?|sucs?)\b(.*?)\b(?:(?:partially )?(?:from|based on)|a base de|de) (?:[a-z]+ ){0,3}?concentra(?:te|do|t)\b/u';
 
     /** @var array<string, string> reason => compiled regex */
     private array $reviewRegex = [];
@@ -248,7 +259,8 @@ final class AllergenKeywordRules
             $root = $words ? end($words) : '';
         }
 
-        $processed = preg_match($this->processedRegex, $normalized, $m) ? $m[1] : null;
+        $unjuiced = preg_replace(self::JUICE_FROM_CONCENTRATE, '$1', $normalized);
+        $processed = preg_match($this->processedRegex, $unjuiced, $m) ? $m[1] : null;
 
         return ['expected' => $expected, 'forbidden' => $forbidden, 'review' => $review, 'processed' => $processed, 'root' => rtrim($root, 's')];
     }

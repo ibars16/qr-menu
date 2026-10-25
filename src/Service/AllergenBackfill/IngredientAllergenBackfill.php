@@ -21,7 +21,8 @@ use Doctrine\ORM\EntityManagerInterface;
  * the model isn't unsure and the rules aren't contradicted is anything
  * written — links with source 'ai', the ingredient marked reviewed_by
  * 'ai' (also when it carries no allergens at all). Everything else goes to
- * the review list, untouched.
+ * the review list, untouched, and is queued in AllergenReviewQueue —
+ * which later runs skip, so the daily quota isn't spent asking again.
  *
  * Never writes to a "protected" ingredient: one reviewed from the YAML or
  * by a person, or carrying any 'yaml'/'human' link. Those are only
@@ -31,7 +32,11 @@ use Doctrine\ORM\EntityManagerInterface;
  * recheckApplied() replays the decision for everything already marked
  * reviewed_by 'ai' against the current rules (no AI call: the links it
  * has are what both passes agreed on), and withdraws what would now go to
- * review — so tightening a rule also covers earlier runs.
+ * review — so tightening a rule also covers earlier runs. What it
+ * withdraws is queued too.
+ *
+ * importReviewList() fills the queue from the review files of runs made
+ * before it existed.
  */
 final class IngredientAllergenBackfill
 {
@@ -46,17 +51,23 @@ final class IngredientAllergenBackfill
         private readonly AllergenRepository $allergenRepository,
         private readonly GroqAllergenClassifier $classifier,
         private readonly AllergenKeywordRules $rules,
+        private readonly AllergenReviewQueue $reviewQueue,
     ) {}
 
     /**
      * @param list<string>|null $globalCodes null = every global ingredient, [] = none
      * @param list<int>|null    $privateRestaurantIds null = every restaurant, [] = none
      * @param list<string>|null $privateCodes null = every private ingredient of those restaurants
+     * @param bool              $includePending also the ones already waiting in AllergenReviewQueue
      * @return list<array{kind: string, id: int, code: string, name: string, locale: string, restaurant: ?string, protected: bool, current: array<string, string>, rules: array{expected: list<string>, forbidden: list<string>, root: string}}>
      */
-    public function findSubjects(?array $globalCodes, ?array $privateRestaurantIds, bool $includeProtected, ?int $limit = null, ?array $privateCodes = null): array
+    public function findSubjects(?array $globalCodes, ?array $privateRestaurantIds, bool $includeProtected, ?int $limit = null, ?array $privateCodes = null, bool $includePending = false): array
     {
         $subjects = [];
+        $pending = [
+            self::KIND_GLOBAL => $includePending ? [] : $this->reviewQueue->pendingIds(self::KIND_GLOBAL),
+            self::KIND_PRIVATE => $includePending ? [] : $this->reviewQueue->pendingIds(self::KIND_PRIVATE),
+        ];
 
         if ($globalCodes !== []) {
             $qb = $this->em->createQueryBuilder()
@@ -71,7 +82,7 @@ final class IngredientAllergenBackfill
             }
             foreach ($qb->getQuery()->getResult() as $ingredient) {
                 $subject = $this->globalSubject($ingredient, $includeProtected);
-                if ($subject !== null) {
+                if ($subject !== null && !isset($pending[self::KIND_GLOBAL][$subject['id']])) {
                     $subjects[] = $subject;
                 }
             }
@@ -94,7 +105,7 @@ final class IngredientAllergenBackfill
             }
             foreach ($qb->getQuery()->getResult() as $ingredient) {
                 $subject = $this->privateSubject($ingredient, $includeProtected);
-                if ($subject !== null) {
+                if ($subject !== null && !isset($pending[self::KIND_PRIVATE][$subject['id']])) {
                     $subjects[] = $subject;
                 }
             }
@@ -146,6 +157,9 @@ final class IngredientAllergenBackfill
                 );
                 if (!$dryRun) {
                     $this->apply($subject, $decision);
+                    if (in_array($decision->outcome, [AllergenDecision::REVIEW, AllergenDecision::SUGGESTION], true)) {
+                        $this->reviewQueue->enqueue($subject, $decision, $first[$i + 1]['allergens'] ?? null);
+                    }
                 }
                 $results[] = ['subject' => $subject, 'first' => $first[$i + 1] ?? null, 'second' => $second[$i + 1] ?? null, 'decision' => $decision];
             }
@@ -230,6 +244,7 @@ final class IngredientAllergenBackfill
                 ));
                 if (!$dryRun) {
                     $this->withdraw($subject);
+                    $this->reviewQueue->enqueue($subject, $decision, $subject['current']);
                 }
             }
             $results[] = ['subject' => $subject, 'first' => $agreed, 'second' => $agreed, 'decision' => $decision];
@@ -267,6 +282,7 @@ final class IngredientAllergenBackfill
                 $this->em->persist($link);
             }
             $ingredient->markAllergensReviewed(GlobalIngredientAllergen::SOURCE_AI);
+            $this->reviewQueue->resolveApplied($subject);
 
             return;
         }
@@ -287,8 +303,74 @@ final class IngredientAllergenBackfill
             $this->em->persist($link);
         }
         $ingredient->markAllergensReviewed(IngredientAllergen::SOURCE_AI);
+        $this->reviewQueue->resolveApplied($subject);
         // Changes the computed allergens of every dish using it.
         $ingredient->getRestaurant()->bumpMenuContentVersion();
+    }
+
+    /**
+     * Queues the review items of runs made before AllergenReviewQueue
+     * existed, from their -todo.csv rows (the latest row per ingredient).
+     * Rows withdrawn by an earlier --recheck-applied ("DESAPLICADO") were
+     * agreed AI answers, so they are decided again with the current rules
+     * and re-applied when those now allow it; everything else is queued as
+     * it was recorded. An ingredient that has been reviewed since, or is
+     * already queued, is left alone.
+     *
+     * @param  list<array<string, string>> $rows CSV rows (header => value) with resultado review/suggestion
+     * @return array{queued: int, reapplied: int, skipped: int}
+     */
+    public function importReviewList(array $rows, bool $dryRun): array
+    {
+        $counts = ['queued' => 0, 'reapplied' => 0, 'skipped' => 0];
+        $pending = [self::KIND_GLOBAL => $this->reviewQueue->pendingIds(self::KIND_GLOBAL), self::KIND_PRIVATE => $this->reviewQueue->pendingIds(self::KIND_PRIVATE)];
+        $validCodes = array_map(static fn ($a) => $a->getCode(), $this->allergenRepository->findAllOrdered());
+
+        foreach ($rows as $row) {
+            $kind = $row['tipo'] === 'global' ? self::KIND_GLOBAL : self::KIND_PRIVATE;
+            $id = (int) $row['id'];
+            $subject = null;
+            if (!isset($pending[$kind][$id])) {
+                $subject = $kind === self::KIND_GLOBAL
+                    ? (($g = $this->em->find(GlobalIngredient::class, $id)) ? $this->globalSubject($g, true) : null)
+                    : (($i = $this->em->find(Ingredient::class, $id)) ? $this->privateSubject($i, true) : null);
+            }
+            // Gone, reviewed since, or a review item that has become protected.
+            if ($subject === null || ($subject['protected'] && $row['resultado'] !== AllergenDecision::SUGGESTION)) {
+                $counts['skipped']++;
+                continue;
+            }
+
+            $proposal = AllergenDecision::parse($row['propuesta_revision']) ?? [];
+            if (str_starts_with($row['motivo'], 'DESAPLICADO') && !$subject['protected']) {
+                $agreed = ['allergens' => $proposal, 'unsure' => false];
+                $decision = AllergenDecision::decide($agreed, $agreed, $subject['rules'], $validCodes, null);
+                if ($decision->outcome !== AllergenDecision::REVIEW) {
+                    if (!$dryRun) {
+                        $this->apply($subject, $decision);
+                    }
+                    $counts['reapplied']++;
+                    continue;
+                }
+                $decision = new AllergenDecision(AllergenDecision::REVIEW, $decision->allergens, array_merge(
+                    ['DESAPLICADO — se había aplicado y con las reglas actuales va a revisión'],
+                    $decision->reasons,
+                ));
+            } else {
+                $decision = new AllergenDecision($row['resultado'], $proposal, explode(' · ', $row['motivo']));
+            }
+
+            if (!$dryRun) {
+                $this->reviewQueue->enqueue($subject, $decision, AllergenDecision::parse($row['propuesta_1a_pasada']));
+            }
+            $pending[$kind][$id] = true;
+            $counts['queued']++;
+        }
+        if (!$dryRun) {
+            $this->em->flush();
+        }
+
+        return $counts;
     }
 
     /** @param array<string, mixed> $subject an AI-reviewed, unprotected one: every link it has is 'ai' */

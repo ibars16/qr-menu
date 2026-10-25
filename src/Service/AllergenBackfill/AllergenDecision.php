@@ -114,6 +114,31 @@ final readonly class AllergenDecision
         return new self($final === [] ? self::NO_ALLERGENS : self::APPLIED, $final, []);
     }
 
+    /**
+     * The reverse of format(), for the review files: "ninguno" => [], "—" (no answer) => null.
+     *
+     * @return array<string, string>|null
+     */
+    public static function parse(string $formatted): ?array
+    {
+        $formatted = trim($formatted);
+        if ($formatted === '' || $formatted === '—') {
+            return null;
+        }
+        if ($formatted === 'ninguno') {
+            return [];
+        }
+
+        $allergens = [];
+        foreach (explode(',', $formatted) as $part) {
+            preg_match('/^\s*([a-z_]+)(?:\s*\(([a-z_]+)\))?\s*$/', $part, $m);
+            $allergens[$m[1]] = $m[2] ?? 'contains';
+        }
+        ksort($allergens);
+
+        return $allergens;
+    }
+
     /** @param array<string, string> $allergens */
     public static function format(array $allergens): string
     {

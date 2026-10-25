@@ -51,7 +51,11 @@ class ClassificationLog
     #[ORM\Column(length: 50)]
     private string $classificationType;
 
-    /** Null only for the NO_LABELS_FOUND sentinel row. */
+    /**
+     * Null for the NO_LABELS_FOUND sentinel row, and for whole-subject
+     * proposals (allergen_backfill: the proposal is in attributes — see
+     * AllergenReviewQueue).
+     */
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $label = null;
 
