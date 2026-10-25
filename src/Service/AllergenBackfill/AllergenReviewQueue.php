@@ -42,16 +42,10 @@ final class AllergenReviewQueue
      */
     public function enqueue(array $subject, AllergenDecision $decision, ?array $firstPass): void
     {
-        $subjectType = self::SUBJECT_TYPES[$subject['kind']];
-        $log = $this->em->getRepository(ClassificationLog::class)->findOneBy([
-            'subjectType' => $subjectType,
-            'subjectId' => $subject['id'],
-            'classificationType' => self::CLASSIFICATION_TYPE,
-            'status' => ClassificationStatus::PENDING_REVIEW,
-        ]);
+        $log = $this->findPending($subject['kind'], $subject['id']);
         if ($log === null) {
             $log = new ClassificationLog();
-            $log->setSubjectType($subjectType);
+            $log->setSubjectType(self::SUBJECT_TYPES[$subject['kind']]);
             $log->setSubjectId($subject['id']);
             $log->setClassificationType(self::CLASSIFICATION_TYPE);
             $log->setStatus(ClassificationStatus::PENDING_REVIEW);
@@ -77,13 +71,39 @@ final class AllergenReviewQueue
      */
     public function resolveApplied(array $subject): void
     {
-        $log = $this->em->getRepository(ClassificationLog::class)->findOneBy([
-            'subjectType' => self::SUBJECT_TYPES[$subject['kind']],
-            'subjectId' => $subject['id'],
+        $this->findPending($subject['kind'], $subject['id'])?->setStatus(ClassificationStatus::AUTO_APPLIED);
+    }
+
+    /**
+     * A person saved the ingredient's allergens (admin): that settles it.
+     * APPROVED when they kept exactly the AI proposal, REJECTED otherwise;
+     * what they saved goes into attributes.human_result.
+     *
+     * @param array<string, string> $allergens code => presence, as saved
+     */
+    public function resolveByHuman(string $kind, int $id, array $allergens): void
+    {
+        $log = $this->findPending($kind, $id);
+        if ($log === null) {
+            return;
+        }
+        ksort($allergens);
+        $attributes = $log->getAttributes();
+        $proposal = (array) ($attributes['proposal'] ?? []);
+        ksort($proposal);
+        $attributes['human_result'] = (object) $allergens;
+        $log->setAttributes($attributes);
+        $log->setStatus($proposal === $allergens ? ClassificationStatus::APPROVED : ClassificationStatus::REJECTED);
+    }
+
+    private function findPending(string $kind, int $id): ?ClassificationLog
+    {
+        return $this->em->getRepository(ClassificationLog::class)->findOneBy([
+            'subjectType' => self::SUBJECT_TYPES[$kind],
+            'subjectId' => $id,
             'classificationType' => self::CLASSIFICATION_TYPE,
             'status' => ClassificationStatus::PENDING_REVIEW,
         ]);
-        $log?->setStatus(ClassificationStatus::AUTO_APPLIED);
     }
 
     /** @return array<int, true> ingredient id => true, for every one of this kind waiting in the queue */

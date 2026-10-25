@@ -6,7 +6,9 @@ use App\Entity\GlobalIngredient;
 use App\Entity\GlobalIngredientAllergen;
 use App\Enum\AllergenPresence;
 use App\Repository\AllergenRepository;
+use App\Enum\ClassificationStatus;
 use App\Repository\GlobalIngredientRepository;
+use App\Service\AllergenBackfill\AllergenReviewQueue;
 use App\Service\Classification\ClassificationTaskInterface;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,8 +19,9 @@ use Doctrine\ORM\EntityManagerInterface;
  * config/global_ingredient_allergens.yaml. Only ever driven by the
  * classify:* console commands via ClassificationRunner; never invoked on a
  * request path, and never touches an ingredient that already has an
- * allergen link (manual, seeded, or previously AI-applied) or an existing
- * ClassificationLog row.
+ * allergen link (manual, seeded, or previously AI-applied), has been
+ * reviewed (allergens_reviewed_at), has its own ClassificationLog row, or
+ * is waiting in the allergen backfill's review queue (AllergenReviewQueue).
  *
  * Subject = GlobalIngredient. Label = an Allergen::code (closed
  * vocabulary — see validateProposal()). Attributes = {"presence":
@@ -56,10 +59,15 @@ final class AllergenClassificationTask implements ClassificationTaskInterface
                    SELECT 1 FROM classification_log cl
                    WHERE cl.subject_type = :subjectType AND cl.subject_id = gi.id AND cl.classification_type = :classificationType
                )
+               AND NOT EXISTS (
+                   SELECT 1 FROM classification_log pending
+                   WHERE pending.subject_type = :subjectType AND pending.subject_id = gi.id
+                     AND pending.classification_type = :backfillType AND pending.status = :pendingStatus
+               )
              ORDER BY gi.id
              LIMIT :limit',
-            ['subjectType' => self::SUBJECT_TYPE, 'classificationType' => self::NAME, 'limit' => $limit],
-            ['subjectType' => ParameterType::STRING, 'classificationType' => ParameterType::STRING, 'limit' => ParameterType::INTEGER]
+            ['subjectType' => self::SUBJECT_TYPE, 'classificationType' => self::NAME, 'backfillType' => AllergenReviewQueue::CLASSIFICATION_TYPE, 'pendingStatus' => ClassificationStatus::PENDING_REVIEW->value, 'limit' => $limit],
+            ['subjectType' => ParameterType::STRING, 'classificationType' => ParameterType::STRING, 'backfillType' => ParameterType::STRING, 'pendingStatus' => ParameterType::STRING, 'limit' => ParameterType::INTEGER]
         )->fetchFirstColumn();
 
         $ids = array_map('intval', $rows);
@@ -94,9 +102,14 @@ final class AllergenClassificationTask implements ClassificationTaskInterface
                AND NOT EXISTS (
                    SELECT 1 FROM classification_log cl
                    WHERE cl.subject_type = :subjectType AND cl.subject_id = gi.id AND cl.classification_type = :classificationType
+               )
+               AND NOT EXISTS (
+                   SELECT 1 FROM classification_log pending
+                   WHERE pending.subject_type = :subjectType AND pending.subject_id = gi.id
+                     AND pending.classification_type = :backfillType AND pending.status = :pendingStatus
                )',
-            ['subjectType' => self::SUBJECT_TYPE, 'classificationType' => self::NAME],
-            ['subjectType' => ParameterType::STRING, 'classificationType' => ParameterType::STRING]
+            ['subjectType' => self::SUBJECT_TYPE, 'classificationType' => self::NAME, 'backfillType' => AllergenReviewQueue::CLASSIFICATION_TYPE, 'pendingStatus' => ClassificationStatus::PENDING_REVIEW->value],
+            ['subjectType' => ParameterType::STRING, 'classificationType' => ParameterType::STRING, 'backfillType' => ParameterType::STRING, 'pendingStatus' => ParameterType::STRING]
         )->fetchOne();
     }
 

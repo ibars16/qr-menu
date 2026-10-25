@@ -19,6 +19,8 @@ use App\Entity\ProductTranslation;
 use App\Enum\AllergenPresence;
 use App\Enum\CategoryType;
 use App\Repository\AllergenRepository;
+use App\Service\AllergenBackfill\AllergenReviewQueue;
+use App\Service\AllergenBackfill\IngredientAllergenBackfill;
 use App\Service\CategoryTranslationService;
 use App\Service\ProductAllergenResolver;
 use App\Service\ProductTranslationService;
@@ -1298,7 +1300,7 @@ class MenuAdminController extends AbstractController
     }
 
     #[Route('/ingredients/{id}/allergens', name: 'ingredients_allergens_save', methods: ['POST'])]
-    public function saveIngredientAllergens(Ingredient $ingredient, Request $request, EntityManagerInterface $em): JsonResponse
+    public function saveIngredientAllergens(Ingredient $ingredient, Request $request, EntityManagerInterface $em, AllergenReviewQueue $reviewQueue): JsonResponse
     {
         $this->assertOwner($ingredient->getRestaurant());
 
@@ -1329,6 +1331,12 @@ class MenuAdminController extends AbstractController
         // Saving the editor is the owner checking the whole list — also
         // when it's empty ("reviewed, carries none").
         $ingredient->markAllergensReviewed(IngredientAllergen::SOURCE_HUMAN);
+        // …which also settles whatever the allergen backfill left pending for it.
+        $saved = [];
+        foreach ($ingredient->getAllergenLinks() as $link) {
+            $saved[$link->getAllergen()->getCode()] = $link->getPresence()->value;
+        }
+        $reviewQueue->resolveByHuman(IngredientAllergenBackfill::KIND_PRIVATE, $ingredient->getId(), $saved);
 
         // Doesn't touch Product at all, but changes every product using
         // this ingredient's *computed* allergens (see ProductAllergenResolver) —
