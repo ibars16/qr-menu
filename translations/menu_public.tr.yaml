@@ -25,7 +25,6 @@ filters:
     apply: "Sonuçları göster"
     no_results: "Sonuç yok"
 allergen:
-    avoid: "Alerjenlerden kaçın"
     avoid_panel_title: "Şunları içeren yemekleri gizle…"
     clear_selection: "Seçimi temizle"
     disclaimer: "Alerjen bilgileri sadece bilgilendirme amaçlıdır. Alerjiniz varsa sipariş vermeden önce personele danışın."

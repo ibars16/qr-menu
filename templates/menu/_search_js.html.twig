@@ -261,7 +261,7 @@ const catTabs     = document.querySelectorAll('.cat-tab');
 // activeAllergens/onAllergenFilterChange() below and never double-handled
 // here even though they'd otherwise match a plain .diet-filter selector.
 const dietFilters = document.querySelectorAll('[data-filter="diet"]');
-// Multi-select: every checked diet/allergy/other tag chip must match (AND,
+// Multi-select: every checked diet/other tag chip must match (AND,
 // not OR) — these are restrictions (allergies/diets), not preferences, so
 // combining them any looser than an intersection would be a food-safety
 // problem, not just a UX one. The hidden data-tag="all" button (see
@@ -298,7 +298,9 @@ function sectionMatchesActiveScope(sec, cat) {
 function rowMatchesActiveFilters(row, q) {
     const name      = row.querySelector('.front-name, .product-name')?.textContent.toLowerCase() ?? '';
     const tags      = (row.dataset.tags ?? '').trim().split(/\s+/).filter(Boolean);
-    const allergens = (row.dataset.allergens ?? '').trim().split(/\s+/).filter(Boolean).map(a => a.split(':')[0]);
+    // "free_from" entries ("Sin gluten") are on the card too, but a dish
+    // marked free of an allergen must not be hidden by avoiding it.
+    const allergens = (row.dataset.allergens ?? '').trim().split(/\s+/).filter(a => a && !a.endsWith(':free_from')).map(a => a.split(':')[0]);
     const search        = !q || name.includes(q);
     const tagMatch       = activeTags.size === 0 || [...activeTags].every(t => tags.includes(t));
     const allergenMatch  = activeAllergens.size === 0 || ![...activeAllergens].some(a => allergens.includes(a));
@@ -449,7 +451,7 @@ catTabs.forEach(tab => tab.addEventListener('click', e => {
 dietFilters.forEach(btn => btn.addEventListener('click', () => {
     if (btn.dataset.tag === 'all') {
         // "Todo" — the reset action, not a selectable chip: clears every
-        // active diet/allergy/other tag rather than toggling itself.
+        // active diet/other tag rather than toggling itself.
         activeTags.clear();
         dietFilters.forEach(x => { x.classList.remove('active'); x.setAttribute('aria-pressed', 'false'); });
     } else {

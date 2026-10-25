@@ -25,7 +25,6 @@ filters:
     apply: "Resultaten tonen"
     no_results: "Geen resultaten"
 allergen:
-    avoid: "Allergenen vermijden"
     avoid_panel_title: "Verberg gerechten die … bevatten"
     clear_selection: "Selectie wissen"
     disclaimer: "De informatie over allergenen is indicatief. Overleg bij allergieën vóór het bestellen met het personeel."

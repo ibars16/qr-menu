@@ -25,7 +25,6 @@ filters:
     apply: "Ergebnisse anzeigen"
     no_results: "Keine Ergebnisse"
 allergen:
-    avoid: "Allergene vermeiden"
     avoid_panel_title: "Gerichte ausblenden, die … enthalten"
     clear_selection: "Auswahl löschen"
     disclaimer: "Die Angaben zu Allergenen dienen nur zur Orientierung. Bitte frage vor der Bestellung das Personal, falls du Allergien hast."

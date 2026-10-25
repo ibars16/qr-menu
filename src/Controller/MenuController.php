@@ -412,7 +412,7 @@ class MenuController extends AbstractController
         // worse than not offering it. One pass over $allProducts' already-warmed tags
         // collection (see warmMenuCollections() above the category loop) rather than a
         // query per product. Every consumer of $tags below (the filters panel's diet/
-        // allergy/other chip groups, in this same layout — the only one left, see
+        // other chip groups, in this same layout — the only one left, see
         // MenuController's $validLayouts) inherits the pruned set for free; nothing here
         // changes what a chip does once shown, only whether it's offered at all.
         $availableTagIds = [];

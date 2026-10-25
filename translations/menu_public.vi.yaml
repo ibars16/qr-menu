@@ -25,7 +25,6 @@ filters:
     apply: "Xem kết quả"
     no_results: "Không có kết quả"
 allergen:
-    avoid: "Tránh chất gây dị ứng"
     avoid_panel_title: "Ẩn các món có chứa…"
     clear_selection: "Xóa lựa chọn"
     disclaimer: "Thông tin về chất gây dị ứng chỉ mang tính tham khảo. Vui lòng hỏi nhân viên trước khi gọi món nếu bạn bị dị ứng."

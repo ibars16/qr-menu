@@ -2,7 +2,7 @@
 {% include 'menu/themes/' ~ theme ~ '/vars.html.twig' %}
 {% import 'menu/_price.html.twig' as priceMacro %}
 {% import 'menu/_set_menu.html.twig' as setMenuMacro %}
-{# Filters-panel chip icon (diet/allergy/other/evitar chips below). Icons are
+{# Filters-panel chip icon (diet/other/allergen chips below). Icons are
    free-text data (Tag::$icon / Allergen::$icon, admin-set, usually an emoji)
    — there's no fixed key to map to a monoline SVG set, so maison contains
    the emoji as-is in a parchment disc (.aicon) instead of inventing an icon
@@ -201,6 +201,8 @@
     .filters-panel-body { padding: 0.75rem 1.25rem 1.25rem; display: flex; flex-direction: column; gap: 1.375rem; }
     .filters-section { display: flex; flex-direction: column; gap: 0.625rem; }
     .filters-section-title { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--btt); }
+    /* --fg, not --fg-2: --fg-2 is under 4.5:1 on glass's and noir's panel. */
+    .filters-section-sub { font-size: 0.8125rem; color: var(--fg); margin-top: -0.25rem; }
     .filters-panel-body .allergen-disclaimer { padding-top: 0; }
     /* Bottom padding is deliberately generous (not just the footer's usual
        spacing): the Smart Waiter chat bubble is fixed at right:18px;
@@ -752,8 +754,14 @@
 {% if showTypeFilter or tags|length > 0 or menuAllergens|length > 0 %}
     {% set dietTagCodes = ['vegetarian', 'vegan', 'gluten-free', 'halal'] %}
     {% set dietaTags = tags|filter(t => t.code in dietTagCodes) %}
-    {% set alergiaTags = tags|filter(t => t.code|slice(0, 9) == 'contains-') %}
-    {% set otrosTags = tags|filter(t => t.code not in dietTagCodes and t.code|slice(0, 9) != 'contains-') %}
+    {# Not offered as filters: "contains-…" tags (and the older dairy/nuts/
+       contains_gluten codes) are hand-set and filter the opposite way to
+       the allergen section — ticking one showed only the dishes WITH it,
+       right next to "Leche" hiding them; the allergen section below,
+       computed from ingredients, is the one allergy filter. "recommended"
+       is a highlight (badge, Smart Waiter), not something to filter by. #}
+    {% set nonFilterTagCodes = ['recommended', 'dairy', 'nuts', 'contains_gluten'] %}
+    {% set otrosTags = tags|filter(t => t.code not in dietTagCodes and t.code not in nonFilterTagCodes and t.code|slice(0, 9) != 'contains-') %}
     <div class="filters-overlay" id="filters-overlay" aria-hidden="true" onclick="if(event.target===this) closeFiltersPanel()">
         <div class="filters-panel" role="dialog" aria-modal="true" aria-label="{{ 'filters.title'|trans({}, 'menu_public', locale) }}">
             {# The × lives directly in .filters-panel (the fixed chrome) for
@@ -798,17 +806,10 @@
                         </div>
                     </div>
                 {% endif %}
-                {% if alergiaTags|length > 0 %}
-                    <div class="filters-section">
-                        <div class="filters-section-title">{{ 'filters.allergy_title'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(alergiaTags|length) }}</span>{% endif %}</div>
-                        <div class="diet-filters">
-                            {% for tag in alergiaTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-filter="diet" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, theme) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
                 {% if menuAllergens|length > 0 %}
                     <div class="filters-section">
-                        <div class="filters-section-title">{{ 'allergen.avoid'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(menuAllergens|length) }}</span>{% endif %}</div>
+                        <div class="filters-section-title">{{ 'filters.allergy_title'|trans({}, 'menu_public', locale) }}{% if theme == 'maison' %}<span class="count">{{ '%02d'|format(menuAllergens|length) }}</span>{% endif %}</div>
+                        <div class="filters-section-sub">{{ 'allergen.avoid_panel_title'|trans({}, 'menu_public', locale) }}</div>
                         {% if theme == 'maison' %}
                             {# Chip pattern (button + aria-pressed), matching the diet/type
                                chips above — no native checkboxes in this theme. See

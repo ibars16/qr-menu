@@ -25,7 +25,6 @@ filters:
     apply: "Mostra risultati"
     no_results: "Nessun risultato"
 allergen:
-    avoid: "Evita allergeni"
     avoid_panel_title: "Nascondi i piatti che contengono…"
     clear_selection: "Cancella selezione"
     disclaimer: "Le informazioni sugli allergeni sono indicative. Consulta il personale prima di ordinare in caso di allergie."

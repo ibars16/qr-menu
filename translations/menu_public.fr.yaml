@@ -25,7 +25,6 @@ filters:
     apply: "Voir les résultats"
     no_results: "Aucun résultat"
 allergen:
-    avoid: "Éviter des allergènes"
     avoid_panel_title: "Masquer les plats contenant…"
     clear_selection: "Effacer la sélection"
     disclaimer: "Les informations sur les allergènes sont fournies à titre indicatif. Merci de vous renseigner auprès du personnel avant de commander en cas d'allergie."

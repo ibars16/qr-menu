@@ -25,7 +25,6 @@ filters:
     apply: "Visa resultat"
     no_results: "Inga resultat"
 allergen:
-    avoid: "Undvik allergener"
     avoid_panel_title: "Dölj rätter som innehåller…"
     clear_selection: "Rensa urval"
     disclaimer: "Informationen om allergener är endast vägledande. Rådfråga personalen innan du beställer om du har allergier."
