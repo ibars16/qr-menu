@@ -8,34 +8,28 @@ use App\Entity\MenuSection;
 use App\Entity\Product;
 use App\Entity\ProductTranslation;
 use App\Entity\Restaurant;
-use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Twig\Environment;
-use Twig\Loader\FilesystemLoader;
-use Twig\TwigFilter;
-use Twig\TwigFunction;
 
 /**
  * Renders the actual menu/_set_menu.html.twig partial (shared by all 3
- * public layouts) against a standalone Twig environment — no kernel/DB
- * needed, mirroring PriceMacroRenderingTest's approach for the sibling
- * _price.html.twig macro. `asset()` is stubbed since this partial renders a
- * dish thumbnail; the real function comes from Symfony's AssetExtension,
- * irrelevant to what's being verified here. `trans` is stubbed the same way
- * (returns the message id verbatim, ignoring params/domain/locale) since
- * this suite verifies set-menu structure, not translation text — real
+ * public layouts) with the app's real Twig environment, like
+ * PriceMacroRenderingTest does for the sibling _price.html.twig macro: the
+ * kernel's `twig` service, so every app function/filter (menu_dir,
+ * owner_text, asset, trans…) is the real one and a new one can't break
+ * this suite. No DB needed — the partial only reads unsaved entities. This
+ * suite verifies set-menu structure, not translation text — real
  * translation coverage lives in the menu_public.*.yaml lint + the live
  * render checks done when that i18n work landed.
  */
-final class SetMenuRenderingTest extends TestCase
+final class SetMenuRenderingTest extends KernelTestCase
 {
     private Environment $twig;
 
     protected function setUp(): void
     {
-        $projectDir = dirname(__DIR__, 2);
-        $this->twig = new Environment(new FilesystemLoader($projectDir . '/templates'));
-        $this->twig->addFunction(new TwigFunction('asset', static fn (string $path) => '/' . $path));
-        $this->twig->addFilter(new TwigFilter('trans', static fn (string $id, array $params = [], ?string $domain = null, ?string $locale = null) => $id));
+        self::bootKernel();
+        $this->twig = static::getContainer()->get('twig');
     }
 
     private function restaurant(string $locale = 'es', string $currency = 'EUR'): Restaurant
@@ -78,6 +72,8 @@ final class SetMenuRenderingTest extends TestCase
         $product->setPosition($position);
         $product->setBasePrice(0); // irrelevant inside a set menu — never rendered
         $product->setActive(true);
+        // As in the app: a set-menu dish belongs to the menu category too.
+        $product->setCategory($section->getCategory());
         $section->addProduct($product);
 
         $translation = new ProductTranslation();
@@ -90,6 +86,7 @@ final class SetMenuRenderingTest extends TestCase
 
     private function renderSection(Category $menu, Restaurant $restaurant, string $locale = 'es', string $currencyDisplay = '€'): string
     {
+        $menu->setRestaurant($restaurant);
         $template = $this->twig->createTemplate(
             "{% import 'menu/_set_menu.html.twig' as setMenuMacro %}{{ setMenuMacro.section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens) }}"
         );
@@ -106,6 +103,7 @@ final class SetMenuRenderingTest extends TestCase
 
     private function renderPill(Category $menu, Restaurant $restaurant, string $locale = 'es', string $currencyDisplay = '€'): string
     {
+        $menu->setRestaurant($restaurant);
         $template = $this->twig->createTemplate(
             "{% import 'menu/_set_menu.html.twig' as setMenuMacro %}{{ setMenuMacro.pill(category, locale, restaurant, currencyDisplay) }}"
         );
@@ -142,7 +140,7 @@ final class SetMenuRenderingTest extends TestCase
         $xpath = $this->xpath($this->renderSection($menu, $restaurant));
 
         self::assertSame('Menú del día', $this->text($xpath, '//*[@class="set-menu-name"]'));
-        self::assertSame('15.00 €', $this->text($xpath, '//*[@class="set-menu-price"]'));
+        self::assertSame('15,00 €', $this->text($xpath, '//*[@class="set-menu-price"]'), 'es: decimal comma (MenuNumberFormatter)');
     }
 
     public function testDescriptionRendersOnlyWhenSet(): void
@@ -219,7 +217,7 @@ final class SetMenuRenderingTest extends TestCase
         $supplements = $xpath->query('//*[@class="set-menu-supplement"]');
 
         self::assertSame(1, $supplements->length, 'only the dish with a supplement gets a badge');
-        self::assertSame('+3.00 €', trim($supplements->item(0)->textContent));
+        self::assertSame('+3,00 €', trim($supplements->item(0)->textContent));
     }
 
     public function testThumbnailRendersOnlyWhenProductHasAPhotoNoPlaceholder(): void
@@ -244,7 +242,7 @@ final class SetMenuRenderingTest extends TestCase
         $menu = $this->menu('Menú del día', 1500);
 
         $xpath = $this->xpath($this->renderPill($menu, $restaurant));
-        self::assertSame('Menú del día · 15.00 €', $this->text($xpath, '//*[@class="cat-tab cat-tab-menu"]'));
+        self::assertSame('Menú del día · 15,00 €', $this->text($xpath, '//*[@class="cat-tab cat-tab-menu"]'));
     }
 
     public function testDishNotActiveIsExcludedFromRendering(): void

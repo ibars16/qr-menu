@@ -107,12 +107,15 @@ final class CervelloMenuFixtureTest extends KernelTestCase
             flags: JSON_THROW_ON_ERROR
         );
 
-        $products = $this->em->getRepository(Product::class)->findBy(['importBatch' => $batch]);
+        // By id = creation order, i.e. the order the assembler met the
+        // dishes in; without it the category order below is whatever the
+        // database happens to return.
+        $products = $this->em->getRepository(Product::class)->findBy(['importBatch' => $batch], ['id' => 'ASC']);
         $resolver = self::getContainer()->get(ProductAllergenResolver::class);
         $allergenEntries = $resolver->resolveForProducts($products);
 
         // Group actual products by category, in the order the categories
-        // were first encountered while iterating products by position —
+        // were first encountered while iterating products in creation order —
         // matching how expected.json's own category order was derived.
         $byCategory = [];
         $categoryOrder = [];

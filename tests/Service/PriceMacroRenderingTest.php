@@ -4,14 +4,14 @@ namespace App\Tests\Service;
 
 use App\Entity\Product;
 use App\Entity\ProductPriceVariant;
-use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Twig\Environment;
-use Twig\Loader\FilesystemLoader;
 
 /**
- * Renders the actual menu/_price.html.twig macro against a standalone Twig
- * environment — no kernel/DB needed,
- * since the macro only touches plain entity getters. This is the real
+ * Renders the actual menu/_price.html.twig macro with the app's real Twig
+ * environment (from the kernel, every app extension registered — no DB
+ * needed, the macro only touches plain entity getters), so a new Twig
+ * function in the template can't break this suite. This is the real
  * rendering rule, not a reimplementation of it.
  *
  * For the multi-price (stacked) case, assertions target the semantic
@@ -21,20 +21,21 @@ use Twig\Loader\FilesystemLoader;
  * string, since that structure is exactly what the per-layout CSS grid
  * (label left/muted, price right) depends on.
  */
-final class PriceMacroRenderingTest extends TestCase
+final class PriceMacroRenderingTest extends KernelTestCase
 {
     private Environment $twig;
 
     protected function setUp(): void
     {
-        $projectDir = dirname(__DIR__, 2);
-        $this->twig = new Environment(new FilesystemLoader($projectDir . '/templates'));
+        self::bootKernel();
+        $this->twig = static::getContainer()->get('twig');
     }
 
-    private function render(Product $product, string $currency, bool $showCurrency, string $currencyDisplay = ''): string
+    /** $locale = the diner's language: decimal separator and text direction ('en': "10.00") */
+    private function render(Product $product, string $currency, bool $showCurrency, string $currencyDisplay = '', string $locale = 'en'): string
     {
         $template = $this->twig->createTemplate(
-            "{% import 'menu/_price.html.twig' as priceMacro %}{{ priceMacro.price(product, currency, showCurrency, currencyDisplay) }}"
+            "{% import 'menu/_price.html.twig' as priceMacro %}{{ priceMacro.price(product, currency, showCurrency, currencyDisplay, locale) }}"
         );
 
         return trim($template->render([
@@ -42,6 +43,7 @@ final class PriceMacroRenderingTest extends TestCase
             'currency' => $currency,
             'showCurrency' => $showCurrency,
             'currencyDisplay' => $currencyDisplay,
+            'locale' => $locale,
         ]));
     }
 
