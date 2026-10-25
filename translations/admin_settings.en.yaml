@@ -50,7 +50,8 @@ action:
 
 hint:
     logo_format: 'PNG or JPG, max. 2 MB'
-    hero_image_format: 'PNG, JPG, or WebP, max. 8 MB (min 300x300 px, max 5000x5000 px)'
+    hero_image_format: 'PNG, JPG, or WebP, max. %max_mb% MB (min %min%x%min% px, max %max%x%max% px; recommended: %recommended% px wide or more)'
+    hero_image_width_notice: "This photo is %width% × %height% px. It will still be saved, but it may look soft on large screens. Recommended: %recommended% px wide or more."
     tagline: Shown under the restaurant name on some public menu themes.
     menu_language: The language you use to enter dish names and descriptions.
     admin_language: The language of this management panel. It doesn't affect the menu your customers see.
@@ -71,8 +72,9 @@ flash:
     hero_image_too_large: The hero photo is too large (max 8 MB).
     hero_image_dimensions_too_small: "The image is too small. Upload one that's at least %min% px wide and tall."
     hero_image_dimensions_too_large: The image is too large (max 5000x5000 px).
-    hero_image_warning_dimensions: This image is small and may look blurry on large screens.
+    hero_image_warning_dimensions: "This image is %width% × %height% px and may look blurry on large screens (minimum %min% × %min% px; recommended: %recommended% px wide or more)."
     hero_image_warning_portrait: It's very vertical and the hero will crop the sides.
+    hero_image_warning_width: "Hero photo saved. It is %width% × %height% px, so it may look soft on large screens. Recommended: %recommended% px wide or more."
     saved: Settings saved successfully.
     section_saved: Section saved successfully.
     form_errors: "Please check the highlighted fields."

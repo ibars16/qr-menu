@@ -54,6 +54,10 @@ services:
         arguments:
             $uploadsDir: '%app.uploads_dir%'
 
+    App\Twig\ImageSizeExtension:
+        arguments:
+            $uploadsDir: '%app.uploads_dir%'
+
     App\Command\GenerateGlobalIngredientsDatasetCommand:
         arguments:
             $projectDir: '%kernel.project_dir%'

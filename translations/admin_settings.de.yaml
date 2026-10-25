@@ -50,7 +50,8 @@ action:
 
 hint:
     logo_format: 'PNG oder JPG, max. 2 MB'
-    hero_image_format: 'PNG, JPG oder WebP, max. 8 MB (mind. 300x300 px, max. 5000x5000 px)'
+    hero_image_format: 'PNG, JPG oder WebP, max. %max_mb% MB (mind. %min%x%min% px, max. %max%x%max% px; empfohlen: %recommended% px Breite oder mehr)'
+    hero_image_width_notice: "Dieses Foto ist %width% × %height% px groß. Es wird trotzdem gespeichert, kann aber auf großen Bildschirmen unscharf wirken. Empfohlen: %recommended% px Breite oder mehr."
     tagline: Wird bei manchen Designs unter dem Restaurantnamen in der öffentlichen Speisekarte angezeigt.
     menu_language: Die Sprache, in der Sie Gerichtnamen und -beschreibungen eingeben.
     admin_language: Die Sprache dieses Verwaltungspanels. Sie hat keinen Einfluss auf die Speisekarte Ihrer Kunden.
@@ -71,8 +72,9 @@ flash:
     hero_image_too_large: Das Header-Foto ist zu groß (max. 8 MB).
     hero_image_dimensions_too_small: 'Das Bild ist zu klein. Lade eines mit mindestens %min% px Breite und Höhe hoch.'
     hero_image_dimensions_too_large: Das Bild ist zu groß (max. 5000x5000 px).
-    hero_image_warning_dimensions: Dieses Bild ist klein und könnte auf großen Bildschirmen unscharf wirken.
+    hero_image_warning_dimensions: "Dieses Bild ist %width% × %height% px groß und könnte auf großen Bildschirmen unscharf wirken (mindestens %min% × %min% px; empfohlen: %recommended% px Breite oder mehr)."
     hero_image_warning_portrait: Es ist sehr hochformatig — der Hero-Bereich schneidet die Seiten ab.
+    hero_image_warning_width: "Header-Foto gespeichert. Es ist %width% × %height% px groß und kann auf großen Bildschirmen unscharf wirken. Empfohlen: %recommended% px Breite oder mehr."
     saved: Einstellungen erfolgreich gespeichert.
     section_saved: Abschnitt erfolgreich gespeichert.
     form_errors: "Bitte prüfen Sie die markierten Felder."

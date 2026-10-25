@@ -50,7 +50,8 @@ action:
 
 hint:
     logo_format: 'PNG ou JPG, 2 Mo max.'
-    hero_image_format: 'PNG, JPG ou WebP, 8 Mo max. (min. 300x300 px, max. 5000x5000 px)'
+    hero_image_format: 'PNG, JPG ou WebP, %max_mb% Mo max. (min. %min%x%min% px, max. %max%x%max% px ; recommandé : %recommended% px de large ou plus)'
+    hero_image_width_notice: "Cette photo mesure %width% × %height% px. Elle sera enregistrée quand même, mais sur un grand écran elle peut manquer de netteté. Recommandé : %recommended% px de large ou plus."
     tagline: "Affiché sous le nom du restaurant sur certains thèmes de la carte publique."
     menu_language: La langue dans laquelle vous saisissez les noms et descriptions des plats.
     admin_language: "La langue de ce panneau de gestion. Elle n'affecte pas la carte vue par vos clients."
@@ -71,8 +72,9 @@ flash:
     hero_image_too_large: "La photo d'en-tête est trop volumineuse (max. 8 Mo)."
     hero_image_dimensions_too_small: "L'image est trop petite. Ajoutez-en une d'au moins %min% px de large et de haut."
     hero_image_dimensions_too_large: L'image est trop grande (max. 5000x5000 px).
-    hero_image_warning_dimensions: "Cette image est petite et pourrait paraître floue sur un grand écran."
+    hero_image_warning_dimensions: "Cette image mesure %width% × %height% px et pourrait paraître floue sur un grand écran (minimum %min% × %min% px ; recommandé : %recommended% px de large ou plus)."
     hero_image_warning_portrait: "Elle est très verticale, le hero recadrera les côtés."
+    hero_image_warning_width: "Photo d'en-tête enregistrée. Elle mesure %width% × %height% px : sur un grand écran, elle peut manquer de netteté. Recommandé : %recommended% px de large ou plus."
     saved: Paramètres enregistrés avec succès.
     section_saved: Section enregistrée avec succès.
     form_errors: "Vérifiez les champs signalés."

@@ -177,23 +177,29 @@
            order and defeat `el.hidden = true`, showing the box empty on
            every page load regardless of whether a warning actually fired. */
         .quality-warning[hidden] { display: none; }
+        .quality-note {
+            margin-top: var(--sp-3); padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md);
+            background: rgba(193,150,14,0.12); border: 1px solid rgba(193,150,14,0.3);
+            font-size: var(--fs-base); color: var(--warn-fg); line-height: var(--lh-body);
+        }
+        .quality-note[hidden] { display: none; }
         .quality-warning-messages { display: flex; flex-direction: column; gap: var(--sp-1); }
-        .quality-warning-messages p { margin: 0; font-size: var(--fs-base); color: #E0B84D; line-height: var(--lh-body); }
+        .quality-warning-messages p { margin: 0; font-size: var(--fs-base); color: var(--warn-fg); line-height: var(--lh-body); }
         .quality-warning-confirm {
             display: inline-flex; align-items: center; gap: var(--sp-2); align-self: flex-start;
             padding: var(--sp-2) var(--sp-4); border-radius: var(--r-md); font-size: var(--fs-base); font-weight: 600;
-            border: 1px solid rgba(193,150,14,0.45); background: rgba(193,150,14,0.18); color: #E0B84D;
+            border: 1px solid rgba(193,150,14,0.45); background: rgba(193,150,14,0.18); color: var(--warn-fg);
             cursor: pointer; transition: background 0.15s;
         }
         .quality-warning-confirm:hover { background: rgba(193,150,14,0.28); }
         .quality-warning-confirm input[type="checkbox"] {
-            width: 16px; height: 16px; margin: 0; accent-color: #E0B84D;
+            width: 16px; height: 16px; margin: 0; accent-color: var(--warn-fg);
         }
         /* :focus-visible on the checkbox itself (not the label) so the ring
            tracks real keyboard focus, matching this app's other
            :focus-visible-only conventions (never on a mouse click). */
         .quality-warning-confirm:has(input:focus-visible) {
-            outline: 2px solid #E0B84D; outline-offset: 2px;
+            outline: 2px solid var(--warn-fg); outline-offset: 2px;
         }
 
         /* Save button */
@@ -429,6 +435,7 @@
                                 <input type="file" id="hero-image-input" name="heroImage"
                                        accept="image/*" style="display:none"
                                        data-min-dimension="{{ heroImageMinDimension }}"
+                                       data-recommended-width="{{ heroImageRecommendedWidth }}"
                                        onchange="previewHeroImage(this); checkHeroImageQuality(this)">
                                 {% if restaurant.heroImage %}
                                     <button type="button" class="remove-logo-btn" onclick="removeHeroImage()">
@@ -438,7 +445,7 @@
                                        named "removeHeroImage", see the comment there. #}
                                     <input type="hidden" name="removeHeroImageFlag" id="remove-hero-image-input" value="0">
                                 {% endif %}
-                                <span class="field-hint">{{ 'hint.hero_image_format'|trans({}, 'admin_settings') }}</span>
+                                <span class="field-hint">{{ 'hint.hero_image_format'|trans({'%max_mb%': heroImageMaxMegabytes, '%min%': heroImageMinDimension, '%max%': heroImageMaxDimension, '%recommended%': heroImageRecommendedWidth}, 'admin_settings') }}</span>
                             </div>
                         </div>
 
@@ -458,6 +465,10 @@
                                 {{ 'action.upload_anyway'|trans({}, 'admin_settings') }}
                             </label>
                         </div>
+                        {# Informative only (UploadQualityWarning::WidthBelowRecommended):
+                           never blocks the save — the server repeats it as a flash
+                           once the photo is stored. #}
+                        <p class="quality-note" id="hero-quality-note" hidden role="status"></p>
                     </div>
 
                 </div>
@@ -696,6 +707,9 @@
         // keys, never a JS-only string that could drift from that copy.
         const MSG_HERO_WARNING_DIMENSIONS = "{{ 'flash.hero_image_warning_dimensions'|trans({}, 'admin_settings')|e('js') }}";
         const MSG_HERO_WARNING_PORTRAIT   = "{{ 'flash.hero_image_warning_portrait'|trans({}, 'admin_settings')|e('js') }}";
+        // Before saving, so its own "will still be saved" wording rather
+        // than the post-save flash.hero_image_warning_width.
+        const MSG_HERO_NOTICE_WIDTH       = "{{ 'hint.hero_image_width_notice'|trans({}, 'admin_settings')|e('js') }}";
 
         // ── Logo preview ──
         function previewLogo(input) {
@@ -768,9 +782,11 @@
             const warningBox = document.getElementById('hero-quality-warning');
             const messagesEl = document.getElementById('hero-quality-warning-messages');
             const confirmBox = document.getElementById('hero-quality-confirmed');
+            const noteEl = document.getElementById('hero-quality-note');
             const minDimension = parseInt(input.dataset.minDimension, 10);
+            const recommendedWidth = parseInt(input.dataset.recommendedWidth, 10);
 
-            const reset = () => { warningBox.hidden = true; messagesEl.innerHTML = ''; confirmBox.checked = false; };
+            const reset = () => { warningBox.hidden = true; messagesEl.innerHTML = ''; confirmBox.checked = false; noteEl.hidden = true; noteEl.textContent = ''; };
 
             if (!input.files?.length) { reset(); return; }
 
@@ -778,9 +794,17 @@
             const img = new Image();
             img.onload = function () {
                 const w = img.naturalWidth, h = img.naturalHeight;
+                // Same %placeholders% SettingsController::heroImageWarningParams() fills.
+                const fill = (text) => text.replaceAll('%width%', w).replaceAll('%height%', h)
+                    .replaceAll('%min%', minDimension).replaceAll('%recommended%', recommendedWidth);
                 const messages = [];
-                if (w < minDimension || h < minDimension) messages.push(MSG_HERO_WARNING_DIMENSIONS);
-                if (w < h) messages.push(MSG_HERO_WARNING_PORTRAIT);
+                const tooSmall = w < minDimension || h < minDimension;
+                if (tooSmall) messages.push(fill(MSG_HERO_WARNING_DIMENSIONS));
+                if (w < h) messages.push(fill(MSG_HERO_WARNING_PORTRAIT));
+                // Not on top of the "too small" one, as on the server.
+                const narrow = !tooSmall && w < recommendedWidth;
+                noteEl.textContent = narrow ? fill(MSG_HERO_NOTICE_WIDTH) : '';
+                noteEl.hidden = !narrow;
 
                 if (messages.length) {
                     messagesEl.innerHTML = '';
@@ -792,7 +816,7 @@
                     warningBox.hidden = false;
                     confirmBox.checked = false;
                 } else {
-                    reset();
+                    warningBox.hidden = true; messagesEl.innerHTML = ''; confirmBox.checked = false;
                 }
                 URL.revokeObjectURL(url);
             };

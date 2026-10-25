@@ -7,6 +7,7 @@ use App\Service\ContactDetailsNormalizer;
 use App\Service\Upload\UploadProfile;
 use App\Service\Upload\UploadQualityWarning;
 use App\Service\Upload\UploadValidationError;
+use App\Service\Upload\UploadValidationResult;
 use App\Service\Upload\UploadValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -116,6 +117,9 @@ class SettingsController extends AbstractController
                     'currencies'            => $currencies,
                     'adminLocales'          => $adminLocaleResolver->getLocales(),
                     'heroImageMinDimension' => UploadValidator::minDimension(UploadProfile::HeroImage),
+                    'heroImageRecommendedWidth' => UploadValidator::recommendedWidth(UploadProfile::HeroImage),
+                    'heroImageMaxDimension' => UploadValidator::maxDimension(UploadProfile::HeroImage),
+                    'heroImageMaxMegabytes' => UploadValidator::maxSizeMegabytes(UploadProfile::HeroImage),
                     'errors'                => $errors,
                     'old'                   => [
                         'name'    => $name,
@@ -223,7 +227,7 @@ class SettingsController extends AbstractController
                     // early-return above — the owner re-submits (ticking
                     // "upload anyway", see settings.html.twig) to proceed.
                     foreach ($result->warnings as $warning) {
-                        $this->addFlash('warning', $translator->trans($this->heroImageWarningKey($warning), domain: 'admin_settings'));
+                        $this->addFlash('warning', $translator->trans($this->heroImageWarningKey($warning), $this->heroImageWarningParams($result), 'admin_settings'));
                     }
                     return $this->redirectToRoute('admin_settings');
                 }
@@ -241,6 +245,15 @@ class SettingsController extends AbstractController
                 } catch (FileException $e) {
                     $this->addFlash('error', $translator->trans('flash.hero_image_upload_error', domain: 'admin_settings'));
                     return $this->redirectToRoute('admin_settings');
+                }
+
+                // Saved — informative warnings (too narrow for a large
+                // screen) are only reported now; the ones that needed
+                // confirmation were already shown before this submission.
+                foreach ($result->warnings as $warning) {
+                    if (!$warning->requiresConfirmation()) {
+                        $this->addFlash('warning', $translator->trans($this->heroImageWarningKey($warning), $this->heroImageWarningParams($result), 'admin_settings'));
+                    }
                 }
 
                 // Old file is orphaned on disk once the column no longer
@@ -279,6 +292,9 @@ class SettingsController extends AbstractController
             'currencies'            => $currencies,
             'adminLocales'          => $adminLocaleResolver->getLocales(),
             'heroImageMinDimension' => UploadValidator::minDimension(UploadProfile::HeroImage),
+            'heroImageRecommendedWidth' => UploadValidator::recommendedWidth(UploadProfile::HeroImage),
+            'heroImageMaxDimension' => UploadValidator::maxDimension(UploadProfile::HeroImage),
+            'heroImageMaxMegabytes' => UploadValidator::maxSizeMegabytes(UploadProfile::HeroImage),
             'errors'                => [],
             'old'                   => null,
         ]);
@@ -326,6 +342,22 @@ class SettingsController extends AbstractController
         return match ($warning) {
             UploadQualityWarning::DimensionsBelowRecommended => 'flash.hero_image_warning_dimensions',
             UploadQualityWarning::PortraitAspectRatio => 'flash.hero_image_warning_portrait',
+            UploadQualityWarning::WidthBelowRecommended => 'flash.hero_image_warning_width',
         };
+    }
+
+    /**
+     * The photo's real size plus the profile's minimum and recommended
+     * width, for every hero warning — each message picks the ones it
+     * mentions. The numbers never live in the translation strings.
+     */
+    private function heroImageWarningParams(UploadValidationResult $result): array
+    {
+        return [
+            '%width%'       => $result->width,
+            '%height%'      => $result->height,
+            '%min%'         => UploadValidator::minDimension(UploadProfile::HeroImage),
+            '%recommended%' => UploadValidator::recommendedWidth(UploadProfile::HeroImage),
+        ];
     }
 }

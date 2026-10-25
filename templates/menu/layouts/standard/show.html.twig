@@ -442,7 +442,7 @@
         left: calc((100cqw - var(--w)) * var(--fx));
         top: calc((100cqh - var(--w) / var(--ar)) * var(--fy));
     }
-    .clip-backdrop { position: absolute; inset: -24px; z-index: -1; background: center / cover no-repeat; filter: blur(18px) brightness(0.85); pointer-events: none; }
+    .clip-backdrop, .cover-backdrop { position: absolute; inset: -24px; z-index: -1; background: center / cover no-repeat; filter: blur(18px) brightness(0.85); pointer-events: none; }
     .dish-card:hover .front-img img, .dish-card:hover .front-img video.dish-clip { transform: scale(1.045); }
 
     /* No-photo placeholder — a warm brand-colored panel with an icon and
@@ -610,10 +610,16 @@
            mark art (can be square, marginned, low-res), not the atmospheric
            wide photography this band wants. No fallback to $logo when empty:
            the band simply isn't in the DOM, and the hero falls back cleanly
-           to solid parchment (see .hero-inner below), exactly as designed. #}
+           to solid parchment (see .hero-inner below), exactly as designed.
+           A photo narrower than 2560px (size read by image_size(), null →
+           unknown) gets --fit: never drawn above its real size, the rest of
+           the band filled by .cover-backdrop (see themes/maison/overrides).
+           Wider or unknown → the markup is exactly the plain band. #}
         {% if restaurant.heroImage %}
-            <div class="hero-photo-band">
-                <img src="{{ asset('uploads/heroes/' ~ restaurant.heroImage) }}" alt="{{ restaurant.name }}">
+            {%- set heroSize = image_size('heroes/' ~ restaurant.heroImage) %}{% set heroFit = heroSize is not null and heroSize.width < 2560 %}
+            <div class="hero-photo-band{{ heroFit ? ' hero-photo-band--fit' }}">
+                {% if heroFit %}<div class="cover-backdrop" style="background-image: url('{{ asset('uploads/heroes/' ~ restaurant.heroImage) }}')" aria-hidden="true"></div>
+                {% endif %}<img src="{{ asset('uploads/heroes/' ~ restaurant.heroImage) }}" alt="{{ restaurant.name }}"{% if heroFit %} style="--nw: {{ heroSize.width }}px; --nh: {{ heroSize.height }}px"{% endif %}>
             </div>
         {% endif %}
     {% else %}

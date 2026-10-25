@@ -76,6 +76,11 @@ final class UploadValidator
          * the product), and a logo's constraints are about how the mark
          * actually renders, not friendliness — neither shares the reasoning
          * that motivated relaxing this one.
+         *
+         * recommendedWidth: below it (but above minWidth) the photo is
+         * saved anyway and the owner just gets an informative
+         * WidthBelowRecommended — the band is drawn up to ~1000 CSS px
+         * wide, ~2× that on a retina screen.
          */
         'hero_image' => [
             'maxSizeBytes'          => 8 * 1024 * 1024,
@@ -84,6 +89,7 @@ final class UploadValidator
             'minHeight'             => 300,
             'maxWidth'              => 5000,
             'maxHeight'             => 5000,
+            'recommendedWidth'      => 1600,
             'qualityWarningsEnabled' => true,
         ],
         'menu_import_page' => [
@@ -131,6 +137,24 @@ final class UploadValidator
     public static function minDimension(UploadProfile $profile): int
     {
         return self::LIMITS[$profile->value]['minWidth'];
+    }
+
+    /** The maximum width/height a profile's dimension check enforces (equal, like minDimension()). */
+    public static function maxDimension(UploadProfile $profile): int
+    {
+        return self::LIMITS[$profile->value]['maxWidth'];
+    }
+
+    /** A profile's file-size cap in whole MB, for "máx. N MB" hints. */
+    public static function maxSizeMegabytes(UploadProfile $profile): int
+    {
+        return intdiv(self::LIMITS[$profile->value]['maxSizeBytes'], 1024 * 1024);
+    }
+
+    /** The width below which a profile's upload gets an informative WidthBelowRecommended (hero_image only). */
+    public static function recommendedWidth(UploadProfile $profile): ?int
+    {
+        return self::LIMITS[$profile->value]['recommendedWidth'] ?? null;
     }
 
     /** A stored dish clip's caps — anything over either is trimmed (see LIMITS['dish_clip']). */
@@ -188,6 +212,7 @@ final class UploadValidator
 
         $warnings = [];
         $durationSeconds = null;
+        $width = $height = null;
 
         if ($isVideo) {
             // Fail closed: a clip we can't confidently read a duration out
@@ -230,6 +255,13 @@ final class UploadValidator
             if ($qualityWarningsEnabled && $width < $height) {
                 $warnings[] = UploadQualityWarning::PortraitAspectRatio;
             }
+            // Not on top of DimensionsBelowRecommended: that one already
+            // reports the size and asks for confirmation.
+            if ($qualityWarningsEnabled && isset($limits['recommendedWidth'])
+                && $width < $limits['recommendedWidth']
+                && !\in_array(UploadQualityWarning::DimensionsBelowRecommended, $warnings, true)) {
+                $warnings[] = UploadQualityWarning::WidthBelowRecommended;
+            }
         }
 
         // SECURITY — content moderation. Evaluated unconditionally, after
@@ -242,13 +274,14 @@ final class UploadValidator
             return UploadValidationResult::failure(UploadValidationError::Rejected);
         }
 
-        if ($warnings !== [] && !$qualityWarningsConfirmed) {
-            return UploadValidationResult::needsConfirmation($warnings);
+        $needsConfirmation = array_filter($warnings, static fn (UploadQualityWarning $w) => $w->requiresConfirmation()) !== [];
+        if ($needsConfirmation && !$qualityWarningsConfirmed) {
+            return UploadValidationResult::needsConfirmation($warnings, $width, $height);
         }
 
         $safeFilename = bin2hex(random_bytes(16)) . '.' . $allowedExtensions[$mimeType];
 
-        return UploadValidationResult::success($safeFilename, $mimeType, $warnings, $durationSeconds);
+        return UploadValidationResult::success($safeFilename, $mimeType, $warnings, $durationSeconds, $width, $height);
     }
 
     /**

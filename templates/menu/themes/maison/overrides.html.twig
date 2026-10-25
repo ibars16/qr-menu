@@ -575,6 +575,17 @@
     .hero-photo-band img {
         display: block; width: 100%; height: 100%; object-fit: cover; object-position: center;
     }
+    /* Photo smaller than the band (--fit, show.html.twig; --nw/--nh = its
+       real size): a box of min(band, real size), centred, still cover —
+       so it's never scaled above 1:1 — over .cover-backdrop, the same photo
+       blurred, filling the rest. Where the band is no bigger than the photo
+       (phones, the >=1024 column for most photos) min() picks 100% and it
+       draws exactly as the plain band above. */
+    .hero-photo-band--fit { position: relative; isolation: isolate; }
+    .hero-photo-band--fit img {
+        position: absolute; inset: 0; margin: auto;
+        width: min(100%, var(--nw)); height: min(100%, var(--nh));
+    }
     /* Padding-top trimmed from 22px to 14px (2026-09-07): with a heroImage,
        the photo band's own bottom border already reads as a hard edge, so
        22px of flat --surface-2 on top of .hero-name's own margin-top read as

@@ -13,13 +13,16 @@ final class UploadValidationResult
         public readonly ?string $mimeType,
         /** Clip profile only — read from the file itself; null for images. */
         public readonly ?float $durationSeconds = null,
+        /** Read from the file itself, for profiles with a dimension check; null otherwise. */
+        public readonly ?int $width = null,
+        public readonly ?int $height = null,
     ) {
     }
 
-    /** @param UploadQualityWarning[] $warnings quality issues found — empty for a clean upload, non-empty only once the caller has confirmed them (see needsConfirmation()) */
-    public static function success(string $safeFilename, string $mimeType, array $warnings = [], ?float $durationSeconds = null): self
+    /** @param UploadQualityWarning[] $warnings quality issues found — empty for a clean upload; informative ones (see UploadQualityWarning::requiresConfirmation()) or ones the caller has already confirmed (see needsConfirmation()) */
+    public static function success(string $safeFilename, string $mimeType, array $warnings = [], ?float $durationSeconds = null, ?int $width = null, ?int $height = null): self
     {
-        return new self(true, null, $warnings, $safeFilename, $mimeType, $durationSeconds);
+        return new self(true, null, $warnings, $safeFilename, $mimeType, $durationSeconds, $width, $height);
     }
 
     /** A hard, security-relevant rejection. Never overridable by a quality-warning confirmation flag. */
@@ -39,8 +42,8 @@ final class UploadValidationResult
      *
      * @param UploadQualityWarning[] $warnings
      */
-    public static function needsConfirmation(array $warnings): self
+    public static function needsConfirmation(array $warnings, ?int $width = null, ?int $height = null): self
     {
-        return new self(false, null, $warnings, null, null);
+        return new self(false, null, $warnings, null, null, null, $width, $height);
     }
 }

@@ -19,7 +19,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  * instead of failure(), and only proceed to success() once the caller
  * passes $qualityWarningsConfirmed = true. dish_image and logo don't opt
  * in (UploadProfile::HeroImage-only for now) and must keep rejecting small
- * dimensions outright, unchanged.
+ * dimensions outright, unchanged. Narrower than the recommended width
+ * (but above the minimum) is a third, purely informative warning: the
+ * upload goes straight through and the caller reports it after saving.
  *
  * Uses static fixture files (real bytes on disk, made with ImageMagick),
  * not GD (imagecreatetruecolor) — GD is unavailable in this environment,
@@ -45,13 +47,49 @@ final class UploadValidatorQualityWarningTest extends TestCase
 
     public function testCleanWideHeroImagePassesWithNoWarnings(): void
     {
-        // 800x400 — well above the 300px minimum, landscape.
-        $result = $this->validator()->validate($this->fixture('upload_hero_ok.jpg'), UploadProfile::HeroImage);
+        // 1600x800 — exactly the recommended width (the boundary passes), landscape.
+        $result = $this->validator()->validate($this->fixture('upload_hero_wide.jpg'), UploadProfile::HeroImage);
 
         self::assertTrue($result->isValid);
         self::assertNull($result->error);
         self::assertSame([], $result->warnings);
         self::assertNotNull($result->safeFilename);
+        self::assertSame(1600, $result->width);
+        self::assertSame(800, $result->height);
+    }
+
+    public function testNarrowHeroImageIsAcceptedWithAnInformativeWidthWarning(): void
+    {
+        // 800x400 — above the 300px minimum, below the 1600px recommended width.
+        $result = $this->validator()->validate($this->fixture('upload_hero_ok.jpg'), UploadProfile::HeroImage);
+
+        self::assertTrue($result->isValid, 'an informative warning must not hold the upload back for confirmation');
+        self::assertNull($result->error);
+        self::assertSame([UploadQualityWarning::WidthBelowRecommended], $result->warnings);
+        self::assertNotNull($result->safeFilename);
+        self::assertSame(800, $result->width, 'the real size is reported, for the warning text');
+        self::assertSame(400, $result->height);
+    }
+
+    public function testOnlyTheWidthWarningSkipsConfirmation(): void
+    {
+        self::assertFalse(UploadQualityWarning::WidthBelowRecommended->requiresConfirmation());
+        self::assertTrue(UploadQualityWarning::DimensionsBelowRecommended->requiresConfirmation());
+        self::assertTrue(UploadQualityWarning::PortraitAspectRatio->requiresConfirmation());
+    }
+
+    public function testRecommendedWidthIsHeroImageOnly(): void
+    {
+        self::assertSame(1600, UploadValidator::recommendedWidth(UploadProfile::HeroImage));
+        self::assertNull(UploadValidator::recommendedWidth(UploadProfile::Logo));
+        self::assertNull(UploadValidator::recommendedWidth(UploadProfile::DishImage));
+    }
+
+    public function testHeroImageHintLimitsComeFromTheProfile(): void
+    {
+        self::assertSame(300, UploadValidator::minDimension(UploadProfile::HeroImage));
+        self::assertSame(5000, UploadValidator::maxDimension(UploadProfile::HeroImage));
+        self::assertSame(8, UploadValidator::maxSizeMegabytes(UploadProfile::HeroImage));
     }
 
     public function testSmallHeroImageNeedsConfirmationInsteadOfFailing(): void
@@ -61,18 +99,21 @@ final class UploadValidatorQualityWarningTest extends TestCase
 
         self::assertFalse($result->isValid);
         self::assertNull($result->error, 'a quality-only issue must not be reported as a fatal error');
-        self::assertSame([UploadQualityWarning::DimensionsBelowRecommended], $result->warnings);
+        self::assertSame([UploadQualityWarning::DimensionsBelowRecommended], $result->warnings, 'no width warning on top: this one already reports the size');
         self::assertNull($result->safeFilename, 'nothing should be ready to persist until confirmed');
+        self::assertSame(250, $result->width, 'the real size is reported, for the confirmation text');
+        self::assertSame(150, $result->height);
     }
 
     public function testPortraitHeroImageNeedsConfirmationWithAspectWarning(): void
     {
-        // 400x600 — clears the 300px minimum on both axes, but taller than wide.
+        // 400x600 — clears the 300px minimum on both axes, but taller than
+        // wide (and narrower than recommended, reported alongside).
         $result = $this->validator()->validate($this->fixture('upload_hero_portrait.jpg'), UploadProfile::HeroImage);
 
         self::assertFalse($result->isValid);
         self::assertNull($result->error);
-        self::assertSame([UploadQualityWarning::PortraitAspectRatio], $result->warnings);
+        self::assertSame([UploadQualityWarning::PortraitAspectRatio, UploadQualityWarning::WidthBelowRecommended], $result->warnings);
     }
 
     public function testTinyPortraitHeroImageReturnsBothWarnings(): void

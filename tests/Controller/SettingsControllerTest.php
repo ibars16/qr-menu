@@ -352,7 +352,7 @@ final class SettingsControllerTest extends WebTestCase
 
         self::assertNull($restaurant->getHeroImage());
 
-        $goodImage = $this->fixtureUploadedFile('upload_hero_ok.jpg', 'hero.jpg', 'image/jpeg');
+        $goodImage = $this->fixtureUploadedFile('upload_hero_wide.jpg', 'hero.jpg', 'image/jpeg');
 
         $this->client->request('POST', '/admin/settings', [
             '_token' => $this->settingsToken(),
@@ -373,6 +373,84 @@ final class SettingsControllerTest extends WebTestCase
 
         self::assertNotNull($heroImage);
         self::assertFileExists($this->heroImageDir . '/' . $heroImage);
+    }
+
+    /**
+     * Narrower than the recommended width (800 < 1600): saved straight away,
+     * no confirmation, with an informative warning that carries the real
+     * size and the recommended width.
+     */
+    public function testNarrowHeroImageIsSavedWithAWarningShowingItsSize(): void
+    {
+        $restaurant = $this->makeRestaurant('Narrow Hero Image Http Test');
+        $owner = $this->makeOwner($restaurant);
+        $this->client->loginUser($owner);
+
+        $this->client->request('POST', '/admin/settings', [
+            '_token' => $this->settingsToken(),
+            'name'            => $restaurant->getName(),
+            'currency'        => 'EUR',
+            'defaultLanguage' => 'es',
+        ], [
+            'heroImage' => $this->fixtureUploadedFile('upload_hero_ok.jpg', 'hero.jpg', 'image/jpeg'),
+        ]);
+        $session = $this->client->getRequest()->getSession();
+        $restaurant = $this->reloadRestaurant($restaurant);
+        $heroImage = $restaurant->getHeroImage();
+        $this->heroImageFilesToRemove[] = $heroImage;
+
+        self::assertResponseRedirects('/admin/settings');
+        self::assertNotNull($heroImage, 'an informative warning must not hold the photo back');
+        self::assertFileExists($this->heroImageDir . '/' . $heroImage);
+        self::assertNotEmpty($session->getFlashBag()->peek('success'));
+
+        $warnings = $session->getFlashBag()->peek('warning');
+        self::assertCount(1, $warnings);
+        self::assertStringContainsString('800 × 400', $warnings[0]);
+        self::assertStringContainsString('1600', $warnings[0]);
+    }
+
+    /** The format hint's numbers are the hero_image profile's own limits, never written into the translations. */
+    public function testHeroImageFormatHintShowsTheProfileLimits(): void
+    {
+        $restaurant = $this->makeRestaurant('Hero Hint Test');
+        $this->client->loginUser($this->makeOwner($restaurant));
+
+        $crawler = $this->client->request('GET', '/admin/settings');
+        self::assertResponseIsSuccessful();
+
+        $hint = $crawler->filter('#hero-image-input')->closest('.logo-actions')->filter('.field-hint')->text();
+        foreach (['8 MB', '300x300 px', '5000x5000 px', '1600 px'] as $expected) {
+            self::assertStringContainsString($expected, $hint);
+        }
+        self::assertStringNotContainsString('%', $hint, 'every placeholder is filled');
+    }
+
+    /** Below the 300px minimum: still needs confirmation, nothing saved, and the text now gives the real size. */
+    public function testTooSmallHeroImageStillNeedsConfirmationAndShowsItsSize(): void
+    {
+        $restaurant = $this->makeRestaurant('Small Hero Image Http Test');
+        $owner = $this->makeOwner($restaurant);
+        $this->client->loginUser($owner);
+
+        $this->client->request('POST', '/admin/settings', [
+            '_token' => $this->settingsToken(),
+            'name'            => $restaurant->getName(),
+            'currency'        => 'EUR',
+            'defaultLanguage' => 'es',
+        ], [
+            'heroImage' => $this->fixtureUploadedFile('upload_hero_small.jpg', 'hero.jpg', 'image/jpeg'),
+        ]);
+        $session = $this->client->getRequest()->getSession();
+        $restaurant = $this->reloadRestaurant($restaurant);
+        $this->heroImageFilesToRemove[] = $restaurant->getHeroImage();
+
+        self::assertResponseRedirects('/admin/settings');
+        self::assertNull($restaurant->getHeroImage(), 'unconfirmed: nothing is saved');
+        $warnings = $session->getFlashBag()->peek('warning');
+        self::assertCount(1, $warnings);
+        self::assertStringContainsString('250 × 150', $warnings[0]);
+        self::assertStringContainsString('300', $warnings[0]);
     }
 
     /** The settings form's CSRF token, read from a real GET of the page (the form now requires it). */

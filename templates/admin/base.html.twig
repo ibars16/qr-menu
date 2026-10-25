@@ -49,6 +49,13 @@
             --err-text:      #F0997B;
             --err-border:    #D9704E;
 
+            /* Amber "heads up" text (.flash-warning, settings' .quality-warning*
+               and .quality-note) on its own translucent amber fill. Dark, on
+               rgba(193,150,14,·): .flash-warning over --bg-page 8.70:1, the
+               warning/note over --bg-card 8.21:1, the confirm button 6.05:1
+               (5.03:1 on hover). Light-mode value in html.light. */
+            --warn-fg:       #E0B84D;
+
             /* ── Type scale ── */
             --fs-xs:         11px;
             --fs-sm:         12px;
@@ -118,6 +125,12 @@
                6.34:1, --err-border on --bg-input is 5.16:1. */
             --err-text:      #A8341B;
             --err-border:    #B33A1F;
+
+            /* The dark-mode amber measures ~1.5:1 on the light amber fills.
+               This one: .flash-warning over --bg-page 5.55:1, the
+               warning/note over --bg-card 6.06:1, the confirm button 5.24:1
+               (4.82:1 on hover — #7A5A00 fell to 4.37:1 there). */
+            --warn-fg:       #725400;
 
             /* ── Elevation — much lower opacity than dark mode: on a light
                    surface a dark-mode-strength shadow reads as a muddy
@@ -271,7 +284,7 @@
            SettingsController's hero-image "needs confirmation" branch) is
            not a rejection — amber, not red, so it doesn't read as something
            broken. */
-        .flash-warning { background: rgba(193,150,14,0.15); border: 1px solid rgba(193,150,14,0.3); color: #E0B84D; }
+        .flash-warning { background: rgba(193,150,14,0.15); border: 1px solid rgba(193,150,14,0.3); color: var(--warn-fg); }
 
         .toast {
             position: fixed; bottom: 80px; left: 50%;

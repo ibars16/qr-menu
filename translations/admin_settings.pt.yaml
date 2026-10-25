@@ -50,7 +50,8 @@ action:
 
 hint:
     logo_format: 'PNG ou JPG, máx. 2 MB'
-    hero_image_format: 'PNG, JPG ou WebP, máx. 8 MB (mín. 300x300 px, máx. 5000x5000 px)'
+    hero_image_format: 'PNG, JPG ou WebP, máx. %max_mb% MB (mín. %min%x%min% px, máx. %max%x%max% px; recomendado: %recommended% px de largura ou mais)'
+    hero_image_width_notice: "Esta foto mede %width% × %height% px. Será guardada na mesma, mas em ecrãs grandes pode ficar pouco nítida. Recomendado: %recommended% px de largura ou mais."
     tagline: Mostrado sob o nome do restaurante em alguns temas do cardápio público.
     menu_language: O idioma em que você insere os nomes e descrições dos pratos.
     admin_language: O idioma deste painel de gestão. Não afeta o cardápio visto pelos seus clientes.
@@ -71,8 +72,9 @@ flash:
     hero_image_too_large: A foto de cabeçalho é demasiado grande (máx. 8 MB).
     hero_image_dimensions_too_small: 'A imagem é demasiado pequena. Envie uma com pelo menos %min% px de largura e altura.'
     hero_image_dimensions_too_large: A imagem é demasiado grande (máx. 5000x5000 px).
-    hero_image_warning_dimensions: Esta imagem é pequena e pode ficar desfocada em ecrãs grandes.
+    hero_image_warning_dimensions: "Esta imagem mede %width% × %height% px e pode ficar desfocada em ecrãs grandes (mínimo %min% × %min% px; recomendado: %recommended% px de largura ou mais)."
     hero_image_warning_portrait: É muito vertical e o hero vai cortar as laterais.
+    hero_image_warning_width: "Foto de cabeçalho guardada. Mede %width% × %height% px: em ecrãs grandes pode ficar pouco nítida. Recomendado: %recommended% px de largura ou mais."
     saved: Configurações guardadas com sucesso.
     section_saved: Secção guardada com sucesso.
     form_errors: "Verifique os campos assinalados."
