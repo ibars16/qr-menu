@@ -36,16 +36,15 @@
                rungs of the grayscale, which are not guaranteed AA. */
             --tx-muted:      #7e7e7e;
 
-            /* Required-field error state — product editor only (.field-error,
-               input.error, #cat-select-error in _product_modal_css.html.twig/
-               _cat_select.html.twig). Deliberately NOT used by .flash-error/
-               .toast.error/.btn-danger:hover, which keep their own #F0997B —
-               those measure below AA on the light surfaces this scope
-               targets and are out of scope here (existing debt, untouched).
-               Measured against the editor's own real surfaces: --err-text on
-               --bg-card (.panel-body's background) is 8.38:1 here in dark;
-               --err-border on --bg-input (.field input's own background) is
-               5.29:1. Light-mode values differ from dark — see html.light. */
+            /* Error red — the product editor's required-field state
+               (.field-error, input.error, #cat-select-error in
+               _product_modal_css.html.twig/_cat_select.html.twig) and the
+               shared .flash-error/.toast.error/.btn-danger:hover text.
+               Dark: --err-text on --bg-card (.panel-body) 8.38:1, on
+               .flash-error's fill over --bg-page 8.11:1, on --bg-deep
+               (.toast) 7.58:1, on --bg-input (.btn-danger) 7.91:1;
+               --err-border on --bg-input (.field input) 5.29:1. Light-mode
+               values differ from dark — see html.light. */
             --err-text:      #F0997B;
             --err-border:    #D9704E;
 
@@ -122,7 +121,10 @@
                values measure 2.11:1 (--err-text on --bg-card) / 2.86:1
                (--err-border on --bg-input) here — far under AA — so light
                mode gets its own darker values: --err-text on --bg-card is
-               6.34:1, --err-border on --bg-input is 5.16:1. */
+               6.34:1, on .flash-error's fill over --bg-page 4.82:1, on
+               --bg-deep (.toast) 6.07:1, on --bg-input (.btn-danger) 5.76:1
+               (#F0997B was 1.6–2.0:1 on those); --err-border on --bg-input
+               is 5.16:1. */
             --err-text:      #A8341B;
             --err-border:    #B33A1F;
 
@@ -274,12 +276,12 @@
         .btn-ai { background: #2a2060; border-color: #534AB7; color: #a09aee; }
         .btn-ai:hover { background: #342870; color: #c0baff; }
         .btn-danger { background: var(--bg-input); border-color: var(--bd-2); color: var(--tx-4); }
-        .btn-danger:hover { color: #F0997B; border-color: rgba(240,153,123,0.3); }
+        .btn-danger:hover { color: var(--err-text);border-color: rgba(240,153,123,0.3); }
         @media (max-width: 767px) { .btn { min-height: 44px; padding: 0 14px; font-size: 14px; } }
 
         .flash { padding: 10px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         .flash-success { background: rgba(40,80,10,0.2); border: 1px solid rgba(99,153,34,0.3); color: #7aad40; }
-        .flash-error   { background: rgba(193,68,14,0.15); border: 1px solid rgba(193,68,14,0.3); color: #F0997B; }
+        .flash-error   { background: rgba(193,68,14,0.15); border: 1px solid rgba(193,68,14,0.3); color: var(--err-text); }
         /* Distinct from flash-error on purpose: a quality warning (see
            SettingsController's hero-image "needs confirmation" branch) is
            not a rejection — amber, not red, so it doesn't read as something
@@ -297,7 +299,7 @@
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         .toast.success { border-color: rgba(99,153,34,0.4); color: #7aad40; }
-        .toast.error   { border-color: rgba(240,100,80,0.4); color: #F0997B; }
+        .toast.error   { border-color: rgba(240,100,80,0.4); color: var(--err-text); }
         @media (min-width: 768px) { .toast { bottom: 24px; } }
 
         /* ══ THEME TOGGLE BUTTON ══ */
@@ -498,6 +500,15 @@
         var isLight = document.documentElement.classList.toggle('light');
         try { localStorage.setItem('admin-theme', isLight ? 'light' : 'dark'); } catch(e) {}
     };
+    // The <head> snippet only runs on a real load. A page brought back by
+    // Atrás/Adelante (back/forward cache) or left open in another tab kept
+    // the theme it had, so after switching elsewhere it showed the old one
+    // and the switch flipped from that stale state — re-read the choice.
+    function syncAdminTheme() {
+        try { document.documentElement.classList.toggle('light', localStorage.getItem('admin-theme') === 'light'); } catch(e) {}
+    }
+    window.addEventListener('pageshow', function(e) { if (e.persisted) syncAdminTheme(); });
+    window.addEventListener('storage', function(e) { if (e.key === 'admin-theme') syncAdminTheme(); });
 </script>
 
 {% block javascripts %}{% endblock %}

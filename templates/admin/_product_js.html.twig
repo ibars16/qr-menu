@@ -456,7 +456,8 @@
             // Only while a clip is in the box — undefined is dropped by
             // JSON.stringify, leaving the saved framing untouched otherwise.
             videoFocus:  panelEl('img-upload-area')?.classList.contains('framing') ? S.clipFocus : undefined,
-            active:      true,
+            // No `active`: visibility is the list's own toggle, and the
+            // server ignores it here (a hidden dish stays hidden when edited).
             translations,
             tags,
             ingredients: collectIngredients(),
@@ -464,7 +465,8 @@
         };
 
         const data = await apiFetch('/admin/products/save', payload);
-        if (data.error) { showToast(data.error, 'error'); return; }
+        // apiFetch() has already toasted it (every save error is a 4xx).
+        if (data.error) return;
 
         // One control, one pick — the file's real MIME (already checked
         // once in previewMedia(), re-checked here since it's what decides

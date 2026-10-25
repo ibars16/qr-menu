@@ -950,7 +950,11 @@ class MenuAdminController extends AbstractController
                 }
             }
         }
-        if (isset($data['active']))                 $product->setActive((bool) $data['active']);
+        // No `active` here on purpose: an edit keeps the dish's visibility
+        // (a new one is created visible above). Only toggleProduct() changes
+        // it — the editor used to send active:true on every save, putting a
+        // hidden dish back on the menu, and an editor tab still on that old
+        // JS keeps sending it until reloaded.
 
         // Translations — the admin form only ever submits the restaurant's
         // default language (see LOCALE in _admin_js_utils.html.twig), so any
