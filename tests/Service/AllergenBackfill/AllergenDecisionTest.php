@@ -96,57 +96,95 @@ final class AllergenDecisionTest extends TestCase
         self::assertSame($allergens, AllergenDecision::parse(AllergenDecision::format($allergens)));
     }
 
-    public function testPassesDisagreeingGoesToReview(): void
+    public function testPassesDisagreeingAppliesTheUnionOfBoth(): void
     {
-        $d = AllergenDecision::decide(self::pass(['milk' => 'contains']), self::pass(['milk' => 'contains', 'eggs' => 'contains']), self::rules(), self::CODES, null);
+        $d = AllergenDecision::decide(self::pass(['milk' => 'contains']), self::pass(['eggs' => 'contains']), self::rules(), self::CODES, null);
 
-        self::assertSame(AllergenDecision::REVIEW, $d->outcome);
+        self::assertSame(AllergenDecision::APPLIED_UNION, $d->outcome);
+        self::assertSame(['eggs' => 'contains', 'milk' => 'contains'], $d->allergens);
         self::assertStringContainsString('no coinciden', $d->reasons[0]);
     }
 
-    public function testMayContainAlwaysGoesToReview(): void
+    public function testContainsWinsOverMayContainInTheUnion(): void
     {
-        $d = AllergenDecision::decide(self::pass(['sulphites' => 'may_contain']), self::pass(['sulphites' => 'may_contain']), self::rules(['sulphites']), self::CODES, null);
+        $d = AllergenDecision::decide(
+            self::pass(['milk' => 'may_contain', 'nuts' => 'may_contain']),
+            self::pass(['milk' => 'contains', 'nuts' => 'may_contain']),
+            self::rules(),
+            self::CODES,
+            null,
+        );
 
-        self::assertSame(AllergenDecision::REVIEW, $d->outcome);
+        self::assertSame(AllergenDecision::APPLIED_UNION, $d->outcome);
+        self::assertSame(['milk' => 'contains', 'nuts' => 'may_contain'], $d->allergens);
+    }
+
+    public function testMayContainOnlyIsAppliedAsMayContain(): void
+    {
+        $d = AllergenDecision::decide(self::pass(['sulphites' => 'may_contain']), self::pass(['sulphites' => 'may_contain']), self::rules(), self::CODES, null);
+
+        self::assertSame(AllergenDecision::APPLIED_UNION, $d->outcome);
+        self::assertSame(['sulphites' => 'may_contain'], $d->allergens);
         self::assertContains('"puede contener"', $d->reasons);
     }
 
-    public function testUnsureGoesToReview(): void
+    public function testUnsureWithNothingNamedStaysInReview(): void
     {
         $d = AllergenDecision::decide(self::pass([], true), self::pass([]), self::rules(), self::CODES, null);
 
         self::assertSame(AllergenDecision::REVIEW, $d->outcome);
+        self::assertSame([], $d->allergens);
     }
 
-    public function testRuleMissingAllergenGoesToReview(): void
+    public function testUnsureWithSomethingNamedAppliesIt(): void
     {
-        $d = AllergenDecision::decide(self::pass([]), self::pass([]), self::rules(['milk']), self::CODES, null);
+        $d = AllergenDecision::decide(self::pass(['fish' => 'contains'], true), self::pass([]), self::rules(), self::CODES, null);
 
-        self::assertSame(AllergenDecision::REVIEW, $d->outcome);
+        self::assertSame(AllergenDecision::APPLIED_UNION, $d->outcome);
+        self::assertSame(['fish' => 'contains'], $d->allergens);
     }
 
-    public function testRuleForbiddenAllergenGoesToReview(): void
+    public function testAllergenTheRulesExpectIsAddedAsContains(): void
     {
+        $d = AllergenDecision::decide(self::pass(['eggs' => 'may_contain']), self::pass([]), self::rules(['milk', 'eggs']), self::CODES, null);
+
+        self::assertSame(AllergenDecision::APPLIED_UNION, $d->outcome);
+        self::assertSame(['eggs' => 'contains', 'milk' => 'contains'], $d->allergens);
+    }
+
+    public function testRuleForbiddenAllergenIsKeptAnyway(): void
+    {
+        // Over-warning is the safe mistake: a forbidden rule never removes what the AI named.
         $d = AllergenDecision::decide(self::pass(['milk' => 'contains']), self::pass(['milk' => 'contains']), self::rules([], ['milk']), self::CODES, null);
 
-        self::assertSame(AllergenDecision::REVIEW, $d->outcome);
+        self::assertSame(AllergenDecision::APPLIED_UNION, $d->outcome);
+        self::assertSame(['milk' => 'contains'], $d->allergens);
     }
 
-    public function testUnknownCodeGoesToReview(): void
+    public function testUnknownCodeIsDroppedFromTheUnion(): void
     {
-        $d = AllergenDecision::decide(self::pass(['dairy' => 'contains']), self::pass(['dairy' => 'contains']), self::rules(), self::CODES, null);
+        $d = AllergenDecision::decide(self::pass(['dairy' => 'contains']), self::pass(['dairy' => 'contains', 'milk' => 'contains']), self::rules(), self::CODES, null);
 
-        self::assertSame(AllergenDecision::REVIEW, $d->outcome);
+        self::assertSame(AllergenDecision::APPLIED_UNION, $d->outcome);
+        self::assertSame(['milk' => 'contains'], $d->allergens);
+
+        $onlyUnknown = AllergenDecision::decide(self::pass(['dairy' => 'contains']), self::pass(['dairy' => 'contains']), self::rules(), self::CODES, null);
+        self::assertSame(AllergenDecision::REVIEW, $onlyUnknown->outcome);
     }
 
-    public function testCompositeGoesToReviewEvenWhenEverythingAgrees(): void
+    public function testCompositeEvenWhenEverythingAgreesIsAppliedAsTheUnion(): void
     {
         $rules = ['expected' => [], 'forbidden' => [], 'review' => ['compuesto o de receta variable'], 'root' => 'x'];
         $d = AllergenDecision::decide(self::pass(['fish' => 'contains']), self::pass(['fish' => 'contains']), $rules, self::CODES, null);
 
-        self::assertSame(AllergenDecision::REVIEW, $d->outcome);
+        self::assertSame(AllergenDecision::APPLIED_UNION, $d->outcome);
+        self::assertSame(['fish' => 'contains'], $d->allergens);
         self::assertSame(['compuesto o de receta variable'], $d->reasons);
+    }
+
+    public function testUnreadablePresenceCountsAsMayContainNeverAsNothing(): void
+    {
+        self::assertSame(['milk' => 'may_contain'], AllergenDecision::union([['milk' => 'trace']], [], self::CODES));
     }
 
     public function testMissingAnswerFails(): void

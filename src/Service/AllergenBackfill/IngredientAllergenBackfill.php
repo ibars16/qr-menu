@@ -6,6 +6,8 @@ use App\Entity\GlobalIngredient;
 use App\Entity\GlobalIngredientAllergen;
 use App\Entity\Ingredient;
 use App\Entity\IngredientAllergen;
+use App\Entity\Product;
+use App\Entity\Restaurant;
 use App\Enum\AllergenPresence;
 use App\Repository\AllergenRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,12 +19,19 @@ use Doctrine\ORM\EntityManagerInterface;
  *
  * Per ingredient: GroqAllergenClassifier proposes (pass 1) and a separate
  * review call confirms or corrects (pass 2); AllergenKeywordRules checks
- * the name. Only when both passes agree exactly, everything is "contains",
- * the model isn't unsure and the rules aren't contradicted is anything
+ * the name. When both passes agree exactly, everything is "contains", the
+ * model isn't unsure and the rules aren't contradicted, that answer is
  * written — links with source 'ai', the ingredient marked reviewed_by
- * 'ai' (also when it carries no allergens at all). Everything else goes to
- * the review list, untouched, and is queued in AllergenReviewQueue —
+ * 'ai' (also when it carries no allergens at all). Anything doubtful is
+ * written too, as the union of every allergen any opinion named
+ * (AllergenDecision::APPLIED_UNION — over-warning is the safe mistake),
+ * and recorded in AllergenReviewQueue with its reasons. Only a doubtful
+ * one where nobody named anything stays unwritten and pending there —
  * which later runs skip, so the daily quota isn't spent asking again.
+ *
+ * Every write bumps the content version of the menus it changes: the
+ * restaurant of a private ingredient, every restaurant with a dish using
+ * a global one.
  *
  * Never writes to a "protected" ingredient: one reviewed from the YAML or
  * by a person, or carrying any 'yaml'/'human' link. Those are only
@@ -31,12 +40,14 @@ use Doctrine\ORM\EntityManagerInterface;
  *
  * recheckApplied() replays the decision for everything already marked
  * reviewed_by 'ai' against the current rules (no AI call: the links it
- * has are what both passes agreed on), and withdraws what would now go to
- * review — so tightening a rule also covers earlier runs. What it
- * withdraws is queued too.
+ * has are what both passes agreed on) — so tightening a rule also covers
+ * earlier runs: allergens the rules now expect are added, and an
+ * ingredient left with no allergens that would now be doubtful is
+ * withdrawn and queued.
  *
  * importReviewList() fills the queue from the review files of runs made
- * before it existed.
+ * before it existed; applyPendingUnion() applies, as the union, what was
+ * queued before doubtful ones were applied automatically.
  */
 final class IngredientAllergenBackfill
 {
@@ -45,6 +56,9 @@ final class IngredientAllergenBackfill
 
     /** A quota limit fails every batch after it — stop instead of burning retries; the next run resumes. */
     private const MAX_CONSECUTIVE_FAILED_BATCHES = 3;
+
+    /** @var array<int, true> global ingredients written since the last flush(), for the menu version bump */
+    private array $touchedGlobalIds = [];
 
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -156,7 +170,7 @@ final class IngredientAllergenBackfill
                     $subject['protected'] ? $subject['current'] : null,
                 );
                 if (!$dryRun) {
-                    $this->apply($subject, $decision);
+                    $this->apply($subject, $decision, $first[$i + 1]['allergens'] ?? null, $second[$i + 1]['allergens'] ?? null);
                     if (in_array($decision->outcome, [AllergenDecision::REVIEW, AllergenDecision::SUGGESTION], true)) {
                         $this->reviewQueue->enqueue($subject, $decision, $first[$i + 1]['allergens'] ?? null);
                     }
@@ -165,7 +179,7 @@ final class IngredientAllergenBackfill
             }
 
             if (!$dryRun) {
-                $this->em->flush();
+                $this->flush();
             }
             $done += count($batch);
             if ($onBatch) {
@@ -191,7 +205,8 @@ final class IngredientAllergenBackfill
      * @param list<string>|null $globalCodes          null = every global ingredient, [] = none
      * @param list<int>|null    $privateRestaurantIds null = every restaurant, [] = none
      * @return list<array{subject: array<string, mixed>, first: ?array, second: ?array, decision: AllergenDecision}>
-     *   REVIEW = withdrawn (links removed, back to "never reviewed"); APPLIED/NO_ALLERGENS = kept as is
+     *   REVIEW = withdrawn (links removed, back to "never reviewed"); APPLIED/NO_ALLERGENS = kept as is;
+     *   APPLIED_UNION = kept, plus whatever the union adds (missing allergens, "may contain" → "contains")
      */
     public function recheckApplied(bool $dryRun, ?array $globalCodes = null, ?array $privateRestaurantIds = null): array
     {
@@ -246,66 +261,161 @@ final class IngredientAllergenBackfill
                     $this->withdraw($subject);
                     $this->reviewQueue->enqueue($subject, $decision, $subject['current']);
                 }
+            } elseif ($decision->outcome === AllergenDecision::APPLIED_UNION && !$dryRun) {
+                $ingredient = $this->entity($subject);
+                if ($this->writeLinks($ingredient, $decision->allergens)) {
+                    $this->reviewQueue->recordAppliedUnion($subject, $decision, $subject['current'], $subject['current']);
+                    $this->touched($ingredient);
+                }
             }
             $results[] = ['subject' => $subject, 'first' => $agreed, 'second' => $agreed, 'decision' => $decision];
         }
         if (!$dryRun) {
-            $this->em->flush();
+            $this->flush();
         }
 
         return $results;
     }
 
-    /** @param array<string, mixed> $subject */
-    private function apply(array $subject, AllergenDecision $decision): void
+    /**
+     * Applies, as the union (both passes + what the keyword rules expect),
+     * every doubtful ingredient still pending in AllergenReviewQueue —
+     * queued before doubtful ones were applied automatically. No AI call.
+     * An empty union stays pending; one reviewed or protected since is skipped.
+     *
+     * @return list<array{subject: array<string, mixed>, first: ?array, second: ?array, decision: AllergenDecision}>
+     *   APPLIED_UNION = applied (or would be, on a dry run); REVIEW = empty union, left pending
+     */
+    public function applyPendingUnion(bool $dryRun): array
     {
-        if (!in_array($decision->outcome, [AllergenDecision::APPLIED, AllergenDecision::NO_ALLERGENS], true) || $subject['protected']) {
+        $validCodes = array_map(static fn ($a) => $a->getCode(), $this->allergenRepository->findAllOrdered());
+        $results = [];
+        foreach ($this->reviewQueue->findPendingReviews() as $log) {
+            $kind = AllergenReviewQueue::kindOf($log->getSubjectType());
+            $ingredient = $kind === self::KIND_GLOBAL
+                ? $this->em->find(GlobalIngredient::class, $log->getSubjectId())
+                : $this->em->find(Ingredient::class, $log->getSubjectId());
+            $subject = match (true) {
+                $ingredient instanceof GlobalIngredient => $this->globalSubject($ingredient, false),
+                $ingredient instanceof Ingredient => $this->privateSubject($ingredient, false),
+                default => null,
+            };
+            if ($subject === null) {
+                continue;
+            }
+
+            $attributes = $log->getAttributes();
+            $first = isset($attributes['first_pass']) ? (array) $attributes['first_pass'] : null;
+            $second = (array) ($attributes['proposal'] ?? []);
+            $union = AllergenDecision::union([$first, $second], $subject['rules']['expected'], $validCodes);
+            $decision = new AllergenDecision($union === [] ? AllergenDecision::REVIEW : AllergenDecision::APPLIED_UNION, $union, $attributes['reasons'] ?? []);
+            if (!$dryRun && $union !== []) {
+                $this->apply($subject, $decision, $first, $second);
+            }
+            $results[] = ['subject' => $subject, 'first' => $first !== null ? ['allergens' => $first] : null, 'second' => ['allergens' => $second], 'decision' => $decision];
+        }
+        if (!$dryRun) {
+            $this->flush();
+        }
+
+        return $results;
+    }
+
+    /**
+     * @param array<string, mixed>       $subject
+     * @param array<string, string>|null $first  the first pass's answer, for the APPLIED_UNION record
+     * @param array<string, string>|null $second the review pass's answer, idem
+     */
+    private function apply(array $subject, AllergenDecision $decision, ?array $first = null, ?array $second = null): void
+    {
+        if (!in_array($decision->outcome, [AllergenDecision::APPLIED, AllergenDecision::NO_ALLERGENS, AllergenDecision::APPLIED_UNION], true) || $subject['protected']) {
             return;
         }
 
-        $allergens = $this->allergenRepository->findAllIndexedByCode();
-
-        if ($subject['kind'] === self::KIND_GLOBAL) {
-            $ingredient = $this->em->find(GlobalIngredient::class, $subject['id']);
-            if ($ingredient === null || $ingredient->getAllergensReviewedAt() !== null) {
-                return;
-            }
-            foreach ($decision->allergens as $code => $presence) {
-                if ($ingredient->getAllergenLink($allergens[$code])) {
-                    continue;
-                }
-                $link = new GlobalIngredientAllergen();
-                $link->setAllergen($allergens[$code]);
-                $link->setPresence(AllergenPresence::from($presence));
-                $link->setSource(GlobalIngredientAllergen::SOURCE_AI);
-                $ingredient->addAllergenLink($link);
-                $this->em->persist($link);
-            }
-            $ingredient->markAllergensReviewed(GlobalIngredientAllergen::SOURCE_AI);
-            $this->reviewQueue->resolveApplied($subject);
-
-            return;
-        }
-
-        $ingredient = $this->em->find(Ingredient::class, $subject['id']);
+        $ingredient = $this->entity($subject);
         if ($ingredient === null || $ingredient->getAllergensReviewedAt() !== null) {
             return;
         }
-        foreach ($decision->allergens as $code => $presence) {
-            if ($ingredient->getAllergenLink($allergens[$code])) {
+        $this->writeLinks($ingredient, $decision->allergens);
+        $ingredient->markAllergensReviewed(GlobalIngredientAllergen::SOURCE_AI);
+        if ($decision->outcome === AllergenDecision::APPLIED_UNION) {
+            $this->reviewQueue->recordAppliedUnion($subject, $decision, $first, $second);
+        } else {
+            $this->reviewQueue->resolveApplied($subject);
+        }
+        $this->touched($ingredient);
+    }
+
+    /** @param array<string, mixed> $subject */
+    private function entity(array $subject): GlobalIngredient|Ingredient|null
+    {
+        return $subject['kind'] === self::KIND_GLOBAL
+            ? $this->em->find(GlobalIngredient::class, $subject['id'])
+            : $this->em->find(Ingredient::class, $subject['id']);
+    }
+
+    /**
+     * Adds the missing 'ai' links and raises "may contain" to "contains"
+     * where asked — never removes or lowers anything.
+     *
+     * @param array<string, string> $allergens code => presence
+     * @return bool whether anything changed
+     */
+    private function writeLinks(GlobalIngredient|Ingredient $ingredient, array $allergens): bool
+    {
+        $byCode = $this->allergenRepository->findAllIndexedByCode();
+        $changed = false;
+        foreach ($allergens as $code => $presence) {
+            $existing = $ingredient->getAllergenLink($byCode[$code]);
+            if ($existing !== null) {
+                if ($presence === AllergenPresence::CONTAINS->value && $existing->getPresence() !== AllergenPresence::CONTAINS) {
+                    $existing->setPresence(AllergenPresence::CONTAINS);
+                    $changed = true;
+                }
                 continue;
             }
-            $link = new IngredientAllergen();
-            $link->setAllergen($allergens[$code]);
+            $link = $ingredient instanceof GlobalIngredient ? new GlobalIngredientAllergen() : new IngredientAllergen();
+            $link->setAllergen($byCode[$code]);
             $link->setPresence(AllergenPresence::from($presence));
-            $link->setSource(IngredientAllergen::SOURCE_AI);
+            $link->setSource(GlobalIngredientAllergen::SOURCE_AI);
             $ingredient->addAllergenLink($link);
             $this->em->persist($link);
+            $changed = true;
         }
-        $ingredient->markAllergensReviewed(IngredientAllergen::SOURCE_AI);
-        $this->reviewQueue->resolveApplied($subject);
-        // Changes the computed allergens of every dish using it.
-        $ingredient->getRestaurant()->bumpMenuContentVersion();
+
+        return $changed;
+    }
+
+    /** Its allergens changed: so did the computed allergens of every dish using it. */
+    private function touched(GlobalIngredient|Ingredient $ingredient): void
+    {
+        if ($ingredient instanceof Ingredient) {
+            $ingredient->getRestaurant()->bumpMenuContentVersion();
+        } else {
+            $this->touchedGlobalIds[$ingredient->getId()] = true;
+        }
+    }
+
+    /** flush(), plus the version bump of every restaurant with a dish using a global ingredient written since the last one. */
+    private function flush(): void
+    {
+        $this->em->flush();
+        if ($this->touchedGlobalIds === []) {
+            return;
+        }
+        $restaurantIds = $this->em->createQueryBuilder()
+            ->select('DISTINCT IDENTITY(c.restaurant)')
+            ->from(Product::class, 'p')
+            ->join('p.category', 'c')
+            ->join('p.globalIngredientLinks', 'l')
+            ->where('IDENTITY(l.globalIngredient) IN (:ids)')
+            ->setParameter('ids', array_keys($this->touchedGlobalIds))
+            ->getQuery()->getSingleColumnResult();
+        $this->touchedGlobalIds = [];
+        foreach ($restaurantIds as $id) {
+            $this->em->find(Restaurant::class, $id)?->bumpMenuContentVersion();
+        }
+        $this->em->flush();
     }
 
     /**
@@ -345,14 +455,15 @@ final class IngredientAllergenBackfill
             if (str_starts_with($row['motivo'], 'DESAPLICADO') && !$subject['protected']) {
                 $agreed = ['allergens' => $proposal, 'unsure' => false];
                 $decision = AllergenDecision::decide($agreed, $agreed, $subject['rules'], $validCodes, null);
-                if ($decision->outcome !== AllergenDecision::REVIEW) {
+                // A doubtful one (APPLIED_UNION) is queued like the rest; applyPendingUnion() applies it.
+                if (in_array($decision->outcome, [AllergenDecision::APPLIED, AllergenDecision::NO_ALLERGENS], true)) {
                     if (!$dryRun) {
                         $this->apply($subject, $decision);
                     }
                     $counts['reapplied']++;
                     continue;
                 }
-                $decision = new AllergenDecision(AllergenDecision::REVIEW, $decision->allergens, array_merge(
+                $decision = new AllergenDecision(AllergenDecision::REVIEW, $proposal, array_merge(
                     ['DESAPLICADO — se había aplicado y con las reglas actuales va a revisión'],
                     $decision->reasons,
                 ));
@@ -367,7 +478,7 @@ final class IngredientAllergenBackfill
             $counts['queued']++;
         }
         if (!$dryRun) {
-            $this->em->flush();
+            $this->flush();
         }
 
         return $counts;
@@ -383,9 +494,7 @@ final class IngredientAllergenBackfill
             $ingredient->removeAllergenLink($link);
         }
         $ingredient->clearAllergensReview();
-        if ($ingredient instanceof Ingredient) {
-            $ingredient->getRestaurant()->bumpMenuContentVersion();
-        }
+        $this->touched($ingredient);
     }
 
     /**

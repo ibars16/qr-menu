@@ -27,6 +27,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * --recheck-applied makes no AI call: it runs the current rules over what
  * earlier runs already applied and withdraws what would now go to review.
  * --import-review-list queues the review items of older -todo.csv files.
+ * --apply-pending-union makes no AI call either: it applies, as the union
+ * of every opinion, the doubtful ones still pending from before that
+ * became automatic.
  */
 #[AsCommand(
     name: 'app:allergens:backfill',
@@ -55,6 +58,7 @@ final class AllergenBackfillCommand extends Command
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Call the AI and write the files, but change nothing in the database')
             ->addOption('include-pending', null, InputOption::VALUE_NONE, 'Also send the ones already waiting for review (e.g. after changing the rules)')
             ->addOption('import-review-list', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'No AI: queue the review items of these -todo.csv files (oldest first; the latest row per ingredient wins)')
+            ->addOption('apply-pending-union', null, InputOption::VALUE_NONE, 'No AI: apply the doubtful ones still pending as the union of both passes + the keyword rules (empty union: left pending)')
             ->addOption('recheck-applied', null, InputOption::VALUE_NONE, 'No AI: re-check everything already applied by AI against the current rules and withdraw what would now go to review')
             ->addOption('out', null, InputOption::VALUE_REQUIRED, 'Output directory, relative to the project', 'var/allergen-backfill');
     }
@@ -65,6 +69,9 @@ final class AllergenBackfillCommand extends Command
 
         if ($input->getOption('import-review-list') !== []) {
             return $this->importReviewList($io, $input->getOption('import-review-list'), (bool) $input->getOption('dry-run'));
+        }
+        if ($input->getOption('apply-pending-union')) {
+            return $this->applyPendingUnion($io, (bool) $input->getOption('dry-run'), (string) $input->getOption('out'));
         }
         if ($input->getOption('recheck-applied')) {
             return $this->recheckApplied($io, (bool) $input->getOption('dry-run'), (string) $input->getOption('out'));
@@ -121,7 +128,7 @@ final class AllergenBackfillCommand extends Command
             }
         });
 
-        $counts = array_fill_keys([AllergenDecision::APPLIED, AllergenDecision::NO_ALLERGENS, AllergenDecision::REVIEW, AllergenDecision::SUGGESTION, AllergenDecision::UNCHANGED, AllergenDecision::FAILED], 0);
+        $counts = array_fill_keys([AllergenDecision::APPLIED, AllergenDecision::NO_ALLERGENS, AllergenDecision::APPLIED_UNION, AllergenDecision::REVIEW, AllergenDecision::SUGGESTION, AllergenDecision::UNCHANGED, AllergenDecision::FAILED], 0);
         foreach ($results as $result) {
             $counts[$result['decision']->outcome]++;
         }
@@ -135,7 +142,8 @@ final class AllergenBackfillCommand extends Command
         $io->table(['Outcome', 'Count'], [
             ['Applied (with allergens)', $counts[AllergenDecision::APPLIED]],
             ['Applied (no allergens)', $counts[AllergenDecision::NO_ALLERGENS]],
-            ['To review', $counts[AllergenDecision::REVIEW]],
+            ['Doubtful, applied as the union', $counts[AllergenDecision::APPLIED_UNION]],
+            ['Doubtful, nothing named (left pending)', $counts[AllergenDecision::REVIEW]],
             ['Suggestions on YAML/hand-set', $counts[AllergenDecision::SUGGESTION]],
             ['YAML/hand-set, AI agrees', $counts[AllergenDecision::UNCHANGED]],
             ['Failed (retried next run)', $counts[AllergenDecision::FAILED]],
@@ -177,6 +185,26 @@ final class AllergenBackfillCommand extends Command
             ['Re-applied (current rules allow it)', $counts['reapplied']],
             ['Skipped (reviewed since, already queued or gone)', $counts['skipped']],
         ]);
+
+        return Command::SUCCESS;
+    }
+
+    private function applyPendingUnion(SymfonyStyle $io, bool $dryRun, string $outDir): int
+    {
+        $io->title('Allergen backfill — applying the pending doubtful ones as the union' . ($dryRun ? ', dry run (database untouched)' : ''));
+        $results = $this->backfill->applyPendingUnion($dryRun);
+
+        $applied = array_filter($results, static fn (array $r) => $r['decision']->outcome === AllergenDecision::APPLIED_UNION);
+        $withContains = array_filter($applied, static fn (array $r) => in_array('contains', $r['decision']->allergens, true));
+        $io->table(['Pending doubtful', 'Count'], [
+            [$dryRun ? 'Would be applied' : 'Applied', count($applied)],
+            ['  with at least one "contains"', count($withContains)],
+            ['  only "may contain"', count($applied) - count($withContains)],
+            ['Empty union (left pending)', count($results) - count($applied)],
+        ]);
+
+        [$reviewCsv, $reviewMd, $allCsv] = $this->writeFiles($results, $outDir);
+        $io->writeln(['Left pending: ' . $reviewCsv, '              ' . $reviewMd, 'All decisions: ' . $allCsv]);
 
         return Command::SUCCESS;
     }
@@ -225,7 +253,7 @@ final class AllergenBackfillCommand extends Command
         }
         $stamp = date('Ymd-His');
 
-        $header = ['tipo', 'restaurante', 'id', 'codigo', 'nombre', 'idioma', 'alergenos_actuales', 'propuesta_1a_pasada', 'propuesta_revision', 'reglas_esperan', 'reglas_descartan', 'resultado', 'motivo'];
+        $header = ['tipo', 'restaurante', 'id', 'codigo', 'nombre', 'idioma', 'alergenos_actuales', 'propuesta_1a_pasada', 'propuesta_revision', 'reglas_esperan', 'reglas_descartan', 'resultado', 'motivo', 'aplicado'];
         $rows = [];
         $review = [];
         foreach ($results as $r) {
@@ -245,6 +273,7 @@ final class AllergenBackfillCommand extends Command
                 implode(', ', $s['rules']['forbidden']),
                 $d->outcome,
                 implode(' · ', $d->reasons),
+                in_array($d->outcome, [AllergenDecision::APPLIED, AllergenDecision::NO_ALLERGENS, AllergenDecision::APPLIED_UNION], true) ? AllergenDecision::format($d->allergens) : '',
             ];
             $rows[] = $row;
             if (in_array($d->outcome, [AllergenDecision::REVIEW, AllergenDecision::SUGGESTION, AllergenDecision::FAILED], true)) {

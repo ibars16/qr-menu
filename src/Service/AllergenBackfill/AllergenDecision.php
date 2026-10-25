@@ -5,16 +5,22 @@ namespace App\Service\AllergenBackfill;
 /**
  * What IngredientAllergenBackfill does with one ingredient, and why.
  *
- * Only APPLIED and NO_ALLERGENS write anything (source/reviewed_by 'ai').
- * REVIEW and SUGGESTION go to the human review list and leave the
- * ingredient exactly as it was — still "never reviewed" for REVIEW, still
- * its YAML/hand-set links for SUGGESTION. FAILED means the model's answer
- * for it was missing or unreadable; nothing is written and the next run
- * retries it.
+ * APPLIED, NO_ALLERGENS and APPLIED_UNION write (source/reviewed_by 'ai').
+ * APPLIED_UNION is the doubtful case — the passes disagree, "may contain",
+ * a composite/processed name… — applied anyway as the union of every
+ * allergen any opinion named: both passes plus what the keyword rules
+ * expect, "contains" if any of them says so, "may contain" otherwise.
+ * There's no human review step: over-warning is the safe mistake, never
+ * under-warning. Only when that union is empty (doubt, and nobody named
+ * anything) is it REVIEW: nothing written, still "never reviewed".
+ * SUGGESTION (YAML/hand-set ingredient) never writes. FAILED means the
+ * model's answer for it was missing or unreadable; nothing is written and
+ * the next run retries it.
  */
 final readonly class AllergenDecision
 {
     public const APPLIED = 'applied';
+    public const APPLIED_UNION = 'applied_union';
     public const NO_ALLERGENS = 'no_allergens';
     public const REVIEW = 'review';
     public const SUGGESTION = 'suggestion';
@@ -108,10 +114,41 @@ final readonly class AllergenDecision
         }
 
         if ($reasons !== []) {
-            return new self(self::REVIEW, $final, $reasons);
+            $union = self::union([$first['allergens'], $final], $rules['expected'], $validCodes);
+
+            return new self($union === [] ? self::REVIEW : self::APPLIED_UNION, $union === [] ? $final : $union, $reasons);
         }
 
         return new self($final === [] ? self::NO_ALLERGENS : self::APPLIED, $final, []);
+    }
+
+    /**
+     * Every allergen any opinion named: "contains" if any of them says
+     * contains, otherwise "may_contain". Codes outside the 14 are dropped;
+     * an unreadable presence counts as "may_contain" — never as nothing.
+     *
+     * @param list<array<string, string>|null> $proposals code => presence each (null = no answer)
+     * @param list<string>                     $expected  codes the keyword rules expect: "contains"
+     * @param list<string>                     $validCodes
+     * @return array<string, string>
+     */
+    public static function union(array $proposals, array $expected, array $validCodes): array
+    {
+        $union = [];
+        foreach ($proposals as $proposal) {
+            foreach ($proposal ?? [] as $code => $presence) {
+                if (!in_array($code, $validCodes, true)) {
+                    continue;
+                }
+                $union[$code] = ($union[$code] ?? null) === 'contains' || $presence === 'contains' ? 'contains' : 'may_contain';
+            }
+        }
+        foreach ($expected as $code) {
+            $union[$code] = 'contains';
+        }
+        ksort($union);
+
+        return $union;
     }
 
     /**

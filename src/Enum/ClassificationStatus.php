@@ -14,6 +14,13 @@ enum ClassificationStatus: string
     /** Confidence met the auto-apply threshold — already persisted into the real domain table. */
     case AUTO_APPLIED = 'auto_applied';
 
+    /**
+     * Doubtful, applied anyway as the union of every allergen any opinion
+     * named (both AI passes + the keyword rules) — over-warning is the safe
+     * mistake. allergen_backfill only; attributes.applied holds what was written.
+     */
+    case AUTO_APPLIED_UNION = 'auto_applied_union';
+
     /** Below the auto-apply threshold (or --review-only was used) — waiting in the review queue. */
     case PENDING_REVIEW = 'pending_review';
 
