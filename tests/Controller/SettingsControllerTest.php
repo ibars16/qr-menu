@@ -131,7 +131,6 @@ final class SettingsControllerTest extends WebTestCase
         $this->client->request('POST', '/admin/settings', [
             '_token' => $this->settingsToken(),
             'name'            => $restaurant->getName(),
-            'primaryColor'    => '#000000',
             'currency'        => 'EUR',
             'defaultLanguage' => 'es',
         ], [
@@ -167,7 +166,6 @@ final class SettingsControllerTest extends WebTestCase
         $this->client->request('POST', '/admin/settings', [
             '_token' => $this->settingsToken(),
             'name'            => $restaurant->getName(),
-            'primaryColor'    => '#000000',
             'currency'        => 'EUR',
             'defaultLanguage' => 'es',
         ], [
@@ -325,7 +323,6 @@ final class SettingsControllerTest extends WebTestCase
         $this->client->request('POST', '/admin/settings', [
             '_token' => $this->settingsToken(),
             'name'                        => $restaurant->getName(),
-            'primaryColor'                => '#000000',
             'currency'                    => 'EUR',
             'defaultLanguage'             => 'es',
             'heroImageQualityConfirmed'   => '1',
@@ -360,7 +357,6 @@ final class SettingsControllerTest extends WebTestCase
         $this->client->request('POST', '/admin/settings', [
             '_token' => $this->settingsToken(),
             'name'            => $restaurant->getName(),
-            'primaryColor'    => '#000000',
             'currency'        => 'EUR',
             'defaultLanguage' => 'es',
         ], [

@@ -77,7 +77,6 @@ final class SettingsContactTest extends WebTestCase
             '_token'          => $token,
             'name'            => 'Settings Contact Test',
             'tagline'         => '',
-            'primaryColor'    => '#000000',
             'currency'        => 'EUR',
             'defaultLanguage' => 'es',
             'adminLocale'     => 'es',
@@ -160,7 +159,6 @@ final class SettingsContactTest extends WebTestCase
         $this->post([
             'tagline'         => str_repeat('a', 161),
             'phone'           => '12',
-            'primaryColor'    => '#123456',
             'currency'        => 'USD',
             'defaultLanguage' => 'en',
             'social'  => ['instagram' => 'https://evil.com/davidtest', 'website' => 'javascript:alert(1)'],
@@ -178,7 +176,6 @@ final class SettingsContactTest extends WebTestCase
         self::assertSame('12', $crawler->filter('#phone')->attr('value'), 'what was typed is kept');
         self::assertSame('https://evil.com/davidtest', $crawler->filter('#social-instagram')->attr('value'));
         self::assertSame('16:00', $crawler->filter('input[name="hours[tue][1][open]"]')->attr('value'));
-        self::assertSame('#123456', $crawler->filter('#color-hex')->attr('value'));
         self::assertSame('USD', $crawler->filter('#currency option[selected]')->attr('value'));
         self::assertSame('en', $crawler->filter('#defaultLanguage option[selected]')->attr('value'));
 
@@ -216,7 +213,6 @@ final class SettingsContactTest extends WebTestCase
         $this->post([
             'section'         => 'contact',
             'name'            => 'Nombre sin guardar',
-            'primaryColor'    => '#123456',
             'currency'        => 'USD',
             'phone'           => '+34 600 123 456',
             'social'          => ['instagram' => '@davidtest'],
@@ -227,8 +223,22 @@ final class SettingsContactTest extends WebTestCase
         self::assertSame('+34 600 123 456', $restaurant->getPhone());
         self::assertSame([], $restaurant->getSocialLinks() ?? [], 'social links have their own section');
         self::assertSame('Settings Contact Test', $restaurant->getName(), 'other sections are left as they were');
-        self::assertSame('#000000', $restaurant->getPrimaryColor());
         self::assertSame('EUR', $restaurant->getCurrency());
+    }
+
+    public function testThereIsNoPrimaryColourFieldAndAPostedOneIsIgnored(): void
+    {
+        $this->client->request('GET', '/admin/settings');
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $this->client->getCrawler()->filter('[name="primaryColor"]'));
+
+        $this->post(['section' => 'appearance', 'primaryColor' => '#123456']);
+        self::assertResponseRedirects('/admin/settings#section-appearance');
+        self::assertSame('#000000', $this->reload()->getPrimaryColor());
+
+        $this->post(['primaryColor' => 'red;} body{display:none']);
+        self::assertResponseRedirects('/admin/settings');
+        self::assertSame('#000000', $this->reload()->getPrimaryColor());
     }
 
     public function testSocialAndHoursAreSeparateSections(): void

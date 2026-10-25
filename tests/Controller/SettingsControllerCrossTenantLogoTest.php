@@ -136,7 +136,6 @@ final class SettingsControllerCrossTenantLogoTest extends WebTestCase
         $this->client->request('POST', '/admin/settings', [
             '_token' => $this->settingsToken(),
             'name'            => $restaurant->getName(),
-            'primaryColor'    => '#000000',
             'currency'        => 'EUR',
             'defaultLanguage' => 'es',
         ], [

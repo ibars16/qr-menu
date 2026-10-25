@@ -16,7 +16,7 @@
     --fg: #f4f4f4;
     --fg-2: rgba(244,244,244,0.48);
     --fg-3: #303030;
-    --accent: {{ restaurant.primaryColor }};
+    --accent: #c1440e;
     --b1: #1e1e1e;
     --b2: #2a2a2a;
 
@@ -32,7 +32,7 @@
     /* ── Search input ── */
     --in-bg: #111111;
     --in-border: #222222;
-    --in-focus-border: {{ restaurant.primaryColor }};
+    --in-focus-border: #c1440e;
     --in-focus-shadow: 0 0 0 3px rgba(255,255,255,0.05);
     --in-text: #e8e8e8;
     --in-ph: #303030;
@@ -43,8 +43,8 @@
     --tab-text: #484848;
     --tab-hbg: #1a1a1a;
     --tab-htext: #b0b0b0;
-    --tab-act-bg: {{ restaurant.primaryColor }};
-    --tab-act-border: {{ restaurant.primaryColor }};
+    --tab-act-bg: #c1440e;
+    --tab-act-border: #c1440e;
     --tab-act-text: #ffffff;
     --tab-act-shadow: 0 4px 16px rgba(0,0,0,0.5);
 
@@ -54,7 +54,7 @@
     --cf-hborder: #363636;
     --cf-hshadow: 0 4px 8px rgba(0,0,0,0.4), 0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
     --cf-img: #181818;
-    --cf-accent: linear-gradient(90deg, transparent 0%, {{ restaurant.primaryColor }} 40%, transparent 100%);
+    --cf-accent: linear-gradient(90deg, transparent 0%, #c1440e 40%, transparent 100%);
     --cf-accent-op: 0.65;
     --card-shadow: 0 2px 4px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.32);
     --card-hover-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
@@ -62,7 +62,10 @@
     /* ── Card content ── */
     --cn: #f4f4f4;
     --cd: rgba(244,244,244,0.38);
-    --cp: {{ restaurant.primaryColor }};
+    /* Prices/kickers are text on near-black, where #c1440e is only 3.0–3.9:1;
+       this lighter step of the same hue is 4.5:1+ on every surface it sits on
+       (#080808 page, #0d0d0d back, #111111 card, #242424 hero kicker). */
+    --cp: #ee5b1b;
     --cbg: rgba(255,255,255,0.06);
     --cbc: rgba(255,255,255,0.1);
     --cbt: #888888;
@@ -73,7 +76,7 @@
     --cb-bg: #0d0d0d;
     --cb-border: #222222;
     --bn: #f4f4f4;
-    --bp: {{ restaurant.primaryColor }};
+    --bp: #ee5b1b;
     --close-bg: rgba(255,255,255,0.07);
     --close-b: rgba(255,255,255,0.1);
     --close-t: rgba(255,255,255,0.32);
@@ -98,7 +101,7 @@
     --sep-bg: rgba(255,255,255,0.06);
 
     /* ── Logo ── */
-    --logo-bg: {{ restaurant.primaryColor }};
+    --logo-bg: #c1440e;
 
     /* ── Label colours ── */
     --lg: #7aad40; --lg-bg: rgba(59,109,17,0.18); --lg-b: rgba(99,153,34,0.18);

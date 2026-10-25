@@ -245,9 +245,24 @@ class Restaurant
         return $this->primaryColor;
     }
 
+    /**
+     * Legacy: no longer editable or read by any theme (classic-dark/-warm
+     * use a fixed accent), the column is only kept. Still only ever
+     * "#rrggbb", stored lowercase — should it ever be printed into a
+     * <style> block again, HTML escaping there doesn't stop "red;} body{…",
+     * so anything else is refused here.
+     */
     public function setPrimaryColor(string $primaryColor): void
     {
-        $this->primaryColor = $primaryColor;
+        if (!self::isValidPrimaryColor($primaryColor)) {
+            throw new \InvalidArgumentException('Primary color must be #RRGGBB.');
+        }
+        $this->primaryColor = strtolower($primaryColor);
+    }
+
+    public static function isValidPrimaryColor(string $color): bool
+    {
+        return preg_match('/^#[0-9a-f]{6}$/iD', $color) === 1;
     }
 
     public function getCurrency(): string

@@ -2,7 +2,6 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Restaurant;
 use App\Service\AdminLocaleResolver;
 use App\Service\ContactDetailsNormalizer;
 use App\Service\Upload\UploadProfile;
@@ -50,7 +49,6 @@ class SettingsController extends AbstractController
 
             $name        = trim($request->request->get('name', ''));
             $tagline     = trim($request->request->get('tagline', ''));
-            $color       = $request->request->get('primaryColor', '#C1440E');
             $currency    = $request->request->get('currency', 'EUR');
             $language    = $request->request->get('defaultLanguage', 'es');
             $adminLocale = $request->request->get('adminLocale', $adminLocaleResolver->getDefaultLocale());
@@ -126,9 +124,6 @@ class SettingsController extends AbstractController
                         'phone'   => (string) $request->request->get('phone', ''),
                         'social'  => array_map('strval', array_filter($socialInput, 'is_scalar')),
                         'hours'   => $hoursInput,
-                        // Re-selected as posted; the colour goes into a
-                        // style attribute, so only a well-formed hex is echoed.
-                        'primaryColor'    => preg_match('/^#[0-9A-Fa-f]{6}$/', $color) ? $color : $restaurant->getPrimaryColor(),
                         'defaultLanguage' => $language,
                         'adminLocale'     => $adminLocale,
                         'currency'        => $currency,
@@ -149,9 +144,6 @@ class SettingsController extends AbstractController
             }
             if ($saves('hours')) {
                 $restaurant->setOpeningHours($openingHours);
-            }
-            if ($saves('appearance')) {
-                $restaurant->setPrimaryColor($color);
             }
             if ($saves('language')) {
                 $restaurant->setCurrency($currency);
@@ -267,7 +259,7 @@ class SettingsController extends AbstractController
                 $restaurant->setHeroImage(null);
             }
 
-            // name/tagline/logo/heroImage/primaryColor/currency/defaultLanguage
+            // name/tagline/logo/heroImage/currency/defaultLanguage
             // (and the contact details, for the menu footer) appear on the
             // public menu; adminLocale is the only field here
             // that doesn't. One flush covers all of them, so bump

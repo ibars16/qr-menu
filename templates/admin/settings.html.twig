@@ -120,29 +120,6 @@
         }
 
         /* Color picker */
-        .color-wrap { display: flex; align-items: center; gap: var(--sp-3); }
-        .color-preview {
-            width: 44px; height: 44px; border-radius: var(--r-md);
-            border: 1px solid var(--bd-2); flex-shrink: 0;
-            cursor: pointer; overflow: hidden;
-        }
-        .color-preview input[type="color"] {
-            width: 200%; height: 200%;
-            border: none; padding: 0; margin: -25%;
-            cursor: pointer; background: none;
-        }
-        /* Ring on the container, not the native color input itself — the
-           input is scaled to 200% and clipped by this box's overflow:hidden,
-           so an outline on the input would be clipped away and invisible. */
-        .color-preview:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
-        .color-hex {
-            background: var(--bg-input); border: 1px solid var(--bd-2); color: var(--tx-1);
-            font-size: var(--fs-md); padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md);
-            outline: none; width: 120px; font-family: monospace;
-            transition: border-color 0.15s;
-        }
-        .color-hex:focus { border-color: var(--tx-5); }
-        .color-hex:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
         /* Logo upload */
         .logo-area {
@@ -483,28 +460,6 @@
                         </div>
                     </div>
 
-                    {# Color principal #}
-                    <div class="field">
-                        <label>{{ 'field.primary_color'|trans({}, 'admin_settings') }}</label>
-                        <div class="color-wrap">
-                            <div class="color-preview" style="background:{{ old ? old.primaryColor : restaurant.primaryColor }}">
-                                <input type="color"
-                                       id="color-picker"
-                                       value="{{ old ? old.primaryColor : restaurant.primaryColor }}"
-                                       oninput="syncColor(this.value)">
-                            </div>
-                            <input type="text"
-                                   class="color-hex"
-                                   id="color-hex"
-                                   name="primaryColor"
-                                   value="{{ old ? old.primaryColor : restaurant.primaryColor }}"
-                                   maxlength="7"
-                                   placeholder="#C1440E"
-                                   oninput="syncColorFromHex(this.value)">
-                            <span class="field-hint">{{ 'hint.primary_color'|trans({}, 'admin_settings') }}</span>
-                        </div>
-                    </div>
-
                 </div>
                 <div class="section-save">
                     <button type="submit" name="section" value="appearance" class="section-save-btn">
@@ -741,18 +696,6 @@
         // keys, never a JS-only string that could drift from that copy.
         const MSG_HERO_WARNING_DIMENSIONS = "{{ 'flash.hero_image_warning_dimensions'|trans({}, 'admin_settings')|e('js') }}";
         const MSG_HERO_WARNING_PORTRAIT   = "{{ 'flash.hero_image_warning_portrait'|trans({}, 'admin_settings')|e('js') }}";
-
-        // ── Color sync ──
-        function syncColor(val) {
-            document.getElementById('color-hex').value = val;
-            document.querySelector('.color-preview').style.background = val;
-        }
-        function syncColorFromHex(val) {
-            if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                document.getElementById('color-picker').value = val;
-                document.querySelector('.color-preview').style.background = val;
-            }
-        }
 
         // ── Logo preview ──
         function previewLogo(input) {
