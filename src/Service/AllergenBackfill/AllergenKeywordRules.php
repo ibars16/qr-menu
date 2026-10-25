@@ -178,6 +178,8 @@ final class AllergenKeywordRules
         'coated', 'coating', 'recubiert[oa]s?',
         // dried fruit: sulphites are the usual preservative
         'raisins?', 'sultanas?', 'pasas', 'panses', 'orejones?', 'prunes?', 'ciruelas pasas', 'figues seques',
+        // ham, raw/cured too: curing salts, dextrose/milk-protein carriers, sulphites
+        'hams?', 'jamon(?:es)?', 'pernils?', 'prosciutto', 'jambon', 'presunto',
     ];
 
     /**

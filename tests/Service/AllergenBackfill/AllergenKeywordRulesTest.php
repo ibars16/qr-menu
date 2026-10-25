@@ -119,6 +119,11 @@ final class AllergenKeywordRulesTest extends TestCase
         yield 'juice concentrate'    => ['Beetroot juice concentrate', 'concentrate'];
         yield 'puree, not a juice'   => ['Mango puree from concentrate', 'concentrate'];
         yield 'dried juice'          => ['Dried apple juice from concentrate', 'dried'];
+        yield 'raw ham'              => ['Raw ham', 'ham'];
+        yield 'jamón ibérico'        => ['Jamón ibérico de bellota', 'jamon'];
+        yield 'jamón serrano'        => ['Jamón serrano', 'jamon'];
+        yield 'pernil'               => ['Pernil curat', 'pernil'];
+        yield 'prosciutto'           => ['Prosciutto crudo', 'prosciutto'];
     }
 
     /** @return iterable<string, array{string}> */

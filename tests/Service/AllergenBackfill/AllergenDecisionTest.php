@@ -71,6 +71,23 @@ final class AllergenDecisionTest extends TestCase
         }
     }
 
+    public function testHamWithNoAllergensGoesToReviewButHamWithAllergensIsApplied(): void
+    {
+        $rules = new AllergenKeywordRules();
+        foreach (['Raw ham', 'Jamón ibérico', 'Jamón serrano', 'Pernil curat', 'Cured ham'] as $name) {
+            $d = AllergenDecision::decide(self::pass([]), self::pass([]), $rules->evaluate($name), self::CODES, null);
+            self::assertSame(AllergenDecision::REVIEW, $d->outcome, $name);
+        }
+
+        $d = AllergenDecision::decide(self::pass(['milk' => 'contains']), self::pass(['milk' => 'contains']), $rules->evaluate('Jamón curado'), self::CODES, null);
+        self::assertSame(AllergenDecision::APPLIED, $d->outcome);
+
+        // Words that merely contain "ham" are not ham.
+        foreach (['Champignon', 'Hamburguesa', 'Chamomile'] as $name) {
+            self::assertNotSame('ham', $rules->evaluate($name)['processed'], $name);
+        }
+    }
+
     public function testParseIsTheReverseOfFormat(): void
     {
         self::assertSame([], AllergenDecision::parse('ninguno'));
