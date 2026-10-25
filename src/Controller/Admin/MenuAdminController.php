@@ -1322,9 +1322,13 @@ class MenuAdminController extends AbstractController
             $link = new IngredientAllergen();
             $link->setAllergen($allergen);
             $link->setPresence($presence);
+            $link->setSource(IngredientAllergen::SOURCE_HUMAN);
             $ingredient->addAllergenLink($link);
             $em->persist($link);
         }
+        // Saving the editor is the owner checking the whole list — also
+        // when it's empty ("reviewed, carries none").
+        $ingredient->markAllergensReviewed(IngredientAllergen::SOURCE_HUMAN);
 
         // Doesn't touch Product at all, but changes every product using
         // this ingredient's *computed* allergens (see ProductAllergenResolver) —

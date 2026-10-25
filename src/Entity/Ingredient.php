@@ -46,6 +46,18 @@ class Ingredient
     #[ORM\OneToMany(mappedBy: 'ingredient', targetEntity: IngredientAllergen::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $allergenLinks;
 
+    /**
+     * When/by whom this ingredient's allergens were last reviewed — 'yaml',
+     * 'ai' or 'human'. NULL = never reviewed, which is what tells "checked,
+     * carries no allergens" apart from "nobody has looked" (both have no
+     * allergen links).
+     */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $allergensReviewedAt = null;
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $allergensReviewedBy = null;
+
     public function __construct()
     {
         $this->translations = new ArrayCollection();
@@ -133,5 +145,28 @@ class Ingredient
         }
 
         return null;
+    }
+
+    public function getAllergensReviewedAt(): ?\DateTimeImmutable
+    {
+        return $this->allergensReviewedAt;
+    }
+
+    public function getAllergensReviewedBy(): ?string
+    {
+        return $this->allergensReviewedBy;
+    }
+
+    public function markAllergensReviewed(string $by, ?\DateTimeImmutable $at = null): void
+    {
+        $this->allergensReviewedBy = $by;
+        $this->allergensReviewedAt = $at ?? new \DateTimeImmutable();
+    }
+
+    /** Back to "never reviewed" — for an AI decision withdrawn after the fact. */
+    public function clearAllergensReview(): void
+    {
+        $this->allergensReviewedBy = null;
+        $this->allergensReviewedAt = null;
     }
 }

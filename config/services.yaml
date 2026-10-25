@@ -106,6 +106,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Command\AllergenBackfillCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     App\Command\MenuEvalCommand:
         arguments:
             $projectDir: '%kernel.project_dir%'

@@ -49,9 +49,14 @@ final class GlobalIngredientAllergenSeeder
 
             $presence = AllergenPresence::from($row['presence']);
 
+            // The YAML is hand-verified: it also takes over a link an AI
+            // pass created for the same pair.
+            $ingredient->markAllergensReviewed(GlobalIngredientAllergen::SOURCE_YAML);
+
             $link = $ingredient->getAllergenLink($allergen);
             if ($link) {
                 $link->setPresence($presence);
+                $link->setSource(GlobalIngredientAllergen::SOURCE_YAML);
                 $updated++;
                 continue;
             }
@@ -59,6 +64,7 @@ final class GlobalIngredientAllergenSeeder
             $link = new GlobalIngredientAllergen();
             $link->setAllergen($allergen);
             $link->setPresence($presence);
+            $link->setSource(GlobalIngredientAllergen::SOURCE_YAML);
             $ingredient->addAllergenLink($link);
             $this->em->persist($link);
             $linked++;

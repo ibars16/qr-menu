@@ -17,6 +17,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\UniqueConstraint(name: 'unique_global_ingredient_allergen', columns: ['global_ingredient_id', 'allergen_id'])]
 class GlobalIngredientAllergen
 {
+    public const SOURCE_YAML = 'yaml';
+    public const SOURCE_AI = 'ai';
+    public const SOURCE_HUMAN = 'human';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -32,6 +36,14 @@ class GlobalIngredientAllergen
 
     #[ORM\Column(length: 20, enumType: AllergenPresence::class)]
     private AllergenPresence $presence = AllergenPresence::CONTAINS;
+
+    /**
+     * Who created this link: 'yaml' (config/global_ingredient_allergens.yaml),
+     * 'ai' (the allergen classifier) or 'human' (admin). The classifier
+     * never touches a 'yaml' or 'human' link.
+     */
+    #[ORM\Column(length: 10)]
+    private string $source = self::SOURCE_YAML;
 
     public function getId(): ?int
     {
@@ -66,5 +78,15 @@ class GlobalIngredientAllergen
     public function setPresence(AllergenPresence $presence): void
     {
         $this->presence = $presence;
+    }
+
+    public function getSource(): string
+    {
+        return $this->source;
+    }
+
+    public function setSource(string $source): void
+    {
+        $this->source = $source;
     }
 }

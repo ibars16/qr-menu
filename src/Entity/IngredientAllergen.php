@@ -16,6 +16,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\UniqueConstraint(name: 'unique_ingredient_allergen', columns: ['ingredient_id', 'allergen_id'])]
 class IngredientAllergen
 {
+    public const SOURCE_AI = 'ai';
+    public const SOURCE_HUMAN = 'human';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -31,6 +34,14 @@ class IngredientAllergen
 
     #[ORM\Column(length: 20, enumType: AllergenPresence::class)]
     private AllergenPresence $presence = AllergenPresence::CONTAINS;
+
+    /**
+     * Who created this link: 'human' (the owner, in the admin) or 'ai'
+     * (the allergen classifier). The classifier never touches a 'human'
+     * link. 'yaml' is never used here — private ingredients have no seed.
+     */
+    #[ORM\Column(length: 10)]
+    private string $source = self::SOURCE_HUMAN;
 
     public function getId(): ?int
     {
@@ -65,5 +76,15 @@ class IngredientAllergen
     public function setPresence(AllergenPresence $presence): void
     {
         $this->presence = $presence;
+    }
+
+    public function getSource(): string
+    {
+        return $this->source;
+    }
+
+    public function setSource(string $source): void
+    {
+        $this->source = $source;
     }
 }

@@ -50,7 +50,8 @@ final class AllergenClassificationTask implements ClassificationTaskInterface
         $rows = $this->em->getConnection()->executeQuery(
             'SELECT gi.id
              FROM global_ingredient gi
-             WHERE NOT EXISTS (SELECT 1 FROM global_ingredient_allergen gia WHERE gia.global_ingredient_id = gi.id)
+             WHERE gi.allergens_reviewed_at IS NULL
+               AND NOT EXISTS (SELECT 1 FROM global_ingredient_allergen gia WHERE gia.global_ingredient_id = gi.id)
                AND NOT EXISTS (
                    SELECT 1 FROM classification_log cl
                    WHERE cl.subject_type = :subjectType AND cl.subject_id = gi.id AND cl.classification_type = :classificationType
@@ -88,7 +89,8 @@ final class AllergenClassificationTask implements ClassificationTaskInterface
         return (int) $this->em->getConnection()->executeQuery(
             'SELECT COUNT(*)
              FROM global_ingredient gi
-             WHERE NOT EXISTS (SELECT 1 FROM global_ingredient_allergen gia WHERE gia.global_ingredient_id = gi.id)
+             WHERE gi.allergens_reviewed_at IS NULL
+               AND NOT EXISTS (SELECT 1 FROM global_ingredient_allergen gia WHERE gia.global_ingredient_id = gi.id)
                AND NOT EXISTS (
                    SELECT 1 FROM classification_log cl
                    WHERE cl.subject_type = :subjectType AND cl.subject_id = gi.id AND cl.classification_type = :classificationType
@@ -168,7 +170,9 @@ final class AllergenClassificationTask implements ClassificationTaskInterface
         $link = new GlobalIngredientAllergen();
         $link->setAllergen($allergen);
         $link->setPresence(AllergenPresence::from($attributes['presence'] ?? 'contains'));
+        $link->setSource(GlobalIngredientAllergen::SOURCE_AI);
         $subject->addAllergenLink($link);
+        $subject->markAllergensReviewed(GlobalIngredientAllergen::SOURCE_AI);
         $this->em->persist($link);
     }
 }
