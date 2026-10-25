@@ -52,6 +52,10 @@ hint:
     logo_format: 'PNG o JPG, max. 2 MB'
     hero_image_format: 'PNG, JPG o WebP, max. %max_mb% MB (min. %min%x%min% px, max. %max%x%max% px; consigliato: %recommended% px di larghezza o più)'
     hero_image_width_notice: "Questa foto misura %width% × %height% px. Verrà salvata comunque, ma su schermi grandi potrebbe risultare poco nitida. Consigliato: %recommended% px di larghezza o più."
+    upload_discarded_logo: "Il logo che hai scelto non è stato salvato; sceglilo di nuovo."
+    upload_discarded_hero_image: "La foto di intestazione che hai scelto non è stata salvata; sceglila di nuovo."
+    upload_discarded_both: "Il logo e la foto di intestazione che hai scelto non sono stati salvati; sceglili di nuovo."
+    upload_discarded_use_appearance: "Si salvano con il pulsante «%button%» della sezione %section%."
     tagline: Mostrato sotto il nome del ristorante in alcuni temi del menu pubblico.
     menu_language: La lingua in cui inserisci nomi e descrizioni dei piatti.
     admin_language: La lingua di questo pannello di gestione. Non influisce sul menu visto dai tuoi clienti.

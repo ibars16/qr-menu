@@ -439,7 +439,7 @@
                 : '/admin/categories/create';
 
             const data = await apiFetch(url, { name, type });
-            if (data.error) { showToast(data.error, 'error'); return; }
+            if (data.error) return; // apiFetch() has already toasted it (a 4xx)
 
             showToast(S.editingCatId ? MSG_CATEGORY_UPDATED : MSG_CATEGORY_CREATED, 'success');
             UI.closeCat();

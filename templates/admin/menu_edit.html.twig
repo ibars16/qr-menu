@@ -400,7 +400,7 @@
                 if (!ok) return;
 
                 const data = await apiFetch(`/admin/menus/${MENU_ID}/edit`, { name, type, menuPrice: price, menuDescription: description || null });
-                if (data.error) { showToast(data.error, 'error'); return; }
+                if (data.error) return; // apiFetch() has already toasted it (a 4xx)
 
                 showToast(MSG_HEADER_UPDATED, 'success');
                 this.closeHeader();
@@ -441,7 +441,7 @@
                     ? `/admin/menu-sections/${this.editingId}/rename`
                     : `/admin/menus/${MENU_ID}/sections/create`;
                 const data = await apiFetch(url, { label });
-                if (data.error) { showToast(data.error, 'error'); return; }
+                if (data.error) return; // apiFetch() has already toasted it (a 4xx)
 
                 showToast(this.editingId ? MSG_SECTION_UPDATED : MSG_SECTION_CREATED, 'success');
                 this.close();

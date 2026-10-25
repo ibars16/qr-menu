@@ -52,6 +52,10 @@ hint:
     logo_format: 'PNG or JPG, max. 2 MB'
     hero_image_format: 'PNG, JPG, or WebP, max. %max_mb% MB (min %min%x%min% px, max %max%x%max% px; recommended: %recommended% px wide or more)'
     hero_image_width_notice: "This photo is %width% × %height% px. It will still be saved, but it may look soft on large screens. Recommended: %recommended% px wide or more."
+    upload_discarded_logo: "The logo you picked was not saved; please choose it again."
+    upload_discarded_hero_image: "The hero photo you picked was not saved; please choose it again."
+    upload_discarded_both: "The logo and hero photo you picked were not saved; please choose them again."
+    upload_discarded_use_appearance: "They are saved with the “%button%” button in the %section% section."
     tagline: Shown under the restaurant name on some public menu themes.
     menu_language: The language you use to enter dish names and descriptions.
     admin_language: The language of this management panel. It doesn't affect the menu your customers see.

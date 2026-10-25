@@ -410,6 +410,242 @@ final class SettingsControllerTest extends WebTestCase
         self::assertStringContainsString('1600', $warnings[0]);
     }
 
+    /** A restaurant that already has a logo and a hero image on disk, as a real one would. */
+    private function makeRestaurantWithLogoAndHero(string $name): array
+    {
+        $restaurant = $this->makeRestaurant($name);
+        $owner = $this->makeOwner($restaurant);
+        $this->client->loginUser($owner);
+
+        $this->client->request('POST', '/admin/settings', [
+            '_token'  => $this->settingsToken(),
+            'section' => 'appearance',
+        ], [
+            'logo'      => $this->logoUpload(),
+            'heroImage' => $this->fixtureUploadedFile('upload_hero_wide.jpg', 'hero.jpg', 'image/jpeg'),
+        ]);
+        self::assertResponseRedirects();
+        $restaurant = $this->reloadRestaurant($restaurant);
+        $this->logoFilesToRemove[] = $restaurant->getLogo();
+        $this->heroImageFilesToRemove[] = $restaurant->getHeroImage();
+        self::assertNotNull($restaurant->getLogo());
+        self::assertNotNull($restaurant->getHeroImage());
+
+        return [$restaurant, $restaurant->getLogo(), $restaurant->getHeroImage()];
+    }
+
+    /** @return array{0: string[], 1: string[]} */
+    private function uploadDirsListing(): array
+    {
+        return [scandir($this->logoDir) ?: [], scandir($this->heroImageDir) ?: []];
+    }
+
+    /**
+     * New logo + a hero below the 300px minimum (needs confirmation): the
+     * hero used to be checked only after the logo was moved and the old
+     * one deleted, then it returned without flushing — the restaurant kept
+     * pointing at a deleted logo. Now nothing moves: DB and disk as before.
+     */
+    public function testNewLogoWithAHeroThatNeedsConfirmationLeavesDbAndDiskUntouched(): void
+    {
+        [$restaurant, $logo, $hero] = $this->makeRestaurantWithLogoAndHero('Logo + Small Hero Test');
+        $listingBefore = $this->uploadDirsListing();
+
+        $this->client->request('POST', '/admin/settings', [
+            '_token'  => $this->settingsToken(),
+            'section' => 'appearance',
+        ], [
+            'logo'      => $this->logoUpload(),
+            'heroImage' => $this->fixtureUploadedFile('upload_hero_small.jpg', 'hero.jpg', 'image/jpeg'),
+        ]);
+        self::assertResponseRedirects('/admin/settings');
+
+        $restaurant = $this->reloadRestaurant($restaurant);
+        self::assertSame($logo, $restaurant->getLogo());
+        self::assertSame($hero, $restaurant->getHeroImage());
+        self::assertFileExists($this->logoDir . '/' . $logo, 'the current logo must still be on disk');
+        self::assertFileExists($this->heroImageDir . '/' . $hero);
+        self::assertSame($listingBefore, $this->uploadDirsListing(), 'no new file left behind either');
+    }
+
+    public function testNewLogoWithARejectedHeroLeavesDbAndDiskUntouched(): void
+    {
+        [$restaurant, $logo, $hero] = $this->makeRestaurantWithLogoAndHero('Logo + Rejected Hero Test');
+        $listingBefore = $this->uploadDirsListing();
+
+        $this->client->request('POST', '/admin/settings', [
+            '_token'  => $this->settingsToken(),
+            'section' => 'appearance',
+        ], [
+            'logo'      => $this->logoUpload(),
+            'heroImage' => $this->fixtureUploadedFile('upload_fake_mime.png', 'hero.png', 'image/png'),
+        ]);
+        self::assertResponseRedirects('/admin/settings');
+
+        $restaurant = $this->reloadRestaurant($restaurant);
+        self::assertSame($logo, $restaurant->getLogo());
+        self::assertSame($hero, $restaurant->getHeroImage());
+        self::assertSame($listingBefore, $this->uploadDirsListing());
+    }
+
+    public function testReplacingLogoAndHeroTogetherStoresBothAndDeletesBothOldFiles(): void
+    {
+        [$restaurant, $oldLogo, $oldHero] = $this->makeRestaurantWithLogoAndHero('Logo + Hero Replace Test');
+
+        $this->client->request('POST', '/admin/settings', [
+            '_token'  => $this->settingsToken(),
+            'section' => 'appearance',
+        ], [
+            'logo'      => $this->logoUpload(),
+            'heroImage' => $this->fixtureUploadedFile('upload_hero_wide.jpg', 'hero.jpg', 'image/jpeg'),
+        ]);
+        self::assertResponseRedirects();
+
+        $restaurant = $this->reloadRestaurant($restaurant);
+        $this->logoFilesToRemove[] = $restaurant->getLogo();
+        $this->heroImageFilesToRemove[] = $restaurant->getHeroImage();
+        self::assertNotSame($oldLogo, $restaurant->getLogo());
+        self::assertNotSame($oldHero, $restaurant->getHeroImage());
+        self::assertFileExists($this->logoDir . '/' . $restaurant->getLogo());
+        self::assertFileExists($this->heroImageDir . '/' . $restaurant->getHeroImage());
+        self::assertFileDoesNotExist($this->logoDir . '/' . $oldLogo);
+        self::assertFileDoesNotExist($this->heroImageDir . '/' . $oldHero);
+    }
+
+    /** Text errors elsewhere + picked files: nothing saved, and Apariencia says the picks must be made again. */
+    public function testFormErrorsWithPickedFilesSayTheyWereNotSaved(): void
+    {
+        $restaurant = $this->makeRestaurant('Discarded Uploads Test');
+        $this->client->loginUser($this->makeOwner($restaurant));
+        $translator = static::getContainer()->get('translator');
+
+        $cases = [
+            'hint.upload_discarded_logo'       => ['logo' => true],
+            'hint.upload_discarded_hero_image' => ['heroImage' => true],
+            'hint.upload_discarded_both'       => ['logo' => true, 'heroImage' => true],
+        ];
+        foreach ($cases as $key => $files) {
+            $upload = [];
+            if (isset($files['logo'])) {
+                $upload['logo'] = $this->logoUpload();
+            }
+            if (isset($files['heroImage'])) {
+                $upload['heroImage'] = $this->fixtureUploadedFile('upload_hero_wide.jpg', 'hero.jpg', 'image/jpeg');
+            }
+            $crawler = $this->client->request('POST', '/admin/settings', [
+                '_token'          => $this->settingsToken(),
+                'name'            => $restaurant->getName(),
+                'currency'        => 'EUR',
+                'defaultLanguage' => 'es',
+                'phone'           => 'not a phone',
+            ], $upload);
+
+            self::assertResponseStatusCodeSame(422);
+            $notice = $crawler->filter('#section-appearance .upload-discarded');
+            self::assertCount(1, $notice, $key);
+            self::assertSame($translator->trans($key, [], 'admin_settings', 'es'), trim($notice->text()));
+        }
+
+        $restaurant = $this->reloadRestaurant($restaurant);
+        self::assertNull($restaurant->getLogo());
+        self::assertNull($restaurant->getHeroImage());
+    }
+
+    /**
+     * Another section's own button with a logo picked: that section is
+     * saved, the logo isn't (only Apariencia's button stores files) — the
+     * owner lands on Apariencia with the notice and which button to use.
+     */
+    public function testAnotherSectionsButtonWithAPickedLogoSaysToUseAppearance(): void
+    {
+        $restaurant = $this->makeRestaurant('Other Section Upload Test');
+        $this->client->loginUser($this->makeOwner($restaurant));
+        $translator = static::getContainer()->get('translator');
+        $listingBefore = $this->uploadDirsListing();
+
+        $this->client->request('POST', '/admin/settings', [
+            '_token'  => $this->settingsToken(),
+            'section' => 'contact',
+            'address' => 'Calle Mayor 1, Madrid',
+            'phone'   => '+34 600 123 456',
+        ], [
+            'logo' => $this->logoUpload(),
+        ]);
+        self::assertResponseRedirects('/admin/settings#section-appearance');
+
+        $restaurant = $this->reloadRestaurant($restaurant);
+        self::assertSame('+34 600 123 456', $restaurant->getPhone(), 'the section itself is saved');
+        self::assertNull($restaurant->getLogo());
+        self::assertSame($listingBefore, $this->uploadDirsListing());
+
+        $crawler = $this->client->request('GET', '/admin/settings');
+        $notice = preg_replace('/\s+/', ' ', trim($crawler->filter('#section-appearance .upload-discarded')->text()));
+        self::assertStringContainsString($translator->trans('hint.upload_discarded_logo', [], 'admin_settings', 'es'), $notice);
+        self::assertStringContainsString($translator->trans('hint.upload_discarded_use_appearance', [
+            '%button%'  => $translator->trans('action.save_section', [], 'admin_settings', 'es'),
+            '%section%' => $translator->trans('section.appearance', [], 'admin_settings', 'es'),
+        ], 'admin_settings', 'es'), $notice);
+
+        // Shown once, not on every later visit.
+        self::assertCount(0, $this->client->request('GET', '/admin/settings')->filter('.upload-discarded'));
+    }
+
+    /** Errors on another section's save with a picked photo: the notice also says which button stores it. */
+    public function testAnotherSectionsErrorsWithAPickedHeroAlsoSayToUseAppearance(): void
+    {
+        $restaurant = $this->makeRestaurant('Other Section Error Upload Test');
+        $this->client->loginUser($this->makeOwner($restaurant));
+        $translator = static::getContainer()->get('translator');
+
+        $crawler = $this->client->request('POST', '/admin/settings', [
+            '_token'  => $this->settingsToken(),
+            'section' => 'contact',
+            'phone'   => 'not a phone',
+        ], [
+            'heroImage' => $this->fixtureUploadedFile('upload_hero_wide.jpg', 'hero.jpg', 'image/jpeg'),
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+        $notice = preg_replace('/\s+/', ' ', trim($crawler->filter('#section-appearance .upload-discarded')->text()));
+        self::assertStringContainsString($translator->trans('hint.upload_discarded_hero_image', [], 'admin_settings', 'es'), $notice);
+        self::assertStringContainsString('«' . $translator->trans('action.save_section', [], 'admin_settings', 'es') . '»', $notice);
+    }
+
+    /** Apariencia's own button with a valid logo stores it: no notice. */
+    public function testAppearanceButtonWithAValidLogoShowsNoDiscardedNotice(): void
+    {
+        $restaurant = $this->makeRestaurant('Appearance Upload No Notice Test');
+        $this->client->loginUser($this->makeOwner($restaurant));
+
+        $this->client->request('POST', '/admin/settings', [
+            '_token'  => $this->settingsToken(),
+            'section' => 'appearance',
+        ], [
+            'logo' => $this->logoUpload(),
+        ]);
+        self::assertResponseRedirects('/admin/settings#section-appearance');
+        $this->logoFilesToRemove[] = $this->reloadRestaurant($restaurant)->getLogo();
+
+        self::assertCount(0, $this->client->request('GET', '/admin/settings')->filter('.upload-discarded'));
+    }
+
+    public function testFormErrorsWithoutPickedFilesShowNoDiscardedNotice(): void
+    {
+        $restaurant = $this->makeRestaurant('No Discarded Uploads Test');
+        $this->client->loginUser($this->makeOwner($restaurant));
+
+        $crawler = $this->client->request('POST', '/admin/settings', [
+            '_token'          => $this->settingsToken(),
+            'name'            => $restaurant->getName(),
+            'currency'        => 'EUR',
+            'defaultLanguage' => 'es',
+            'phone'           => 'not a phone',
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertCount(0, $crawler->filter('.upload-discarded'));
+    }
+
     /** The format hint's numbers are the hero_image profile's own limits, never written into the translations. */
     public function testHeroImageFormatHintShowsTheProfileLimits(): void
     {

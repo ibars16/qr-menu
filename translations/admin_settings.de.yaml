@@ -52,6 +52,10 @@ hint:
     logo_format: 'PNG oder JPG, max. 2 MB'
     hero_image_format: 'PNG, JPG oder WebP, max. %max_mb% MB (mind. %min%x%min% px, max. %max%x%max% px; empfohlen: %recommended% px Breite oder mehr)'
     hero_image_width_notice: "Dieses Foto ist %width% × %height% px groß. Es wird trotzdem gespeichert, kann aber auf großen Bildschirmen unscharf wirken. Empfohlen: %recommended% px Breite oder mehr."
+    upload_discarded_logo: "Das gewählte Logo wurde nicht gespeichert; bitte wählen Sie es erneut aus."
+    upload_discarded_hero_image: "Das gewählte Header-Foto wurde nicht gespeichert; bitte wählen Sie es erneut aus."
+    upload_discarded_both: "Das gewählte Logo und Header-Foto wurden nicht gespeichert; bitte wählen Sie sie erneut aus."
+    upload_discarded_use_appearance: "Sie werden mit der Schaltfläche „%button%“ im Bereich %section% gespeichert."
     tagline: Wird bei manchen Designs unter dem Restaurantnamen in der öffentlichen Speisekarte angezeigt.
     menu_language: Die Sprache, in der Sie Gerichtnamen und -beschreibungen eingeben.
     admin_language: Die Sprache dieses Verwaltungspanels. Sie hat keinen Einfluss auf die Speisekarte Ihrer Kunden.

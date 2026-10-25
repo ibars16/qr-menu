@@ -52,6 +52,10 @@ hint:
     logo_format: 'PNG o JPG, máx. 2 MB'
     hero_image_format: 'PNG, JPG o WebP, máx. %max_mb% MB (mín. %min%x%min% px, máx. %max%x%max% px; recomendado: %recommended% px de ancho o más)'
     hero_image_width_notice: "Esta foto mide %width% × %height% px. Se guardará igualmente, pero en pantallas grandes puede verse poco nítida. Recomendado: %recommended% px de ancho o más."
+    upload_discarded_logo: "El logo que elegiste no se ha guardado; vuelve a elegirlo."
+    upload_discarded_hero_image: "La foto de cabecera que elegiste no se ha guardado; vuelve a elegirla."
+    upload_discarded_both: "El logo y la foto de cabecera que elegiste no se han guardado; vuelve a elegirlos."
+    upload_discarded_use_appearance: "Se guardan con el botón «%button%» del apartado %section%."
     tagline: Aparece bajo el nombre del restaurante en algunos temas de la carta pública.
     menu_language: El idioma en que introduces los nombres y descripciones de los platos.
     admin_language: El idioma de este panel de gestión. No afecta a la carta que ven tus clientes.

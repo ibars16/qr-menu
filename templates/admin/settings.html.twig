@@ -183,6 +183,7 @@
             font-size: var(--fs-base); color: var(--warn-fg); line-height: var(--lh-body);
         }
         .quality-note[hidden] { display: none; }
+        .upload-discarded { margin: 0 0 var(--sp-4); }
         .quality-warning-messages { display: flex; flex-direction: column; gap: var(--sp-1); }
         .quality-warning-messages p { margin: 0; font-size: var(--fs-base); color: var(--warn-fg); line-height: var(--lh-body); }
         .quality-warning-confirm {
@@ -373,6 +374,20 @@
             <div class="settings-section" id="section-appearance">
                 <div class="settings-section-title">{{ 'section.appearance'|trans({}, 'admin_settings') }}</div>
                 <div class="settings-body">
+                    {# A logo / hero image picked in the last submission wasn't
+                       stored — the form came back with errors (a file input
+                       can't be refilled) or another section's button was used
+                       (then via a flash, after the redirect). See
+                       SettingsController::discardedUploads(). #}
+                    {# Read once: app.flashes() empties the bag, and Twig's ?: evaluates its left side twice. #}
+                    {% set discardedFlash = app.flashes('settings_upload_discarded') %}
+                    {% set discarded = discardedUploads ?? (discardedFlash is empty ? null : discardedFlash|first) %}
+                    {% if discarded %}
+                        <p class="quality-note upload-discarded" role="alert">
+                            {{ discarded.key|trans({}, 'admin_settings') }}
+                            {% if discarded.viaAppearanceButton %}{{ 'hint.upload_discarded_use_appearance'|trans({'%button%': 'action.save_section'|trans({}, 'admin_settings'), '%section%': 'section.appearance'|trans({}, 'admin_settings')}, 'admin_settings') }}{% endif %}
+                        </p>
+                    {% endif %}
 
                     {# Logo #}
                     <div class="field">
