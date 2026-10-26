@@ -1,47 +1,9 @@
 <style>
 :root {
     /* ── Identity: Maison — fine-dining editorial. Parchment, ivory and
-       wine, serif display type, sharp-ish corners. Ninth theme, additive
-       only — no existing theme's tokens are touched. ── */
-    --card-radius: 6px;
-    --badge-radius: 2px;
-    --tab-radius: 24px;
-    --search-radius: 6px;
-    --accent-line-h: 1px;
-    --card-lift: -2px;
-    /* --radius: matches carta-estilo.css's own --radius token (4px) — used
-       for the smaller chrome (allergy button, badges) that the design
-       system deliberately keeps sharper than the 6px dish-card corner. */
-    --radius: 4px;
-
-    /* ── Typography — maison-only tokens. The other 8 themes never set
-       these, so every var(--font-display/--font-body, …) reference in the
-       shared layout CSS falls back to its existing behaviour untouched. ── */
-    --font-display: 'Fraunces', Georgia, serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    /* Global type-size multiplier for the hand-picked sizes in
-       overrides.html.twig (hero name, section titles, dish names/prices/
-       descriptions, tabs, tagline, banner) — each is written as
-       calc(<Npx> * var(--font-scale)) with N already the current target
-       size, so --font-scale: 1 would be a no-op; nudging this one number
-       scales all of them together for a future "a touch bigger/smaller"
-       pass without hunting down each rule. Weight/family/line-height are
-       untouched by this var on purpose — only size moves.
-       0.94 (2026-09-02): the initial +1..+4px pass read too big/coarse —
-       this softens all of it back down at once, landing each size about
-       a point above the pre-bump original rather than the full bump.
-       A later same-day round briefly bumped this to 0.98 theme-wide, but
-       that request turned out to mean the dish-detail sheet specifically,
-       not the whole theme — reverted here; see .dish-modal's own
-       --font-scale: 0.98 override in overrides.html.twig, which shadows
-       this root value for everything inside the sheet only (custom
-       properties cascade, so every calc(Npx * var(--font-scale)) rule
-       automatically picks up whichever value is in scope — nothing
-       per-element to touch when re-tuning either number). .hero-name is
-       the one exception to the shared value, based on 43px instead of the
-       shared 46px (see its own rule) since 46*0.94≈43 alone would still
-       wrap the restaurant name to two heavy lines at 390px. */
-    --font-scale: 0.94;
+       wine. Colors only: shape and type (serif display, sharp-ish corners,
+       --font-scale) come from the shared structure,
+       layouts/standard/_structure.html.twig. ── */
 
     /* ── Palette ── */
     --bg: #F2EBDF;
@@ -54,17 +16,28 @@
        for normal text. #6D5D4E clears every background this token is used
        against in maison: 4.78:1 on --surface-2, 5.33:1 on --bg, 5.95:1 on
        --surface. Scoped to this file only — every theme defines its own
-       --fg-2 in its own vars.html.twig, so this doesn't touch the other 8. */
+       --fg-2 in its own vars.html.twig, so this doesn't touch the others. */
     --fg-2: #6D5D4E;
     --fg-3: #A99B8A;
     --accent: #7A1E28;
     --b1: rgba(36,28,23,0.14);
     --b2: rgba(36,28,23,0.24);
 
-    /* ── Maison-only extras, consumed only by
-       menu/themes/maison/overrides.html.twig (the "Ver más" hover tint and
-       the hero CTA hover fill) ── */
-    --wine-soft: #9A3742;
+    /* ── Tokens of the shared structure, consumed only by
+       menu/layouts/standard/_structure.html.twig ── */
+    /* Hover fill of the accent buttons ("Ver más", hero CTA, "Borrar todo",
+       footer social links) and the hover color of the row "Ver más" link. */
+    --accent-soft: #9A3742;
+    /* Text/icons on an --accent or --accent-soft fill. */
+    --on-accent: #ffffff;
+    /* rgb triplets for shadows (--fg's) and the filters-sheet header glow
+       (--cf-hborder's), used as rgba(var(--…-rgb), alpha). */
+    --shadow-rgb: 36,28,23;
+    --cf-hborder-rgb: 176,137,76;
+    /* Over dish photos: badge chip and gradient scrim, × shadow, sheet grip. */
+    --scrim-rgb: 20,14,11;
+    --on-scrim: #f6eee2;
+    --sheet-grip: rgba(255,255,255,0.7);
     --line-soft: rgba(36,28,23,0.08);
 
     /* ── Header ── */
@@ -168,12 +141,5 @@
     /* ── Spicy ── --spicy-t is --fg-2's value: #A99B8A (--fg-3) was 2.29:1
        on the dish sheet's --cb-bg; this is 5.33:1 there, 5.95:1 on --surface. */
     --dot-on: #7A1E28; --dot-off: rgba(36,28,23,0.14); --spicy-t: #6D5D4E;
-}
-/* Right-to-left menus: Arabic-script fallbacks AFTER Fraunces/Inter, so
-   Latin text and digits keep the theme fonts. Loaded only on RTL
-   (show.html.twig <head>). Same specificity as :root, wins by order. */
-[dir="rtl"] {
-    --font-display: 'Fraunces', 'Noto Naskh Arabic', Georgia, serif;
-    --font-body: 'Inter', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 </style>

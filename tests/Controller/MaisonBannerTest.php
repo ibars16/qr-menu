@@ -16,7 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
  * Maison's chef's-recommendation banner (standard/show.html.twig hero,
- * themes/maison/_banner_text.html.twig): a multiprice dish shows "Desde" +
+ * layouts/standard/_banner_text.html.twig): a multiprice dish shows "Desde" +
  * its lowest price on one line, not the full price stack.
  */
 final class MaisonBannerTest extends WebTestCase

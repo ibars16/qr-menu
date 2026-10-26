@@ -1,5 +1,7 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        structured_themes: '%app.structured_themes%'
 
 when@test:
     twig:

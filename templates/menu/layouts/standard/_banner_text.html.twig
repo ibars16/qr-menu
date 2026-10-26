@@ -1,11 +1,11 @@
 {# Content of one chef's-recommendation item — shared by the single .banner and
-   every .banner-slide of the carousel (standard/show.html.twig, maison
-   hero). Expects ri ({product, t, tagName}), currency, currencyDisplay,
+   every .banner-slide of the carousel (standard/show.html.twig, structured
+   themes' hero). Expects ri ({product, t, tagName}), currency, currencyDisplay,
    locale. With a description: unchanged (description only). Without one:
    the price on one line ("Desde" + lowest for multiprice) and, if any, the
    supplement on its own line below it.
    Thumbnail (the dish photo — also a clip's poster, as on the dish card)
-   and chevron are only shown >=1024px (overrides.html.twig); below that
+   and chevron are only shown >=1024px (_structure.html.twig); below that
    the star icon stays, as before. No photo: star at every width. #}
 {% import 'menu/_price.html.twig' as priceMacro %}
 {% if ri.product.image %}<img class="bthumb" src="{{ asset('uploads/products/' ~ ri.product.image) }}" alt="" loading="lazy">{% endif %}

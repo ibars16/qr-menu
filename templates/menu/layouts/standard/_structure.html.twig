@@ -1,11 +1,67 @@
-{# Maison — structural overrides for the standard layout (the only public
-   menu layout).
+{# Shared structure for the standard layout (the only public menu layout):
+   hero band, recommendation banner, text rows for dishes without a photo,
+   filters sheet, dish sheet, footer, the chat stepping aside… Rendered for
+   the themes in structured_themes (app.structured_themes in
+   config/services.yaml); each of those themes' vars.html.twig only sets
+   colors — shape and type tokens live in the :root block below. Born as
+   maison's own overrides, so the comments below name colors by maison's
+   values (wine = --accent, brass = --cf-hborder, parchment/ivory = --bg/
+   --surface).
 
    This file is included right after standard/show.html.twig's own
-   <style> block (`{% include 'menu/themes/' ~ theme ~ '/overrides.html.twig'
-   ignore missing %}`), so equal-specificity selectors here win by source
+   <style> block, so equal-specificity selectors here win by source
    order alone — nothing below needs raised specificity or !important. #}
 <style>
+    /* ── Shape and type, the same for every structured theme (moved here
+       from maison's vars.html.twig, values unchanged). Later in the page
+       than the theme's vars, so these win over the shape tokens the older
+       themes still define there. ── */
+    :root {
+        --card-radius: 6px;
+        --badge-radius: 2px;
+        --tab-radius: 24px;
+        --search-radius: 6px;
+        --accent-line-h: 1px;
+        --card-lift: -2px;
+        /* --radius: matches carta-estilo.css's own --radius token (4px) — used
+           for the smaller chrome (allergy button, badges) that the design
+           system deliberately keeps sharper than the 6px dish-card corner. */
+        --radius: 4px;
+
+        --font-display: 'Fraunces', Georgia, serif;
+        --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        /* Global type-size multiplier for the hand-picked sizes below (hero
+           name, section titles, dish names/prices/descriptions, tabs,
+           tagline, banner) — each is written as calc(<Npx> * var(--font-scale))
+           with N already the current target size, so --font-scale: 1 would be
+           a no-op; nudging this one number scales all of them together for a
+           future "a touch bigger/smaller" pass without hunting down each rule.
+           Weight/family/line-height are untouched by this var on purpose —
+           only size moves.
+           0.94 (2026-09-02): the initial +1..+4px pass read too big/coarse —
+           this softens all of it back down at once, landing each size about
+           a point above the pre-bump original rather than the full bump.
+           A later same-day round briefly bumped this to 0.98 theme-wide, but
+           that request turned out to mean the dish-detail sheet specifically,
+           not the whole theme — reverted here; see .dish-modal's own
+           --font-scale override below, which shadows this root value
+           for everything inside the sheet only (custom properties cascade,
+           so every calc(Npx * var(--font-scale)) rule automatically picks up
+           whichever value is in scope — nothing per-element to touch when
+           re-tuning either number). .hero-name is the one exception to the
+           shared value, based on 43px instead of the shared 46px (see its own
+           rule) since 46*0.94≈43 alone would still wrap the restaurant name
+           to two heavy lines at 390px. */
+        --font-scale: 0.94;
+    }
+    /* Right-to-left menus: Arabic-script fallbacks AFTER Fraunces/Inter, so
+       Latin text and digits keep the theme fonts. Loaded only on RTL
+       (show.html.twig <head>). Same specificity as :root, wins by order. */
+    [dir="rtl"] {
+        --font-display: 'Fraunces', 'Noto Naskh Arabic', Georgia, serif;
+        --font-body: 'Inter', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
     html { scroll-behavior: smooth; }
 
     /* Category tabs — underline instead of filled pills. carta-estilo.css's
@@ -46,12 +102,12 @@
        left its flow position and content is passing underneath it. .is-stuck
        is toggled by the sentinel + IntersectionObserver at the end of this
        file (JS-only DOM node, not part of the server-rendered markup, so
-       this stays maison-only without touching the shared layout template).
+       this stays structure-only without touching the base layout template).
        Replaces the old border-bottom: 1px solid var(--cf-hborder) hairline,
        which read as a hard, fully-saturated brass line the full width of
-       the screen — the harshest thing about the bar. rgba(36,28,23,...) is
+       the screen — the harshest thing about the bar. --shadow-rgb is
        --fg's own rgb triplet at low opacity, not a new color. */
-    .cat-tabs.is-stuck { box-shadow: 0 4px 12px rgba(36,28,23,0.06); }
+    .cat-tabs.is-stuck { box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.06); }
     /* Scroll-affordance fades (2026-09-07) — .cat-tabs has no visual hint
        that it overflows horizontally, so an edge tab (e.g. "Asados y
        guisos") just gets hard-clipped by the scroll container with no cue
@@ -59,7 +115,7 @@
        .has-more-start/.has-more-end (toggled by the scroll listener at
        the end of this file, alongside the existing .is-stuck one — same
        pattern as .dish-modal-fade's scroll listener in _search_js.html.twig,
-       just horizontal and maison-only instead of vertical and shared).
+       just horizontal and structure-only instead of vertical and shared).
        Both stay position:absolute so they're removed from the flex flow
        (no extra flex item) and pinned to .cat-tabs' own box rather than its
        scrolled content — .cat-tabs is already the nearest positioned
@@ -197,7 +253,7 @@
        "auto" price column to that one row's own label width, so two rows
        with labels of different length ("botella"/"copa") land their price
        columns at different x-offsets — a visible zigzag instead of aligned
-       decimals. Fixed here, maison-only, by promoting .price-stack itself to
+       decimals. Fixed here, structure-only, by promoting .price-stack itself to
        the grid and turning .price-row into `display:contents` so every row's
        label/value join ONE shared two-column grid instead of one grid each.
        Label column is a FIXED width (2026-09-16, owner request), not `1fr`:
@@ -213,7 +269,7 @@
        overflow rule) rather than pushing the price column around. Prices
        right-align via text-align so the currency suffix stays a quiet
        trailing unit rather than shifting the digits. Scoped to this file
-       only (theme=='maison'), so the base grid every other theme relies on
+       only (structured), so the base grid every other theme relies on
        is untouched. */
     /* align-items:baseline (2026-09-16, owner request) — the label and price
        are different font-families/sizes (Inter 0.55em vs Fraunces 1em), so
@@ -265,7 +321,7 @@
        in a red pill (base layout's .supplement-badge, --cp) reading like a
        loose promo; here it's a second price-block line, same visual
        language as the price itself, so it reads as "this adds to the
-       price". Maison-only — see the theme != 'maison' / theme == 'maison'
+       price". Structure-only — see the not structured / structured
        gates around .supplement-badge and this markup in
        standard/show.html.twig; every other theme still renders the
        original badge next to the name, untouched. */
@@ -379,7 +435,7 @@
 
     /* "Ver más" — filled wine pill, white text, same pattern as
        .filters-clear-link ("Borrar todo"): solid var(--accent) fill,
-       white-on-#7A1E28 clears AA (~10:1), lighter --wine-soft on hover
+       white-on-#7A1E28 clears AA (~10:1), lighter --accent-soft on hover
        (chosen there for reading slightly less "wine" at rest while still
        clearing AA — same reasoning applies here), var(--cf-hborder) brass
        on :focus-visible. The hover fill used to live on .dish-card:hover
@@ -387,10 +443,10 @@
        link with nothing to swap; now .more-hint has its own visible fill
        at rest, so its own :hover / :focus-visible carry the swap instead. */
     .more-hint {
-        background: var(--accent); border: 1px solid var(--accent); color: #fff;
+        background: var(--accent); border: 1px solid var(--accent); color: var(--on-accent);
         padding: 0.375rem 0.8125rem; border-radius: var(--radius); display: inline-flex; align-items: center; gap: 0.25rem;
     }
-    .dish-card:hover .more-hint { background: var(--wine-soft); border-color: var(--wine-soft); color: #fff; }
+    .dish-card:hover .more-hint { background: var(--accent-soft); border-color: var(--accent-soft); color: var(--on-accent); }
     /* .more-hint itself is never focusable — the whole .dish-card is the
        one tap/keyboard target (role="button" tabindex="0"), per the shared
        comment above .dish-card in the base layout. Cueing keyboard focus
@@ -411,7 +467,7 @@
        aspect-ratio stays auto (the fixed height alone already sets both
        dimensions — see the base layout's own comment on this same
        trade-off above .dish-card .front-img). Markup only renders this
-       photo branch when theme == 'maison'; the no-photo case is .dish-row
+       photo branch when structured; the no-photo case is .dish-row
        instead, see menu/layouts/standard/show.html.twig and .dish-row
        further down. */
     .dish-card .front-img { height: 240px; aspect-ratio: auto; }
@@ -424,7 +480,7 @@
     .dish-card .front-name { font-size: calc(19px * var(--font-scale)); }
 
     /* No-photo dish, front-card grid, uses .dish-row instead (see below) —
-       .dish-placeholder itself is never rendered for maison any more
+       .dish-placeholder itself is never rendered on the structure any more
        (2026-09-07, product decision — see conversation and the template's
        own comment in standard/show.html.twig): a no-photo dish used to open
        into a 300px block of flat --surface-2 with just the restaurant name
@@ -505,7 +561,7 @@
        ti-chevron-right">…, standard/show.html.twig) — this is a pure CSS
        reskin, no new markup, no new icon. Text reuses --accent (~8.7:1 on
        --bg, comfortably past AA text contrast) rather than a new token;
-       hover swaps to --wine-soft, the exact tint the pill's own hover
+       hover swaps to --accent-soft, the exact tint the pill's own hover
        already uses, just applied as text color instead of a fill. Both
        selectors below match the same specificity as the shared pill's own
        :hover rule above (.dish-card:hover .more-hint) — per this file's
@@ -521,12 +577,12 @@
         background: none; border: none; color: var(--accent); padding: 0;
         font-size: 11.5px; margin-top: 8px;
     }
-    .dish-row:hover .more-hint { background: none; border-color: transparent; color: var(--wine-soft); }
+    .dish-row:hover .more-hint { background: none; border-color: transparent; color: var(--accent-soft); }
 
-    /* Card-front description (.front-desc) removed for maison (2026-09-05,
+    /* Card-front description (.front-desc) removed on the structure (2026-09-05,
        see conversation) — no rule needed here any more, it never renders in
-       this theme (see standard/show.html.twig: `pT.description and theme
-       != 'maison'`). Kept out entirely rather than left as dead CSS. */
+       this theme (see standard/show.html.twig: `pT.description and not
+       structured`). Kept out entirely rather than left as dead CSS. */
 
     /* Dish-detail sheet's own description (.dish-detail-desc, distinct from
        the now-removed card-front .front-desc) — already rendered whenever
@@ -549,14 +605,14 @@
        button (not a text link), positioned above h1 in the markup (moved
        there in the twig). Kept as an <a href="#cat-tabs"> so the
        smooth-scroll behavior is unchanged; only styling differs from the
-       other 8 themes' larger .hero-kicker pill in this same slot. */
+       older themes' larger .hero-kicker pill in this same slot. */
     .cta-explore {
         display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px; margin: 0;
-        background: var(--cp); color: #fff; border: none; border-radius: 100px;
+        background: var(--cp); color: var(--on-accent); border: none; border-radius: 100px;
         font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-decoration: none;
         transition: background 0.2s;
     }
-    .cta-explore:hover { background: var(--wine-soft); }
+    .cta-explore:hover { background: var(--accent-soft); }
     .cta-explore:focus-visible { outline: 2px solid var(--cf-hborder); outline-offset: 2px; }
     .cta-explore i { font-size: 12px; }
     /* Hero — restructured so restaurant-supplied photography never sits under
@@ -628,7 +684,7 @@
     }
     .bicon {
         width: 34px; height: 34px; border-radius: var(--radius); flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center; background: var(--accent); color: #fff;
+        display: flex; align-items: center; justify-content: center; background: var(--accent); color: var(--on-accent);
     }
     .bicon svg { width: 16px; height: 16px; }
     .btext { flex: 1; min-width: 0; }
@@ -671,7 +727,7 @@
         background: var(--cue-bg); color: var(--cue-text); display: flex; align-items: center; justify-content: center;
         font-size: 13px; cursor: pointer; transition: background 0.18s, color 0.18s;
     }
-    .banner-nav-btn:hover:not(:disabled) { background: var(--accent); color: #fff; }
+    .banner-nav-btn:hover:not(:disabled) { background: var(--accent); color: var(--on-accent); }
     .banner-nav-btn:disabled { opacity: 0.35; cursor: default; }
     .banner-dots { display: flex; align-items: center; gap: 6px; }
     .banner-dot {
@@ -696,7 +752,7 @@
        crisp at that size regardless of display density. Sized/colored via
        .logo's own flex-centering and `color: var(--accent)` above (the
        svg's fill="currentColor" inherits it — no separate color rule
-       needed). Not the letter-avatar fallback the other 8 themes use. */
+       needed). Not the letter-avatar fallback the older themes use. */
     .logo svg { width: 24px; height: 24px; }
     .resto-name { font-weight: 500; }
     .nav-dd-trigger { padding: 7px 11px; border-width: 1px; border-radius: 100px; }
@@ -706,13 +762,13 @@
        badges (featured tag / spicy / popular); still 3 separate
        elements/logic, look only. The twig only ever renders one of the
        three per card (recommended > popular > spicy priority — see
-       maisonBadge in show.html.twig), so all three share the same
+       structuredBadge in show.html.twig), so all three share the same
        top-left slot (carta-estilo .badges{top:10px;left:10px}) rather
        than each keeping its own base-layout corner. */
     .dish-pill, .spicy-badge, .popular-badge {
         top: 0.625rem; inset-inline-end: auto; bottom: auto; inset-inline-start: 0.625rem;
-        background: rgba(20,14,11,0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-        color: #f6eee2; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+        background: rgba(var(--scrim-rgb), 0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+        color: var(--on-scrim); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
         padding: 4px 8px; border-radius: 2px; font-weight: 600; border: none; box-shadow: none;
     }
 
@@ -907,7 +963,7 @@
         .banner, .banner-slide {
             gap: 16px; padding: 12px; padding-inline-end: 16px;
             background: var(--cf-bg); border: 1px solid var(--cf-border); border-radius: var(--card-radius);
-            box-shadow: 0 1px 2px rgba(36,28,23,0.04), 0 8px 20px rgba(36,28,23,0.06);
+            box-shadow: 0 1px 2px rgba(var(--shadow-rgb), 0.04), 0 8px 20px rgba(var(--shadow-rgb), 0.06);
             transition: box-shadow 0.35s ease, transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.3s ease;
         }
         .banner:hover, .banner-slide:hover { box-shadow: var(--cf-hshadow); border-color: var(--cf-hborder); transform: translateY(-5px); }
@@ -947,8 +1003,8 @@
        .sw-panel lives inside .sw-widget) out of the tab order while a
        sheet has it hidden; nothing about the chat's own open/closed state
        is touched, so it reappears exactly as it was once the sheet closes.
-       Scoped to maison simply by virtue of living in this file — the
-       other 8 themes never load this rule, so their FAB behaves exactly
+       Scoped to structured themes simply by virtue of living in this file — the
+       older themes never load this rule, so their FAB behaves exactly
        as before. */
     body:has(.filters-overlay.open) .sw-widget,
     body:has(.dish-modal-overlay.open) .sw-widget {
@@ -995,7 +1051,7 @@
        the dish name does in the ficha; only the × stays put (see
        .filters-panel/.filters-panel-scroll below). */
     .filters-panel-header {
-        background: radial-gradient(140% 160% at 100% 0%, rgba(176,137,76,0.10), transparent 65%);
+        background: radial-gradient(140% 160% at 100% 0%, rgba(var(--cf-hborder-rgb), 0.10), transparent 65%);
     }
     /* Unscoped — this is the same close-button element/class used by both
        the filters sheet and the dish-detail sheet (see further down this
@@ -1071,7 +1127,7 @@
        parchment disc (.aicon, defined further up this file) reads as a
        deliberate icon system instead of raw emoji, at zero data-model
        cost — see standard/show.html.twig's chipIcon() macro for where
-       this disc gets added, maison-only. */
+       this disc gets added, structure-only. */
     .filters-panel .diet-filter,
     .filters-panel .type-filter {
         gap: 8px;
@@ -1143,7 +1199,7 @@
        this close to the button risked reading as part of it.
 
        Padding — overrides the base layout's own 0.25rem/1.25rem/6rem
-       (standard/show.html.twig; left as-is there, since the other 8 themes
+       (standard/show.html.twig; left as-is there, since the older themes
        share that rule and their own footer isn't sticky, and — unlike
        here — their FAB is never hidden, so they still need that 6rem to
        clear it once scrolled to the natural end). That 6rem was originally
@@ -1173,14 +1229,14 @@
        position (top of the panel vs. bottom), not from color alone.
        White-on-#7A1E28 is ~10:1 contrast, well past AA. Contrast ratio
        computed against --accent's actual hex, not eyeballed — see the
-       hover swap to --wine-soft below, a lighter wine that still clears
+       hover swap to --accent-soft below, a lighter wine that still clears
        AA on its own (kept for the hover state only, not the resting
        fill, since it reads slightly less "wine" than --accent at rest). */
     .filters-clear-link {
-        color: #fff; background: var(--accent); border: 1px solid var(--accent); border-radius: var(--radius);
+        color: var(--on-accent); background: var(--accent); border: 1px solid var(--accent); border-radius: var(--radius);
         padding: 0.5rem 0.9375rem;
     }
-    .filters-clear-link:hover { background: var(--wine-soft); border-color: var(--wine-soft); }
+    .filters-clear-link:hover { background: var(--accent-soft); border-color: var(--accent-soft); }
     /* Anchored snug under the title's accent hairline instead of floating
        in the wide empty flex-end row below it (the "dead space" this was
        reported as sitting in) — tightened vertical gap only, same
@@ -1215,7 +1271,7 @@
        hairline+count, sticky espresso footer) to the ficha de plato — the
        two bottom sheets in this theme should read as one system, not two
        different ones. See standard/show.html.twig's <template class=
-       "dish-tpl"> (theme == 'maison' branches only) for the markup this
+       "dish-tpl"> (structured branches only) for the markup this
        targets; nothing here changes what data renders, only how. */
 
     /* Read-only chip — visually the same object as .filters-panel's
@@ -1294,7 +1350,7 @@
        the × below, clips corners via overflow:hidden, never itself
        scrolls); .dish-modal-scroll is the one thing inside it that does
        (grip + photo + body + footer — see standard/show.html.twig's
-       theme == 'maison' branch). This is what makes the × persistent: it's
+       structured branch). This is what makes the × persistent: it's
        no longer a descendant of the element that scrolls, so content
        passes underneath it instead of carrying it away. Other layouts/
        themes don't render .dish-modal-scroll at all and keep .dish-modal
@@ -1329,7 +1385,7 @@
     .dish-modal-close::before {
         content: ''; position: absolute; inset: 2px; border-radius: 50%;
         background: var(--surface); border: 1px solid var(--cf-hborder);
-        box-shadow: 0 2px 10px rgba(20,14,11,0.22);
+        box-shadow: 0 2px 10px rgba(var(--scrim-rgb), 0.22);
     }
     .dish-modal-close:hover { color: var(--accent); }
     .dish-modal-close:hover::before { border-color: var(--accent); }
@@ -1345,7 +1401,7 @@
     .sheet-grip {
         position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 2;
         width: 36px; height: 4px; border-radius: 2px;
-        background: rgba(255,255,255,0.7); box-shadow: 0 1px 3px rgba(20,14,11,0.25);
+        background: var(--sheet-grip); box-shadow: 0 1px 3px rgba(var(--scrim-rgb), 0.25);
     }
 
     /* Photo — bigger (was reading too small at the base layout's 230px)
@@ -1362,14 +1418,14 @@
        absolutely positioned, and would otherwise paint over them. */
     .dish-modal-photo::before {
         content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5rem; z-index: 1;
-        background: linear-gradient(rgba(20,14,11,0.35), transparent); pointer-events: none;
+        background: linear-gradient(rgba(var(--scrim-rgb), 0.35), transparent); pointer-events: none;
     }
     .dish-modal-photo::after {
         content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4.5rem; z-index: 1;
         background: linear-gradient(transparent, var(--cb-bg)); pointer-events: none;
     }
     /* No-photo collapse (2026-09-07) — openDishModal() (_search_js.html.twig)
-       leaves #dish-modal-photo childless for a no-photo maison dish (see the
+       leaves #dish-modal-photo childless for a no-photo dish (see the
        template's own comment in standard/show.html.twig); :empty then drops
        the box (and its ::before/::after scrims above, generated content of
        an element that no longer takes up space) entirely, rather than a
@@ -1482,7 +1538,7 @@
     /* Nutrition panel (2026-09-08) — calories plus the four decimal(5,1)
        fields (fat/protein/carbohydrates/sugars), grouped under one
        "Información Nutricional" .bsec (see standard/show.html.twig's
-       theme == 'maison' branch). Reuses the .nut/.nut-v pairing above for
+       structured branch). Reuses the .nut/.nut-v pairing above for
        the number+unit rhythm, but does NOT reuse .nut-u's color: --fg-3
        measures ~2.3:1 against this sheet's own background (--cb-bg), a
        pre-existing shortfall on the single lone calories row this rule
@@ -1539,7 +1595,7 @@
        hero's typography: Fraunces name with the short brass rule under it
        (same 48×2 --cf-hborder as .hero-name::after), Fraunces italic
        tagline, wine labels as in .filters-section-title, and the social
-       links as wine circles like .cta-explore (hover --wine-soft). Focus
+       links as wine circles like .cta-explore (hover --accent-soft). Focus
        ring is --cf-hborder-text, not .cta-explore's --cf-hborder: on this
        band --cf-hborder is 2.4:1, under the 3:1 a focus indicator needs.
        Same 20px gutter / 1240px column as .content. */
@@ -1558,8 +1614,8 @@
         font-size: calc(17px * var(--font-scale)); line-height: 1.45; margin-top: 14px; text-wrap: balance;
     }
     .ft-label { font-family: var(--font-body); font-weight: 600; letter-spacing: 0.18em; color: var(--accent); }
-    .ft-social a { background: var(--accent); border: none; color: #fff; font-size: 19px; transition: background 0.2s; }
-    .ft-social a:hover { background: var(--wine-soft); transform: none; }
+    .ft-social a { background: var(--accent); border: none; color: var(--on-accent); font-size: 19px; transition: background 0.2s; }
+    .ft-social a:hover { background: var(--accent-soft); transform: none; }
     .ft-social a:focus-visible, .ft-link:focus-visible { outline: 2px solid var(--cf-hborder-text); outline-offset: 2px; }
     .ft-link i { color: var(--accent); }
     .ft-hours-list dt { font-weight: 500; }

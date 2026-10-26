@@ -1,7 +1,8 @@
 {# Public menu footer — every theme, included by the layout right after
-   .content (outside .menu-body, so maison's sticky tab bar unpins before
-   it). Base styling lives in the layout's own <style> block (so a theme's
-   overrides.html.twig, loaded after it, wins); maison restyles it there.
+   .content (outside .menu-body, so the shared structure's sticky tab bar unpins before
+   it). Base styling lives in the layout's own <style> block (so the shared
+   structure, _structure.html.twig, loaded after it, wins); it restyles
+   it there for the structured themes.
    Every block renders only when the restaurant has that data; with no
    contact details, links or hours at all it's just the name and ©.
    Data comes from Configuración → "Contacto y redes" (Restaurant::

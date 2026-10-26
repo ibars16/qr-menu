@@ -7,6 +7,10 @@
     through owner_text() instead — see OwnerTextExtension. -#}
 {% set autoOpen = dir == 'rtl' ? '<span dir="auto">' : '' -%}
 {% set autoClose = autoOpen ? '</span>' : '' -%}
+{#- Themes on the shared structure (layouts/standard/_structure.html.twig):
+    the structured_themes Twig global, from app.structured_themes in
+    config/services.yaml. Read by the layout and the Smart Waiter. -#}
+{% set structured = theme in structured_themes -%}
 <!DOCTYPE html>
 <html lang="{{ locale }}" dir="{{ dir }}">
 <head>
@@ -18,14 +22,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    {% include 'menu/themes/' ~ theme ~ '/fonts.html.twig' ignore missing %}
+    {% if structured %}{% include 'menu/layouts/standard/_fonts.html.twig' %}{% endif %}
     {%- if dir == 'rtl' %}
         {# Arabic-script fallbacks for the theme fonts (none of Plus Jakarta
            Sans / Inter / Fraunces has Arabic glyphs). Listed AFTER the
-           theme's Latin font in each stack (layout's body rule, maison's
-           --font-body/--font-display), so digits and prices keep the theme
+           theme's Latin font in each stack (layout's body rule, the shared
+           structure's --font-body/--font-display), so digits and prices keep the theme
            font and only Arabic glyphs fall through to these. #}
-        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700{% if theme == 'maison' %}&family=Noto+Naskh+Arabic:wght@400;500;600{% endif %}&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700{% if structured %}&family=Noto+Naskh+Arabic:wght@400;500;600{% endif %}&display=swap" rel="stylesheet">
     {%- endif %}
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }

@@ -112,9 +112,10 @@
     }
 </style>
 
-{# data-hide-on-scroll: maison only for now (its overrides style .sw-away) —
+{# data-hide-on-scroll: structured themes only for now (the shared
+   structure, layouts/standard/_structure.html.twig, styles .sw-away) —
    the bubble steps aside while scrolling down so it never sits on a price. #}
-<div class="sw-widget" id="sw-widget" data-slug="{{ restaurant.slug }}" data-locale="{{ locale }}"{% if theme is defined and theme == 'maison' %} data-hide-on-scroll{% endif %}>
+<div class="sw-widget" id="sw-widget" data-slug="{{ restaurant.slug }}" data-locale="{{ locale }}"{% if structured is defined and structured %} data-hide-on-scroll{% endif %}>
     <button type="button" class="sw-bubble has-badge" id="sw-bubble" aria-label="{{ swStrings.bubble }}" aria-expanded="false" onclick="swToggle()">💬</button>
 
     <div class="sw-panel" id="sw-panel" hidden>

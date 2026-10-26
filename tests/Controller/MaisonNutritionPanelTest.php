@@ -190,7 +190,7 @@ final class MaisonNutritionPanelTest extends WebTestCase
         self::assertCount(0, $crawler->filter('.nutrition-grid'), 'no panel body when all five fields are empty');
 
         // Scoped to actual .bsec-title element text, not the raw response —
-        // the CSS comment documenting this panel (overrides.html.twig,
+        // the CSS comment documenting this panel (layouts/standard/_structure.html.twig,
         // inlined in a <style> block) legitimately mentions the phrase
         // "Información Nutricional" too, which a raw-string search would
         // false-positive on.

@@ -30,14 +30,14 @@
    .dish-supplement/.row-supplement/.dish-detail-supplement in the layout
    and the banner's bannerSupplement() below. #}
 {% macro supplement(product, currencyDisplay, locale) %}{% set ltrOpen = menu_dir(locale) == 'rtl' ? '<bdi dir="ltr" class="price-ltr">' : '' %}{% set ltrClose = ltrOpen ? '</bdi>' : '' %}{{ ltrOpen|raw }}<span class="suppl-value">+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }}</span><span class="price-currency">{{ currencyDisplay }}</span>{{ ltrClose|raw }}{% endmacro %}
-{# The maison recommendation banner's supplement line
-   (themes/maison/_banner_text.html.twig). Same text as the list's
+{# The recommendation banner's supplement line
+   (layouts/standard/_banner_text.html.twig). Same text as the list's
    .dish-supplement; "· +X €" is wrapped in .suppl-amount so the banner can
-   keep it together (white-space: nowrap in maison/overrides.html.twig) — a
+   keep it together (white-space: nowrap in layouts/standard/_structure.html.twig) — a
    break then falls before the "·", never after. #}
 {% macro bannerSupplement(product, currencyDisplay, locale) %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} <span class="suppl-amount">· {{ _self.supplement(product, currencyDisplay, locale) }}</span></div>{% endmacro %}
-{# One-line price for the maison chef's-recommendation banner
-   (themes/maison/_banner_text.html.twig). Multiprice → "Desde" + the lowest
+{# One-line price for the chef's-recommendation banner
+   (layouts/standard/_banner_text.html.twig). Multiprice → "Desde" + the lowest
    price: base price + every variant, converted; all equal → just the
    price. Single price → price()'s own single-price output. #}
 {% macro oneLine(product, currency, currencyDisplay, locale) %}{% if product.hasPriceVariants %}{% set prices = [product.convertedPrice]|merge(product.priceVariants|map(v => product.getConvertedVariantPrice(v))) %}{% if min(prices) != max(prices) %}<span class="price-from">{{ 'dish.price_from'|trans({}, 'menu_public', locale) }}</span> {% endif %}{{ _self.amount(min(prices), currencyDisplay, locale) }}{% else %}{{ _self.price(product, currency, true, currencyDisplay, locale) }}{% endif %}{% endmacro %}
