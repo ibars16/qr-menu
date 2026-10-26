@@ -133,6 +133,9 @@ final class AllergenKeywordRules
             'sausages?', 'salami', 'chorizo', 'salchichas?', 'salchichon', 'fuet', 'sobrasada', 'mortadella', 'frankfurters?', 'hot dogs?',
             'nduja', 'morcilla', 'butifarras?', 'botifarras?', 'pates?', 'foie', 'cooked ham', 'jamon cocido', 'jamon york', 'fiambres?',
             'embutidos?', 'burgers?', 'hamburguesas?', 'nuggets', 'croquetas?', 'albondigas?', 'meatballs?', 'surimi',
+            'pepperoni', 'salame', 'salamis', 'mortadela', 'bologna', 'sobrassada', 'chistorra', 'longanizas?', 'llonganissas?', 'morcon',
+            'botillo', 'bratwursts?', 'wursts?', 'wieners?', 'liverwurst', 'weisswurst', 'chipolatas?', 'kielbasa', 'kabanos(?:sy)?',
+            'cabanossi', 'andouilles?', 'boudin', 'rillettes', 'terrines?',
             // drinks with variable recipes
             'liqueurs?', 'licor(?:es)?', 'licors?', 'amaro', 'ratafia', 'cream liqueur', 'cocktails?', 'cocteles?',
             // flavourings, margarine, prepared dishes
@@ -180,6 +183,10 @@ final class AllergenKeywordRules
         'raisins?', 'sultanas?', 'pasas', 'panses', 'orejones?', 'prunes?', 'ciruelas pasas', 'figues seques',
         // ham, raw/cured too: curing salts, dextrose/milk-protein carriers, sulphites
         'hams?', 'jamon(?:es)?', 'pernils?', 'prosciutto', 'jambon', 'presunto',
+        'cecina', 'lomo embuchado', 'lacon', 'coppa', 'bresaola', 'pastrami', 'bacon', 'panceta', 'pancetta', 'lardons?',
+        // prepared pastes for spreading or seasoning — not the pasta you boil
+        'pastes?', 'pates?',
+        'pasta (?:de|di|d)(?! (?:semola|semolina|grano|trigo|blat|arroz|riso|maiz|espelta|kamut|centeno|huevo|uovo|ou|sopa|legumbres|lentejas|garbanzos|guisantes|quinoa))',
     ];
 
     /**

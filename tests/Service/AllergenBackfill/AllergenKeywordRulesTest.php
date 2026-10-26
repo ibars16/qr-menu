@@ -66,7 +66,9 @@ final class AllergenKeywordRulesTest extends TestCase
             'Nduja calabresa', 'Milk chocolate chips', 'Helado de vainilla', 'Vanilla ice cream', 'Egg flavour', 'Margarina',
             'Cream filling', 'Relleno de crema', 'Crust', 'Pizza crust', 'Corteza de pan', 'Amaretto', 'Advocaat', 'Baileys', 'Petit-Beurre',
             'Petit beurre', 'Galletas María', 'Speculoos', 'Cereal crispies', 'Cereal extrudate', 'Cereal flakes', 'Corn flakes', 'Bran',
-            'Salvado', 'Pollo rebozado', 'Crispbread', 'Bastardo',
+            'Salvado', 'Pollo rebozado', 'Crispbread', 'Bastardo', 'Pepperoni', 'Pepperoni slices', 'Salami milano', 'Salchichón ibérico',
+            'Pork sausage', 'Salchicha fresca', 'Mortadela', 'Mortadella di Bologna', 'Chorizo de Pamplona', 'Sobrasada', 'Sobrassada de Mallorca',
+            'Paté de campaña', 'Pâté de foie', 'Chistorra', 'Longaniza', 'Bratwurst',
         ] as $name) {
             yield $name => [$name];
         }
@@ -124,6 +126,29 @@ final class AllergenKeywordRulesTest extends TestCase
         yield 'jamón serrano'        => ['Jamón serrano', 'jamon'];
         yield 'pernil'               => ['Pernil curat', 'pernil'];
         yield 'prosciutto'           => ['Prosciutto crudo', 'prosciutto'];
+        yield 'cecina'               => ['Cecina de León', 'cecina'];
+        yield 'bacon'                => ['Smoked bacon', 'bacon'];
+        yield 'paste'                => ['Horseradish paste', 'paste'];
+        yield 'tomato paste'         => ['Tomato paste', 'paste'];
+        yield 'pasta de'             => ['Pasta de curry rojo', 'pasta de'];
+        yield 'pasta de aceitunas'   => ['Pasta de aceitunas negras', 'pasta de'];
+        yield 'pasta di'             => ['Pasta di pistacchio', 'pasta di'];
+        yield 'pâte'                 => ['Pâte de piment', 'pate'];
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function foodPastaNames(): iterable
+    {
+        foreach (['Pasta fresca', 'Pasta de sémola', 'Pasta de sémola de trigo duro', 'Pasta di semola', 'Pasta de trigo', 'Pasta de arroz',
+            'Pasta de huevo', 'Pasta de lentejas', 'Pasta', 'Spaghetti', 'Pasta de sopa'] as $name) {
+            yield $name => [$name];
+        }
+    }
+
+    #[DataProvider('foodPastaNames')]
+    public function testFoodPastaIsNotAPreparedPaste(string $name): void
+    {
+        self::assertNull((new AllergenKeywordRules())->evaluate($name)['processed']);
     }
 
     /** @return iterable<string, array{string}> */
