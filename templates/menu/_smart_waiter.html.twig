@@ -112,7 +112,9 @@
     }
 </style>
 
-<div class="sw-widget" id="sw-widget" data-slug="{{ restaurant.slug }}" data-locale="{{ locale }}">
+{# data-hide-on-scroll: maison only for now (its overrides style .sw-away) —
+   the bubble steps aside while scrolling down so it never sits on a price. #}
+<div class="sw-widget" id="sw-widget" data-slug="{{ restaurant.slug }}" data-locale="{{ locale }}"{% if theme is defined and theme == 'maison' %} data-hide-on-scroll{% endif %}>
     <button type="button" class="sw-bubble has-badge" id="sw-bubble" aria-label="{{ swStrings.bubble }}" aria-expanded="false" onclick="swToggle()">💬</button>
 
     <div class="sw-panel" id="sw-panel" hidden>
@@ -150,6 +152,45 @@
 
     let opened = false;
     let sending = false;
+
+    // The bubble never sits on a price or a control: it steps aside
+    // (.sw-away) while scrolling down, and comes back — scrolling up, at the
+    // end of the page, on load — only where nothing like that is under it
+    // (checked at its centre and corners; whole-card links/buttons, wider
+    // than 200px, don't count). Never hidden while the chat is open or
+    // focused.
+    if (widget.hasAttribute('data-hide-on-scroll')) {
+        const COVERABLE = '.dish-price, .row-price, .bsub--price, button, a, input, select, [role="button"]';
+        const coversSomething = function () {
+            // The widget box, not the bubble: it's where the bubble rests
+            // even while slid away (the panel is hidden whenever this runs).
+            const r = widget.getBoundingClientRect();
+            // The centre, a ring halfway out and the round bubble's own edge.
+            const points = [[0.5, 0.5],
+                [0.5, 0.25], [0.75, 0.5], [0.5, 0.75], [0.25, 0.5],
+                [0.5, 0.02], [0.85, 0.15], [0.98, 0.5], [0.85, 0.85], [0.5, 0.98], [0.15, 0.85], [0.02, 0.5], [0.15, 0.15]];
+            return points.some(function (p) {
+                return document.elementsFromPoint(r.left + r.width * p[0], r.top + r.height * p[1]).some(function (el) {
+                    if (widget.contains(el)) return false;
+                    const hit = el.closest(COVERABLE);
+                    return hit !== null && hit.getBoundingClientRect().width < 200;
+                });
+            });
+        };
+        const keepVisible = function () { return opened || widget.contains(document.activeElement); };
+        let lastY = window.scrollY;
+        window.addEventListener('scroll', function () {
+            const y = window.scrollY;
+            const dy = y - lastY;
+            if (Math.abs(dy) < 6) return;
+            lastY = y;
+            if (keepVisible()) { widget.classList.remove('sw-away'); return; }
+            const atEnd = y + window.innerHeight >= document.documentElement.scrollHeight - 2;
+            const goingDown = dy > 0 && y > 80 && !atEnd;
+            widget.classList.toggle('sw-away', goingDown || coversSomething());
+        }, { passive: true });
+        if (!keepVisible() && coversSomething()) widget.classList.add('sw-away');
+    }
 
     function getConversationId() {
         return sessionStorage.getItem('sw_conv_' + slug);

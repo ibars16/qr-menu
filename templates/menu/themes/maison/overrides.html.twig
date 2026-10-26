@@ -954,6 +954,21 @@
     body:has(.dish-modal-overlay.open) .sw-widget {
         display: none;
     }
+    /* While scrolling down the bubble slides out below the screen edge
+       (.sw-away, toggled by _smart_waiter's data-hide-on-scroll script) —
+       at 390 it otherwise sat on a no-photo row's price (right-aligned,
+       under it) in ~10% of scroll positions. On the bubble, not
+       .sw-widget: a transform there would become the fixed .sw-panel's
+       containing block. visibility waits for the slide, then also takes
+       it out of the tab order. */
+    .sw-bubble { transition: transform 0.2s ease, opacity 0.2s ease, visibility 0s; }
+    .sw-widget.sw-away .sw-bubble {
+        transform: translateY(calc(100% + 24px)); opacity: 0; visibility: hidden; pointer-events: none;
+        transition: transform 0.2s ease, opacity 0.2s ease, visibility 0s 0.2s;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .sw-bubble, .sw-widget.sw-away .sw-bubble { transition: none; }
+    }
 
     /* Filters bottom sheet ("¿Qué necesitas?") — the base layout's version
        of this panel is a plain form (sans title, grey labels, bright-red
@@ -1033,6 +1048,10 @@
         letter-spacing: 0.2em; color: var(--cf-hborder-text);
     }
     .filters-panel-body { gap: 1.5rem; }
+    /* --fg-2 at every width, in the filters panel and the dish sheet alike:
+       the base --fg-3 measured 2.29:1 on --cb-bg (2.12:1 inside the dish
+       sheet's allergen box); --fg-2 is 5.33:1 / 4.94:1. */
+    .allergen-disclaimer { color: var(--fg-2); }
     .filters-panel .allergen-disclaimer i { color: var(--cf-hborder); }
     /* Clearance for the sticky footer below (see .filters-panel-footer):
        sticky pins it over whatever body content is still scrolled behind it,
@@ -1180,15 +1199,14 @@
        The footer is sticky inside .filters-panel-scroll, so only when the
        content doesn't fit does it pin to the bottom while the body
        scrolls. Its fade is cut to the 10px of body padding so it never
-       covers the disclaimer when everything fits. Disclaimer in --fg-2:
-       --fg-3 was 2.29:1 on --cb-bg. */
+       covers the disclaimer when everything fits. (The disclaimer's
+       --fg-2 is set for every width further up.) */
     @media (min-width: 640px) {
         .filters-overlay { align-items: center; }
         .filters-panel { max-height: 85dvh; border-radius: 1.25rem; }
         .filters-panel-body { padding-bottom: 10px; }
         .filters-panel-footer { padding-top: 13px; }
         .filters-panel-footer::before { height: 10px; }
-        .filters-panel .allergen-disclaimer { color: var(--fg-2); }
     }
     .filters-panel-clear-row { padding: 0.25rem 1.25rem 0; }
 
@@ -1445,7 +1463,7 @@
     }
 
     /* Spicy-level dots — already on-palette via --dot-on/--dot-off/--spicy-t
-       (vars.html.twig: wine filled, line-colored empty, muted label); only
+       (vars.html.twig: wine filled, line-colored empty, --fg-2 label); only
        size/gap needed refining to read as deliberate rather than a generic
        progress indicator. */
     .spicy-row { gap: 6px; }

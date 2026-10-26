@@ -306,9 +306,13 @@ function rowMatchesActiveFilters(row, q) {
     const allergenMatch  = activeAllergens.size === 0 || ![...activeAllergens].some(a => allergens.includes(a));
     return search && tagMatch && allergenMatch;
 }
+// The category filter is the tab the customer PICKED (clicked), not the
+// highlighted one: .active also follows the scroll (syncTabToScroll() below),
+// and scrolling down to Carpaccios must not limit a later search for "pulpo"
+// to Carpaccios. Picking "Todo" or typing a search clears it.
+let pickedCat = 'all';
 function currentCategory() {
-    const active = document.querySelector('.cat-tab.active');
-    return active ? active.dataset.cat : 'all';
+    return pickedCat;
 }
 
 function applyFilters() {
@@ -422,7 +426,17 @@ document.addEventListener('keydown', e => {
 // Also refreshes the filters panel's live count: if it's open (or gets
 // reopened) while a search term is active, "Ver resultados (N)" must
 // already reflect it — same reasoning as the task's own "N refleja ambos".
-searchInput?.addEventListener('input', () => { applyFilters(); updateFiltersButtonBadge(); });
+// Searching drops the picked category (see pickedCat) and re-syncs the
+// highlight: back to "Todo", then onto whichever visible section is under the
+// tab bar — never left on a category the results just hid.
+searchInput?.addEventListener('input', () => {
+    pickedCat = 'all';
+    applyFilters();
+    updateFiltersButtonBadge();
+    const all = [...catTabs].find(t => t.dataset.cat === 'all');
+    if (all) setActiveTab(all);
+    syncTabToScroll();
+});
 
 // .cat-tab is an <a href="#cat-{id}"> (accessibility pass, 2026-09-07) so
 // Tab+Enter and screen readers get a real, focusable, named control with a
@@ -443,6 +457,7 @@ function setActiveTab(tab) {
 catTabs.forEach(tab => tab.addEventListener('click', e => {
     e.preventDefault();
     setActiveTab(tab);
+    pickedCat = tab.dataset.cat;
     applyFilters();
     const cat = tab.dataset.cat;
     if (cat !== 'all') document.getElementById(cat)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -481,14 +496,31 @@ typeFilters.forEach(btn => btn.addEventListener('click', () => {
     updateFiltersButtonBadge();
 }));
 
-const obs = new IntersectionObserver(entries => {
-    const vis = entries.find(e => e.isIntersecting);
-    if (!vis) return;
-    const id = vis.target.dataset.section;
-    const match = [...catTabs].find(t => t.dataset.cat === id);
-    if (match) setActiveTab(match);
-}, { threshold: 0.3 });
-sections.forEach(s => obs.observe(s));
+// Scroll-spy: the active tab is the section being read — the last visible
+// one whose top has passed under the (sticky) tab bar. It used to be an
+// IntersectionObserver at threshold 0.3 that picked whichever section
+// crossed 30% first, often the next one coming in from below ("Pasta"
+// active with Carpaccios on screen), and never caught a section leaving.
+// Same limits as before: it only ever moves between categories (never back
+// to "Todo") and skips sections hidden by a filter. Visual only: the
+// category filter is pickedCat (set by clicks), never this highlight.
+let spyQueued = false;
+function syncTabToScroll() {
+    spyQueued = false;
+    // Whatever sticks at the top: the tab bar in maison, the header elsewhere.
+    const line = Math.max(0, ...[...document.querySelectorAll('.header, .cat-tabs')]
+        .map(el => el.getBoundingClientRect().bottom)) + 1;
+    let current = null;
+    sections.forEach(s => {
+        if (s.offsetParent !== null && s.getBoundingClientRect().top <= line) current = s;
+    });
+    if (!current) return;
+    const match = [...catTabs].find(t => t.dataset.cat === current.dataset.section);
+    if (match && !match.classList.contains('active')) setActiveTab(match);
+}
+window.addEventListener('scroll', () => {
+    if (!spyQueued) { spyQueued = true; requestAnimationFrame(syncTabToScroll); }
+}, { passive: true });
 
 // Scroll indicators for card backs — bidirectional, no flash
 (function() {
