@@ -270,11 +270,11 @@ class Category
         $this->products->removeElement($product);
     }
 
-    /** The public menu's view of this category's dishes — active AND, see Product::isSafeToDisplay(), not a €0 dish. */
+    /** The public menu's view of this category's dishes — the ones Product::isShownOnMenu() lets through, in position order. */
     public function getActiveProductsSorted(): array
     {
         $products = $this->products
-            ->filter(fn($p) => $p->isActive() && $p->isSafeToDisplay() && $p->hasMenuName())
+            ->filter(fn(Product $p) => $p->isShownOnMenu())
             ->toArray();
 
         usort($products, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
@@ -323,7 +323,7 @@ class Category
 
     /**
      * Same shape as getSectionsWithProducts(), limited to each section's
-     * active dishes only — the public menu's view of a fixed-price menu's
+     * dishes Product::isShownOnMenu() lets through — the public menu's view of a fixed-price menu's
      * structure. The admin's own screen keeps using the unfiltered version
      * above so an inactive dish stays visible there with its toggle.
      *
@@ -334,7 +334,7 @@ class Category
         return array_map(
             static fn(array $entry) => [
                 'section'  => $entry['section'],
-                'products' => array_values(array_filter($entry['products'], static fn(Product $p) => $p->isActive() && $p->hasMenuName())),
+                'products' => array_values(array_filter($entry['products'], static fn(Product $p) => $p->isShownOnMenu())),
             ],
             $this->getSectionsWithProducts()
         );

@@ -65,7 +65,6 @@ hint:
     hours: "Ative os dias em que abre e indique um ou dois turnos. Se o fecho for antes da abertura, entende-se que passa da meia-noite."
 
 flash:
-    name_required: O nome do restaurante é obrigatório.
     logo_upload_error: Erro ao enviar o logo.
     logo_unsupported_type: Formato de imagem não suportado. Use JPEG, PNG ou WebP.
     logo_too_large: O logo é demasiado grande (máx. 2 MB).

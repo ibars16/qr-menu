@@ -3,6 +3,7 @@
 namespace App\Tests\Entity;
 
 use App\Entity\Category;
+use App\Entity\CategoryTranslation;
 use App\Entity\MenuSection;
 use App\Entity\Product;
 use App\Entity\ProductTranslation;
@@ -24,7 +25,7 @@ final class ProductVisibilityTest extends TestCase
         $product->setBasePrice($basePriceCents);
         $product->setActive($active);
         $product->setMenuSection($menuSection);
-        // Named, so getActiveProductsSorted()'s hasMenuName() check never
+        // Named, so getActiveProductsSorted()'s name check never
         // interferes with what these tests are about (price/active).
         $t = new ProductTranslation();
         $t->setLocale('es');
@@ -40,6 +41,12 @@ final class ProductVisibilityTest extends TestCase
         $restaurant->setDefaultLanguage('es');
         $category = new Category();
         $category->setRestaurant($restaurant);
+        // Named too — a category with no name never renders on the public
+        // menu (Product::menuHiddenReason()), whatever its dishes' price.
+        $t = new CategoryTranslation();
+        $t->setLocale('es');
+        $t->setName('Categoría');
+        $category->addTranslation($t);
 
         return $category;
     }

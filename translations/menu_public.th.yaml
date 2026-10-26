@@ -26,7 +26,6 @@ filters:
     no_results: "ไม่พบผลลัพธ์"
 allergen:
     avoid_panel_title: "ซ่อนเมนูที่มี…"
-    clear_selection: "ล้างการเลือก"
     disclaimer: "ข้อมูลสารก่อภูมิแพ้เป็นเพียงข้อมูลอ้างอิง โปรดสอบถามพนักงานก่อนสั่งอาหารหากคุณมีอาการแพ้"
     more_info: "ข้อมูลเพิ่มเติม"
     free_from: "ไม่มี"
@@ -61,8 +60,6 @@ dish:
 nav:
     back: "ย้อนกลับ"
     next: "ถัดไป"
-    up: "ขึ้น"
-    down: "ลง"
     go_to_item: "ไปที่จาน %n%"
     categories: "หมวดหมู่"
 common:

@@ -26,7 +26,6 @@ filters:
     no_results: "Geen resultaten"
 allergen:
     avoid_panel_title: "Verberg gerechten die … bevatten"
-    clear_selection: "Selectie wissen"
     disclaimer: "De informatie over allergenen is indicatief. Overleg bij allergieën vóór het bestellen met het personeel."
     more_info: "Meer informatie"
     free_from: "Zonder"
@@ -61,8 +60,6 @@ dish:
 nav:
     back: "Terug"
     next: "Volgende"
-    up: "Omhoog"
-    down: "Omlaag"
     go_to_item: "Ga naar gerecht %n%"
     categories: "Categorieën"
 common:

@@ -26,7 +26,6 @@ filters:
     no_results: "Inga resultat"
 allergen:
     avoid_panel_title: "Dölj rätter som innehåller…"
-    clear_selection: "Rensa urval"
     disclaimer: "Informationen om allergener är endast vägledande. Rådfråga personalen innan du beställer om du har allergier."
     more_info: "Mer information"
     free_from: "Utan"
@@ -61,8 +60,6 @@ dish:
 nav:
     back: "Tillbaka"
     next: "Nästa"
-    up: "Upp"
-    down: "Ner"
     go_to_item: "Gå till rätt %n%"
     categories: "Kategorier"
 common:

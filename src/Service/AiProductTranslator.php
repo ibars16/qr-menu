@@ -75,7 +75,8 @@ final class AiProductTranslator
     {
         $missing = [];
         foreach ($this->productRepo->findActiveForRestaurant($restaurant) as $product) {
-            if ($product->getTranslation($locale) === null) {
+            // Only dishes the menu shows — a nameless or €0 dish is never translated.
+            if ($product->isShownOnMenu() && $product->getTranslation($locale) === null) {
                 $missing[] = $product;
             }
         }

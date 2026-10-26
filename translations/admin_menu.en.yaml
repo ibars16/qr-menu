@@ -65,7 +65,6 @@ field:
 
 field_error:
     name_required: Name is required
-    description_required: Description is required
     price_required: Price is required
     price_variants_incomplete: Fill in the label and price for every row (minimum 2 prices)
 
@@ -86,7 +85,6 @@ allergens:
     your_ingredients_hint: Shared with every other dish that uses the same ingredient.
     new_ingredient_hint: Save the dish first to tag allergens on newly added ingredients.
     overrides_title: Dish-specific exceptions
-    overrides_hint: Use this for cross-contamination risk, or to correct an automatically calculated allergen.
     add_exception: Add exception
     select_allergen: Select an allergen…
     presence_contains: Contains
@@ -94,7 +92,6 @@ allergens:
     presence_free_from: Confirmed free from
     note_placeholder: 'Note (required for "free from")'
     remove: Remove
-    source_computed_label: from ingredients
     advanced_title: Special Allergen Cases
     scope_this_dish: This dish only
     advanced_hint: Use this section only if the automatically detected allergens are not sufficient — for example due to cross-contamination, or because this dish uses a certified allergen-free alternative ingredient.
@@ -121,7 +118,6 @@ js:
     product_created: 'Dish created ✓'
     product_deleted: Dish deleted
     product_saved: 'Dish saved ✓'
-    remove_ingredient_aria: 'Remove %name%'
 
 modal:
     category:
@@ -222,6 +218,3 @@ error:
     unexpected: Something went wrong. Please try again.
     nutrition_value_invalid: 'The value must be a number between 0 and 9999.9, with at most one decimal.'
     price_variants_invalid: 'Fill in the label and price for every variant (minimum 2 prices).'
-
-translations:
-    hint_empty: "No AI translations yet — they'll appear here once a customer views the menu in another language."

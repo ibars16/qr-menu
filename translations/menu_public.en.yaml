@@ -26,7 +26,6 @@ filters:
     no_results: "No results"
 allergen:
     avoid_panel_title: "Hide dishes containing…"
-    clear_selection: "Clear selection"
     disclaimer: "Allergen information is for guidance only. Please check with staff before ordering if you have any allergies."
     more_info: "More information"
     free_from: "No"
@@ -61,8 +60,6 @@ dish:
 nav:
     back: "Back"
     next: "Next"
-    up: "Up"
-    down: "Down"
     go_to_item: "Go to dish %n%"
     categories: "Categories"
 common:

@@ -127,7 +127,7 @@ class MenuController extends AbstractController
 
         $productTranslationService->resolveForMenu(
             $restaurant,
-            $productRepo->findActiveForRestaurant($restaurant),
+            array_values(array_filter($productRepo->findActiveForRestaurant($restaurant), static fn ($p) => $p->isShownOnMenu())),
             $locale
         );
 
@@ -368,11 +368,7 @@ class MenuController extends AbstractController
                 continue;
             }
 
-            $products = $category->getProducts()
-                ->filter(fn($p) => $p->isActive() && $p->isSafeToDisplay() && $p->hasMenuName())
-                ->toArray();
-            usort($products, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
-            foreach ($products as $product) {
+            foreach ($category->getActiveProductsSorted() as $product) {
                 $product->setConvertedPrice(
                     $currencyConverter->convert(
                         $product->getBasePrice(),

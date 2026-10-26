@@ -65,7 +65,6 @@ hint:
     hours: "Switch on the days you open and enter one or two shifts. A closing time earlier than the opening time runs past midnight."
 
 flash:
-    name_required: The restaurant name is required.
     logo_upload_error: Error uploading the logo.
     logo_unsupported_type: Unsupported image format. Please use JPEG, PNG, or WebP.
     logo_too_large: The logo is too large (max 2 MB).

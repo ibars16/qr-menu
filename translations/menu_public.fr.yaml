@@ -26,7 +26,6 @@ filters:
     no_results: "Aucun résultat"
 allergen:
     avoid_panel_title: "Masquer les plats contenant…"
-    clear_selection: "Effacer la sélection"
     disclaimer: "Les informations sur les allergènes sont fournies à titre indicatif. Merci de vous renseigner auprès du personnel avant de commander en cas d'allergie."
     more_info: "Plus d'informations"
     free_from: "Sans"
@@ -61,8 +60,6 @@ dish:
 nav:
     back: "Retour"
     next: "Suivant"
-    up: "Monter"
-    down: "Descendre"
     go_to_item: "Aller au plat %n%"
     categories: "Catégories"
 common:

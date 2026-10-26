@@ -26,7 +26,6 @@ filters:
     no_results: "कोई परिणाम नहीं"
 allergen:
     avoid_panel_title: "इन्हें शामिल करने वाले व्यंजन छिपाएं…"
-    clear_selection: "चयन हटाएं"
     disclaimer: "एलर्जेन की जानकारी केवल संकेत के लिए है। कृपया कोई एलर्जी होने पर ऑर्डर करने से पहले स्टाफ से पूछें।"
     more_info: "अधिक जानकारी"
     free_from: "बिना"
@@ -61,8 +60,6 @@ dish:
 nav:
     back: "वापस"
     next: "अगला"
-    up: "ऊपर"
-    down: "नीचे"
     go_to_item: "व्यंजन %n% पर जाएँ"
     categories: "श्रेणियाँ"
 common:

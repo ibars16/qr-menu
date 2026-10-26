@@ -147,17 +147,20 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /**
-     * Cheap existence check (no entity hydration) used to decide whether the
-     * menu page needs to detour through the translating/loading screen — see
+     * Existence check used to decide whether the menu page needs to detour
+     * through the translating/loading screen — see
      * MenuController::renderMenu(). Only dishes with something to translate
      * from count (a named translation in any language — see
      * TranslationSource): one with none can never be translated, and
-     * counting it would send every visit through the loading screen.
+     * counting it would send every visit through the loading screen. The
+     * query narrows it down to candidates (usually none, so nothing is
+     * hydrated); Product::isShownOnMenu() then drops the ones the menu
+     * doesn't show anyway (a €0 dish, a blank default-language name…) —
+     * the same rule AiProductTranslator uses to pick what to translate.
      */
     public function hasAnyMissingTranslation(Restaurant $restaurant, string $locale): bool
     {
-        $count = $this->createQueryBuilder('p')
-            ->select('COUNT(p.id)')
+        $candidates = $this->createQueryBuilder('p')
             ->innerJoin('p.category', 'c')
             ->leftJoin('p.translations', 't', 'WITH', 't.locale = :locale')
             ->andWhere('c.restaurant = :restaurant')
@@ -168,8 +171,14 @@ class ProductRepository extends ServiceEntityRepository
             ->setParameter('restaurant', $restaurant)
             ->setParameter('locale', $locale)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getResult();
 
-        return $count > 0;
+        foreach ($candidates as $product) {
+            if ($product->isShownOnMenu()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

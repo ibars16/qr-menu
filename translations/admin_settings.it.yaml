@@ -65,7 +65,6 @@ hint:
     hours: "Attiva i giorni di apertura e indica uno o due turni. Se la chiusura è prima dell'apertura, si intende dopo la mezzanotte."
 
 flash:
-    name_required: Il nome del ristorante è obbligatorio.
     logo_upload_error: Errore durante il caricamento del logo.
     logo_unsupported_type: Formato immagine non supportato. Usa JPEG, PNG o WebP.
     logo_too_large: Il logo è troppo grande (max 2 MB).

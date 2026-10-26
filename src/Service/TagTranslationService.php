@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Entity\ProductTag;
+use App\Entity\ProductTagTranslation;
 use App\Entity\Restaurant;
 use App\Repository\ProductTagRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -10,7 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
  * Tag display names for the customer-facing menu, and their translation.
  *
  * - resolveForMenu(): the name in the requested locale when a translation
- *   exists, otherwise the restaurant's default-language name. Never calls
+ *   exists, otherwise the default-language, English or any other name. Never calls
  *   the AI and never queues anything (the render path).
  * - hasAnyMissing() / translateMissing(): the loading-screen path, same as
  *   dishes and owner texts — MenuController shows the loading screen when
@@ -85,21 +87,32 @@ final class TagTranslationService
         $this->productTagRepository->warmTranslations($restaurant->getProductTags()->toArray(), $cacheKeyPrefix);
 
         foreach ($restaurant->getProductTags() as $tag) {
-            $translation = $tag->getTranslation($locale);
+            // Fallback until the loading screen translates it
+            // (translateMissing()): same order as the menu's ingredient names
+            // (Product::ingredientDisplayTranslation()) — the default
+            // language, English, then any name it has, so a tag named only
+            // in another language still shows in the default language too.
+            $translation = $tag->getTranslation($locale)
+                ?? $tag->getTranslation($defaultLocale)
+                ?? $tag->getTranslation('en')
+                ?? $this->anyNamedTranslation($tag);
 
             if ($translation !== null) {
                 $names[$tag->getId()] = $translation->getName();
-                continue;
-            }
-
-            // Fallback: the default-language name until the loading screen
-            // translates it (translateMissing()).
-            $fallback = $tag->getTranslation($defaultLocale);
-            if ($fallback !== null) {
-                $names[$tag->getId()] = $fallback->getName();
             }
         }
 
         return $names;
+    }
+
+    private function anyNamedTranslation(ProductTag $tag): ?ProductTagTranslation
+    {
+        foreach ($tag->getTranslations() as $translation) {
+            if (trim($translation->getName()) !== '') {
+                return $translation;
+            }
+        }
+
+        return null;
     }
 }

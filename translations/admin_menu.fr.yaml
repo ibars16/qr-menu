@@ -65,7 +65,6 @@ field:
 
 field_error:
     name_required: Le nom est obligatoire
-    description_required: La description est obligatoire
     price_required: Le prix est obligatoire
     price_variants_incomplete: Renseignez l'étiquette et le prix de chaque ligne (2 prix minimum)
 
@@ -86,7 +85,6 @@ allergens:
     your_ingredients_hint: Partagé avec tout autre plat utilisant le même ingrédient.
     new_ingredient_hint: Enregistrez d'abord le plat pour pouvoir renseigner les allergènes des ingrédients nouvellement ajoutés.
     overrides_title: Exceptions propres à ce plat
-    overrides_hint: À utiliser en cas de risque de contamination croisée, ou pour corriger un allergène calculé automatiquement.
     add_exception: Ajouter une exception
     select_allergen: Choisir un allergène…
     presence_contains: Contient
@@ -94,7 +92,6 @@ allergens:
     presence_free_from: Confirmé sans cet allergène
     note_placeholder: 'Note (obligatoire pour "sans cet allergène")'
     remove: Retirer
-    source_computed_label: d'après les ingrédients
     advanced_title: Cas particuliers d'allergènes
     scope_this_dish: Ce plat uniquement
     advanced_hint: Utilisez cette section uniquement si les allergènes détectés automatiquement ne suffisent pas — par exemple en cas de contamination croisée, ou si ce plat utilise un ingrédient de substitution certifié sans cet allergène.
@@ -115,7 +112,6 @@ js:
     product_created: 'Plat créé ✓'
     product_deleted: Plat supprimé
     product_saved: 'Plat enregistré ✓'
-    remove_ingredient_aria: 'Retirer %name%'
     allergen_override_added: 'Exception ajoutée'
     allergen_note_required: 'Ajoutez une note expliquant pourquoi ceci est marqué "sans cet allergène"'
     ingredient_allergens_saved: 'Allergènes enregistrés ✓'
@@ -222,6 +218,3 @@ error:
     unexpected: Une erreur est survenue. Veuillez réessayer.
     nutrition_value_invalid: 'La valeur doit être un nombre entre 0 et 9999.9, avec au maximum une décimale.'
     price_variants_invalid: 'Renseignez l''étiquette et le prix de chaque variante (2 prix minimum).'
-
-translations:
-    hint_empty: "Pas encore de traductions IA — elles apparaîtront ici dès qu'un client consultera le menu dans une autre langue."

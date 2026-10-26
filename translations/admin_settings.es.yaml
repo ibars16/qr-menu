@@ -65,7 +65,6 @@ hint:
     hours: "Activa los días que abres e indica uno o dos turnos. Si el cierre es anterior a la apertura, se entiende que pasa la medianoche."
 
 flash:
-    name_required: El nombre del restaurante es obligatorio.
     logo_upload_error: Error al subir el logo.
     logo_unsupported_type: Formato de imagen no compatible. Usa JPEG, PNG o WebP.
     logo_too_large: El logo es demasiado grande (máx. 2 MB).

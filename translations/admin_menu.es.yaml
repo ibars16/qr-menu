@@ -65,7 +65,6 @@ field:
 
 field_error:
     name_required: El nombre es obligatorio
-    description_required: La descripción es obligatoria
     price_required: El precio es obligatorio
     price_variants_incomplete: Completa la etiqueta y el precio de cada línea (mínimo 2 precios)
 
@@ -86,7 +85,6 @@ allergens:
     your_ingredients_hint: Se comparte con cualquier otro plato que use el mismo ingrediente.
     new_ingredient_hint: Guarda el plato primero para poder etiquetar los alérgenos de los ingredientes recién añadidos.
     overrides_title: Excepciones de este plato
-    overrides_hint: Útil para riesgo de contaminación cruzada, o para corregir un alérgeno calculado automáticamente.
     add_exception: Añadir excepción
     select_allergen: Selecciona un alérgeno…
     presence_contains: Contiene
@@ -94,7 +92,6 @@ allergens:
     presence_free_from: Confirmado sin este alérgeno
     note_placeholder: 'Nota (obligatoria para "sin este alérgeno")'
     remove: Quitar
-    source_computed_label: según ingredientes
     advanced_title: Casos especiales de alérgenos
     scope_this_dish: Solo este plato
     advanced_hint: Usa esta sección solo si los alérgenos detectados automáticamente no son suficientes, por ejemplo por contaminación cruzada o porque este plato usa un ingrediente alternativo certificado sin ese alérgeno.
@@ -115,7 +112,6 @@ js:
     product_created: 'Plato creado ✓'
     product_deleted: Plato eliminado
     product_saved: 'Plato guardado ✓'
-    remove_ingredient_aria: 'Quitar %name%'
     allergen_override_added: 'Excepción añadida'
     allergen_note_required: 'Añade una nota explicando por qué se marca como "sin este alérgeno"'
     ingredient_allergens_saved: 'Alérgenos guardados ✓'
@@ -222,6 +218,3 @@ error:
     unexpected: Algo salió mal. Inténtalo de nuevo.
     nutrition_value_invalid: 'El valor debe ser un número entre 0 y 9999.9, con un máximo de un decimal.'
     price_variants_invalid: 'Completa la etiqueta y el precio de cada variante (mínimo 2 precios).'
-
-translations:
-    hint_empty: 'Aún no hay traducciones generadas por IA — aparecerán aquí cuando un cliente vea el menú en otro idioma.'

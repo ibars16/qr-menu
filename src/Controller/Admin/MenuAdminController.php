@@ -303,9 +303,10 @@ class MenuAdminController extends AbstractController
 
         // Show already-attached ingredients (from both the restaurant's own
         // list and the Global Ingredient Library) in the current Admin Panel
-        // language, same as the autocomplete — falling back to the
-        // restaurant's own content language, then English (the one language
-        // the global library always has), then the raw code.
+        // language, same as the autocomplete — falling back the same way the
+        // public menu does (Product::ingredientDisplayTranslation(): the
+        // restaurant's own content language, then English, then any name it
+        // has), then the raw code.
         //
         // Merged by position rather than two source-grouped loops: the two
         // sources are stored as separate join entities (see
@@ -320,7 +321,7 @@ class MenuAdminController extends AbstractController
         $ingredientEntries = [];
         foreach ($product->getIngredientLinks() as $link) {
             $ing = $link->getIngredient();
-            $t = $ing->getTranslation($adminLocale) ?? $ing->getTranslation($contentLocale);
+            $t = Product::ingredientDisplayTranslation($ing, $adminLocale, $contentLocale);
 
             // Its own allergen tags too — lets the product panel offer an
             // inline editor for this private ingredient without a second
@@ -342,7 +343,7 @@ class MenuAdminController extends AbstractController
         }
         foreach ($product->getGlobalIngredientLinks() as $link) {
             $gIng = $link->getGlobalIngredient();
-            $t = $gIng->getTranslation($adminLocale) ?? $gIng->getTranslation($contentLocale) ?? $gIng->getTranslation('en');
+            $t = Product::ingredientDisplayTranslation($gIng, $adminLocale, $contentLocale);
             $ingredientEntries[] = [
                 'position'    => $link->getPosition(),
                 'value'       => 'g:' . $gIng->getId(),

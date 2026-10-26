@@ -26,7 +26,6 @@ filters:
     no_results: "没有结果"
 allergen:
     avoid_panel_title: "隐藏含有以下成分的菜品…"
-    clear_selection: "清除选择"
     disclaimer: "过敏原信息仅供参考。如有过敏，请在点餐前咨询工作人员。"
     more_info: "更多信息"
     free_from: "不含"
@@ -61,8 +60,6 @@ dish:
 nav:
     back: "返回"
     next: "下一个"
-    up: "向上"
-    down: "向下"
     go_to_item: "转到第%n%道菜"
     categories: "分类"
 common:

@@ -26,7 +26,6 @@ filters:
     no_results: "結果なし"
 allergen:
     avoid_panel_title: "次を含む料理を非表示…"
-    clear_selection: "選択をクリア"
     disclaimer: "アレルゲン情報は目安です。アレルギーがある場合はご注文前にスタッフにご確認ください。"
     more_info: "詳細情報"
     free_from: "不使用："
@@ -61,8 +60,6 @@ dish:
 nav:
     back: "戻る"
     next: "次へ"
-    up: "上へ"
-    down: "下へ"
     go_to_item: "%n%品目の料理へ移動"
     categories: "カテゴリー"
 common:

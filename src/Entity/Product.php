@@ -567,10 +567,9 @@ class Product
      * almost always a data-entry slip (a blank price field defaulting to
      * 0, a half-finished AI import row) rather than an intentional free
      * item, so it's held back rather than risk a customer seeing, or
-     * ordering, a €0.00 dish. Checked in addition to $active everywhere
-     * the public menu (and Smart Waiter, which must never offer a dish the
-     * menu itself wouldn't show) lists a category's dishes — see
-     * Category::getActiveProductsSorted().
+     * ordering, a €0.00 dish. One of menuHiddenReason()'s checks — the
+     * single rule the public menu, Smart Waiter (which must never offer a
+     * dish the menu itself wouldn't show) and the admin notices all use.
      *
      * $menuSection !== null is exempt: a fixed-price-menu dish is
      * legitimately priced at 0 (its cost is covered by the menu's own
@@ -584,13 +583,15 @@ class Product
 
     /**
      * Single read-only answer to "is this dish on the public menu?" — null
-     * when it is, otherwise the FIRST reason it isn't. It mirrors, and does
-     * not replace, the checks the public render applies today (see
-     * MenuController::renderMenu(), Category::getActiveProductsSorted() /
-     * getActiveSectionsWithProducts(), show.html.twig, _set_menu.html.twig):
-     * category active, dish active, isSafeToDisplay() (a fixed-price-menu
-     * dish is already exempt from the €0 rule there, so this needs no
-     * special case), and a translation to show.
+     * when it is, otherwise the FIRST reason it isn't. Every place that
+     * lists dishes goes through it (via isShownOnMenu()): the public menu
+     * (Category::getActiveProductsSorted() / getActiveSectionsWithProducts()),
+     * Smart Waiter (MenuContextBuilder), the missing-translation checks
+     * (ProductRepository::hasAnyMissingTranslation(), AiProductTranslator)
+     * and the admin's "not on the menu" notice and banner. Checks: category
+     * active, dish active, isSafeToDisplay() (a fixed-price-menu dish is
+     * already exempt from the €0 rule there, so this needs no special
+     * case), and a translation to show.
      *
      * The translation check is locale-independent on purpose: every
      * template resolves the name as exact locale → restaurant default →
@@ -631,9 +632,8 @@ class Product
     }
 
     /**
-     * Whether this dish has a name the public menu can show. Checked in
-     * addition to $active/isSafeToDisplay() everywhere the public menu and
-     * Smart Waiter list dishes, and by menuHiddenReason().
+     * Whether this dish has a name the public menu can show — one of
+     * menuHiddenReason()'s checks.
      *
      * The restaurant's default language is the one the owner edits (and
      * the one the admin Carta row shows), so when a translation row exists
@@ -843,11 +843,25 @@ class Product
         foreach ($this->getOrderedIngredients() as $ing) {
             $source = $dictionary !== null ? self::ingredientTranslationSource($ing, $locale, $fallbackLocale) : null;
             $translated = $source !== null ? $dictionary($source[0], $source[1]) : null;
-            $t = $ing->getTranslation($locale) ?? $ing->getTranslation($fallbackLocale) ?? $ing->getTranslation('en') ?? self::anyNamedTranslation($ing);
-            $names[] = $translated ?? $t?->getName() ?? $ing->getCode();
+            $names[] = $translated ?? self::ingredientDisplayTranslation($ing, $locale, $fallbackLocale)?->getName() ?? $ing->getCode();
         }
 
         return $names;
+    }
+
+    /**
+     * The translation an ingredient's name is shown from: $locale, then
+     * $fallbackLocale, then English (the one language the global library
+     * always has), then any name it has in another language. Shared by the
+     * public menu (getIngredientNames()) and the admin dish editor
+     * (MenuAdminController::getProduct()).
+     */
+    public static function ingredientDisplayTranslation(Ingredient|GlobalIngredient $ingredient, string $locale, string $fallbackLocale): IngredientTranslation|GlobalIngredientTranslation|null
+    {
+        return $ingredient->getTranslation($locale)
+            ?? $ingredient->getTranslation($fallbackLocale)
+            ?? $ingredient->getTranslation('en')
+            ?? self::anyNamedTranslation($ingredient);
     }
 
     /**

@@ -65,7 +65,6 @@ hint:
     hours: "Activez les jours d'ouverture et indiquez un ou deux services. Si la fermeture est avant l'ouverture, le service se termine après minuit."
 
 flash:
-    name_required: Le nom du restaurant est obligatoire.
     logo_upload_error: Erreur lors du téléchargement du logo.
     logo_unsupported_type: Format d'image non pris en charge. Utilisez JPEG, PNG ou WebP.
     logo_too_large: Le logo est trop volumineux (max. 2 Mo).

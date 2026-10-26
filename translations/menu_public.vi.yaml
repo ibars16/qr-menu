@@ -26,7 +26,6 @@ filters:
     no_results: "Không có kết quả"
 allergen:
     avoid_panel_title: "Ẩn các món có chứa…"
-    clear_selection: "Xóa lựa chọn"
     disclaimer: "Thông tin về chất gây dị ứng chỉ mang tính tham khảo. Vui lòng hỏi nhân viên trước khi gọi món nếu bạn bị dị ứng."
     more_info: "Thông tin thêm"
     free_from: "Không có"
@@ -61,8 +60,6 @@ dish:
 nav:
     back: "Quay lại"
     next: "Tiếp theo"
-    up: "Lên"
-    down: "Xuống"
     go_to_item: "Đi tới món %n%"
     categories: "Danh mục"
 common:

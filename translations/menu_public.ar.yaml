@@ -26,7 +26,6 @@ filters:
     no_results: "لا نتائج"
 allergen:
     avoid_panel_title: "إخفاء الأطباق التي تحتوي على…"
-    clear_selection: "مسح الاختيار"
     disclaimer: "معلومات مسببات الحساسية إرشادية فقط. يرجى استشارة الموظفين قبل الطلب إذا كان لديك أي حساسية."
     more_info: "مزيد من المعلومات"
     free_from: "خالٍ من"
@@ -63,8 +62,6 @@ dish:
 nav:
     back: "رجوع"
     next: "التالي"
-    up: "أعلى"
-    down: "أسفل"
     go_to_item: "الانتقال إلى الطبق %n%"
     categories: "الفئات"
 common:

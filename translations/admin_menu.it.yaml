@@ -65,7 +65,6 @@ field:
 
 field_error:
     name_required: Il nome è obbligatorio
-    description_required: La descrizione è obbligatoria
     price_required: Il prezzo è obbligatorio
     price_variants_incomplete: Completa l'etichetta e il prezzo di ogni riga (minimo 2 prezzi)
 
@@ -86,7 +85,6 @@ allergens:
     your_ingredients_hint: Condiviso con ogni altro piatto che usa lo stesso ingrediente.
     new_ingredient_hint: Salva prima il piatto per poter etichettare gli allergeni degli ingredienti appena aggiunti.
     overrides_title: Eccezioni specifiche del piatto
-    overrides_hint: Utile per rischio di contaminazione crociata, o per correggere un allergene calcolato automaticamente.
     add_exception: Aggiungi eccezione
     select_allergen: Seleziona un allergene…
     presence_contains: Contiene
@@ -94,7 +92,6 @@ allergens:
     presence_free_from: Confermato assente
     note_placeholder: 'Nota (obbligatoria per "assente")'
     remove: Rimuovi
-    source_computed_label: dagli ingredienti
     advanced_title: Casi speciali di allergeni
     scope_this_dish: Solo questo piatto
     advanced_hint: Usa questa sezione solo se gli allergeni rilevati automaticamente non sono sufficienti — ad esempio per contaminazione crociata o perché questo piatto utilizza un ingrediente alternativo certificato senza quell'allergene.
@@ -115,7 +112,6 @@ js:
     product_created: 'Piatto creato ✓'
     product_deleted: Piatto eliminato
     product_saved: 'Piatto salvato ✓'
-    remove_ingredient_aria: 'Rimuovi %name%'
     allergen_override_added: 'Eccezione aggiunta'
     allergen_note_required: 'Aggiungi una nota che spieghi perché è contrassegnato come "assente"'
     ingredient_allergens_saved: 'Allergeni salvati ✓'
@@ -222,6 +218,3 @@ error:
     unexpected: Qualcosa è andato storto. Riprova.
     nutrition_value_invalid: 'Il valore deve essere un numero compreso tra 0 e 9999.9, con al massimo un decimale.'
     price_variants_invalid: 'Completa l''etichetta e il prezzo di ogni variante (minimo 2 prezzi).'
-
-translations:
-    hint_empty: "Nessuna traduzione IA ancora — appariranno qui non appena un cliente vedrà il menu in un'altra lingua."

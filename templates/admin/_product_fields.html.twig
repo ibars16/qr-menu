@@ -435,9 +435,8 @@
                        these inputs while editing (see its own comment), it never touched
                        what a customer sees. This checkbox is what actually controls that
                        — Product::$nutritionVisible, read by every public template that
-                       renders this data (menu/_card.html.twig's dead sibling aside — see
-                       that file's own note — the live ones are menu/_set_menu.html.twig
-                       and menu/layouts/standard/show.html.twig). Defaults checked so
+                       renders this data (menu/_set_menu.html.twig and
+                       menu/layouts/standard/show.html.twig). Defaults checked so
                        filling in any of the 5 fields below shows them on the public menu
                        by default, same as before this checkbox existed; unchecking it
                        keeps the data here (nothing is cleared) but stops rendering it

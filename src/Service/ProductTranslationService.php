@@ -18,7 +18,7 @@ use Psr\Log\LoggerInterface;
  * is cheaper than running a permanent background worker for something that
  * fires this rarely. If the AI call fails or times out, translateMissing()
  * catches it and the page still renders via the default-language fallback
- * already built into the templates (see _card.html.twig) — a failed attempt
+ * already built into the templates (see standard/show.html.twig) — a failed attempt
  * just gets retried on the next visit in that locale.
  *
  * Once written, an AI translation is never regenerated on its own — it would

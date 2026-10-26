@@ -26,7 +26,6 @@ filters:
     no_results: "결과 없음"
 allergen:
     avoid_panel_title: "다음을 포함하는 메뉴 숨기기…"
-    clear_selection: "선택 지우기"
     disclaimer: "알레르기 유발 성분 정보는 참고용입니다. 알레르기가 있는 경우 주문 전 직원에게 문의해 주세요."
     more_info: "자세히 보기"
     free_from: "미포함:"
@@ -61,8 +60,6 @@ dish:
 nav:
     back: "뒤로"
     next: "다음"
-    up: "위로"
-    down: "아래로"
     go_to_item: "%n%번째 요리로 이동"
     categories: "카테고리"
 common:

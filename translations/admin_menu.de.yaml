@@ -65,7 +65,6 @@ field:
 
 field_error:
     name_required: Der Name ist erforderlich
-    description_required: Die Beschreibung ist erforderlich
     price_required: Der Preis ist erforderlich
     price_variants_incomplete: Bezeichnung und Preis für jede Zeile ausfüllen (mindestens 2 Preise)
 
@@ -86,7 +85,6 @@ allergens:
     your_ingredients_hint: Wird mit jedem anderen Gericht geteilt, das dieselbe Zutat verwendet.
     new_ingredient_hint: Speichere das Gericht zuerst, um Allergene für neu hinzugefügte Zutaten zu markieren.
     overrides_title: Gerichtsspezifische Ausnahmen
-    overrides_hint: Nützlich bei Kreuzkontaminationsrisiko oder um ein automatisch berechnetes Allergen zu korrigieren.
     add_exception: Ausnahme hinzufügen
     select_allergen: Allergen auswählen…
     presence_contains: Enthält
@@ -94,7 +92,6 @@ allergens:
     presence_free_from: Bestätigt frei von
     note_placeholder: 'Notiz (erforderlich bei "frei von")'
     remove: Entfernen
-    source_computed_label: aus Zutaten
     advanced_title: Besondere Allergenfälle
     scope_this_dish: Nur dieses Gericht
     advanced_hint: Nutze diesen Bereich nur, wenn die automatisch erkannten Allergene nicht ausreichen — zum Beispiel bei Kreuzkontamination oder wenn dieses Gericht eine zertifizierte allergenfreie Alternativzutat verwendet.
@@ -115,7 +112,6 @@ js:
     product_created: 'Gericht erstellt ✓'
     product_deleted: Gericht gelöscht
     product_saved: 'Gericht gespeichert ✓'
-    remove_ingredient_aria: '%name% entfernen'
     allergen_override_added: 'Ausnahme hinzugefügt'
     allergen_note_required: 'Bitte füge eine Notiz hinzu, warum dies als "frei von" markiert ist'
     ingredient_allergens_saved: 'Allergene gespeichert ✓'
@@ -222,6 +218,3 @@ error:
     unexpected: Etwas ist schiefgelaufen. Bitte versuche es erneut.
     nutrition_value_invalid: 'Der Wert muss eine Zahl zwischen 0 und 9999.9 mit höchstens einer Dezimalstelle sein.'
     price_variants_invalid: 'Bezeichnung und Preis für jede Variante ausfüllen (mindestens 2 Preise).'
-
-translations:
-    hint_empty: "Noch keine KI-Übersetzungen — sie erscheinen hier, sobald ein Kunde das Menü in einer anderen Sprache ansieht."
