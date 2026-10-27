@@ -745,6 +745,11 @@
     .logo svg { width: 24px; height: 24px; }
     .resto-name { font-weight: 500; }
     .nav-dd-trigger { padding: 7px 11px; border-width: 1px; border-radius: 100px; }
+    /* Keyboard focus only (the base rule's outline:none still covers
+       tap/click): the footer links' ring — 2px, 2px off — in
+       --cf-hborder-text, since --cf-hborder is under 3:1 on maison's
+       header (≥4.95:1 on every theme's header with this one). */
+    .nav-dd-trigger:focus-visible { outline: 2px solid var(--cf-hborder-text); outline-offset: 2px; }
 
     /* Card badges — carta-estilo's single .badge treatment (dark
        translucent chip, cream small-caps text) applied to all 3 overlay
