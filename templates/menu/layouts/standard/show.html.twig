@@ -6,10 +6,9 @@
    free-text data (Tag::$icon / Allergen::$icon, admin-set, usually an emoji)
    — there's no fixed key to map to a monoline SVG set, so the shared structure
    contains the emoji as-is in a parchment disc (.aicon) instead of inventing an icon
-   lookup. Themes not yet on the structure keep the original bare "icon + space + name"
-   text exactly. #}
-{% macro chipIcon(icon, structured) %}{% if structured %}<span class="aicon">{{ icon }}</span>{% else %}{{ icon }} {% endif %}{% endmacro %}
-{# Maison nutrition panel (dish-detail modal only) — presentation-only trim
+   lookup. #}
+{% macro chipIcon(icon) %}<span class="aicon">{{ icon }}</span>{% endmacro %}
+{# Nutrition panel (dish-detail modal only) — presentation-only trim
    of a whole-number decimal's trailing ".0" ("20.0" -> "20", "0.0" -> "0"),
    never touching the stored value: fat/protein/carbohydrates/sugars are
    Doctrine decimal(5,1) strings (Product::getFat() etc., see the
@@ -93,11 +92,7 @@
         background: radial-gradient(ellipse at center, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.16) 42%, transparent 72%);
         filter: blur(46px);
     }
-    .hero-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: var(--hero-img-op, 1); pointer-events: none; }
-    .hero-overlay-el { position: absolute; inset: 0; background: var(--hero-overlay, none); pointer-events: none; }
     .hero-inner { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; }
-    .hero-kicker { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; color: var(--cp); background: var(--cbg); border: 1px solid var(--cbc); padding: 6px 14px; border-radius: 999px; margin-bottom: 16px; }
-    .hero-kicker i { font-size: 12px; }
     .hero-name { font-family: var(--font-display, inherit); font-size: 44px; font-weight: 800; color: var(--hero-fg, var(--fg)); letter-spacing: -1.8px; line-height: 1.03; text-shadow: 0 2px 24px rgba(0,0,0,0.05); }
 
     /* ── UI wrapper ── */
@@ -130,7 +125,6 @@
        dropdown button/panel this used to have (.allergen-filter-btn/
        -panel/-badge, plus toggleAllergenFilterPanel() in
        menu/_search_js.html.twig) is gone. */
-    .allergen-filter-options { display: flex; flex-direction: column; gap: 1px; max-height: 260px; overflow-y: auto; }
     .allergen-filter-option { display: flex; align-items: center; gap: 9px; padding: 8px 7px; min-height: 2.75rem; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--bn); user-select: none; }
     .allergen-filter-option:hover { background: var(--in-bg); }
     .allergen-filter-option input { width: 18px; height: 18px; accent-color: #d64545; cursor: pointer; flex-shrink: 0; }
@@ -219,7 +213,7 @@
        just silence; the click handler (applyFiltersPanel(), see
        _search_js.html.twig) is what actually no-ops the tap. Muted via the
        same --surface-2/--fg-3 tokens every theme already defines (see
-       .no-results/.dish-placeholder for the same pairing) — higher
+       .no-results for the same pairing) — higher
        specificity than the plain .filters-apply-btn rule above (and
        the shared structure's own override in _structure.html.twig), so it wins in every
        theme without needing a second, theme-specific copy of this rule. */
@@ -259,32 +253,19 @@
     /* ── Image — full width at top, larger for visual impact ── */
     .front-img { width: 100%; height: 182px; flex-shrink: 0; background: var(--cf-img); display: flex; align-items: center; justify-content: center; font-size: 46px; position: relative; overflow: hidden; }
     .front-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .front-img-overlay { position: absolute; inset: 0; background: var(--img-overlay, linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.14) 100%)); pointer-events: none; }
     .spicy-badge { position: absolute; top: 8px; inset-inline-end: 8px; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: #ef4444; border-radius: 20px; padding: 3px 7px; font-size: 15px; line-height: 1; z-index: 3; display: flex; align-items: center; gap: 1px; box-shadow: 0 2px 10px rgba(0,0,0,0.18); }
     .popular-badge { position: absolute; bottom: 8px; inset-inline-start: 8px; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: #ffb020; border-radius: 20px; padding: 3px 8px; font-size: 11px; font-weight: 700; line-height: 1.3; z-index: 3; display: flex; align-items: center; gap: 3px; letter-spacing: 0.02em; box-shadow: 0 2px 10px rgba(0,0,0,0.18); }
 
     /* ── Info — below image, full width ── */
     .front-info { flex: 1; padding: 11px 14px 12px; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; overflow: hidden; }
-    .front-top { min-height: 0; overflow: hidden; }
-    .front-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 5px; }
-    .fbadge { font-size: 10px; padding: 2px 8px; border-radius: var(--badge-radius, 8px); background: var(--cbg); border: 1px solid var(--cbc); color: var(--cbt); font-weight: 500; white-space: nowrap; }
-    .fbadge-hot { color: #e06840; border-color: rgba(224,104,64,0.22); background: rgba(224,104,64,0.08); }
     .front-name { font-size: 16px; font-weight: 700; color: var(--cn); letter-spacing: -0.4px; line-height: 1.28; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* ── Bottom row — always fully visible ── */
-    .front-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; gap: 8px; flex-shrink: 0; }
-    .front-price { font-size: 22px; font-weight: 800; color: var(--cp); letter-spacing: -0.7px; font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; }
-    .flip-hint { font-size: 11px; color: var(--hint); display: flex; align-items: center; gap: 4px; padding-block: 5px; padding-inline: 9px 11px; border-radius: 20px; border: 1px solid var(--tab-border); background: var(--tab-bg); transition: color 0.2s, border-color 0.2s, background 0.2s; white-space: nowrap; flex-shrink: 0; }
-    .card-wrap:hover .flip-hint { color: var(--hint-h); border-color: var(--cf-hborder); background: var(--tab-hbg); }
 
     /* ── Back face ── */
     .card-back { background: var(--cb-bg); border: 1px solid var(--cb-border); transform: rotateY(180deg); display: flex; flex-direction: column; }
     .back-close { position: absolute; top: 12px; inset-inline-end: 12px; width: 28px; height: 28px; border-radius: 50%; background: var(--close-bg); border: 1px solid var(--close-b); cursor: pointer; color: var(--close-t); display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 2; transition: color 0.18s, background 0.18s, transform 0.22s; }
     .back-close:hover { color: var(--close-ht); background: var(--close-hbg); transform: rotate(90deg); }
-    .back-header { padding-block: 14px 13px; padding-inline: 17px 52px; border-bottom: 1px solid var(--bdiv); flex-shrink: 0; }
-    .back-name { font-size: 15px; font-weight: 700; color: var(--bn); letter-spacing: -0.4px; line-height: 1.23; }
-    .back-price { font-size: 14px; color: var(--bp); font-weight: 700; margin-top: 3px; font-variant-numeric: tabular-nums; }
-    .supplement-badge { font-size: 0.75em; font-weight: 700; color: var(--cp); white-space: nowrap; }
     /* Stacked multi-price block (menu/_price.html.twig) — one row per price,
        label left/muted/smaller, price right keeping the parent's own
        styling, currency on every row. A long label truncates with an
@@ -327,7 +308,6 @@
     .lbl-list { display: flex; flex-wrap: wrap; gap: 5px; }
     .lbl { font-size: 12px; padding: 3px 10px; border-radius: var(--badge-radius, 8px); }
     .lbl-g { background: var(--lg-bg); color: var(--lg); border: 1px solid var(--lg-b); }
-    .lbl-o { background: var(--lo-bg); color: var(--lo); border: 1px solid var(--lo-b); }
     .alg { font-size: 12px; padding: 3px 10px; border-radius: var(--badge-radius, 8px); border: 1px solid transparent; }
     .alg-contains { background: rgba(220,38,38,0.12); color: #d64545; border-color: rgba(220,38,38,0.28); }
     .alg-may_contain { background: transparent; color: #c78a3d; border: 1px dashed rgba(199,138,61,0.55); }
@@ -448,9 +428,6 @@
     /* No-photo placeholder — a warm brand-colored panel with an icon and
        the dish name, styled to look intentional rather than a broken
        image icon. */
-    .dish-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; background: linear-gradient(150deg, var(--cf-img) 0%, var(--surface-2, var(--cf-img)) 100%); padding: 0.75rem; text-align: center; }
-    .dish-placeholder i { font-size: 1.875rem; color: var(--tab-act-bg); }
-    .dish-placeholder span { font-size: 0.8125rem; font-weight: 600; color: var(--fg-2); line-height: 1.3; max-width: 12rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
     /* Floating "Popular / Recomendado" pill — only rendered when the
        product carries the 'recommended' system tag. Kept neutral (not red)
@@ -460,12 +437,11 @@
     /* Info strip below the photo — name, one-line description, price. */
     .dish-card .front-info { padding: 1.125rem 1.125rem 1.125rem; display: flex; flex-direction: column; gap: 0.5rem; }
     .dish-card .front-name { font-family: var(--font-display, inherit); font-size: 1.0625rem; font-weight: 600; color: var(--cn); letter-spacing: -0.1px; line-height: 1.4; white-space: normal; overflow-wrap: break-word; }
-    .front-desc { font-size: 0.8125rem; font-weight: 400; color: var(--fg-2); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .dish-bottom { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.375rem; }
 
     /* Price — the one strong accent on the card: a filled pill, brand red
        on white text. var(--cp) already resolves to the brand red in the
-       classic-warm theme (and to each other theme's own accent), with the
+       maison theme (and to each other theme's own accent), with the
        literal brand hex as a fallback if a theme ever leaves it unset. */
     .dish-price { display: inline-flex; align-items: center; background: var(--cp, #c0341d); color: #fff; font-size: 1rem; font-weight: 500; letter-spacing: -0.2px; padding: 0.4375rem 0.9375rem; border-radius: 1.875rem; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 6px 16px -7px rgba(0,0,0,0.5); }
     .dish-price .price-item-label, .dish-price .price-item-value { color: #fff; }
@@ -502,7 +478,6 @@
     .dish-detail-price { display: inline-flex; align-self: flex-start; align-items: center; background: var(--cp, #c0341d); color: #fff; font-size: 1rem; font-weight: 500; letter-spacing: -0.2px; padding: 0.4375rem 0.9375rem; border-radius: 1.875rem; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 6px 16px -7px rgba(0,0,0,0.5); }
     .dish-detail-price .price-item-label, .dish-detail-price .price-item-value { color: #fff; }
     .dish-detail-desc { font-size: 0.9375rem; font-weight: 400; color: var(--bdesc); line-height: 1.6; }
-    .dish-allergen-box { background: var(--allergen-box-bg, rgba(214,69,69,0.06)); border: 1px solid var(--allergen-box-b, rgba(214,69,69,0.16)); border-radius: 0.875rem; padding: 0.875rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
 
     /* ── Footer (menu/_footer.html.twig) ──
        Full-width --surface-2 band, its content in the same column and gutter
@@ -548,13 +523,13 @@
         .ft-hours { grid-column: 3; }
     }
 </style>
-{% if structured %}{% include 'menu/layouts/standard/_structure.html.twig' %}{% endif %}
+{% include 'menu/layouts/standard/_structure.html.twig' %}
 
 <header class="header">
     <div class="header-row">
         <div class="logo-wrap">
             <div class="logo">
-                {% if restaurant.logo %}<img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}" alt="">{% elseif structured %}<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.3" y="2" width="1.3" height="7" rx="0.65"/><rect x="8.35" y="2" width="1.3" height="7" rx="0.65"/><rect x="10.4" y="2" width="1.3" height="7" rx="0.65"/><path d="M6.1 8c0 1.9 1.3 3.4 2.9 3.4s2.9-1.5 2.9-3.4H6.1z"/><rect x="8.25" y="11" width="1.5" height="11" rx="0.75"/><path d="M15.3 2c-.3 0-.5.3-.5 1 0 2.6.3 5.6 1.1 8.7.2.8.5 1.5.8 2 .3-.5.6-1.2.8-2 .8-3.1 1.1-6.1 1.1-8.7 0-.7-.2-1-.5-1z"/><rect x="16" y="13.8" width="1.4" height="8.2" rx="0.7"/></svg>{% else %}{{ restaurant.name|slice(0,1)|upper }}{% endif %}
+                {% if restaurant.logo %}<img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}" alt="">{% else %}<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.3" y="2" width="1.3" height="7" rx="0.65"/><rect x="8.35" y="2" width="1.3" height="7" rx="0.65"/><rect x="10.4" y="2" width="1.3" height="7" rx="0.65"/><path d="M6.1 8c0 1.9 1.3 3.4 2.9 3.4s2.9-1.5 2.9-3.4H6.1z"/><rect x="8.25" y="11" width="1.5" height="11" rx="0.75"/><path d="M15.3 2c-.3 0-.5.3-.5 1 0 2.6.3 5.6 1.1 8.7.2.8.5 1.5.8 2 .3-.5.6-1.2.8-2 .8-3.1 1.1-6.1 1.1-8.7 0-.7-.2-1-.5-1z"/><rect x="16" y="13.8" width="1.4" height="8.2" rx="0.7"/></svg>{% endif %}
             </div>
             <div class="resto-name">{{ autoOpen|raw }}{{ restaurant.name }}{{ autoClose|raw }}</div>
         </div>
@@ -604,101 +579,91 @@
 </script>
 
 <div class="hero">
-    {% if structured %}
-        {# Hero band image: Restaurant::$heroImage, its own field/directory
-           (public/uploads/heroes/), separate from $logo — a logo is brand
-           mark art (can be square, marginned, low-res), not the atmospheric
-           wide photography this band wants. No fallback to $logo when empty:
-           the band simply isn't in the DOM, and the hero falls back cleanly
-           to solid parchment (see .hero-inner below), exactly as designed.
-           A photo narrower than 2560px (size read by image_size(), null →
-           unknown) gets --fit: never drawn above its real size, the rest of
-           the band filled by .cover-backdrop (see _structure.html.twig).
-           Wider or unknown → the markup is exactly the plain band. #}
-        {% if restaurant.heroImage %}
-            {%- set heroSize = image_size('heroes/' ~ restaurant.heroImage) %}{% set heroFit = heroSize is not null and heroSize.width < 2560 %}
-            <div class="hero-photo-band{{ heroFit ? ' hero-photo-band--fit' }}">
-                {% if heroFit %}<div class="cover-backdrop" style="background-image: url('{{ asset('uploads/heroes/' ~ restaurant.heroImage) }}')" aria-hidden="true"></div>
-                {% endif %}<img src="{{ asset('uploads/heroes/' ~ restaurant.heroImage) }}" alt="{{ restaurant.name }}"{% if heroFit %} style="--nw: {{ heroSize.width }}px; --nh: {{ heroSize.height }}px"{% endif %}>
-            </div>
-        {% endif %}
-    {% else %}
-        {% if restaurant.logo %}<img class="hero-bg-img" src="{{ asset('uploads/logos/' ~ restaurant.logo) }}" alt="">{% endif %}
-        <div class="hero-overlay-el"></div>
+    {# Hero band image: Restaurant::$heroImage, its own field/directory
+       (public/uploads/heroes/), separate from $logo — a logo is brand
+       mark art (can be square, marginned, low-res), not the atmospheric
+       wide photography this band wants. No fallback to $logo when empty:
+       the band simply isn't in the DOM, and the hero falls back cleanly
+       to solid parchment (see .hero-inner below), exactly as designed.
+       A photo narrower than 2560px (size read by image_size(), null →
+       unknown) gets --fit: never drawn above its real size, the rest of
+       the band filled by .cover-backdrop (see _structure.html.twig).
+       Wider or unknown → the markup is exactly the plain band. #}
+    {% if restaurant.heroImage %}
+        {%- set heroSize = image_size('heroes/' ~ restaurant.heroImage) %}{% set heroFit = heroSize is not null and heroSize.width < 2560 %}
+        <div class="hero-photo-band{{ heroFit ? ' hero-photo-band--fit' }}">
+            {% if heroFit %}<div class="cover-backdrop" style="background-image: url('{{ asset('uploads/heroes/' ~ restaurant.heroImage) }}')" aria-hidden="true"></div>
+            {% endif %}<img src="{{ asset('uploads/heroes/' ~ restaurant.heroImage) }}" alt="{{ restaurant.name }}"{% if heroFit %} style="--nw: {{ heroSize.width }}px; --nh: {{ heroSize.height }}px"{% endif %}>
+        </div>
     {% endif %}
     <div class="hero-inner">
-        {% if structured %}
-            <div class="hero-name">{{ autoOpen|raw }}{{ restaurant.name }}{{ autoClose|raw }}</div>
-            {% if restaurant.tagline is defined and restaurant.tagline %}<p class="tagline">{{ owner_text(restaurant.tagline, locale) }}</p>{% endif %}
-            <a href="#cat-tabs" class="cta-explore"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> {{ 'hero.subtitle'|trans({}, 'menu_public', locale) }}</a>
-            {# Chef's-recommendation banner — no DB field, no admin toggle:
-               it exists only when at least one dish already carries the
-               'recommended' tag (the same tag the dish-card badge uses).
-               Collects ALL matches now (not just the first), in the same
-               order they appear in the menu (category order, then
-               activeProductsSorted within it), so 2+ can be paged through
-               as a carousel below. Set-menu categories skipped since their
-               dishes use the flip-card modal, not openDishModal/.dish-tpl. #}
-            {% set recommendedItems = [] %}
-            {% for bCat in categories %}
-                {% if not bCat.isFixedPriceMenu %}
-                    {% for bProduct in bCat.activeProductsSorted %}
-                        {% set bTag = bProduct.tags|filter(t => t.code == 'recommended')|first %}
-                        {% if bTag and tagNames[bTag.id] is defined %}
-                            {% set bT = bProduct.getTranslation(locale) %}
-                            {% if not bT %}{% set bT = bProduct.getTranslation(restaurant.defaultLanguage) %}{% endif %}
-                            {% if not bT %}{% set bT = bProduct.translations.first %}{% endif %}
-                            {# bT.name is not empty: same gap as the card-grid's own pT check below — see its comment. #}
-                            {% if bT and bT.name is not empty %}
-                                {% set recommendedItems = recommendedItems|merge([{
-                                    product: bProduct,
-                                    t: bT,
-                                    tagName: tagNames[bTag.id],
-                                }]) %}
-                            {% endif %}
+        <div class="hero-name">{{ autoOpen|raw }}{{ restaurant.name }}{{ autoClose|raw }}</div>
+        {% if restaurant.tagline is defined and restaurant.tagline %}<p class="tagline">{{ owner_text(restaurant.tagline, locale) }}</p>{% endif %}
+        <a href="#cat-tabs" class="cta-explore"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> {{ 'hero.subtitle'|trans({}, 'menu_public', locale) }}</a>
+        {# Chef's-recommendation banner — no DB field, no admin toggle:
+           it exists only when at least one dish already carries the
+           'recommended' tag (the same tag the dish-card badge uses).
+           Collects ALL matches now (not just the first), in the same
+           order they appear in the menu (category order, then
+           activeProductsSorted within it), so 2+ can be paged through
+           as a carousel below. Set-menu categories skipped since their
+           dishes use the flip-card modal, not openDishModal/.dish-tpl. #}
+        {% set recommendedItems = [] %}
+        {% for bCat in categories %}
+            {% if not bCat.isFixedPriceMenu %}
+                {% for bProduct in bCat.activeProductsSorted %}
+                    {% set bTag = bProduct.tags|filter(t => t.code == 'recommended')|first %}
+                    {% if bTag and tagNames[bTag.id] is defined %}
+                        {% set bT = bProduct.getTranslation(locale) %}
+                        {% if not bT %}{% set bT = bProduct.getTranslation(restaurant.defaultLanguage) %}{% endif %}
+                        {% if not bT %}{% set bT = bProduct.translations.first %}{% endif %}
+                        {# bT.name is not empty: same gap as the card-grid's own pT check below — see its comment. #}
+                        {% if bT and bT.name is not empty %}
+                            {% set recommendedItems = recommendedItems|merge([{
+                                product: bProduct,
+                                t: bT,
+                                tagName: tagNames[bTag.id],
+                            }]) %}
                         {% endif %}
-                    {% endfor %}
-                {% endif %}
-            {% endfor %}
-            {% if recommendedItems|length == 1 %}
-                {% set ri = recommendedItems[0] %}
-                <div class="banner" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ ri.product.id }} + '\']'))" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': ri.t.name}, 'menu_public', locale) }}">
-                    {% include 'menu/layouts/standard/_banner_text.html.twig' %}
-                </div>
-            {% elseif recommendedItems|length > 1 %}
-                {# Carousel variant — same per-slide material as the single-dish
-                   .banner above (see .banner-slide in _structure.html.twig),
-                   plus a nav bar (prev/dots/next) that's a DOM sibling of the
-                   slides, never a descendant, so its clicks can't bubble into
-                   a slide's own onclick — event.stopPropagation() below is
-                   defensive, not load-bearing. All carousel state (active
-                   slide, swipe, arrow keys) lives in bannerGoTo/bannerNav in
-                   _search_js.html.twig. #}
-                <div class="banner-multi" id="banner-carousel" role="group" aria-roledescription="carousel" aria-label="{{ recommendedItems[0].tagName }}">
-                    <div class="banner-viewport">
-                        <div class="banner-track" id="banner-track">
-                            {% for ri in recommendedItems %}
-                                <div class="banner-slide{{ loop.first ? ' active' : '' }}" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ ri.product.id }} + '\']'))" role="button" tabindex="{{ loop.first ? '0' : '-1' }}" aria-hidden="{{ loop.first ? 'false' : 'true' }}" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': ri.t.name}, 'menu_public', locale) }}">
-                                    {% include 'menu/layouts/standard/_banner_text.html.twig' %}
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="banner-nav">
-                        <button type="button" class="banner-nav-btn banner-prev" onclick="event.stopPropagation(); bannerNav(-1);" aria-label="{{ 'nav.back'|trans({}, 'menu_public', locale) }}"><i class="ti ti-chevron-{{ dir == 'rtl' ? 'right' : 'left' }}" aria-hidden="true"></i></button>
-                        <div class="banner-dots" id="banner-dots">
-                            {% for ri in recommendedItems %}
-                                <button type="button" class="banner-dot{{ loop.first ? ' active' : '' }}" onclick="event.stopPropagation(); bannerGoTo({{ loop.index0 }});" aria-label="{{ 'nav.go_to_item'|trans({'%n%': loop.index}, 'menu_public', locale) }}" aria-current="{{ loop.first ? 'true' : 'false' }}"></button>
-                            {% endfor %}
-                        </div>
-                        <button type="button" class="banner-nav-btn banner-next" onclick="event.stopPropagation(); bannerNav(1);" aria-label="{{ 'nav.next'|trans({}, 'menu_public', locale) }}"><i class="ti ti-chevron-{{ dir == 'rtl' ? 'left' : 'right' }}" aria-hidden="true"></i></button>
-                    </div>
-                    <div class="sr-only" aria-live="polite" id="banner-announce"></div>
-                </div>
+                    {% endif %}
+                {% endfor %}
             {% endif %}
-        {% else %}
-            <div class="hero-kicker"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> {{ 'hero.subtitle'|trans({}, 'menu_public', locale) }}</div>
-            <div class="hero-name">{{ autoOpen|raw }}{{ restaurant.name }}{{ autoClose|raw }}</div>
+        {% endfor %}
+        {% if recommendedItems|length == 1 %}
+            {% set ri = recommendedItems[0] %}
+            <div class="banner" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ ri.product.id }} + '\']'))" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': ri.t.name}, 'menu_public', locale) }}">
+                {% include 'menu/layouts/standard/_banner_text.html.twig' %}
+            </div>
+        {% elseif recommendedItems|length > 1 %}
+            {# Carousel variant — same per-slide material as the single-dish
+               .banner above (see .banner-slide in _structure.html.twig),
+               plus a nav bar (prev/dots/next) that's a DOM sibling of the
+               slides, never a descendant, so its clicks can't bubble into
+               a slide's own onclick — event.stopPropagation() below is
+               defensive, not load-bearing. All carousel state (active
+               slide, swipe, arrow keys) lives in bannerGoTo/bannerNav in
+               _search_js.html.twig. #}
+            <div class="banner-multi" id="banner-carousel" role="group" aria-roledescription="carousel" aria-label="{{ recommendedItems[0].tagName }}">
+                <div class="banner-viewport">
+                    <div class="banner-track" id="banner-track">
+                        {% for ri in recommendedItems %}
+                            <div class="banner-slide{{ loop.first ? ' active' : '' }}" onclick="openDishModal(document.querySelector('[data-product-id=\'' + {{ ri.product.id }} + '\']'))" role="button" tabindex="{{ loop.first ? '0' : '-1' }}" aria-hidden="{{ loop.first ? 'false' : 'true' }}" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': ri.t.name}, 'menu_public', locale) }}">
+                                {% include 'menu/layouts/standard/_banner_text.html.twig' %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="banner-nav">
+                    <button type="button" class="banner-nav-btn banner-prev" onclick="event.stopPropagation(); bannerNav(-1);" aria-label="{{ 'nav.back'|trans({}, 'menu_public', locale) }}"><i class="ti ti-chevron-{{ dir == 'rtl' ? 'right' : 'left' }}" aria-hidden="true"></i></button>
+                    <div class="banner-dots" id="banner-dots">
+                        {% for ri in recommendedItems %}
+                            <button type="button" class="banner-dot{{ loop.first ? ' active' : '' }}" onclick="event.stopPropagation(); bannerGoTo({{ loop.index0 }});" aria-label="{{ 'nav.go_to_item'|trans({'%n%': loop.index}, 'menu_public', locale) }}" aria-current="{{ loop.first ? 'true' : 'false' }}"></button>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="banner-nav-btn banner-next" onclick="event.stopPropagation(); bannerNav(1);" aria-label="{{ 'nav.next'|trans({}, 'menu_public', locale) }}"><i class="ti ti-chevron-{{ dir == 'rtl' ? 'left' : 'right' }}" aria-hidden="true"></i></button>
+                </div>
+                <div class="sr-only" aria-live="polite" id="banner-announce"></div>
+            </div>
         {% endif %}
     </div>
 </div>
@@ -712,8 +677,7 @@
    element's *immediate* parent box, not any taller ancestor — nesting
    #cat-tabs one level deeper, inside .ui-wrap (only ~140px tall), would
    still cap it there even with this wrapper around .ui-wrap itself.
-   Every other theme/layout ignores this div entirely (no CSS targets
-   .menu-body outside the shared structure). #}
+   No CSS targets .menu-body outside the shared structure. #}
 <div class="menu-body">
 <div class="ui-wrap">
     <div class="search-wrap">
@@ -751,7 +715,7 @@
             <button type="button" class="diet-allergy-btn" id="filters-btn" onclick="openFiltersPanel()" aria-haspopup="true">
                 <i class="ti ti-shield-check" aria-hidden="true"></i>
                 <span id="filters-btn-label" data-i18n-cta="{{ 'filters.cta_label'|trans({}, 'menu_public', locale) }}">{{ 'filters.cta_label'|trans({}, 'menu_public', locale) }}</span>
-                {% if structured %}<span class="allergy-arrow" aria-hidden="true">{{ dir == 'rtl' ? '←' : '→' }}</span>{% endif %}
+                <span class="allergy-arrow" aria-hidden="true">{{ dir == 'rtl' ? '←' : '→' }}</span>
             </button>
         </div>
     </div>
@@ -770,17 +734,12 @@
     {% set otrosTags = tags|filter(t => t.code not in dietTagCodes and t.code not in nonFilterTagCodes and t.code|slice(0, 9) != 'contains-') %}
     <div class="filters-overlay" id="filters-overlay" aria-hidden="true" onclick="if(event.target===this) closeFiltersPanel()">
         <div class="filters-panel" role="dialog" aria-modal="true" aria-label="{{ 'filters.title'|trans({}, 'menu_public', locale) }}">
-            {# The × lives directly in .filters-panel (the fixed chrome) for
-               every theme, but only structured themes also wrap everything else in
-               .filters-panel-scroll below — same persistent-× split as
-               .dish-modal/.dish-modal-scroll (see _structure.html.twig).
-               Opening/closing tags of that wrapper are two separate
-               {% if structured %} blocks rather than one that
-               duplicates this whole (long) body for the {% else %} branch —
-               still balanced, valid HTML per branch, just written this way
-               to avoid a ~90-line twin. #}
+            {# The × lives directly in .filters-panel (the fixed chrome);
+               everything else scrolls inside .filters-panel-scroll — same
+               persistent-× split as .dish-modal/.dish-modal-scroll (see
+               _structure.html.twig). #}
             <button type="button" class="dish-modal-close" onclick="closeFiltersPanel()" aria-label="{{ 'common.close'|trans({}, 'menu_public', locale) }}"><i class="ti ti-x"></i></button>
-            {% if structured %}<div class="filters-panel-scroll">{% endif %}
+            <div class="filters-panel-scroll">
             <div class="filters-panel-header">
                 <div class="filters-panel-title">{{ 'filters.title'|trans({}, 'menu_public', locale) }}</div>
             </div>
@@ -800,7 +759,7 @@
                 {% endif %}
                 {% if dietaTags|length > 0 %}
                     <div class="filters-section">
-                        <div class="filters-section-title">{{ 'filters.diet_title'|trans({}, 'menu_public', locale) }}{% if structured %}<span class="count">{{ '%02d'|format(dietaTags|length) }}</span>{% endif %}</div>
+                        <div class="filters-section-title">{{ 'filters.diet_title'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(dietaTags|length) }}</span></div>
                         <div class="diet-filters">
                             {# Not shown — "Todo" is a category concept and already lives in the
                                category row above; showing it again here just confused things.
@@ -808,42 +767,30 @@
                                for the diet-filter group: clearAllFilters() in _search_js.html.twig
                                clicks it programmatically, which works on a hidden element. #}
                             <button class="diet-filter active" data-filter="diet" data-tag="all" style="display:none" aria-hidden="true" tabindex="-1">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</button>
-                            {% for tag in dietaTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-filter="diet" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, structured) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
+                            {% for tag in dietaTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-filter="diet" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
                         </div>
                     </div>
                 {% endif %}
                 {% if menuAllergens|length > 0 %}
                     <div class="filters-section">
-                        <div class="filters-section-title">{{ 'filters.allergy_title'|trans({}, 'menu_public', locale) }}{% if structured %}<span class="count">{{ '%02d'|format(menuAllergens|length) }}</span>{% endif %}</div>
+                        <div class="filters-section-title">{{ 'filters.allergy_title'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(menuAllergens|length) }}</span></div>
                         <div class="filters-section-sub">{{ 'allergen.avoid_panel_title'|trans({}, 'menu_public', locale) }}</div>
-                        {% if structured %}
-                            {# Chip pattern (button + aria-pressed), matching the diet/type
-                               chips above — no native checkboxes in this theme. See
-                               _search_js.html.twig's onAllergenFilterChange()/clearAllergenFilters()
-                               for the click handling; other layouts keep the checkbox markup
-                               below untouched. #}
-                            <div class="diet-filters">
-                                {% for a in menuAllergens %}
-                                    <button type="button" class="diet-filter allergen-filter-option" data-filter="allergen" data-allergen="{{ a.code }}" aria-pressed="false">{{ _self.chipIcon(a.icon, structured) }}{{ a.name }}</button>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <div class="allergen-filter-options">
-                                {% for a in menuAllergens %}
-                                    <label class="allergen-filter-option">
-                                        <input type="checkbox" data-filter="allergen" value="{{ a.code }}" onchange="onAllergenFilterChange()">
-                                        <span>{{ a.icon }} {{ a.name }}</span>
-                                    </label>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                        {# Chip pattern (button + aria-pressed), matching the diet/type
+                           chips above — no native checkboxes. See
+                           _search_js.html.twig's onAllergenFilterChange()/clearAllergenFilters()
+                           for the click handling. #}
+                        <div class="diet-filters">
+                            {% for a in menuAllergens %}
+                                <button type="button" class="diet-filter allergen-filter-option" data-filter="allergen" data-allergen="{{ a.code }}" aria-pressed="false">{{ _self.chipIcon(a.icon) }}{{ a.name }}</button>
+                            {% endfor %}
+                        </div>
                     </div>
                 {% endif %}
                 {% if otrosTags|length > 0 %}
                     <div class="filters-section">
-                        <div class="filters-section-title">{{ 'filters.other_title'|trans({}, 'menu_public', locale) }}{% if structured %}<span class="count">{{ '%02d'|format(otrosTags|length) }}</span>{% endif %}</div>
+                        <div class="filters-section-title">{{ 'filters.other_title'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(otrosTags|length) }}</span></div>
                         <div class="diet-filters">
-                            {% for tag in otrosTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-filter="diet" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon, structured) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
+                            {% for tag in otrosTags %}{% if tagNames[tag.id] is defined %}<button class="diet-filter" data-filter="diet" data-tag="{{ tag.id }}">{{ _self.chipIcon(tag.icon) }}{{ tagNames[tag.id] }}</button>{% endif %}{% endfor %}
                         </div>
                     </div>
                 {% endif %}
@@ -855,7 +802,7 @@
                     data-i18n-empty="{{ 'filters.no_results'|trans({}, 'menu_public', locale)|e('html_attr') }}"
                     onclick="applyFiltersPanel()">{{ 'filters.apply'|trans({}, 'menu_public', locale) }}</button>
             </div>
-            {% if structured %}</div>{% endif %}
+            </div>
         </div>
     </div>
 {% endif %}
@@ -871,7 +818,7 @@
                 {% if category.isFixedPriceMenu %}
                     {{ setMenuMacro.section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens) }}
                 {% else %}
-                <div class="cat-title">{{ catT.name }}{% if structured %}<span class="count">{{ '%02d'|format(category.activeProductsSorted|length) }}</span>{% endif %}</div>
+                <div class="cat-title">{{ catT.name }}<span class="count">{{ '%02d'|format(category.activeProductsSorted|length) }}</span></div>
                 <div class="cards-grid">
                     {% for product in category.activeProductsSorted %}
                         {% set pT = product.getTranslation(locale) %}
@@ -883,24 +830,20 @@
                            like a €0 price is excluded above, not silently rendered blank. #}
                         {% if pT and pT.name is not empty %}
                             {% set featuredTag = product.tags|filter(t => t.code == 'recommended')|first %}
-                            {% set isDrink = category.type is defined and category.type and category.type.value == 'drink' %}
-                            {# Structured themes show at most one corner badge per card (recommended >
-                               popular > spicy priority) instead of stacking all that apply —
-                               the older themes' stacking behavior is untouched. #}
-                            {% set structuredBadge = null %}
-                            {% if structured %}
-                                {% if featuredTag and tagNames[featuredTag.id] is defined %}
-                                    {% set structuredBadge = 'featured' %}
-                                {% elseif product.id in popularProductIds %}
-                                    {% set structuredBadge = 'popular' %}
-                                {% elseif product.spicyLevel > 0 %}
-                                    {% set structuredBadge = 'spicy' %}
-                                {% endif %}
+                            {# At most one corner badge per card (recommended > popular >
+                               spicy priority) instead of stacking all that apply. #}
+                            {% set cardBadge = null %}
+                            {% if featuredTag and tagNames[featuredTag.id] is defined %}
+                                {% set cardBadge = 'featured' %}
+                            {% elseif product.id in popularProductIds %}
+                                {% set cardBadge = 'popular' %}
+                            {% elseif product.spicyLevel > 0 %}
+                                {% set cardBadge = 'spicy' %}
                             {% endif %}
-                            {% set structuredRow = structured and not product.image %}
-                            <div class="dish-card{{ structuredRow ? ' dish-row' : '' }}" onclick="openDishModal(this)" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': pT.name}, 'menu_public', locale) }}" data-product-id="{{ product.id }}" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}" data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
-                                {% if structuredRow %}
-                                    {# No photo, structured theme: a plain text row (see conversation
+                            {% set textRow = not product.image %}
+                            <div class="dish-card{{ textRow ? ' dish-row' : '' }}" onclick="openDishModal(this)" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': pT.name}, 'menu_public', locale) }}" data-product-id="{{ product.id }}" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}" data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
+                                {% if textRow %}
+                                    {# No photo: a plain text row (see conversation
                                        2026-09-02) instead of a card with an empty image frame —
                                        no .front-img at all, just name+price/"Ver más" straight on
                                        the section background. Description (2026-09-05) and
@@ -928,119 +871,87 @@
                                        clip and its server-extracted poster together or not at all. #}
                                     {% if product.videoClip and product.image %}
                                         {{ _self.clipVideo(product) }}
-                                    {% elseif product.image %}
-                                        <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">
                                     {% else %}
-                                        <div class="dish-placeholder"><i class="ti {{ isDrink ? 'ti-glass' : 'ti-tools-kitchen-2' }}" aria-hidden="true"></i><span>{{ pT.name }}</span></div>
+                                        <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">
                                     {% endif %}
-                                    {% if structured ? structuredBadge == 'featured' : (featuredTag and tagNames[featuredTag.id] is defined) %}<span class="dish-pill">{{ featuredTag.icon }} {{ tagNames[featuredTag.id] }}</span>{% endif %}
-                                    {% if structured ? structuredBadge == 'spicy' : product.spicyLevel > 0 %}<div class="spicy-badge">{% if product.spicyLevel <= 2 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% elseif product.spicyLevel <= 4 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% else %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% endif %}</div>{% endif %}
-                                    {% if structured ? structuredBadge == 'popular' : product.id in popularProductIds %}<div class="popular-badge">🔥 {{ 'dish.popular'|trans({}, 'menu_public', locale) }}</div>{% endif %}
+                                    {% if cardBadge == 'featured' %}<span class="dish-pill">{{ featuredTag.icon }} {{ tagNames[featuredTag.id] }}</span>{% endif %}
+                                    {% if cardBadge == 'spicy' %}<div class="spicy-badge">{% if product.spicyLevel <= 2 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% elseif product.spicyLevel <= 4 %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% else %}<svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><svg width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c0 5-6 5-6 10a6 6 0 0 0 12 0c0-5-6-5-6-10z" fill="currentColor"/><path d="M12 3c0 1.5 1.5 3 3 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>{% endif %}</div>{% endif %}
+                                    {% if cardBadge == 'popular' %}<div class="popular-badge">🔥 {{ 'dish.popular'|trans({}, 'menu_public', locale) }}</div>{% endif %}
                                 </div>
                                 <div class="front-info">
-                                    <div class="front-name">{{ pT.name }}{% if not structured and product.supplementPrice %} <span class="supplement-badge"{% if dir == 'rtl' %} dir="ltr"{% endif %}>+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }} {{ currencyDisplay }}</span>{% endif %}</div>
+                                    <div class="front-name">{{ pT.name }}</div>
                                     {# Description (2026-09-05) and allergens (2026-09-26) dropped
-                                       from the structured card front — both stay in the detail sheet
-                                       only (see the .dish-row branch above for why). Other themes
-                                       keep showing the description here unchanged. #}
-                                    {% if pT.description and not structured %}<div class="front-desc">{{ pT.description }}</div>{% endif %}
+                                       from the card front — both stay in the detail sheet only
+                                       (see the .dish-row branch above for why). #}
                                     <div class="dish-bottom">
-                                        {% if structured %}
-                                            <div class="dish-price-col">
-                                                <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
-                                                {% if product.supplementPrice %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · {{ priceMacro.supplement(product, currencyDisplay, locale) }}</div>{% endif %}
-                                            </div>
-                                        {% else %}
+                                        <div class="dish-price-col">
                                             <div class="dish-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
-                                        {% endif %}
+                                            {% if product.supplementPrice %}<div class="dish-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · {{ priceMacro.supplement(product, currencyDisplay, locale) }}</div>{% endif %}
+                                        </div>
                                         <div class="more-hint">{{ 'dish.view_more'|trans({}, 'menu_public', locale) }} <i class="ti ti-chevron-{{ dir == 'rtl' ? 'left' : 'right' }}" aria-hidden="true"></i></div>
                                     </div>
                                 </div>
                                 {% endif %}
                                 <template class="dish-tpl">
+                                    {# No photo → nothing here: openDishModal() (_search_js.html.twig)
+                                       finds no img/video, leaves #dish-modal-photo empty and the
+                                       structure's .dish-modal-photo:empty rule collapses it. #}
                                     {% if product.videoClip and product.image %}
                                         {{ _self.clipVideo(product) }}
                                     {% elseif product.image %}
                                         <img src="{{ asset('uploads/products/' ~ product.image) }}" alt="{{ pT.name }}" loading="lazy">
-                                    {% elseif structured %}
-                                        {# No placeholder at all on the structure (2026-09-07, product decision —
-                                           see conversation): openDishModal() (_search_js.html.twig) looks
-                                           for `img, video, .dish-placeholder` inside this template and,
-                                           finding neither, leaves #dish-modal-photo empty — the structure's own
-                                           .dish-modal-photo:empty rule (_structure.html.twig) then collapses
-                                           that box entirely, so a no-photo dish opens straight into its
-                                           name/price/etc. with no reserved image space. Other themes keep
-                                           their own icon+name placeholder below, untouched. #}
-                                    {% else %}
-                                        <div class="dish-placeholder"><i class="ti {{ isDrink ? 'ti-glass' : 'ti-tools-kitchen-2' }}" aria-hidden="true"></i><span>{{ pT.name }}</span></div>
                                     {% endif %}
-                                    <div class="dish-detail-name">{{ pT.name }}{% if not structured and product.supplementPrice %} <span class="supplement-badge"{% if dir == 'rtl' %} dir="ltr"{% endif %}>+{{ (product.getConvertedSupplementPrice() / 100)|menu_number(locale) }} {{ currencyDisplay }}</span>{% endif %}</div>
-                                    {% if structured %}
-                                        <div class="dish-detail-price-wrap">
-                                            <div class="dish-detail-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
-                                            {% if product.supplementPrice %}<div class="dish-detail-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · {{ priceMacro.supplement(product, currencyDisplay, locale) }}</div>{% endif %}
-                                        </div>
-                                    {% else %}
+                                    <div class="dish-detail-name">{{ pT.name }}</div>
+                                    <div class="dish-detail-price-wrap">
                                         <div class="dish-detail-price">{{ priceMacro.price(product, currency, true, currencyDisplay, locale) }}</div>
-                                    {% endif %}
+                                        {% if product.supplementPrice %}<div class="dish-detail-supplement">{{ 'dish.supplement'|trans({}, 'menu_public', locale) }} · {{ priceMacro.supplement(product, currencyDisplay, locale) }}</div>{% endif %}
+                                    </div>
                                     {% if pT.description %}<p class="dish-detail-desc">{{ pT.description }}</p>{% endif %}
                                     {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.spicy'|trans({}, 'menu_public', locale) }}</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}{{ 'dish.spice_1'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 2 %}{{ 'dish.spice_2'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 3 %}{{ 'dish.spice_3'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 4 %}{{ 'dish.spice_4'|trans({}, 'menu_public', locale) }}{% else %}{{ 'dish.spice_5'|trans({}, 'menu_public', locale) }}{% endif %}</span></div></div>{% endif %}
-                                    {% set ingredientNames = ingredient_names(product, locale, restaurant.defaultLanguage) %}{% if ingredientNames|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.ingredients'|trans({}, 'menu_public', locale) }}{% if structured %}<span class="count">{{ '%02d'|format(ingredientNames|length) }}</span>{% endif %}</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>{% endif %}
-                                    {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.tags'|trans({}, 'menu_public', locale) }}{% if structured %}<span class="count">{{ '%02d'|format(product.tags|length) }}</span>{% endif %}</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}{% if structured %}<span class="chip">{{ _self.chipIcon(tag.icon, structured) }}{{ tagNames[tag.id] }}</span>{% else %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endif %}{% endfor %}</div></div>{% endif %}
+                                    {% set ingredientNames = ingredient_names(product, locale, restaurant.defaultLanguage) %}{% if ingredientNames|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.ingredients'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(ingredientNames|length) }}</span></div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>{% endif %}
+                                    {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.tags'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(product.tags|length) }}</span></div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<span class="chip">{{ _self.chipIcon(tag.icon) }}{{ tagNames[tag.id] }}</span>{% endif %}{% endfor %}</div></div>{% endif %}
                                     {% if productAllergens[product.id]|default([])|length > 0 %}
-                                        {% if structured %}
-                                            {# Flattened — no nested bordered/tinted box, same loose
-                                               label+chips+disclaimer rhythm as every other .bsec here.
-                                               The chip still carries the a.presence severity (contains/
-                                               may_contain/free_from) as a modifier class instead of a
-                                               generic look — see .chip-contains/.chip-may_contain/
-                                               .chip-free_from in _structure.html.twig: this is a real
-                                               food-safety distinction, not decorative category color,
-                                               so it's retoned to the theme palette rather than flattened
-                                               away like the tag chips above. #}
-                                            <div class="bsec">
-                                                <div class="bsec-title">{{ 'dish.allergens'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(productAllergens[product.id]|length) }}</span></div>
-                                                <div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="' ~ ('allergen.more_info'|trans({}, 'menu_public', locale)|e('html_attr')) ~ '" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<span class="chip chip-free_from">✓ {{ 'allergen.free_from'|trans({}, 'menu_public', locale) }} {{ a.name }}{{ noteBtn|raw }}</span>{% elseif a.presence == 'may_contain' %}<span class="chip chip-may_contain">{{ _self.chipIcon(a.icon, structured) }}{{ a.name }} · {{ 'allergen.traces'|trans({}, 'menu_public', locale) }}{{ noteBtn|raw }}</span>{% else %}<span class="chip chip-contains">{{ _self.chipIcon(a.icon, structured) }}{{ a.name }}{{ noteBtn|raw }}</span>{% endif %}{% endfor %}</div>
-                                                <div class="allergen-disclaimer">{{ 'allergen.disclaimer'|trans({}, 'menu_public', locale) }}</div>
-                                            </div>
-                                        {% else %}
-                                            <div class="dish-allergen-box">
-                                                <div class="bsec-title">{{ 'dish.allergens'|trans({}, 'menu_public', locale) }}</div>
-                                                <div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="' ~ ('allergen.more_info'|trans({}, 'menu_public', locale)|e('html_attr')) ~ '" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ {{ 'allergen.free_from'|trans({}, 'menu_public', locale) }} {{ a.name }}{{ noteBtn|raw }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · {{ 'allergen.traces'|trans({}, 'menu_public', locale) }}{{ noteBtn|raw }}</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}{{ noteBtn|raw }}</div>{% endif %}{% endfor %}</div>
-                                                <div class="allergen-disclaimer">{{ 'allergen.disclaimer'|trans({}, 'menu_public', locale) }}</div>
-                                            </div>
-                                        {% endif %}
+                                        {# Flattened — no nested bordered/tinted box, same loose
+                                           label+chips+disclaimer rhythm as every other .bsec here.
+                                           The chip still carries the a.presence severity (contains/
+                                           may_contain/free_from) as a modifier class instead of a
+                                           generic look — see .chip-contains/.chip-may_contain/
+                                           .chip-free_from in _structure.html.twig: this is a real
+                                           food-safety distinction, not decorative category color,
+                                           so it's retoned to the theme palette rather than flattened
+                                           away like the tag chips above. #}
+                                        <div class="bsec">
+                                            <div class="bsec-title">{{ 'dish.allergens'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(productAllergens[product.id]|length) }}</span></div>
+                                            <div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="' ~ ('allergen.more_info'|trans({}, 'menu_public', locale)|e('html_attr')) ~ '" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<span class="chip chip-free_from">✓ {{ 'allergen.free_from'|trans({}, 'menu_public', locale) }} {{ a.name }}{{ noteBtn|raw }}</span>{% elseif a.presence == 'may_contain' %}<span class="chip chip-may_contain">{{ _self.chipIcon(a.icon) }}{{ a.name }} · {{ 'allergen.traces'|trans({}, 'menu_public', locale) }}{{ noteBtn|raw }}</span>{% else %}<span class="chip chip-contains">{{ _self.chipIcon(a.icon) }}{{ a.name }}{{ noteBtn|raw }}</span>{% endif %}{% endfor %}</div>
+                                            <div class="allergen-disclaimer">{{ 'allergen.disclaimer'|trans({}, 'menu_public', locale) }}</div>
+                                        </div>
                                     {% endif %}
-                                    {% if structured %}
-                                        {# Nutrition panel (Fase 3 of the nutrition-fields project — see
-                                           project memory) — calories (pre-existing ?int) joins the four
-                                           decimal(5,1) fields (Fase 1) added by the owner in admin
-                                           (Fase 2), all five independently optional. hasNutritionFacts
-                                           gates the whole .bsec (title included) off entirely when none
-                                           are set — the vast majority of dishes until an owner fills
-                                           them in — same "absence renders nothing" rule as the structure's own
-                                           no-photo case. Each row then re-checks its own field, exactly
-                                           like the shared {% if product.calories %} branch below does.
-                                           Truthiness is safe on the decimal strings here: NUMERIC(5,1)
-                                           always normalizes a real zero to "0.0" (never bare "0", the
-                                           one PHP string that's falsy), verified in the Fase 1
-                                           migration — so a real 0.0g never gets mistaken for "not
-                                           entered" the way a parsed 0 would. #}
-                                        {% set hasNutritionFacts = product.nutritionVisible and (product.calories or product.fat or product.protein or product.carbohydrates or product.sugars) %}
-                                        {% if hasNutritionFacts %}
-                                            <div class="bsec">
-                                                <div class="bsec-title">{{ 'dish.nutrition_facts'|trans({}, 'menu_public', locale) }}</div>
-                                                <div class="nutrition-grid">
-                                                    {% if product.calories %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></span></div>{% endif %}
-                                                    {% if product.fat %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.fat'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.fat) }}</span><span class="nut-u">g</span></span></div>{% endif %}
-                                                    {% if product.protein %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.protein'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.protein) }}</span><span class="nut-u">g</span></span></div>{% endif %}
-                                                    {% if product.carbohydrates %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.carbohydrates'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.carbohydrates) }}</span><span class="nut-u">g</span></span></div>{% endif %}
-                                                    {% if product.sugars %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.sugars'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.sugars) }}</span><span class="nut-u">g</span></span></div>{% endif %}
-                                                </div>
+                                    {# Nutrition panel (Fase 3 of the nutrition-fields project — see
+                                       project memory) — calories (pre-existing ?int) joins the four
+                                       decimal(5,1) fields (Fase 1) added by the owner in admin
+                                       (Fase 2), all five independently optional. hasNutritionFacts
+                                       gates the whole .bsec (title included) off entirely when none
+                                       are set — the vast majority of dishes until an owner fills
+                                       them in — same "absence renders nothing" rule as the structure's own
+                                       no-photo case. Each row then re-checks its own field, exactly
+                                       like the shared {% if product.calories %} branch below does.
+                                       Truthiness is safe on the decimal strings here: NUMERIC(5,1)
+                                       always normalizes a real zero to "0.0" (never bare "0", the
+                                       one PHP string that's falsy), verified in the Fase 1
+                                       migration — so a real 0.0g never gets mistaken for "not
+                                       entered" the way a parsed 0 would. #}
+                                    {% set hasNutritionFacts = product.nutritionVisible and (product.calories or product.fat or product.protein or product.carbohydrates or product.sugars) %}
+                                    {% if hasNutritionFacts %}
+                                        <div class="bsec">
+                                            <div class="bsec-title">{{ 'dish.nutrition_facts'|trans({}, 'menu_public', locale) }}</div>
+                                            <div class="nutrition-grid">
+                                                {% if product.calories %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></span></div>{% endif %}
+                                                {% if product.fat %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.fat'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.fat) }}</span><span class="nut-u">g</span></span></div>{% endif %}
+                                                {% if product.protein %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.protein'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.protein) }}</span><span class="nut-u">g</span></span></div>{% endif %}
+                                                {% if product.carbohydrates %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.carbohydrates'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.carbohydrates) }}</span><span class="nut-u">g</span></span></div>{% endif %}
+                                                {% if product.sugars %}<div class="nutrition-item"><span class="nutrition-label">{{ 'dish.sugars'|trans({}, 'menu_public', locale) }}</span><span class="nut"><span class="nut-v">{{ _self.nutritionValue(product.sugars) }}</span><span class="nut-u">g</span></span></div>{% endif %}
                                             </div>
-                                        {% endif %}
-                                    {% else %}
-                                        {% if product.calories and product.nutritionVisible %}<div class="bsec"><div class="bsec-title">{{ 'dish.calories'|trans({}, 'menu_public', locale) }}</div><div class="nut"><span class="nut-v">{{ product.calories }}</span><span class="nut-u">kcal</span></div></div>{% endif %}
+                                        </div>
                                     {% endif %}
                                 </template>
                             </div>
@@ -1060,43 +971,36 @@
 
 <div class="dish-modal-overlay" id="dish-modal-overlay" aria-hidden="true" onclick="if(event.target===this) closeDishModal()">
     <div class="dish-modal" role="dialog" aria-modal="true" aria-label="{{ 'dish.modal_aria'|trans({}, 'menu_public', locale) }}">
-        {# The × lives directly in .dish-modal (the fixed chrome) for every
-           theme, but only structured themes also wrap the scrolling content in
-           .dish-modal-scroll below — that split is what keeps the × pinned
-           in place while the content scrolls under it (persistent close,
-           see _structure.html.twig). Other themes keep .dish-modal itself as
-           the single scrolling box, unchanged. #}
+        {# The × lives directly in .dish-modal (the fixed chrome) and the
+           content scrolls in .dish-modal-scroll below — that split is what
+           keeps the × pinned in place while the content scrolls under it
+           (persistent close, see _structure.html.twig). #}
         <button type="button" class="dish-modal-close" onclick="closeDishModal()" aria-label="{{ 'common.close'|trans({}, 'menu_public', locale) }}"><i class="ti ti-x"></i></button>
-        {% if structured %}
-            <div class="dish-modal-scroll">
-                <div class="sheet-grip" aria-hidden="true"></div>
-                <div class="dish-modal-photo" id="dish-modal-photo"></div>
-                <div class="dish-modal-body" id="dish-modal-body"></div>
-                {# Static footer, not part of the cloned <template class="dish-tpl">
-                   content — identical every time (just closes the modal), so no
-                   need to re-render it per product. Secondary exit only — the
-                   × above is the primary one now that it's always visible; this
-                   is not sticky, it's just the last thing in the scroll area. #}
-                <div class="dish-modal-footer">
-                    <button type="button" class="filters-apply-btn" onclick="closeDishModal()">{{ 'common.close'|trans({}, 'menu_public', locale) }}</button>
-                </div>
-            </div>
-            {# Bottom scroll fade — purely visual (pointer-events:none), toggled
-               by updateDishScrollFade() in _search_js.html.twig on open and on
-               scroll of .dish-modal-scroll. Sibling of .dish-modal-scroll (not
-               inside it) so it's pinned to the sheet's own bottom edge instead
-               of scrolling away with the content — see _structure.html.twig for
-               why .dish-modal already has position:relative to anchor this. The
-               chevron is a child of the fade on purpose (not a sibling with its
-               own class): the SAME .visible toggle that shows/hides the fade
-               shows/hides the chevron too, no second handler needed. #}
-            <div class="dish-modal-fade" aria-hidden="true">
-                <i class="ti ti-chevron-down dish-modal-scroll-hint"></i>
-            </div>
-        {% else %}
+        <div class="dish-modal-scroll">
+            <div class="sheet-grip" aria-hidden="true"></div>
             <div class="dish-modal-photo" id="dish-modal-photo"></div>
             <div class="dish-modal-body" id="dish-modal-body"></div>
-        {% endif %}
+            {# Static footer, not part of the cloned <template class="dish-tpl">
+               content — identical every time (just closes the modal), so no
+               need to re-render it per product. Secondary exit only — the
+               × above is the primary one now that it's always visible; this
+               is not sticky, it's just the last thing in the scroll area. #}
+            <div class="dish-modal-footer">
+                <button type="button" class="filters-apply-btn" onclick="closeDishModal()">{{ 'common.close'|trans({}, 'menu_public', locale) }}</button>
+            </div>
+        </div>
+        {# Bottom scroll fade — purely visual (pointer-events:none), toggled
+           by updateDishScrollFade() in _search_js.html.twig on open and on
+           scroll of .dish-modal-scroll. Sibling of .dish-modal-scroll (not
+           inside it) so it's pinned to the sheet's own bottom edge instead
+           of scrolling away with the content — see _structure.html.twig for
+           why .dish-modal already has position:relative to anchor this. The
+           chevron is a child of the fade on purpose (not a sibling with its
+           own class): the SAME .visible toggle that shows/hides the fade
+           shows/hides the chevron too, no second handler needed. #}
+        <div class="dish-modal-fade" aria-hidden="true">
+            <i class="ti ti-chevron-down dish-modal-scroll-hint"></i>
+        </div>
     </div>
 </div>
 

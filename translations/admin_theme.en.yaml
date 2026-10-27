@@ -43,25 +43,19 @@ layout:
 theme:
     classic-dark:
         name: Classic dark
-        desc: Black background with your brand color as the accent. Elegant and sophisticated.
-    classic-warm:
-        name: Classic warm
-        desc: Cream background, warm tones. Cozy and welcoming.
+        desc: Deep black with an orange accent and bronze details. Modern and urban.
     glass:
         name: Glassmorphism
-        desc: Dark gradient with a glass effect and a purple accent. Modern and premium.
+        desc: Night-sky gradient with glass surfaces and a violet accent. Modern and premium.
     ocean:
         name: Ocean
-        desc: Light blue, clean and fresh. Ideal for seafood restaurants.
+        desc: Sea-water blue with a navy cover band and titles and a turquoise accent. Ideal for seafood restaurants.
     noir:
         name: Noir
-        desc: Deep black with gold details. Luxury and fine dining.
+        desc: Pure black with champagne-gold details. Luxury and fine dining.
     forest:
         name: Forest
-        desc: Natural, organic green. Perfect for market-style and local produce cuisine.
-    terra:
-        name: Terra
-        desc: Mediterranean terracotta. Ideal for tapas, pintxos and casual dining.
+        desc: Sage green with a forest-green cover band and titles and terracotta details. Perfect for market-style and local produce cuisine.
     maison:
-        name: Maison
-        desc: Parchment, ivory and wine, with editorial serif type. Fine dining and sophistication.
+        name: Classic light
+        desc: Parchment and ivory with a wine accent and brass details. Fine dining and sophistication.

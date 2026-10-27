@@ -1,116 +1,153 @@
 <style>
 :root {
-    /* ── Identity: The Garden Atelier — botanical tasting menu, organic luxury ── */
-    --card-radius: 20px;
-    --badge-radius: 8px;
-    --tab-radius: 24px;
-    --search-radius: 16px;
-    --accent-line-h: 3px;
-    --card-lift: -4px;
+    /* ── Identity: The Kitchen Garden — sage page and footer, cream cards, pale-green sheets, forest-green titles and cover band, green accent, terracotta "metal".
+       Colors only: shape and type come from the shared structure,
+       layouts/standard/_structure.html.twig. Same token set as maison's
+       vars.html.twig.
+       Text tokens measured ≥4.5:1 on every background they sit on in the
+       rendered page; borders/focus/state ≥3:1. ── */
 
     /* ── Palette ── */
-    --bg: #f2f6f1;
+    --bg: #DCE8D5;
     --bg-attach: scroll;
-    --surface: #ffffff;
-    --surface-2: #e4ede2;
-    --fg: #152315;
-    --fg-2: #385c3c;
-    --fg-3: #7aaa80;
-    --accent: #1c6030;
-    --b1: #c4d8c2;
-    --b2: #a8c4a6;
+    --surface: #FBF8EE;
+    --surface-2: #C9DBC0;
+    --fg: #1E3B26;
+    --fg-2: #3A5A40;
+    --fg-3: #3F5A43;
+    --accent: #295E33;
+    --b1: rgba(30,59,38,0.14);
+    --b2: rgba(30,59,38,0.24);
+
+    /* ── Tokens of the shared structure ── */
+    --accent-soft: #43714B;
+    --on-accent: #FFFFFF;
+    --shadow-rgb: 30,59,38;
+    --cf-hborder-rgb: 181,86,46;
+    /* Over dish photos (badge chip, × shadow, photo scrim): black at the
+       structure's 55% + white text, 4.69:1 even on a pure-white photo. */
+    --scrim-rgb: 0,0,0;
+    --on-scrim: #FFFFFF;
+    --sheet-grip: rgba(255,255,255,0.7);
+    --line-soft: rgba(30,59,38,0.08);
+    /* The search field's underline: its only boundary, 3:1 on the page. */
+    --search-line: #677968;
+    /* Big full-width button (.filters-apply-btn): solid --fg block, --surface text, no border (as maison). */
+    --btn-strong-bg: #1E3B26;
+    --btn-strong-fg: #FBF8EE;
+    --btn-strong-border: none;
+    /* "May contain" allergen chip text: 4.5:1 on the dish sheet. */
+    --chip-may-text: #893D1E;
 
     /* ── Header ── */
-    --hdr-bg: rgba(242,246,241,0.95);
-    --hdr-border: #c4d8c2;
+    --hdr-bg: rgba(220,232,213,0.95);
+    --hdr-border: rgba(30,59,38,0.14);
     --hdr-blur: blur(20px);
 
     /* ── Hero ── */
-    --hero-bg: linear-gradient(150deg, #ccdfca 0%, #d6e8d4 50%, #f2f6f1 100%);
-    --hero-border: #c4d8c2;
+    --hero-bg: linear-gradient(180deg, #24452D, #1E3B26);
+    --hero-border: rgba(30,59,38,0.08);
+
+    /* ── Hero band (.hero-inner on phones, .hero from 768px): forest green with cream name, leaf-green tagline, a leaf-green CTA pill with forest text, leaf-green carousel controls; --hero-focus because the terracotta is under 3:1 on this band ── */
+    --hero-band: #1E3B26;
+    --hero-fg: #F4F1E2;
+    --hero-fg-2: #A9D39A;
+    --hero-cta-bg: #A9D39A;
+    --hero-cta-hover: #C2E0B6;
+    --hero-cta-fg: #1E3B26;
+    --hero-cue-bg: rgba(169,211,154,0.14);
+    --hero-cue-text: #A9D39A;
+    --hero-dot: rgba(169,211,154,0.55);
+    --hero-dot-on: #A9D39A;
+    --hero-glow: radial-gradient(ellipse at center, rgba(169,211,154,0.14) 0%, rgba(169,211,154,0.05) 42%, transparent 72%);
+    --hero-focus: #A9D39A;
 
     /* ── Search input ── */
-    --in-bg: #ffffff;
-    --in-border: #c4d8c2;
-    --in-focus-border: #1c6030;
-    --in-focus-shadow: 0 0 0 4px rgba(28,96,48,0.1);
-    --in-text: #152315;
-    --in-ph: #7aaa80;
+    --in-bg: #FBF8EE;
+    /* The chat input's resting border (its only boundary): 3:1. */
+    --in-border: #677968;
+    --in-focus-border: #295E33;
+    --in-focus-shadow: 0 0 0 3px rgba(41,94,51,0.12);
+    --in-text: #1E3B26;
+    --in-ph: #3F5A43;
 
     /* ── Tabs & filters ── */
-    --tab-bg: #ffffff;
-    --tab-border: #c4d8c2;
-    --tab-text: #7aaa80;
-    --tab-hbg: #e4ede2;
-    --tab-htext: #385c3c;
-    --tab-act-bg: #1c6030;
-    --tab-act-border: #1c6030;
-    --tab-act-text: #ffffff;
-    --tab-act-shadow: 0 4px 18px rgba(28,96,48,0.32);
+    --tab-bg: #FBF8EE;
+    --tab-border: rgba(30,59,38,0.14);
+    --tab-text: #3A5A40;
+    --tab-hbg: #C9DBC0;
+    --tab-htext: #1E3B26;
+    --tab-act-bg: #295E33;
+    --tab-act-border: #295E33;
+    --tab-act-text: #FFFFFF;
+    --tab-act-shadow: 0 4px 16px rgba(41,94,51,0.28);
 
-    /* ── Card front ── */
-    --cf-bg: #ffffff;
-    --cf-border: #ccdeca;
-    --cf-hborder: #1c6030;
-    --cf-hshadow: 0 4px 8px rgba(15,50,20,0.07), 0 16px 40px rgba(15,50,20,0.14);
-    --cf-img: #e4ede2;
-    --cf-accent: linear-gradient(90deg, transparent 0%, rgba(28,96,48,0.6) 40%, transparent 100%);
-    --cf-accent-op: 1;
-    --card-shadow: 0 1px 3px rgba(15,50,20,0.07), 0 4px 14px rgba(15,50,20,0.05);
-    --card-hover-shadow: 0 4px 8px rgba(15,50,20,0.07), 0 16px 40px rgba(15,50,20,0.14);
+    /* ── Card front ── --cf-hborder is the "metal" role (maison's brass):
+       borders, focus rings, the allergen-shield glyph; --cf-hborder-text is
+       its text-safe step for the small .count labels. */
+    --cf-bg: #FBF8EE;
+    --cf-border: rgba(30,59,38,0.08);
+    --cf-hborder: #B5562E;
+    --cf-hborder-text: #893D1E;
+    --cf-hshadow: 0 4px 8px rgba(30,59,38,0.05), 0 12px 28px rgba(30,59,38,0.08);
+    --cf-img: #C9DBC0;
+    --cf-accent: linear-gradient(90deg, transparent 0%, #B5562E 40%, transparent 100%);
+    --cf-accent-op: 0.55;
+    --card-shadow: 0 1px 2px rgba(30,59,38,0.04), 0 3px 10px rgba(30,59,38,0.04);
+    --card-hover-shadow: 0 4px 8px rgba(30,59,38,0.05), 0 12px 28px rgba(30,59,38,0.08);
 
     /* ── Card content ── */
-    --cn: #152315;
-    --cd: #547858;
-    --cp: #1c6030;
-    --cbg: #e4ede2;
-    --cbc: #c4d8c2;
-    --cbt: #547858;
-    --hint: rgba(0,0,0,0.2);
-    --hint-h: rgba(28,96,48,0.6);
+    --cn: #1E3B26;
+    --cd: #3A5A40;
+    --cp: #295E33;
+    --cbg: #C9DBC0;
+    --cbc: rgba(30,59,38,0.14);
+    --cbt: #3A5A40;
+    --hint: rgba(30,59,38,0.2);
+    --hint-h: rgba(41,94,51,0.55);
 
-    /* ── Card back ── */
-    --cb-bg: #f2f6f1;
-    --cb-border: #ccdeca;
-    --bn: #152315;
-    --bp: #1c6030;
-    --close-bg: #e4ede2;
-    --close-b: #c4d8c2;
-    --close-t: #7aaa80;
-    --close-hbg: #cce0ca;
-    --close-ht: #152315;
-    --bdiv: #daeada;
-    --btt: #7aaa80;
-    --bdesc: #385c3c;
-    --fade: #f2f6f1;
-    --cue-bg: rgba(28,96,48,0.1);
-    --cue-text: rgba(28,96,48,0.6);
+    /* ── Card back / modal ── */
+    --cb-bg: #EEF5EA;
+    --cb-border: rgba(30,59,38,0.08);
+    --bn: #1E3B26;
+    --bp: #295E33;
+    --close-bg: #C9DBC0;
+    --close-b: rgba(30,59,38,0.14);
+    --close-t: #3A5A40;
+    --close-hbg: #BDD0B5;
+    --close-ht: #1E3B26;
+    --bdiv: rgba(30,59,38,0.08);
+    --btt: #3F5A43;
+    --bdesc: #3A5A40;
+    --fade: #EEF5EA;
+    --cue-bg: rgba(41,94,51,0.10);
+    --cue-text: #295E33;
 
     /* ── Compact-layout rows ── */
-    --row-border: #daeada;
-    --row-hover: #f6faf5;
-    --num: #c4d8c2;
-    --num-h: #7aaa80;
+    --row-border: rgba(30,59,38,0.08);
+    --row-hover: #EAEEDE;
+    --num: rgba(30,59,38,0.14);
+    --num-h: #3F5A43;
 
     /* ── Category titles ── */
-    --cat-title: #7aaa80;
-    --cat-sep: #c4d8c2;
-    --sep-bg: #c4d8c2;
+    --cat-title: #1E3B26;
+    --cat-sep: rgba(30,59,38,0.08);
+    --sep-bg: rgba(30,59,38,0.08);
 
     /* ── Logo ── */
-    --logo-bg: #152315;
+    --logo-bg: #295E33;
 
     /* ── Label colours ── */
-    --lg: #3a8a18; --lg-bg: rgba(59,109,17,0.09); --lg-b: rgba(99,153,34,0.16);
-    --lo: #c04828; --lo-bg: rgba(193,68,14,0.07); --lo-b: rgba(240,153,123,0.16);
+    --lg: #295D32; --lg-bg: rgba(41,93,50,0.09); --lg-b: rgba(41,93,50,0.16);
+    --lo: #863B1E; --lo-bg: rgba(134,59,30,0.09); --lo-b: rgba(134,59,30,0.16);
 
     /* ── Ingredient chips ── */
-    --ing-bg: #e4ede2; --ing-b: #c4d8c2; --ing-t: #385c3c;
+    --ing-bg: #C9DBC0; --ing-b: rgba(30,59,38,0.14); --ing-t: #3A5A40;
 
     /* ── Nutrition ── */
-    --nut-bg: #e4ede2; --nut-b: #c4d8c2; --nut-v: #152315; --nut-u: #7aaa80;
+    --nut-bg: #C9DBC0; --nut-b: rgba(30,59,38,0.14); --nut-v: #1E3B26; --nut-u: #3F5A43;
 
     /* ── Spicy ── */
-    --dot-on: #D85A30; --dot-off: #c4d8c2; --spicy-t: #7aaa80;
+    --dot-on: #295E33; --dot-off: rgba(30,59,38,0.14); --spicy-t: #3A5A40;
 }
 </style>

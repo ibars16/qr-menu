@@ -429,7 +429,7 @@
 
                     {# Foto de cabecera (hero) — same upload/preview/remove pattern as
                        the logo above, its own field/directory (Restaurant::$heroImage,
-                       public/uploads/heroes/), only consumed today by the structured themes'
+                       public/uploads/heroes/), shown by every theme as the hero's
                        .hero-photo-band (menu/layouts/standard/show.html.twig). #}
                     <div class="field">
                         <label>{{ 'field.hero_image'|trans({}, 'admin_settings') }}</label>
@@ -461,6 +461,7 @@
                                     <input type="hidden" name="removeHeroImageFlag" id="remove-hero-image-input" value="0">
                                 {% endif %}
                                 <span class="field-hint">{{ 'hint.hero_image_format'|trans({'%max_mb%': heroImageMaxMegabytes, '%min%': heroImageMinDimension, '%max%': heroImageMaxDimension, '%recommended%': heroImageRecommendedWidth}, 'admin_settings') }}</span>
+                                <span class="field-hint">{{ 'hint.hero_image'|trans({}, 'admin_settings') }}</span>
                             </div>
                         </div>
 

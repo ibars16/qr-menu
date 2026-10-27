@@ -176,7 +176,7 @@
 
     <div class="themes-grid">
         {% for key, thm in themes %}
-            <div class="sel-card {{ restaurant.theme == key ? 'is-active' : '' }}" id="tcard-{{ key }}">
+            <div class="sel-card {{ currentTheme == key ? 'is-active' : '' }}" id="tcard-{{ key }}">
 
                 {# Mini UI preview swatch #}
                 <div class="theme-swatch" style="background:{{ thm.preview_bg }}">
@@ -194,21 +194,21 @@
                     {# portrait mini-cards #}
                     <div class="sw-cards">
                         <div class="sw-card" style="background:{{ thm.preview_surface }};border-color:{{ thm.preview_border }};border-radius:{{ thm.preview_radius|default('12px') }}">
-                            <div class="sw-cimg" style="background:{{ thm.preview_border }}"></div>
+                            <div class="sw-cimg" style="background:{{ thm.preview_img }}"></div>
                             <div class="sw-cbody">
                                 <div><div class="sw-cname" style="background:{{ thm.preview_fg }}"></div><div class="sw-cname2" style="background:{{ thm.preview_fg }}"></div></div>
                                 <div class="sw-cprice" style="color:{{ thm.preview_accent }}">€€</div>
                             </div>
                         </div>
                         <div class="sw-card" style="background:{{ thm.preview_surface }};border-color:{{ thm.preview_border }};border-radius:{{ thm.preview_radius|default('12px') }}">
-                            <div class="sw-cimg" style="background:{{ thm.preview_border }}"></div>
+                            <div class="sw-cimg" style="background:{{ thm.preview_img }}"></div>
                             <div class="sw-cbody">
                                 <div><div class="sw-cname" style="background:{{ thm.preview_fg }};width:85%"></div><div class="sw-cname2" style="background:{{ thm.preview_fg }}"></div></div>
                                 <div class="sw-cprice" style="color:{{ thm.preview_accent }}">€€</div>
                             </div>
                         </div>
                         <div class="sw-card" style="background:{{ thm.preview_surface }};border-color:{{ thm.preview_border }};border-radius:{{ thm.preview_radius|default('12px') }}">
-                            <div class="sw-cimg" style="background:{{ thm.preview_border }}"></div>
+                            <div class="sw-cimg" style="background:{{ thm.preview_img }}"></div>
                             <div class="sw-cbody">
                                 <div><div class="sw-cname" style="background:{{ thm.preview_fg }};width:60%"></div><div class="sw-cname2" style="background:{{ thm.preview_fg }}"></div></div>
                                 <div class="sw-cprice" style="color:{{ thm.preview_accent }}">€€</div>
@@ -220,13 +220,13 @@
                 <div class="card-footer">
                     <div class="card-label">{{ thm.icon }} {{ ('theme.' ~ key ~ '.name')|trans({}, 'admin_theme') }}</div>
                     <div class="card-desc">{{ ('theme.' ~ key ~ '.desc')|trans({}, 'admin_theme') }}</div>
-                    {% if restaurant.theme == key %}<div class="active-chip">✓ {{ 'card.active_label'|trans({}, 'admin_theme') }}</div>{% endif %}
+                    {% if currentTheme == key %}<div class="active-chip">✓ {{ 'card.active_label'|trans({}, 'admin_theme') }}</div>{% endif %}
                     <div class="card-actions">
                         <button class="btn-eye" id="tprev-{{ key }}" onclick="previewTheme('{{ key }}')">
                             <i class="ti ti-eye"></i> {{ 'card.preview_action'|trans({}, 'admin_theme') }}
                         </button>
-                        <button class="btn-use {{ restaurant.theme == key ? 'is-current' : '' }}" onclick="selectTheme('{{ key }}')">
-                            {{ restaurant.theme == key ? '✓ ' ~ 'card.active_label'|trans({}, 'admin_theme') : 'card.use_action'|trans({}, 'admin_theme') }}
+                        <button class="btn-use {{ currentTheme == key ? 'is-current' : '' }}" onclick="selectTheme('{{ key }}')">
+                            {{ currentTheme == key ? '✓ ' ~ 'card.active_label'|trans({}, 'admin_theme') : 'card.use_action'|trans({}, 'admin_theme') }}
                         </button>
                     </div>
                 </div>
@@ -241,7 +241,7 @@
 <script>
 const PREVIEW_BASE   = '{{ previewBase|default('') }}';
 const CURRENT_LAYOUT = '{{ restaurant.layout }}';
-const CURRENT_THEME  = '{{ restaurant.theme }}';
+const CURRENT_THEME  = '{{ currentTheme }}';
 const LAYOUT_NAMES   = { {% for k in layouts|keys %}'{{ k }}': "{{ ('layout.' ~ k ~ '.name')|trans({}, 'admin_theme')|e('js') }}",{% endfor %} };
 const THEME_NAMES    = { {% for k in themes|keys %}'{{ k }}': "{{ ('theme.' ~ k ~ '.name')|trans({}, 'admin_theme')|e('js') }}",{% endfor %} };
 

@@ -20,11 +20,12 @@ final class MaisonHeroPhotoFitTest extends WebTestCase
 
     private const FIXTURES_DIR = __DIR__ . '/../fixtures';
 
-    /** The band exactly as it rendered before --fit existed. */
+    /** The band exactly as it rendered before --fit existed (indentation as
+     *  of the old layout's removal, one level shallower than before). */
     private const PLAIN_BAND = <<<'HTML'
         <div class="hero-photo-band">
-                        <img src="/uploads/heroes/%s" alt="Maison Hero Fit Test">
-                    </div>
+                    <img src="/uploads/heroes/%s" alt="Maison Hero Fit Test">
+                </div>
         HTML;
 
     private KernelBrowser $client;

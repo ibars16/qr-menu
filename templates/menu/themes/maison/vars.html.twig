@@ -39,6 +39,17 @@
     --on-scrim: #f6eee2;
     --sheet-grip: rgba(255,255,255,0.7);
     --line-soft: rgba(36,28,23,0.08);
+    /* The search field's underline (.search-wrap) — maison keeps the
+       --line-soft hairline. */
+    --search-line: rgba(36,28,23,0.08);
+    /* Big full-width button (.filters-apply-btn): espresso block, ivory
+       text, no border — --fg/--surface's values. */
+    --btn-strong-bg: #241C17;
+    --btn-strong-fg: #FBF8F1;
+    --btn-strong-border: none;
+    /* "May contain" allergen chip text: maison keeps its brass
+       (--cf-hborder's value). */
+    --chip-may-text: #B0894C;
 
     /* ── Header ── */
     --hdr-bg: rgba(242,235,223,0.95);
@@ -48,6 +59,19 @@
     /* ── Hero ── */
     --hero-bg: radial-gradient(120% 90% at 85% 0%, rgba(176,137,76,0.14), transparent 60%), linear-gradient(180deg, #E9DFCD, #F2EBDF);
     --hero-border: rgba(36,28,23,0.08);
+
+    /* ── Hero band (.hero-inner on phones, .hero from 768px): the --surface-2 / --fg / --fg-2 / --cp / --accent-soft / --on-accent / --cue-* / --accent values, the band as it always was ── */
+    --hero-band: #E9DFCD;
+    --hero-fg: #241C17;
+    --hero-fg-2: #6D5D4E;
+    --hero-cta-bg: #7A1E28;
+    --hero-cta-hover: #9A3742;
+    --hero-cta-fg: #ffffff;
+    --hero-cue-bg: rgba(122,30,40,0.08);
+    --hero-cue-text: rgba(122,30,40,0.55);
+    --hero-dot: color-mix(in srgb, #7A1E28 30%, transparent);
+    --hero-dot-on: #7A1E28;
+    --hero-glow: radial-gradient(ellipse at center, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.16) 42%, transparent 72%);
 
     /* ── Search input ── */
     --in-bg: #FBF8F1;

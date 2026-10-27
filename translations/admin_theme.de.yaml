@@ -43,25 +43,19 @@ layout:
 theme:
     classic-dark:
         name: Klassisch dunkel
-        desc: Schwarzer Hintergrund mit Ihrer Markenfarbe als Akzent. Elegant und edel.
-    classic-warm:
-        name: Klassisch warm
-        desc: Cremefarbener Hintergrund, warme Töne. Gemütlich und einladend.
+        desc: Tiefschwarz mit orangem Akzent und Bronzedetails. Modern und urban.
     glass:
         name: Glassmorphism
-        desc: Dunkler Verlauf mit Glaseffekt und violettem Akzent. Modern und hochwertig.
+        desc: Nachtblauer Verlauf mit Glasflächen und violettem Akzent. Modern und hochwertig.
     ocean:
         name: Ozean
-        desc: Hellblau, klar und frisch. Ideal für Fischrestaurants.
+        desc: Wasserblau mit marineblauem Titelband und Überschriften und türkisem Akzent. Ideal für Fischrestaurants.
     noir:
         name: Noir
-        desc: Tiefschwarz mit goldenen Details. Luxus und gehobene Gastronomie.
+        desc: Reines Schwarz mit champagnergoldenen Details. Luxus und Spitzengastronomie.
     forest:
         name: Wald
-        desc: Natürliches, organisches Grün. Perfekt für Marktküche und regionale Produkte.
-    terra:
-        name: Terra
-        desc: Mediterrane Terrakotta. Ideal für Tapas, Pintxos und lässige Küche.
+        desc: Salbeigrün mit waldgrünem Titelband und Überschriften und Terrakotta-Details. Perfekt für Marktküche und regionale Produkte.
     maison:
-        name: Maison
-        desc: Pergament, Elfenbein und Weinrot mit editorialer Serifenschrift. Gehobene Gastronomie und Raffinesse.
+        name: Klassisch hell
+        desc: Pergament und Elfenbein mit weinrotem Akzent und Messingdetails. Gehobene Küche und Eleganz.

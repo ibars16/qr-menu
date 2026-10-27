@@ -16,7 +16,9 @@ class ThemeController extends AbstractController
 {
     // 'name' and 'desc' are NOT stored here — they're translated per-locale in
     // translations/admin_theme.*.yaml under keys layout.<key>.name/.desc and
-    // theme.<key>.name/.desc, looked up in the template by array key.
+    // theme.<key>.name/.desc, looked up in the template by array key. The
+    // thumbnail colours aren't either: swatches() reads them from each
+    // theme's own tokens (templates/menu/themes/<key>/vars.html.twig).
     public const LAYOUTS = [
         'standard' => [
             'icon' => '▤',
@@ -24,77 +26,23 @@ class ThemeController extends AbstractController
     ];
 
     public const THEMES = [
-        'classic-dark' => [
-            'icon'             => '🌑',
-            'preview_bg'       => '#0a0a0a',
-            'preview_accent'   => '#C1440E',
-            'preview_surface'  => '#161616',
-            'preview_border'   => '#282828',
-            'preview_fg'       => '#ffffff',
-            'preview_radius'   => '10px',
+        'maison' => [
+            'icon' => '🍷',
         ],
-        'classic-warm' => [
-            'icon'             => '☀️',
-            'preview_bg'       => '#faf7f2',
-            'preview_accent'   => '#C1440E',
-            'preview_surface'  => '#ffffff',
-            'preview_border'   => '#e8e2d8',
-            'preview_fg'       => '#1a1209',
-            'preview_radius'   => '16px',
+        'classic-dark' => [
+            'icon' => '🌑',
         ],
         'glass' => [
-            'icon'             => '💎',
-            'preview_bg'       => 'linear-gradient(135deg, #0d0320 0%, #120828 50%, #050c1a 100%)',
-            'preview_accent'   => '#a78bfa',
-            'preview_surface'  => 'rgba(255,255,255,0.08)',
-            'preview_border'   => 'rgba(255,255,255,0.13)',
-            'preview_fg'       => '#ffffff',
-            'preview_radius'   => '14px',
+            'icon' => '💎',
         ],
         'ocean' => [
-            'icon'             => '🌊',
-            'preview_bg'       => '#f0f6ff',
-            'preview_accent'   => '#2563eb',
-            'preview_surface'  => '#ffffff',
-            'preview_border'   => '#cce0f5',
-            'preview_fg'       => '#0d1b2e',
-            'preview_radius'   => '14px',
+            'icon' => '🌊',
         ],
         'noir' => [
-            'icon'             => '✦',
-            'preview_bg'       => '#080808',
-            'preview_accent'   => '#d4a847',
-            'preview_surface'  => '#0e0e0c',
-            'preview_border'   => '#201e18',
-            'preview_fg'       => '#f0e8d4',
-            'preview_radius'   => '7px',
+            'icon' => '✦',
         ],
         'forest' => [
-            'icon'             => '🌿',
-            'preview_bg'       => '#f0f4f0',
-            'preview_accent'   => '#1c6030',
-            'preview_surface'  => '#ffffff',
-            'preview_border'   => '#c8dcc8',
-            'preview_fg'       => '#152315',
-            'preview_radius'   => '16px',
-        ],
-        'terra' => [
-            'icon'             => '🏺',
-            'preview_bg'       => '#faf3ec',
-            'preview_accent'   => '#b83a18',
-            'preview_surface'  => '#ffffff',
-            'preview_border'   => '#e6cfbc',
-            'preview_fg'       => '#281308',
-            'preview_radius'   => '13px',
-        ],
-        'maison' => [
-            'icon'             => '🍷',
-            'preview_bg'       => '#f2ebdf',
-            'preview_accent'   => '#7a1e28',
-            'preview_surface'  => '#fbf8f1',
-            'preview_border'   => '#e4d8c4',
-            'preview_fg'       => '#241c17',
-            'preview_radius'   => '6px',
+            'icon' => '🌿',
         ],
     ];
 
@@ -108,12 +56,44 @@ class ThemeController extends AbstractController
 
         $previewBase = $this->generateUrl('menu_show', ['slug' => $restaurant->getSlug()]);
 
+        // A stored theme that no longer exists (classic-warm, terra) renders
+        // as maison on the public menu, so that's the card shown as active.
+        $currentTheme = array_key_exists($restaurant->getTheme(), self::THEMES) ? $restaurant->getTheme() : 'maison';
+
         return $this->render('admin/theme.html.twig', [
             'restaurant'  => $restaurant,
+            'currentTheme' => $currentTheme,
             'layouts'     => self::LAYOUTS,
-            'themes'      => self::THEMES,
+            'themes'      => $this->swatches(),
             'previewBase' => $previewBase,
         ]);
+    }
+
+    /**
+     * THEMES plus each theme's thumbnail colours, read from the tokens its
+     * public-menu vars.html.twig defines, so the thumbnail always matches
+     * the menu: page (--bg), header and cards (--surface), card border
+     * (--b2), photo area (--surface-2), text bars (--fg), active tab and
+     * price (--accent). Card radius is the shared structure's --card-radius.
+     *
+     * @return array<string, array<string, string>>
+     */
+    private function swatches(): array
+    {
+        $tokens = ['preview_bg' => 'bg', 'preview_surface' => 'surface', 'preview_border' => 'b2',
+                   'preview_img' => 'surface-2', 'preview_fg' => 'fg', 'preview_accent' => 'accent'];
+        $dir = $this->getParameter('kernel.project_dir') . '/templates/menu/themes/';
+        $themes = [];
+        foreach (self::THEMES as $key => $theme) {
+            $css = (string) file_get_contents($dir . $key . '/vars.html.twig');
+            foreach ($tokens as $field => $token) {
+                $theme[$field] = preg_match('/--' . preg_quote($token, '/') . ':\s*([^;]+);/', $css, $m) ? trim($m[1]) : 'transparent';
+            }
+            $theme['preview_radius'] = '6px';
+            $themes[$key] = $theme;
+        }
+
+        return $themes;
     }
 
     #[Route('/theme/apply', name: 'theme_apply', methods: ['POST'])]

@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use App\Controller\Admin\ThemeController;
 use App\Entity\Allergen;
 use App\Entity\Category;
 use App\Entity\CategoryTranslation;
@@ -171,10 +172,12 @@ final class MenuFiltersPanelTest extends WebTestCase
         return $panel->filter('.filters-section-title')->each(fn (Crawler $n) => trim($n->getNode(0)->firstChild->nodeValue));
     }
 
+    /** @return iterable<string, array{string}> Every theme: they all share the same markup. */
     public static function themes(): iterable
     {
-        yield 'maison' => ['maison'];
-        yield 'classic-dark' => ['classic-dark'];
+        foreach (array_keys(ThemeController::THEMES) as $theme) {
+            yield $theme => [$theme];
+        }
     }
 
     #[DataProvider('themes')]
@@ -189,9 +192,7 @@ final class MenuFiltersPanelTest extends WebTestCase
 
         $allergy = $panel->filter('.filters-section')->eq(1);
         self::assertSame('Ocultar platos que contengan…', trim($allergy->filter('.filters-section-sub')->text()));
-        $codes = $theme === 'maison'
-            ? $allergy->filter('[data-filter="allergen"]')->each(fn (Crawler $n) => $n->attr('data-allergen'))
-            : $allergy->filter('[data-filter="allergen"]')->each(fn (Crawler $n) => $n->attr('value'));
+        $codes = $allergy->filter('[data-filter="allergen"]')->each(fn (Crawler $n) => $n->attr('data-allergen'));
         self::assertSame(['milk'], $codes, '"Sin gluten" is not something to avoid');
     }
 

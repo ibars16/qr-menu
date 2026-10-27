@@ -1,119 +1,152 @@
 <style>
 :root {
-    /* ── Identity: Crystalline Cosmos — deep space glassmorphism ── */
-    --card-radius: 16px;
-    --badge-radius: 20px;
-    --tab-radius: 24px;
-    --search-radius: 16px;
-    --accent-line-h: 1px;
-    --card-lift: -3px;
+    /* ── Identity: Crystalline Cosmos — deep-space gradient, translucent glass surfaces, violet accent.
+       Colors only: shape and type come from the shared structure,
+       layouts/standard/_structure.html.twig. Same token set as maison's
+       vars.html.twig.
+       Text tokens measured ≥4.5:1 on every background they sit on in the
+       rendered page; borders/focus/state ≥3:1. ── */
 
     /* ── Palette ── */
     --bg: linear-gradient(135deg, #07031c 0%, #0c0628 50%, #050d20 100%);
     --bg-attach: fixed;
-    --surface: rgba(255,255,255,0.08);
+    --surface: rgba(255,255,255,0.07);
     --surface-2: rgba(255,255,255,0.04);
-    --fg: #ece8ff;
-    --fg-2: rgba(236,232,255,0.44);
-    --fg-3: rgba(236,232,255,0.18);
-    --accent: #9d6ef8;
-    --b1: rgba(255,255,255,0.11);
-    --b2: rgba(255,255,255,0.2);
+    --fg: #ECE8FF;
+    --fg-2: #BAB5D8;
+    --fg-3: #8E88B0;
+    --accent: #B48EF0;
+    --b1: rgba(236,232,255,0.14);
+    --b2: rgba(236,232,255,0.24);
+
+    /* ── Tokens of the shared structure ── */
+    --accent-soft: #C7A9F5;
+    --on-accent: #120A2E;
+    --shadow-rgb: 0,0,0;
+    --cf-hborder-rgb: 111,168,232;
+    /* Over dish photos (badge chip, × shadow, photo scrim): black at the
+       structure's 55% + white text, 4.69:1 even on a pure-white photo. */
+    --scrim-rgb: 0,0,0;
+    --on-scrim: #FFFFFF;
+    --sheet-grip: rgba(255,255,255,0.7);
+    --line-soft: rgba(236,232,255,0.08);
+    /* The search field's underline: its only boundary, 3:1 on the page. */
+    --search-line: #6A667B;
+    /* Big full-width button (.filters-apply-btn): a quiet raised surface with a 3:1 border, not a bright --fg block that dominates the dark screen. */
+    --btn-strong-bg: rgba(255,255,255,0.06);
+    --btn-strong-fg: #ECE8FF;
+    --btn-strong-border: 1px solid #6A667B;
+    /* "May contain" allergen chip text: 4.5:1 on the dish sheet. */
+    --chip-may-text: #6FA8E8;
 
     /* ── Header ── */
     --hdr-bg: rgba(7,3,28,0.88);
-    --hdr-border: rgba(255,255,255,0.07);
+    --hdr-border: rgba(236,232,255,0.14);
     --hdr-blur: blur(28px);
 
     /* ── Hero ── */
-    --hero-bg: linear-gradient(135deg, rgba(157,110,248,0.16) 0%, rgba(70,50,190,0.1) 50%, rgba(7,3,28,0) 100%);
-    --hero-border: rgba(255,255,255,0.06);
+    --hero-bg: linear-gradient(135deg, rgba(180,142,240,0.16) 0%, rgba(70,50,190,0.1) 50%, rgba(7,3,28,0) 100%);
+    --hero-border: rgba(236,232,255,0.08);
+
+    /* ── Hero band (.hero-inner on phones, .hero from 768px): same values as --surface-2 / --fg / --fg-2 / --cp / --accent-soft / --on-accent / --cue-* / --accent ── */
+    --hero-band: rgba(255,255,255,0.04);
+    --hero-fg: #ECE8FF;
+    --hero-fg-2: #BAB5D8;
+    --hero-cta-bg: #B48EF0;
+    --hero-cta-hover: #C7A9F5;
+    --hero-cta-fg: #120A2E;
+    --hero-cue-bg: rgba(180,142,240,0.10);
+    --hero-cue-text: #B48EF0;
+    --hero-dot: color-mix(in srgb, #B48EF0 30%, transparent);
+    --hero-dot-on: #B48EF0;
+    --hero-glow: radial-gradient(ellipse at center, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.16) 42%, transparent 72%);
 
     /* ── Search input ── */
     --in-bg: rgba(255,255,255,0.07);
-    --in-border: rgba(255,255,255,0.13);
-    --in-focus-border: rgba(157,110,248,0.6);
-    --in-focus-shadow: 0 0 0 4px rgba(120,80,230,0.14);
-    --in-text: #ece8ff;
-    --in-ph: rgba(236,232,255,0.22);
+    /* The chat input's resting border (its only boundary): 3:1. */
+    --in-border: #6A667B;
+    --in-focus-border: #B48EF0;
+    --in-focus-shadow: 0 0 0 3px rgba(180,142,240,0.12);
+    --in-text: #ECE8FF;
+    --in-ph: #8E88B0;
 
     /* ── Tabs & filters ── */
-    --tab-bg: rgba(255,255,255,0.05);
-    --tab-border: rgba(255,255,255,0.1);
-    --tab-text: rgba(236,232,255,0.32);
-    --tab-hbg: rgba(255,255,255,0.1);
-    --tab-htext: rgba(236,232,255,0.75);
-    --tab-act-bg: #9d6ef8;
-    --tab-act-border: #9d6ef8;
-    --tab-act-text: #ffffff;
-    --tab-act-shadow: 0 4px 20px rgba(120,70,240,0.45);
+    --tab-bg: rgba(255,255,255,0.07);
+    --tab-border: rgba(236,232,255,0.14);
+    --tab-text: #BAB5D8;
+    --tab-hbg: rgba(255,255,255,0.04);
+    --tab-htext: #ECE8FF;
+    --tab-act-bg: #B48EF0;
+    --tab-act-border: #B48EF0;
+    --tab-act-text: #120A2E;
+    --tab-act-shadow: 0 4px 16px rgba(180,142,240,0.28);
 
-    /* ── Card front ── */
-    --cf-bg: rgba(157,110,248,0.07);
-    --cf-border: rgba(255,255,255,0.12);
-    --cf-hborder: rgba(157,110,248,0.55);
-    --cf-hshadow: 0 0 0 1px rgba(157,110,248,0.35), 0 16px 48px rgba(80,40,200,0.3), 0 4px 16px rgba(80,40,200,0.15);
-    --cf-img: rgba(255,255,255,0.05);
-    --cf-accent: linear-gradient(90deg, transparent 0%, rgba(157,110,248,0.9) 40%, transparent 100%);
-    --cf-accent-op: 1;
-    --card-shadow: 0 2px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
-    --card-hover-shadow: 0 0 0 1px rgba(157,110,248,0.35), 0 16px 48px rgba(80,40,200,0.3), 0 4px 16px rgba(80,40,200,0.15);
+    /* ── Card front ── --cf-hborder is the "metal" role (maison's brass):
+       borders, focus rings, the allergen-shield glyph; --cf-hborder-text is
+       its text-safe step for the small .count labels. */
+    --cf-bg: rgba(180,142,240,0.07);
+    --cf-border: rgba(236,232,255,0.08);
+    --cf-hborder: #6FA8E8;
+    --cf-hborder-text: #8DBDF0;
+    --cf-hshadow: 0 4px 8px rgba(0,0,0,0.4), 0 12px 28px rgba(0,0,0,0.5);
+    --cf-img: rgba(255,255,255,0.04);
+    --cf-accent: linear-gradient(90deg, transparent 0%, #6FA8E8 40%, transparent 100%);
+    --cf-accent-op: 0.55;
+    --card-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 3px 10px rgba(0,0,0,0.3);
+    --card-hover-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 12px 28px rgba(0,0,0,0.5);
 
     /* ── Card content ── */
-    --cn: #ece8ff;
-    --cd: rgba(236,232,255,0.36);
-    --cp: #b48ef0;
-    --cbg: rgba(255,255,255,0.07);
-    --cbc: rgba(255,255,255,0.11);
-    --cbt: rgba(236,232,255,0.46);
-    --hint: rgba(236,232,255,0.18);
-    --hint-h: rgba(157,110,248,0.7);
+    --cn: #ECE8FF;
+    --cd: #BAB5D8;
+    --cp: #B48EF0;
+    --cbg: rgba(255,255,255,0.04);
+    --cbc: rgba(236,232,255,0.14);
+    --cbt: #BAB5D8;
+    --hint: rgba(236,232,255,0.2);
+    --hint-h: rgba(180,142,240,0.55);
 
-    /* ── Card back ── */
-    --cb-bg: rgba(7,3,22,0.98);
-    --cb-border: rgba(157,110,248,0.22);
-    --bn: #ece8ff;
-    --bp: #b48ef0;
-    --close-bg: rgba(255,255,255,0.07);
-    --close-b: rgba(255,255,255,0.11);
-    --close-t: rgba(236,232,255,0.32);
-    --close-hbg: rgba(255,255,255,0.15);
-    --close-ht: #ece8ff;
-    --bdiv: rgba(255,255,255,0.07);
-    --btt: rgba(236,232,255,0.2);
-    --bdesc: rgba(236,232,255,0.5);
-    --fade: #07031a;
-    --cue-bg: rgba(157,110,248,0.18);
-    --cue-text: rgba(157,110,248,0.75);
+    /* ── Card back / modal ── */
+    --cb-bg: rgba(8,4,24,0.98);
+    --cb-border: rgba(236,232,255,0.08);
+    --bn: #ECE8FF;
+    --bp: #B48EF0;
+    --close-bg: rgba(255,255,255,0.04);
+    --close-b: rgba(236,232,255,0.14);
+    --close-t: #BAB5D8;
+    --close-hbg: #221D3E;
+    --close-ht: #ECE8FF;
+    --bdiv: rgba(236,232,255,0.08);
+    --btt: #8E88B0;
+    --bdesc: #BAB5D8;
+    --fade: rgba(8,4,24,0.98);
+    --cue-bg: rgba(180,142,240,0.10);
+    --cue-text: #B48EF0;
 
     /* ── Compact-layout rows ── */
-    --row-border: rgba(255,255,255,0.06);
-    --row-hover: rgba(255,255,255,0.04);
-    --num: rgba(255,255,255,0.12);
-    --num-h: rgba(255,255,255,0.26);
+    --row-border: rgba(236,232,255,0.08);
+    --row-hover: #130D2E;
+    --num: rgba(236,232,255,0.14);
+    --num-h: #8E88B0;
 
     /* ── Category titles ── */
-    --cat-title: rgba(236,232,255,0.2);
-    --cat-sep: rgba(255,255,255,0.07);
-    --sep-bg: rgba(255,255,255,0.07);
+    --cat-title: #BAB5D8;
+    --cat-sep: rgba(236,232,255,0.08);
+    --sep-bg: rgba(236,232,255,0.08);
 
     /* ── Logo ── */
-    --logo-bg: linear-gradient(135deg, #b48ef0, #6d28d9);
+    --logo-bg: #B48EF0;
 
     /* ── Label colours ── */
-    --lg: #7aad40; --lg-bg: rgba(59,109,17,0.2); --lg-b: rgba(99,153,34,0.18);
-    --lo: #d06040; --lo-bg: rgba(216,90,48,0.14); --lo-b: rgba(240,153,123,0.18);
+    --lg: #7AAD40; --lg-bg: rgba(122,173,64,0.12); --lg-b: rgba(122,173,64,0.22);
+    --lo: #D06040; --lo-bg: rgba(216,90,48,0.12); --lo-b: rgba(216,90,48,0.22);
 
     /* ── Ingredient chips ── */
-    --ing-bg: rgba(255,255,255,0.06); --ing-b: rgba(255,255,255,0.1); --ing-t: rgba(236,232,255,0.4);
+    --ing-bg: rgba(255,255,255,0.04); --ing-b: rgba(236,232,255,0.14); --ing-t: #BAB5D8;
 
     /* ── Nutrition ── */
-    --nut-bg: rgba(255,255,255,0.06); --nut-b: rgba(255,255,255,0.1); --nut-v: rgba(236,232,255,0.75); --nut-u: rgba(236,232,255,0.28);
+    --nut-bg: rgba(255,255,255,0.04); --nut-b: rgba(236,232,255,0.14); --nut-v: #ECE8FF; --nut-u: #8E88B0;
 
     /* ── Spicy ── */
-    --dot-on: #D85A30; --dot-off: rgba(255,255,255,0.12); --spicy-t: rgba(236,232,255,0.36);
-
-    /* ── Footer muted text (--fg-2 is under 4.5:1 on the footer band) ── */
-    --ft-muted: rgba(236,232,255,0.6);
+    --dot-on: #B48EF0; --dot-off: rgba(236,232,255,0.14); --spicy-t: #BAB5D8;
 }
 </style>

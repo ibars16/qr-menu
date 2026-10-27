@@ -130,7 +130,7 @@ final class MenuFooterTest extends WebTestCase
 
     public function testAddressWithoutGoogleLinkFallsBackToAMapsSearch(): void
     {
-        $restaurant = $this->makeRestaurant('classic-warm', fn (Restaurant $r) => $r->setAddress('Plaça Reial 3, Barcelona'));
+        $restaurant = $this->makeRestaurant('ocean', fn (Restaurant $r) => $r->setAddress('Plaça Reial 3, Barcelona'));
 
         $footer = $this->footer($restaurant);
 
@@ -144,7 +144,7 @@ final class MenuFooterTest extends WebTestCase
 
     public function testWithoutAnyDataOnlyNameAndCopyright(): void
     {
-        $restaurant = $this->makeRestaurant('classic-warm', fn (Restaurant $r) => $r->setTagline('No se muestra sin datos'));
+        $restaurant = $this->makeRestaurant('ocean', fn (Restaurant $r) => $r->setTagline('No se muestra sin datos'));
 
         $footer = $this->footer($restaurant);
 
@@ -157,7 +157,7 @@ final class MenuFooterTest extends WebTestCase
 
     public function testLabelsAndDaysAreTranslated(): void
     {
-        $restaurant = $this->makeRestaurant('classic-warm', function (Restaurant $r) {
+        $restaurant = $this->makeRestaurant('ocean', function (Restaurant $r) {
             $r->setPhone('600123456');
             $r->setOpeningHours(['mon' => [['13:00', '16:00']], 'tue' => [['13:00', '16:00']], 'sun' => []]);
         });

@@ -51,12 +51,13 @@ action:
 hint:
     logo_format: 'PNG ou JPG, 2 Mo max.'
     hero_image_format: 'PNG, JPG ou WebP, %max_mb% Mo max. (min. %min%x%min% px, max. %max%x%max% px ; recommandé : %recommended% px de large ou plus)'
+    hero_image: "Affichée en bandeau photo en haut de la carte publique, pour tous les thèmes."
     hero_image_width_notice: "Cette photo mesure %width% × %height% px. Elle sera enregistrée quand même, mais sur un grand écran elle peut manquer de netteté. Recommandé : %recommended% px de large ou plus."
     upload_discarded_logo: "Le logo que vous avez choisi n'a pas été enregistré ; choisissez-le à nouveau."
     upload_discarded_hero_image: "La photo d'en-tête que vous avez choisie n'a pas été enregistrée ; choisissez-la à nouveau."
     upload_discarded_both: "Le logo et la photo d'en-tête que vous avez choisis n'ont pas été enregistrés ; choisissez-les à nouveau."
     upload_discarded_use_appearance: "Ils s'enregistrent avec le bouton « %button% » de la section %section%."
-    tagline: "Affiché sous le nom du restaurant sur certains thèmes de la carte publique."
+    tagline: "Affiché sous le nom du restaurant en haut de la carte publique."
     menu_language: La langue dans laquelle vous saisissez les noms et descriptions des plats.
     admin_language: "La langue de ce panneau de gestion. Elle n'affecte pas la carte vue par vos clients."
     currency: Les prix sont enregistrés dans cette devise. Les clients peuvent voir la conversion en temps réel.

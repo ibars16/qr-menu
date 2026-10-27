@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\Admin\ThemeController;
 use App\Entity\ProductView;
 use App\Enum\AllergenPresence;
 use App\Repository\ProductRepository;
@@ -478,7 +479,7 @@ class MenuController extends AbstractController
 
         // Layout + theme (with preview support)
         $validLayouts  = ['standard'];
-        $validThemes   = ['classic-dark', 'classic-warm', 'glass', 'ocean', 'noir', 'forest', 'terra', 'maison'];
+        $validThemes   = array_keys(ThemeController::THEMES);
         // Same whitelist check as the preview-query guard below, applied to
         // the stored value too — belt and suspenders against any restaurant
         // row still carrying a layout the app no longer renders (e.g. a
@@ -486,11 +487,11 @@ class MenuController extends AbstractController
         $layout        = in_array($restaurant->getLayout(), $validLayouts, true) ? $restaurant->getLayout() : 'standard';
         // Same belt-and-suspenders as $layout above — a theme this app no
         // longer has templates for (e.g. one removed after a restaurant's
-        // row was set) falls back to the entity's own default rather than
-        // 500ing: standard/show.html.twig's vars.html.twig include for the
-        // theme has no `ignore missing`, so an unknown value there is a
-        // hard error, not a silently-blank page.
-        $theme         = in_array($restaurant->getTheme(), $validThemes, true) ? $restaurant->getTheme() : 'classic-dark';
+        // row was set, like classic-warm and terra) renders as maison rather
+        // than 500ing: standard/show.html.twig's vars.html.twig include for
+        // the theme has no `ignore missing`, so an unknown value there is a
+        // hard error, not a silently-blank page. The row itself is left as is.
+        $theme         = in_array($restaurant->getTheme(), $validThemes, true) ? $restaurant->getTheme() : 'maison';
         $isPreview     = false;
 
         $previewLayout = $request->query->get('preview_layout');

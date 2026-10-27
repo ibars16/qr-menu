@@ -7,13 +7,6 @@ parameters:
     # menu-imports/). Public URLs and the paths stored in the DB stay
     # "uploads/..." — only the folder on disk moves (see when@test below).
     app.uploads_dir:        '%kernel.project_dir%/public/uploads'
-    # Public-menu themes rendered with the shared structure
-    # (templates/menu/layouts/standard/_structure.html.twig: hero band,
-    # recommendation banner, text rows for dishes without a photo, filters
-    # sheet, dish sheet…), where the theme's vars.html.twig only sets
-    # colors. A theme joins this list once its palette is ready; the rest
-    # keep the older layout until then. Exposed to Twig as structured_themes.
-    app.structured_themes:  ['maison']
 
 services:
 

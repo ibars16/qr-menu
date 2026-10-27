@@ -1,116 +1,153 @@
 <style>
 :root {
-    /* ── Identity: La Marina — premium coastal, deep navy meets pearl white ── */
-    --card-radius: 18px;
-    --badge-radius: 8px;
-    --tab-radius: 24px;
-    --search-radius: 16px;
-    --accent-line-h: 3px;
-    --card-lift: -4px;
+    /* ── Identity: La Marina — sea water: aqua page and footer, white cards, pale-blue sheets, navy titles and cover band, deep turquoise accent, turquoise "metal".
+       Colors only: shape and type come from the shared structure,
+       layouts/standard/_structure.html.twig. Same token set as maison's
+       vars.html.twig.
+       Text tokens measured ≥4.5:1 on every background they sit on in the
+       rendered page; borders/focus/state ≥3:1. ── */
 
     /* ── Palette ── */
-    --bg: #f0f7ff;
+    --bg: #D9EEF5;
     --bg-attach: scroll;
-    --surface: #ffffff;
-    --surface-2: #e2f0fc;
-    --fg: #061626;
-    --fg-2: #2a547a;
-    --fg-3: #74a8c8;
-    --accent: #0852d0;
-    --b1: #c6dff5;
-    --b2: #a4c8e8;
+    --surface: #FFFFFF;
+    --surface-2: #C3E3EE;
+    --fg: #0B2E4A;
+    --fg-2: #24506B;
+    --fg-3: #315E76;
+    --accent: #006178;
+    --b1: rgba(11,46,74,0.14);
+    --b2: rgba(11,46,74,0.24);
+
+    /* ── Tokens of the shared structure ── */
+    --accent-soft: #1F7488;
+    --on-accent: #FFFFFF;
+    --shadow-rgb: 11,46,74;
+    --cf-hborder-rgb: 36,135,156;
+    /* Over dish photos (badge chip, × shadow, photo scrim): black at the
+       structure's 55% + white text, 4.69:1 even on a pure-white photo. */
+    --scrim-rgb: 0,0,0;
+    --on-scrim: #FFFFFF;
+    --sheet-grip: rgba(255,255,255,0.7);
+    --line-soft: rgba(11,46,74,0.08);
+    /* The search field's underline: its only boundary, 3:1 on the page. */
+    --search-line: #687D8F;
+    /* Big full-width button (.filters-apply-btn): solid --fg block, --surface text, no border (as maison). */
+    --btn-strong-bg: #0B2E4A;
+    --btn-strong-fg: #FFFFFF;
+    --btn-strong-border: none;
+    /* "May contain" allergen chip text: 4.5:1 on the dish sheet. */
+    --chip-may-text: #0C6175;
 
     /* ── Header ── */
-    --hdr-bg: rgba(240,247,255,0.95);
-    --hdr-border: #c6dff5;
+    --hdr-bg: rgba(217,238,245,0.95);
+    --hdr-border: rgba(11,46,74,0.14);
     --hdr-blur: blur(20px);
 
     /* ── Hero ── */
-    --hero-bg: linear-gradient(150deg, #d8eeff 0%, #c2e0ff 45%, #f0f7ff 100%);
-    --hero-border: #c6dff5;
+    --hero-bg: linear-gradient(180deg, #0F3858, #0B2E4A);
+    --hero-border: rgba(11,46,74,0.08);
+
+    /* ── Hero band (.hero-inner on phones, .hero from 768px): navy with near-white name, aqua tagline, an aqua CTA pill with navy text, aqua carousel controls and focus ring ── */
+    --hero-band: #0B2E4A;
+    --hero-fg: #F2FAFC;
+    --hero-fg-2: #8FD6E6;
+    --hero-cta-bg: #8FD6E6;
+    --hero-cta-hover: #B1E3EE;
+    --hero-cta-fg: #0B2E4A;
+    --hero-cue-bg: rgba(143,214,230,0.14);
+    --hero-cue-text: #8FD6E6;
+    --hero-dot: rgba(143,214,230,0.55);
+    --hero-dot-on: #8FD6E6;
+    --hero-glow: radial-gradient(ellipse at center, rgba(143,214,230,0.14) 0%, rgba(143,214,230,0.05) 42%, transparent 72%);
+    --hero-focus: #8FD6E6;
 
     /* ── Search input ── */
-    --in-bg: #ffffff;
-    --in-border: #c6dff5;
-    --in-focus-border: #0852d0;
-    --in-focus-shadow: 0 0 0 4px rgba(8,82,208,0.1);
-    --in-text: #061626;
-    --in-ph: #74a8c8;
+    --in-bg: #FFFFFF;
+    /* The chat input's resting border (its only boundary): 3:1. */
+    --in-border: #687D8F;
+    --in-focus-border: #006178;
+    --in-focus-shadow: 0 0 0 3px rgba(0,97,120,0.12);
+    --in-text: #0B2E4A;
+    --in-ph: #315E76;
 
     /* ── Tabs & filters ── */
-    --tab-bg: #ffffff;
-    --tab-border: #c6dff5;
-    --tab-text: #74a8c8;
-    --tab-hbg: #e2f0fc;
-    --tab-htext: #2a547a;
-    --tab-act-bg: #0852d0;
-    --tab-act-border: #0852d0;
-    --tab-act-text: #ffffff;
-    --tab-act-shadow: 0 4px 18px rgba(8,82,208,0.32);
+    --tab-bg: #FFFFFF;
+    --tab-border: rgba(11,46,74,0.14);
+    --tab-text: #24506B;
+    --tab-hbg: #C3E3EE;
+    --tab-htext: #0B2E4A;
+    --tab-act-bg: #006178;
+    --tab-act-border: #006178;
+    --tab-act-text: #FFFFFF;
+    --tab-act-shadow: 0 4px 16px rgba(0,97,120,0.28);
 
-    /* ── Card front ── */
-    --cf-bg: #ffffff;
-    --cf-border: #cce1f5;
-    --cf-hborder: #0852d0;
-    --cf-hshadow: 0 4px 8px rgba(5,30,80,0.07), 0 16px 40px rgba(5,30,100,0.14);
-    --cf-img: #e2f0fc;
-    --cf-accent: linear-gradient(90deg, transparent 0%, rgba(8,82,208,0.7) 40%, transparent 100%);
-    --cf-accent-op: 1;
-    --card-shadow: 0 1px 3px rgba(5,30,80,0.07), 0 4px 14px rgba(5,30,80,0.05);
-    --card-hover-shadow: 0 4px 8px rgba(5,30,80,0.07), 0 16px 40px rgba(5,30,100,0.14);
+    /* ── Card front ── --cf-hborder is the "metal" role (maison's brass):
+       borders, focus rings, the allergen-shield glyph; --cf-hborder-text is
+       its text-safe step for the small .count labels. */
+    --cf-bg: #FFFFFF;
+    --cf-border: rgba(11,46,74,0.08);
+    --cf-hborder: #24879C;
+    --cf-hborder-text: #0C6175;
+    --cf-hshadow: 0 4px 8px rgba(11,46,74,0.05), 0 12px 28px rgba(11,46,74,0.08);
+    --cf-img: #C3E3EE;
+    --cf-accent: linear-gradient(90deg, transparent 0%, #24879C 40%, transparent 100%);
+    --cf-accent-op: 0.55;
+    --card-shadow: 0 1px 2px rgba(11,46,74,0.04), 0 3px 10px rgba(11,46,74,0.04);
+    --card-hover-shadow: 0 4px 8px rgba(11,46,74,0.05), 0 12px 28px rgba(11,46,74,0.08);
 
     /* ── Card content ── */
-    --cn: #061626;
-    --cd: #527898;
-    --cp: #0852d0;
-    --cbg: #e2f0fc;
-    --cbc: #c6dff5;
-    --cbt: #527898;
-    --hint: rgba(0,0,0,0.2);
-    --hint-h: rgba(8,82,208,0.6);
+    --cn: #0B2E4A;
+    --cd: #24506B;
+    --cp: #006178;
+    --cbg: #C3E3EE;
+    --cbc: rgba(11,46,74,0.14);
+    --cbt: #24506B;
+    --hint: rgba(11,46,74,0.2);
+    --hint-h: rgba(0,97,120,0.55);
 
-    /* ── Card back ── */
-    --cb-bg: #f0f7ff;
-    --cb-border: #cce1f5;
-    --bn: #061626;
-    --bp: #0852d0;
-    --close-bg: #e2f0fc;
-    --close-b: #c6dff5;
-    --close-t: #74a8c8;
-    --close-hbg: #ccdff5;
-    --close-ht: #061626;
-    --bdiv: #deedf8;
-    --btt: #74a8c8;
-    --bdesc: #2a547a;
-    --fade: #f0f7ff;
-    --cue-bg: rgba(8,82,208,0.1);
-    --cue-text: rgba(8,82,208,0.6);
+    /* ── Card back / modal ── */
+    --cb-bg: #EAF6FA;
+    --cb-border: rgba(11,46,74,0.08);
+    --bn: #0B2E4A;
+    --bp: #006178;
+    --close-bg: #C3E3EE;
+    --close-b: rgba(11,46,74,0.14);
+    --close-t: #24506B;
+    --close-hbg: #B6D6E3;
+    --close-ht: #0B2E4A;
+    --bdiv: rgba(11,46,74,0.08);
+    --btt: #315E76;
+    --bdesc: #24506B;
+    --fade: #EAF6FA;
+    --cue-bg: rgba(0,97,120,0.10);
+    --cue-text: #006178;
 
     /* ── Compact-layout rows ── */
-    --row-border: #deedf8;
-    --row-hover: #f4faff;
-    --num: #c6dff5;
-    --num-h: #74a8c8;
+    --row-border: rgba(11,46,74,0.08);
+    --row-hover: #EAF5F9;
+    --num: rgba(11,46,74,0.14);
+    --num-h: #315E76;
 
     /* ── Category titles ── */
-    --cat-title: #74a8c8;
-    --cat-sep: #c6dff5;
-    --sep-bg: #c6dff5;
+    --cat-title: #0B2E4A;
+    --cat-sep: rgba(11,46,74,0.08);
+    --sep-bg: rgba(11,46,74,0.08);
 
     /* ── Logo ── */
-    --logo-bg: #061626;
+    --logo-bg: #006178;
 
     /* ── Label colours ── */
-    --lg: #3a8a18; --lg-bg: rgba(59,109,17,0.09); --lg-b: rgba(99,153,34,0.16);
-    --lo: #c04828; --lo-bg: rgba(193,68,14,0.07); --lo-b: rgba(240,153,123,0.16);
+    --lg: #266419; --lg-bg: rgba(38,100,25,0.09); --lg-b: rgba(38,100,25,0.16);
+    --lo: #903D19; --lo-bg: rgba(144,61,25,0.09); --lo-b: rgba(144,61,25,0.16);
 
     /* ── Ingredient chips ── */
-    --ing-bg: #e2f0fc; --ing-b: #c6dff5; --ing-t: #2a547a;
+    --ing-bg: #C3E3EE; --ing-b: rgba(11,46,74,0.14); --ing-t: #24506B;
 
     /* ── Nutrition ── */
-    --nut-bg: #e2f0fc; --nut-b: #c6dff5; --nut-v: #061626; --nut-u: #74a8c8;
+    --nut-bg: #C3E3EE; --nut-b: rgba(11,46,74,0.14); --nut-v: #0B2E4A; --nut-u: #315E76;
 
     /* ── Spicy ── */
-    --dot-on: #D85A30; --dot-off: #c6dff5; --spicy-t: #74a8c8;
+    --dot-on: #006178; --dot-off: rgba(11,46,74,0.14); --spicy-t: #24506B;
 }
 </style>

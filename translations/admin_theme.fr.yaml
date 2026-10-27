@@ -43,25 +43,19 @@ layout:
 theme:
     classic-dark:
         name: Classique sombre
-        desc: Fond noir, accent de la couleur de votre marque. Élégant et raffiné.
-    classic-warm:
-        name: Classique chaleureux
-        desc: Fond crème, tons chaleureux. Accueillant et convivial.
+        desc: Noir profond, accent orange et touches de bronze. Moderne et urbain.
     glass:
         name: Glassmorphism
-        desc: Dégradé sombre avec effet verre et accent violet. Moderne et premium.
+        desc: Dégradé nocturne, surfaces de verre et accent violet. Moderne et premium.
     ocean:
         name: Océan
-        desc: Bleu clair, propre et frais. Idéal pour une cuisine de la mer.
+        desc: 'Bleu d''eau, bandeau et titres bleu marine, accent turquoise. Idéal pour une cuisine de la mer.'
     noir:
         name: Noir
-        desc: Noir profond avec des détails dorés. Luxe et haute gastronomie.
+        desc: Noir absolu et touches or champagne. Luxe et haute gastronomie.
     forest:
         name: Forêt
-        desc: Vert naturel et organique. Parfait pour une cuisine de marché et des produits locaux.
-    terra:
-        name: Terra
-        desc: Terracotta méditerranéenne. Idéal pour tapas, pintxos et cuisine informelle.
+        desc: Vert sauge, bandeau et titres vert forêt, touches terracotta. Parfait pour une cuisine de marché et des produits locaux.
     maison:
-        name: Maison
-        desc: Parchemin, ivoire et lie-de-vin, typographie serif éditoriale. Gastronomie et raffinement.
+        name: Classique clair
+        desc: Parchemin et ivoire, accent bordeaux et touches de laiton. Gastronomie et raffinement.

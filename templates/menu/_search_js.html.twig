@@ -65,7 +65,7 @@ function openDishModal(card) {
     if (!tpl || !overlay || !photoWrap || !body) return;
     trackDishView(card.dataset.productId);
     const content   = tpl.content.cloneNode(true);
-    const photoNode = content.querySelector('img, video, .dish-placeholder');
+    const photoNode = content.querySelector('img, video');
     photoWrap.innerHTML = '';
     body.innerHTML = '';
     if (photoNode) {
@@ -99,17 +99,14 @@ function openDishModal(card) {
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
-    // .dish-modal is the scroll box on most themes; maison instead scrolls
-    // an inner .dish-modal-scroll so the × can stay fixed in the chrome
-    // above it (see overrides.html.twig) — reset whichever one actually
-    // scrolls.
+    // The sheet scrolls an inner .dish-modal-scroll so the × can stay
+    // fixed in the chrome above it (see _structure.html.twig) — reset
+    // whichever one actually scrolls.
     const modalBox  = overlay.querySelector('.dish-modal');
     const scrollBox = modalBox.querySelector('.dish-modal-scroll');
     (scrollBox || modalBox).scrollTop = 0;
     // New content (a different dish, possibly a different length) just
-    // replaced the old — recompute the bottom fade for it. No-op on
-    // layouts/themes without .dish-modal-scroll (updateDishScrollFade
-    // itself no-ops too, but this skips the call entirely there).
+    // replaced the old — recompute the bottom fade for it.
     if (scrollBox) updateDishScrollFade(scrollBox);
 }
 function closeDishModal() {
@@ -122,9 +119,9 @@ function closeDishModal() {
 }
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDishModal(); });
 
-// Bottom scroll fade + chevron hint on the maison dish-detail sheet
-// (.dish-modal-scroll / .dish-modal-fade / .dish-modal-scroll-hint, all
-// maison-only markup — see standard/show.html.twig) — a purely visual
+// Bottom scroll fade + chevron hint on the dish-detail sheet
+// (.dish-modal-scroll / .dish-modal-fade / .dish-modal-scroll-hint — see
+// standard/show.html.twig) — a purely visual
 // "there's more below" affordance, not a filtering/state concern. Both are
 // hidden whenever the content doesn't actually overflow. The fade itself
 // stays up until scroll is within 8px of the true bottom (so it's never
@@ -159,7 +156,7 @@ document.addEventListener('keydown', function(e) {
         openDishModal(card);
         return;
     }
-    // Maison chef's-recommendation banner / carousel slide: run its own
+    // Chef's-recommendation banner / carousel slide: run its own
     // onclick, which opens the matching dish card's detail. Only when the
     // banner itself has focus — the carousel's prev/dots/next are real
     // <button>s outside the slides and keep their native Enter/Space.
@@ -255,7 +252,7 @@ const noResults   = document.getElementById('no-results');
 const sections    = document.querySelectorAll('.cat-section');
 const catTabs     = document.querySelectorAll('.cat-tab');
 // Selected by data-filter, not by the visual .diet-filter class — that
-// class (and .chip/.allergen-filter-option) is style-only now. Maison's
+// class (and .chip/.allergen-filter-option) is style-only now. The
 // allergen chip buttons reuse .diet-filter purely for its look but carry
 // data-filter="allergen" instead of "diet", so they're driven by
 // activeAllergens/onAllergenFilterChange() below and never double-handled
@@ -353,20 +350,14 @@ function countMatchingDishes() {
 }
 
 function onAllergenFilterChange() {
-    // Two markup variants feed the same activeAllergens set: legacy layouts
-    // use a native checkbox (read via :checked/value), maison uses a chip
-    // button (read via .active/data-allergen — see standard/show.html.twig's
-    // theme == 'maison' branch). A given render only ever has one variant in
-    // the DOM, so reading both selectors is safe and never double-counts.
-    const checked  = Array.from(document.querySelectorAll('[data-filter="allergen"]:checked')).map(el => el.value);
-    const activeBt = Array.from(document.querySelectorAll('[data-filter="allergen"].active[data-allergen]')).map(el => el.dataset.allergen);
-    activeAllergens = new Set([...checked, ...activeBt]);
+    // The allergen chip buttons (.active/data-allergen — see the filters
+    // panel in standard/show.html.twig) feed the activeAllergens set.
+    activeAllergens = new Set(Array.from(document.querySelectorAll('[data-filter="allergen"].active[data-allergen]')).map(el => el.dataset.allergen));
     applyFilters();
     updateFiltersButtonBadge();
 }
 
 function clearAllergenFilters() {
-    document.querySelectorAll('[data-filter="allergen"]:checked').forEach(el => { el.checked = false; });
     document.querySelectorAll('[data-filter="allergen"].active[data-allergen]').forEach(el => {
         el.classList.remove('active');
         el.setAttribute('aria-pressed', 'false');
@@ -374,10 +365,8 @@ function clearAllergenFilters() {
     onAllergenFilterChange();
 }
 
-// Chip-button variant of the allergen filter (maison theme only — see
-// standard/show.html.twig). Toggles the same activeAllergens set that the
-// checkbox variant drives elsewhere; filtering itself (applyFilters) never
-// knows which markup produced the set.
+// Allergen filter chip buttons (see standard/show.html.twig): toggle the
+// activeAllergens set that applyFilters() reads.
 document.querySelectorAll('[data-filter="allergen"][data-allergen]').forEach(btn => {
     btn.addEventListener('click', () => {
         const nowActive = !btn.classList.contains('active');
@@ -507,7 +496,7 @@ typeFilters.forEach(btn => btn.addEventListener('click', () => {
 let spyQueued = false;
 function syncTabToScroll() {
     spyQueued = false;
-    // Whatever sticks at the top: the tab bar in maison, the header elsewhere.
+    // Whatever sticks at the top: the tab bar, or the header above it.
     const line = Math.max(0, ...[...document.querySelectorAll('.header, .cat-tabs')]
         .map(el => el.getBoundingClientRect().bottom)) + 1;
     let current = null;
@@ -607,7 +596,7 @@ function lbClose() {
 }
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') lbClose(); });
 
-// Chef's-recommendation carousel (maison, 2+ 'recommended'-tagged dishes —
+// Chef's-recommendation carousel (2+ 'recommended'-tagged dishes —
 // see show.html.twig's recommendedItems/.banner-multi). No-op everywhere
 // else since getElementById returns null. No auto-play, no wraparound:
 // bannerGoTo() clamps to [0, slides.length-1], same as the disabled state

@@ -1,9 +1,8 @@
 {# Shared structure for the standard layout (the only public menu layout):
    hero band, recommendation banner, text rows for dishes without a photo,
    filters sheet, dish sheet, footer, the chat stepping aside… Rendered for
-   the themes in structured_themes (app.structured_themes in
-   config/services.yaml); each of those themes' vars.html.twig only sets
-   colors — shape and type tokens live in the :root block below. Born as
+   every theme; each theme's vars.html.twig only sets colors — shape and
+   type tokens live in the :root block below. Born as
    maison's own overrides, so the comments below name colors by maison's
    values (wine = --accent, brass = --cf-hborder, parchment/ivory = --bg/
    --surface).
@@ -12,10 +11,8 @@
    <style> block, so equal-specificity selectors here win by source
    order alone — nothing below needs raised specificity or !important. #}
 <style>
-    /* ── Shape and type, the same for every structured theme (moved here
-       from maison's vars.html.twig, values unchanged). Later in the page
-       than the theme's vars, so these win over the shape tokens the older
-       themes still define there. ── */
+    /* ── Shape and type, the same for every theme (moved here from
+       maison's vars.html.twig, values unchanged). ── */
     :root {
         --card-radius: 6px;
         --badge-radius: 2px;
@@ -268,9 +265,7 @@
        still truncate with an ellipsis (base layout's .price-item-label
        overflow rule) rather than pushing the price column around. Prices
        right-align via text-align so the currency suffix stays a quiet
-       trailing unit rather than shifting the digits. Scoped to this file
-       only (structured), so the base grid every other theme relies on
-       is untouched. */
+       trailing unit rather than shifting the digits. */
     /* align-items:baseline (2026-09-16, owner request) — the label and price
        are different font-families/sizes (Inter 0.55em vs Fraunces 1em), so
        without this they align by their box tops/stretch and the label reads
@@ -321,10 +316,7 @@
        in a red pill (base layout's .supplement-badge, --cp) reading like a
        loose promo; here it's a second price-block line, same visual
        language as the price itself, so it reads as "this adds to the
-       price". Structure-only — see the not structured / structured
-       gates around .supplement-badge and this markup in
-       standard/show.html.twig; every other theme still renders the
-       original badge next to the name, untouched. */
+       price" (see this markup in standard/show.html.twig). */
     /* align-items: flex-start (2026-09-18, owner request) — flex-end had
        each line right-align independently within the column's own
        auto-width box (sized to the wider child, the "Suplemento · +X,XX"
@@ -463,11 +455,11 @@
        growing the photo just pushes name/allergens/price further down the
        *page*, which is the thing actually verified at 390px each bump.
        Still shorter than the base layout's own clamp(190–200px) default
-       since maison's parchment/ivory cards read intentionally compact.
+       since the cards read intentionally compact.
        aspect-ratio stays auto (the fixed height alone already sets both
        dimensions — see the base layout's own comment on this same
        trade-off above .dish-card .front-img). Markup only renders this
-       photo branch when structured; the no-photo case is .dish-row
+       photo branch for dishes with a photo; the no-photo case is .dish-row
        instead, see menu/layouts/standard/show.html.twig and .dish-row
        further down. */
     .dish-card .front-img { height: 240px; aspect-ratio: auto; }
@@ -480,9 +472,8 @@
     .dish-card .front-name { font-size: calc(19px * var(--font-scale)); }
 
     /* No-photo dish, front-card grid, uses .dish-row instead (see below) —
-       .dish-placeholder itself is never rendered on the structure any more
-       (2026-09-07, product decision — see conversation and the template's
-       own comment in standard/show.html.twig): a no-photo dish used to open
+       there is no placeholder (2026-09-07, product decision — see the
+       template's own comment in standard/show.html.twig): a no-photo dish used to open
        into a 300px block of flat --surface-2 with just the restaurant name
        centered in it, which read as an empty hole before the dish's own
        name/price. See .dish-modal-photo:empty below for the other half of
@@ -579,11 +570,6 @@
     }
     .dish-row:hover .more-hint { background: none; border-color: transparent; color: var(--accent-soft); }
 
-    /* Card-front description (.front-desc) removed on the structure (2026-09-05,
-       see conversation) — no rule needed here any more, it never renders in
-       this theme (see standard/show.html.twig: `pT.description and not
-       structured`). Kept out entirely rather than left as dead CSS. */
-
     /* Dish-detail sheet's own description (.dish-detail-desc, distinct from
        the now-removed card-front .front-desc) — already rendered whenever
        pT.description is non-empty (see standard/show.html.twig's <template
@@ -604,21 +590,21 @@
     /* Hero kicker/CTA — carta-estilo's .cta-explore is a small filled wine
        button (not a text link), positioned above h1 in the markup (moved
        there in the twig). Kept as an <a href="#cat-tabs"> so the
-       smooth-scroll behavior is unchanged; only styling differs from the
-       older themes' larger .hero-kicker pill in this same slot. */
+       smooth-scroll behavior is unchanged. */
     .cta-explore {
         display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px; margin: 0;
-        background: var(--cp); color: var(--on-accent); border: none; border-radius: 100px;
+        background: var(--hero-cta-bg); color: var(--hero-cta-fg); border: none; border-radius: 100px;
         font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-decoration: none;
         transition: background 0.2s;
     }
-    .cta-explore:hover { background: var(--accent-soft); }
-    .cta-explore:focus-visible { outline: 2px solid var(--cf-hborder); outline-offset: 2px; }
+    .cta-explore:hover { background: var(--hero-cta-hover); }
+    /* --hero-focus: optional, for a band too dark for the theme's --cf-hborder (falls back to it). */
+    .cta-explore:focus-visible { outline: 2px solid var(--hero-focus, var(--cf-hborder)); outline-offset: 2px; }
     .cta-explore i { font-size: 12px; }
     /* Hero — restructured so restaurant-supplied photography never sits under
        text: the photo (when present) is its own edge-to-edge band, and
        .hero-name/.tagline/.cta-explore/.banner always paint on solid
-       --surface-2, never on the photo. No photo → .hero-photo-band is absent
+       --hero-band, never on the photo. No photo → .hero-photo-band is absent
        from the DOM (twig guard) and .hero-inner sits directly on --hero-bg,
        still fully legible — this is the more-common case until a real
        header-photo field exists (see the TODO in show.html.twig). */
@@ -647,7 +633,10 @@
        22px of flat --surface-2 on top of .hero-name's own margin-top read as
        one oversized gap between photo and name. See .hero-name's margin
        below for the other half of that gap. */
-    .hero-inner { background: var(--surface-2); padding: 14px 20px 26px; }
+    /* --hero-band and the other --hero-* tokens (vars.html.twig): the band's
+       own colours, so a theme can paint it dark with light text (maison's
+       are its --surface-2/--fg/--fg-2/--cp values). */
+    .hero-inner { background: var(--hero-band); padding: 14px 20px 26px; }
     /* Base 43px, not the shared 46px other sizes use — an almost
        imperceptible +1px over the original 42px, scaled down further by
        --font-scale like everything else. Kept separate deliberately: the
@@ -668,7 +657,7 @@
        let .tagline sit flush against both .hero-name above and .cta-explore
        below (0px gap, confirmed in devtools). Added 6px/14px so the tagline
        block breathes without needing a change to either of those neighbors. */
-    .tagline { font-size: calc(14.5px * var(--font-scale)); font-weight: 400; color: var(--fg); line-height: 1.5; max-width: 82%; margin: 6px 0 14px; }
+    .tagline { font-size: calc(14.5px * var(--font-scale)); font-weight: 400; color: var(--hero-fg); line-height: 1.5; max-width: 82%; margin: 6px 0 14px; }
 
     /* Chef's-recommendation banner — carta-premium-completa.html's .banner,
        adapted to this app's tokens (--accent for its --wine, --surface for
@@ -724,7 +713,7 @@
     .banner-nav { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
     .banner-nav-btn {
         width: 26px; height: 26px; border-radius: 50%; border: none; flex-shrink: 0; padding: 0;
-        background: var(--cue-bg); color: var(--cue-text); display: flex; align-items: center; justify-content: center;
+        background: var(--hero-cue-bg); color: var(--hero-cue-text); display: flex; align-items: center; justify-content: center;
         font-size: 13px; cursor: pointer; transition: background 0.18s, color 0.18s;
     }
     .banner-nav-btn:hover:not(:disabled) { background: var(--accent); color: var(--on-accent); }
@@ -732,10 +721,10 @@
     .banner-dots { display: flex; align-items: center; gap: 6px; }
     .banner-dot {
         width: 6px; height: 6px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
-        background: color-mix(in srgb, var(--accent) 30%, transparent);
+        background: var(--hero-dot);
         transition: background 0.18s, width 0.18s;
     }
-    .banner-dot.active { background: var(--accent); width: 16px; border-radius: 3px; }
+    .banner-dot.active { background: var(--hero-dot-on); width: 16px; border-radius: 3px; }
     .sr-only {
         position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
         overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
@@ -752,7 +741,7 @@
        crisp at that size regardless of display density. Sized/colored via
        .logo's own flex-centering and `color: var(--accent)` above (the
        svg's fill="currentColor" inherits it — no separate color rule
-       needed). Not the letter-avatar fallback the older themes use. */
+       needed). */
     .logo svg { width: 24px; height: 24px; }
     .resto-name { font-weight: 500; }
     .nav-dd-trigger { padding: 7px 11px; border-width: 1px; border-radius: 100px; }
@@ -762,7 +751,7 @@
        badges (featured tag / spicy / popular); still 3 separate
        elements/logic, look only. The twig only ever renders one of the
        three per card (recommended > popular > spicy priority — see
-       structuredBadge in show.html.twig), so all three share the same
+       cardBadge in show.html.twig), so all three share the same
        top-left slot (carta-estilo .badges{top:10px;left:10px}) rather
        than each keeping its own base-layout corner. */
     .dish-pill, .spicy-badge, .popular-badge {
@@ -833,7 +822,7 @@
        this rule's 20px margin instead of replacing it. */
     .search-wrap {
         display: flex; align-items: center; gap: 11px; margin-top: 20px; padding: 0;
-        border-bottom: 1px solid var(--line-soft); transition: border-color 0.22s;
+        border-bottom: 1px solid var(--search-line); transition: border-color 0.22s;
     }
     .search-wrap:focus-within { border-color: var(--in-focus-border); }
     .search-icon {
@@ -876,6 +865,7 @@
        centre. Lifting the band above it keeps the glow on the rest of the
        hero (.hero-inner already sits at z-index 1). All widths. */
     .hero-photo-band { position: relative; z-index: 1; }
+    .hero::before { background: var(--hero-glow); }
 
     @media (min-width: 768px) {
         /* One column, 1200px of content + the 20px gutter, shared by header,
@@ -891,7 +881,7 @@
            .hero-inner is already full width. The base .hero border-bottom
            (1px --hero-border, as on phones) closes the band. */
         .hero-inner { background: transparent; }
-        .hero { background: var(--surface-2); }
+        .hero { background: var(--hero-band); }
         /* Sticky tab bar: background across the whole screen, tabs still in
            the column — the bar itself is full width and its inline padding
            puts the first tab on the column's edge. */
@@ -947,7 +937,7 @@
         }
         .tagline {
             font-family: var(--font-display); font-style: italic; font-weight: 400;
-            font-size: calc(21px * var(--font-scale)); line-height: 1.45; color: var(--fg-2);
+            font-size: calc(21px * var(--font-scale)); line-height: 1.45; color: var(--hero-fg-2);
             max-width: 36ch; text-wrap: balance; margin: 20px 0 0;
         }
         /* 44px tall (was 34): 15px text on a 20px line + 12px top/bottom,
@@ -1002,10 +992,7 @@
        (and its chat panel, if it happened to be open — same element,
        .sw-panel lives inside .sw-widget) out of the tab order while a
        sheet has it hidden; nothing about the chat's own open/closed state
-       is touched, so it reappears exactly as it was once the sheet closes.
-       Scoped to structured themes simply by virtue of living in this file — the
-       older themes never load this rule, so their FAB behaves exactly
-       as before. */
+       is touched, so it reappears exactly as it was once the sheet closes. */
     body:has(.filters-overlay.open) .sw-widget,
     body:has(.dish-modal-overlay.open) .sw-widget {
         display: none;
@@ -1067,9 +1054,6 @@
        itself scrolls) so the × stays persistent — visible over both the
        header's ivory and whatever filter section has scrolled up behind
        it — instead of being carried away with the content like before.
-       Other themes don't render .filters-panel-scroll at all and keep
-       .filters-panel itself as the scroll box (its own overflow-y:auto
-       from the base layout, untouched).
 
        --font-scale: 1.06 brings this sheet to the same type scale as the
        ficha's own .dish-modal override (root stays 0.94 — see
@@ -1199,10 +1183,7 @@
        this close to the button risked reading as part of it.
 
        Padding — overrides the base layout's own 0.25rem/1.25rem/6rem
-       (standard/show.html.twig; left as-is there, since the older themes
-       share that rule and their own footer isn't sticky, and — unlike
-       here — their FAB is never hidden, so they still need that 6rem to
-       clear it once scrolled to the natural end). That 6rem was originally
+       (standard/show.html.twig). That 6rem was originally
        ported here too and briefly bumped to 5rem after measuring the FAB's
        real footprint (56px circle + 18px margin) — both were reserving
        space for a collision that no longer exists now that the FAB is
@@ -1218,8 +1199,12 @@
         content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 3.75rem;
         background: linear-gradient(transparent, var(--cb-bg) 90%); pointer-events: none;
     }
+    /* The big full-width button ("Ver resultados" in the filters sheet,
+       "Cerrar" at the foot of the dish sheet): --btn-strong-* — a solid
+       --fg block on light themes, a quiet surface with a border on dark
+       ones (a bright block would dominate the screen there). */
     .filters-apply-btn {
-        background: var(--fg); color: var(--surface); border-radius: var(--radius);
+        background: var(--btn-strong-bg); color: var(--btn-strong-fg); border: var(--btn-strong-border); border-radius: var(--radius);
         font-weight: 500; letter-spacing: 0.05em; box-shadow: none;
     }
     .filters-apply-btn:hover { opacity: 0.92; }
@@ -1271,7 +1256,7 @@
        hairline+count, sticky espresso footer) to the ficha de plato — the
        two bottom sheets in this theme should read as one system, not two
        different ones. See standard/show.html.twig's <template class=
-       "dish-tpl"> (structured branches only) for the markup this
+       "dish-tpl"> for the markup this
        targets; nothing here changes what data renders, only how. */
 
     /* Read-only chip — visually the same object as .filters-panel's
@@ -1304,7 +1289,7 @@
        like the tag chips are. Border/text carry the distinction; background
        stays the same neutral ivory as every other chip in this theme. */
     .chip.chip-contains { border-color: var(--accent); color: var(--accent); }
-    .chip.chip-may_contain { border-style: dashed; border-color: var(--cf-hborder); color: var(--cf-hborder); }
+    .chip.chip-may_contain { border-style: dashed; border-color: var(--cf-hborder); color: var(--chip-may-text); }
     .chip.chip-free_from { color: var(--fg-3); }
 
     /* Section headers inside the sheet (.bsec-title) — same wine-uppercase
@@ -1349,13 +1334,10 @@
     /* Chrome vs. scroll split — .dish-modal becomes the fixed shell (holds
        the × below, clips corners via overflow:hidden, never itself
        scrolls); .dish-modal-scroll is the one thing inside it that does
-       (grip + photo + body + footer — see standard/show.html.twig's
-       structured branch). This is what makes the × persistent: it's
-       no longer a descendant of the element that scrolls, so content
-       passes underneath it instead of carrying it away. Other layouts/
-       themes don't render .dish-modal-scroll at all and keep .dish-modal
-       itself as the scroll box (its own overflow-y:auto from the base
-       layout, untouched). */
+       (grip + photo + body + footer — see standard/show.html.twig). This
+       is what makes the × persistent: it's no longer a descendant of the
+       element that scrolls, so content passes underneath it instead of
+       carrying it away. */
     .dish-modal {
         display: flex; flex-direction: column; overflow: hidden;
         /* Scoped bump: only the sheet's own reading type (name, price,
@@ -1510,8 +1492,7 @@
        physically overlapped the dish name's first line. 4.5rem clears the
        ×'s bottom edge (0.75rem + 44px ≈ 3.5rem) with real breathing room
        left over, not just the bare minimum. Only applies when the photo
-       box is actually gone — a real photo (or another theme entirely)
-       never matches :empty here, so this never touches those cases. */
+       box is actually gone — a real photo never matches :empty here, so this never touches those cases. */
     .dish-modal-photo:empty + .dish-modal-body { padding-top: 4.5rem; }
     .dish-detail-price + .bsec,
     .dish-detail-desc + .bsec {
@@ -1537,8 +1518,8 @@
 
     /* Nutrition panel (2026-09-08) — calories plus the four decimal(5,1)
        fields (fat/protein/carbohydrates/sugars), grouped under one
-       "Información Nutricional" .bsec (see standard/show.html.twig's
-       structured branch). Reuses the .nut/.nut-v pairing above for
+       "Información Nutricional" .bsec (see standard/show.html.twig).
+       Reuses the .nut/.nut-v pairing above for
        the number+unit rhythm, but does NOT reuse .nut-u's color: --fg-3
        measures ~2.3:1 against this sheet's own background (--cb-bg), a
        pre-existing shortfall on the single lone calories row this rule

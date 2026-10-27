@@ -1,119 +1,161 @@
 <style>
 :root {
-    /* ── Identity: Urban Kitchen — pure dark minimalism, brand accent ── */
-    --card-radius: 16px;
-    --badge-radius: 8px;
-    --tab-radius: 24px;
-    --search-radius: 16px;
-    --accent-line-h: 3px;
-    --card-lift: -4px;
+    /* ── Identity: Urban Kitchen — pure dark minimalism, orange accent.
+       Colors only: shape and type come from the shared structure,
+       layouts/standard/_structure.html.twig. Same token set as maison's
+       vars.html.twig.
+       Text tokens measured ≥4.5:1 on every background they sit on in the
+       rendered page (#080808 page, #121212 surface, #1A1A1A surface-2,
+       #0D0D0D dish sheet). ── */
 
     /* ── Palette ── */
     --bg: #080808;
     --bg-attach: scroll;
-    --surface: #111111;
-    --surface-2: #181818;
-    --fg: #f4f4f4;
-    --fg-2: rgba(244,244,244,0.48);
-    --fg-3: #303030;
-    --accent: #c1440e;
-    --b1: #1e1e1e;
-    --b2: #2a2a2a;
+    --surface: #121212;
+    --surface-2: #1A1A1A;
+    --fg: #F4F4F4;
+    --fg-2: #A6A6A6;
+    --fg-3: #8A8A8A;
+    /* The old #c1440e can't be both text on near-black (3.9:1) and a fill
+       under white text; this lighter step of the same hue (the old --cp)
+       is 5.1:1+ as text everywhere, with dark text (--on-accent) on it. */
+    --accent: #EE5B1B;
+    --b1: rgba(244,244,244,0.14);
+    --b2: rgba(244,244,244,0.24);
+
+    /* ── Tokens of the shared structure ── */
+    --accent-soft: #F47A45;
+    --on-accent: #140803;
+    /* Shadows are black on a dark page (--fg's triplet would glow). */
+    --shadow-rgb: 0,0,0;
+    --cf-hborder-rgb: 149,132,116;
+    --scrim-rgb: 0,0,0;
+    --on-scrim: #F4F4F4;
+    --sheet-grip: rgba(255,255,255,0.7);
+    --line-soft: rgba(244,244,244,0.08);
+    /* The search field's underline (.search-wrap): its only boundary, so
+       3:1 on the page instead of the --line-soft hairline. */
+    --search-line: #606060;
+    /* Big full-width button (.filters-apply-btn): a quiet raised surface
+       with a 3:1 border, not a bright --fg block that dominates the dark
+       screen. Text 15.8:1 on it. */
+    --btn-strong-bg: #1A1A1A;
+    --btn-strong-fg: #F4F4F4;
+    --btn-strong-border: 1px solid #6B6B6B;
+    /* "May contain" allergen chip text: --cf-hborder already clears 4.5:1. */
+    --chip-may-text: #958474;
 
     /* ── Header ── */
-    --hdr-bg: rgba(8,8,8,0.97);
-    --hdr-border: #181818;
-    --hdr-blur: blur(16px);
+    --hdr-bg: rgba(8,8,8,0.95);
+    --hdr-border: rgba(244,244,244,0.14);
+    --hdr-blur: blur(20px);
 
     /* ── Hero ── */
-    --hero-bg: linear-gradient(160deg, #161616 0%, #0e0e0e 100%);
-    --hero-border: #1a1a1a;
+    --hero-bg: radial-gradient(120% 90% at 85% 0%, rgba(238,91,27,0.10), transparent 60%), linear-gradient(180deg, #1A1A1A, #080808);
+    --hero-border: rgba(244,244,244,0.08);
+
+    /* ── Hero band (.hero-inner on phones, .hero from 768px): same values as --surface-2 / --fg / --fg-2 / --cp / --accent-soft / --on-accent / --cue-* / --accent ── */
+    --hero-band: #1A1A1A;
+    --hero-fg: #F4F4F4;
+    --hero-fg-2: #A6A6A6;
+    --hero-cta-bg: #EE5B1B;
+    --hero-cta-hover: #F47A45;
+    --hero-cta-fg: #140803;
+    --hero-cue-bg: rgba(238,91,27,0.10);
+    --hero-cue-text: #EE5B1B;
+    --hero-dot: color-mix(in srgb, #EE5B1B 30%, transparent);
+    --hero-dot-on: #EE5B1B;
+    --hero-glow: radial-gradient(ellipse at center, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.16) 42%, transparent 72%);
 
     /* ── Search input ── */
-    --in-bg: #111111;
-    --in-border: #222222;
-    --in-focus-border: #c1440e;
-    --in-focus-shadow: 0 0 0 3px rgba(255,255,255,0.05);
-    --in-text: #e8e8e8;
-    --in-ph: #303030;
+    --in-bg: #121212;
+    /* The chat input's resting border (its only boundary): 3:1 on the
+       chat panel. */
+    --in-border: #6B6B6B;
+    --in-focus-border: #EE5B1B;
+    --in-focus-shadow: 0 0 0 3px rgba(238,91,27,0.12);
+    --in-text: #F4F4F4;
+    --in-ph: #8A8A8A;
 
     /* ── Tabs & filters ── */
-    --tab-bg: #111111;
-    --tab-border: #222222;
-    --tab-text: #484848;
-    --tab-hbg: #1a1a1a;
-    --tab-htext: #b0b0b0;
-    --tab-act-bg: #c1440e;
-    --tab-act-border: #c1440e;
-    --tab-act-text: #ffffff;
-    --tab-act-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    --tab-bg: #121212;
+    --tab-border: rgba(244,244,244,0.14);
+    --tab-text: #A6A6A6;
+    --tab-hbg: #1A1A1A;
+    --tab-htext: #F4F4F4;
+    --tab-act-bg: #EE5B1B;
+    --tab-act-border: #EE5B1B;
+    --tab-act-text: #140803;
+    --tab-act-shadow: 0 4px 16px rgba(238,91,27,0.28);
 
-    /* ── Card front ── */
-    --cf-bg: #111111;
-    --cf-border: #1e1e1e;
-    --cf-hborder: #363636;
-    --cf-hshadow: 0 4px 8px rgba(0,0,0,0.4), 0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
-    --cf-img: #181818;
-    --cf-accent: linear-gradient(90deg, transparent 0%, #c1440e 40%, transparent 100%);
-    --cf-accent-op: 0.65;
-    --card-shadow: 0 2px 4px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.32);
-    --card-hover-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+    /* ── Card front ── --cf-hborder is the "metal" role (maison's brass):
+       borders, focus rings, the allergen-shield glyph; --cf-hborder-text is
+       its text-safe step for the small .count labels. --cf-hborder is also
+       text (the "may contain" allergen chip), so it clears 4.5:1 on every
+       dark surface (4.83:1 on #1A1A1A, 5.20:1 on #121212). */
+    --cf-bg: #121212;
+    --cf-border: rgba(244,244,244,0.08);
+    --cf-hborder: #958474;
+    --cf-hborder-text: #B59C88;
+    --cf-hshadow: 0 4px 8px rgba(0,0,0,0.4), 0 12px 28px rgba(0,0,0,0.5);
+    --cf-img: #1A1A1A;
+    --cf-accent: linear-gradient(90deg, transparent 0%, #958474 40%, transparent 100%);
+    --cf-accent-op: 0.55;
+    --card-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 3px 10px rgba(0,0,0,0.3);
+    --card-hover-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 12px 28px rgba(0,0,0,0.5);
 
     /* ── Card content ── */
-    --cn: #f4f4f4;
-    --cd: rgba(244,244,244,0.38);
-    /* Prices/kickers are text on near-black, where #c1440e is only 3.0–3.9:1;
-       this lighter step of the same hue is 4.5:1+ on every surface it sits on
-       (#080808 page, #0d0d0d back, #111111 card, #242424 hero kicker). */
-    --cp: #ee5b1b;
-    --cbg: rgba(255,255,255,0.06);
-    --cbc: rgba(255,255,255,0.1);
-    --cbt: #888888;
-    --hint: rgba(255,255,255,0.18);
-    --hint-h: rgba(255,255,255,0.48);
+    --cn: #F4F4F4;
+    --cd: #A6A6A6;
+    --cp: #EE5B1B;
+    --cbg: #1A1A1A;
+    --cbc: rgba(244,244,244,0.14);
+    --cbt: #A6A6A6;
+    --hint: rgba(244,244,244,0.2);
+    --hint-h: rgba(238,91,27,0.55);
 
-    /* ── Card back ── */
-    --cb-bg: #0d0d0d;
-    --cb-border: #222222;
-    --bn: #f4f4f4;
-    --bp: #ee5b1b;
-    --close-bg: rgba(255,255,255,0.07);
-    --close-b: rgba(255,255,255,0.1);
-    --close-t: rgba(255,255,255,0.32);
-    --close-hbg: rgba(255,255,255,0.14);
-    --close-ht: #f4f4f4;
-    --bdiv: rgba(255,255,255,0.06);
-    --btt: rgba(255,255,255,0.22);
-    --bdesc: rgba(255,255,255,0.5);
-    --fade: #0d0d0d;
-    --cue-bg: rgba(255,255,255,0.09);
-    --cue-text: rgba(255,255,255,0.32);
+    /* ── Card back / modal ── */
+    --cb-bg: #0D0D0D;
+    --cb-border: rgba(244,244,244,0.08);
+    --bn: #F4F4F4;
+    --bp: #EE5B1B;
+    --close-bg: #1A1A1A;
+    --close-b: rgba(244,244,244,0.14);
+    --close-t: #A6A6A6;
+    --close-hbg: #242424;
+    --close-ht: #F4F4F4;
+    --bdiv: rgba(244,244,244,0.08);
+    --btt: #8A8A8A;
+    --bdesc: #A6A6A6;
+    --fade: #0D0D0D;
+    --cue-bg: rgba(238,91,27,0.10);
+    --cue-text: #EE5B1B;
 
     /* ── Compact-layout rows ── */
-    --row-border: #181818;
-    --row-hover: #0e0e0e;
-    --num: #282828;
-    --num-h: #404040;
+    --row-border: rgba(244,244,244,0.08);
+    --row-hover: #101010;
+    --num: rgba(244,244,244,0.14);
+    --num-h: #8A8A8A;
 
     /* ── Category titles ── */
-    --cat-title: #2e2e2e;
-    --cat-sep: #1a1a1a;
-    --sep-bg: rgba(255,255,255,0.06);
+    --cat-title: #A6A6A6;
+    --cat-sep: rgba(244,244,244,0.08);
+    --sep-bg: rgba(244,244,244,0.08);
 
     /* ── Logo ── */
-    --logo-bg: #c1440e;
+    --logo-bg: #EE5B1B;
 
     /* ── Label colours ── */
-    --lg: #7aad40; --lg-bg: rgba(59,109,17,0.18); --lg-b: rgba(99,153,34,0.18);
-    --lo: #d06040; --lo-bg: rgba(216,90,48,0.14); --lo-b: rgba(240,153,123,0.18);
+    --lg: #7AAD40; --lg-bg: rgba(122,173,64,0.12); --lg-b: rgba(122,173,64,0.22);
+    --lo: #EE5B1B; --lo-bg: rgba(238,91,27,0.10); --lo-b: rgba(238,91,27,0.20);
 
     /* ── Ingredient chips ── */
-    --ing-bg: rgba(255,255,255,0.05); --ing-b: rgba(255,255,255,0.09); --ing-t: rgba(255,255,255,0.38);
+    --ing-bg: #1A1A1A; --ing-b: rgba(244,244,244,0.14); --ing-t: #A6A6A6;
 
     /* ── Nutrition ── */
-    --nut-bg: rgba(255,255,255,0.05); --nut-b: rgba(255,255,255,0.08); --nut-v: rgba(255,255,255,0.72); --nut-u: rgba(255,255,255,0.28);
+    --nut-bg: #1A1A1A; --nut-b: rgba(244,244,244,0.14); --nut-v: #F4F4F4; --nut-u: #8A8A8A;
 
     /* ── Spicy ── */
-    --dot-on: #D85A30; --dot-off: rgba(255,255,255,0.1); --spicy-t: rgba(255,255,255,0.38);
+    --dot-on: #EE5B1B; --dot-off: rgba(244,244,244,0.14); --spicy-t: #A6A6A6;
 }
 </style>

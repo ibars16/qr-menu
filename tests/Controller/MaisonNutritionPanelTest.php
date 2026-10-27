@@ -2,21 +2,22 @@
 
 namespace App\Tests\Controller;
 
+use App\Controller\Admin\ThemeController;
 use App\Entity\Category;
 use App\Entity\CategoryTranslation;
 use App\Entity\Product;
 use App\Entity\ProductTranslation;
 use App\Entity\Restaurant;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
  * Fase 3 of the nutrition-fields project (see project memory): the public
- * menu's dish-detail modal shows a maison-only "Información Nutricional"
- * panel (calories + fat/protein/carbohydrates/sugars), scoped in
- * standard/show.html.twig via `{% if theme == 'maison' %}` — the non-maison
- * branch is byte-identical to the pre-existing calories-only block.
+ * menu's dish-detail modal shows an "Información Nutricional" panel
+ * (calories + fat/protein/carbohydrates/sugars) in every theme — first
+ * built for maison, now part of the shared structure.
  *
  * The one behavior this suite exists to pin down precisely: fat/protein/
  * carbohydrates/sugars are Doctrine decimal(5,1) strings, kept as strings
@@ -198,12 +199,18 @@ final class MaisonNutritionPanelTest extends WebTestCase
         self::assertNotContains('Información Nutricional', $titles, 'the section title must not render either — not even an empty-bodied section');
     }
 
-    public function testNonMaisonThemeIsCompletelyUnaffected(): void
+    // Every theme shares the structure, so the panel isn't maison-only.
+    public static function otherThemes(): iterable
     {
-        // Same data as the full-panel maison test above, but on classic-dark
-        // — must render exactly like it always has: calories-only, plain
-        // .bsec/.nut markup, no trace of the new panel classes anywhere.
-        $product = $this->makeProduct('classic-dark', 'Plato No Maison', [
+        foreach (array_diff(array_keys(ThemeController::THEMES), ['maison']) as $theme) {
+            yield $theme => [$theme];
+        }
+    }
+
+    #[DataProvider('otherThemes')]
+    public function testEveryOtherThemeRendersTheSamePanel(string $theme): void
+    {
+        $product = $this->makeProduct($theme, 'Plato ' . $theme, [
             'calories' => 320,
             'fat' => '54.0',
             'protein' => '77.0',
@@ -213,20 +220,8 @@ final class MaisonNutritionPanelTest extends WebTestCase
 
         $crawler = $this->client->request('GET', '/r/' . $product->getCategory()->getRestaurant()->getSlug() . '?lang=es');
         self::assertResponseIsSuccessful();
-        $content = $this->client->getResponse()->getContent();
 
-        self::assertStringContainsString('320', $content);
-        self::assertStringContainsString('kcal', $content);
-        self::assertCount(0, $crawler->filter('.nutrition-grid'), 'non-maison themes must never render the new panel, even when fat/protein/carbohydrates/sugars are set');
-        self::assertStringNotContainsString('nutrition-item', $content);
-        self::assertStringNotContainsString('nutrition-label', $content);
-        // The pre-existing calories markup must be untouched: one .bsec whose
-        // .nut-v/.nut-u pair is the calories value, nothing wrapping it in
-        // the new per-item structure.
-        self::assertMatchesRegularExpression(
-            '/<div class="bsec"><div class="bsec-title">[^<]*<\/div><div class="nut"><span class="nut-v">320<\/span><span class="nut-u">kcal<\/span><\/div><\/div>/',
-            $content,
-            'the shared calories block markup must be byte-for-byte the same shape as before this feature'
-        );
+        self::assertCount(1, $crawler->filter('.nutrition-grid'), $theme . ' renders the full panel');
+        self::assertCount(5, $crawler->filter('.nutrition-grid .nutrition-item'));
     }
 }

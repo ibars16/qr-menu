@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use App\Controller\Admin\ThemeController;
 use App\Entity\Category;
 use App\Entity\CategoryTranslation;
 use App\Entity\Product;
@@ -142,11 +143,12 @@ final class MenuTextDirectionTest extends WebTestCase
         self::assertSame('ltr', $resolver->getTextDirection('xx'), 'unknown code');
     }
 
-    /** @return iterable<string, array{string}> */
+    /** @return iterable<string, array{string}> Every theme: they all share the same markup. */
     public static function themes(): iterable
     {
-        yield 'maison' => ['maison'];
-        yield 'classic-dark' => ['classic-dark'];
+        foreach (array_keys(ThemeController::THEMES) as $theme) {
+            yield $theme => [$theme];
+        }
     }
 
     #[DataProvider('themes')]
@@ -164,19 +166,17 @@ final class MenuTextDirectionTest extends WebTestCase
         self::assertStringContainsString('ناري', $html);
         self::assertStringNotContainsString('درجة الحرارة', $html);
         self::assertStringContainsString('family=IBM+Plex+Sans+Arabic', $html);
-        self::assertSame($theme === 'maison', str_contains($html, 'family=Noto+Naskh+Arabic'), 'Naskh is maison-only');
+        self::assertStringContainsString('family=Noto+Naskh+Arabic', $html);
         self::assertMatchesRegularExpression('#class="more-hint">[^<]*<i class="ti ti-chevron-left"#u', $html, '"Ver más" points the reading way');
         self::assertDoesNotMatchRegularExpression('#class="more-hint">[^<]*<i class="ti ti-chevron-right"#u', $html);
         // Not translated (nothing behind the loading screen ran): the
         // original, marked as Spanish and with its own direction.
         self::assertStringContainsString('<p class="ft-tagline"><span lang="es" dir="auto">Cocina de mercado.</span></p>', $html);
         self::assertStringContainsString('<span dir="auto">Calle Mayor 1, Madrid</span>', $html);
-        if ($theme === 'maison') {
-            self::assertStringContainsString('<span class="allergy-arrow" aria-hidden="true">←</span>', $html);
-            // Carousel: "back" points right, "next" points left.
-            self::assertMatchesRegularExpression('#banner-prev"[^>]*><i class="ti ti-chevron-right"#', $html);
-            self::assertMatchesRegularExpression('#banner-next"[^>]*><i class="ti ti-chevron-left"#', $html);
-        }
+        self::assertStringContainsString('<span class="allergy-arrow" aria-hidden="true">←</span>', $html);
+        // Carousel: "back" points right, "next" points left.
+        self::assertMatchesRegularExpression('#banner-prev"[^>]*><i class="ti ti-chevron-right"#', $html);
+        self::assertMatchesRegularExpression('#banner-next"[^>]*><i class="ti ti-chevron-left"#', $html);
         self::assertSame($queued, (int) $this->em->getConnection()->fetchOne('SELECT COUNT(*) FROM messenger_messages'), 'rendering ar queued nothing');
     }
 
@@ -191,10 +191,8 @@ final class MenuTextDirectionTest extends WebTestCase
         self::assertStringNotContainsString('dir="auto"', $html);
         self::assertMatchesRegularExpression('#class="more-hint">[^<]*<i class="ti ti-chevron-right"#u', $html);
         self::assertStringContainsString('<p class="ft-tagline">Cocina de mercado.</p>', $html);
-        if ($theme === 'maison') {
-            self::assertStringContainsString('<span class="allergy-arrow" aria-hidden="true">→</span>', $html);
-            self::assertMatchesRegularExpression('#banner-prev"[^>]*><i class="ti ti-chevron-left"#', $html);
-            self::assertMatchesRegularExpression('#banner-next"[^>]*><i class="ti ti-chevron-right"#', $html);
-        }
+        self::assertStringContainsString('<span class="allergy-arrow" aria-hidden="true">→</span>', $html);
+        self::assertMatchesRegularExpression('#banner-prev"[^>]*><i class="ti ti-chevron-left"#', $html);
+        self::assertMatchesRegularExpression('#banner-next"[^>]*><i class="ti ti-chevron-right"#', $html);
     }
 }
