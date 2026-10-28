@@ -103,6 +103,7 @@ final class ProductAllergenResolverTest extends KernelTestCase
         $globalMilkTranslation = new GlobalIngredientTranslation();
         $globalMilkTranslation->setLocale('es');
         $globalMilkTranslation->setName('Leche en polvo de test');
+        $globalMilkTranslation->setSource(GlobalIngredientTranslation::SOURCE_DATASET);
         $this->globalMilkMayContain->addTranslation($globalMilkTranslation);
         $globalMilkLink = new GlobalIngredientAllergen();
         $globalMilkLink->setAllergen($this->allergen('milk'));

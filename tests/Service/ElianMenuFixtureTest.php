@@ -85,6 +85,7 @@ final class ElianMenuFixtureTest extends KernelTestCase
         $apioTranslation = new GlobalIngredientTranslation();
         $apioTranslation->setLocale('es');
         $apioTranslation->setName('apio');
+        $apioTranslation->setSource(GlobalIngredientTranslation::SOURCE_DATASET);
         $apio->addTranslation($apioTranslation);
         $this->em->persist($apioTranslation);
 

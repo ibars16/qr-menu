@@ -73,6 +73,7 @@ final class MenuAdminComputeAllergensTest extends WebTestCase
         $translation = new GlobalIngredientTranslation();
         $translation->setLocale('es');
         $translation->setName('Leche de test');
+        $translation->setSource(GlobalIngredientTranslation::SOURCE_DATASET);
         $this->globalMilk->addTranslation($translation);
         $link = new GlobalIngredientAllergen();
         $link->setAllergen($this->allergen('milk'));

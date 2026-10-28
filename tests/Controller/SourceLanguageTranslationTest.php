@@ -239,6 +239,7 @@ final class SourceLanguageTranslationTest extends WebTestCase
             $t = new GlobalIngredientTranslation();
             $t->setLocale($locale);
             $t->setName($name);
+            $t->setSource(GlobalIngredientTranslation::SOURCE_DATASET);
             $ingredient->addTranslation($t);
         }
         $this->em->persist($ingredient);

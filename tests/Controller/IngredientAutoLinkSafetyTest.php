@@ -31,6 +31,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  * be exact and unambiguous: a case-insensitive match in the menu's
  * language only, never when two library ingredients share that name.
  * Anything else becomes a private ingredient, as when nothing matches.
+ * Machine-translated library names (source 'ai') never link at all.
  *
  * Every name carries a uniqid() so the test database's own library rows
  * can never match.
@@ -125,8 +126,9 @@ final class IngredientAutoLinkSafetyTest extends WebTestCase
     /**
      * @param array<string, string>               $names     locale => name
      * @param array<string, AllergenPresence>     $allergens allergen code => presence
+     * @param array<string, string>               $sources   locale => name source (default dataset)
      */
-    private function globalIngredient(array $names, array $allergens = []): int
+    private function globalIngredient(array $names, array $allergens = [], array $sources = []): int
     {
         $ingredient = new GlobalIngredient();
         $ingredient->setCode('test-auto-link-' . uniqid());
@@ -134,6 +136,7 @@ final class IngredientAutoLinkSafetyTest extends WebTestCase
             $t = new GlobalIngredientTranslation();
             $t->setLocale($locale);
             $t->setName($name);
+            $t->setSource($sources[$locale] ?? GlobalIngredientTranslation::SOURCE_DATASET);
             $ingredient->addTranslation($t);
         }
         foreach ($allergens as $code => $presence) {
@@ -218,6 +221,73 @@ final class IngredientAutoLinkSafetyTest extends WebTestCase
         $this->saveTyped(['Testhuevo ' . $this->u]);
 
         self::assertSame(['r:Testhuevo ' . $this->u], $this->links($this->productId), 'two library ingredients share the name: neither is linked');
+    }
+
+    public function testAnAiTranslatedNameNeverLinks(): void
+    {
+        $this->globalIngredient(
+            ['en' => 'Testmilk ' . $this->u, 'es' => 'Testleche ia ' . $this->u],
+            ['milk' => AllergenPresence::CONTAINS],
+            ['es' => GlobalIngredientTranslation::SOURCE_AI],
+        );
+
+        $this->saveTyped(['Testleche ia ' . $this->u]);
+
+        self::assertSame(['r:Testleche ia ' . $this->u], $this->links($this->productId), 'an exact, unambiguous match on an AI name still creates a private ingredient');
+    }
+
+    public function testAnAiNameDoesNotBlockTheDatasetName(): void
+    {
+        $dataset = $this->globalIngredient(['en' => 'Testmilk ' . $this->u, 'es' => 'Testleche ' . $this->u], ['milk' => AllergenPresence::CONTAINS]);
+        $this->globalIngredient(['en' => 'Testwhey ' . $this->u, 'es' => 'Testleche ' . $this->u], [], ['es' => GlobalIngredientTranslation::SOURCE_AI]);
+
+        $this->saveTyped(['Testleche ' . $this->u]);
+
+        self::assertSame(['g:' . $dataset], $this->links($this->productId), 'AI names take no part at all — not even as a tie');
+    }
+
+    public function testTheImportNeverLinksAnAiName(): void
+    {
+        $this->globalIngredient(
+            ['en' => 'Testmilk ' . $this->u, 'es' => 'Testleche ia ' . $this->u],
+            ['milk' => AllergenPresence::CONTAINS],
+            ['es' => GlobalIngredientTranslation::SOURCE_AI],
+        );
+
+        $product = $this->importIngredients(['Testleche ia ' . $this->u]);
+
+        self::assertSame(['r:Testleche ia ' . $this->u], $this->links($product));
+    }
+
+    /** @param list<string> $names */
+    private function importIngredients(array $names): Product
+    {
+        $restaurant = $this->em->getRepository(Restaurant::class)->find($this->restaurantId);
+        $batch = new MenuImportBatch($restaurant);
+        $this->em->persist($batch);
+        $page = new MenuImportPage($batch, 'test.jpg', 0, hash('sha256', $this->u . implode('|', $names)));
+        $page->setStatus(MenuImportPageStatus::EXTRACTED);
+        $page->setDetectedLocale('es');
+        $page->setExtractedData([
+            'detected_language' => 'es',
+            'categories' => [[
+                'name' => 'Entrantes ' . $this->u,
+                'products' => [[
+                    'name' => 'Plato importado',
+                    'description' => null,
+                    'price' => 9.5,
+                    'ingredients' => array_map(static fn (string $name) => ['name' => $name, 'uncertain' => false], $names),
+                    'dietary_markers' => [],
+                ]],
+            ]],
+        ]);
+        $this->em->persist($page);
+        $batch->addPage($page);
+        $this->em->flush();
+
+        static::getContainer()->get(MenuImportAssembler::class)->assemble($batch);
+
+        return $this->em->getRepository(Product::class)->findOneBy(['importBatch' => $batch]);
     }
 
     public function testTheImportFollowsTheSameRules(): void

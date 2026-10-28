@@ -516,6 +516,7 @@ final class IngredientAllergenBackfillTest extends KernelTestCase
         $translation = new GlobalIngredientTranslation();
         $translation->setLocale('en');
         $translation->setName($name);
+        $translation->setSource(GlobalIngredientTranslation::SOURCE_DATASET);
         $ingredient->addTranslation($translation);
         $this->em->persist($translation);
         foreach ($links as $code => $source) {

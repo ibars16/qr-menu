@@ -114,6 +114,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Command\TranslateGlobalIngredientsCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     App\Command\MenuEvalCommand:
         arguments:
             $projectDir: '%kernel.project_dir%'

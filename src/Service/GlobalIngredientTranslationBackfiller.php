@@ -105,6 +105,7 @@ final class GlobalIngredientTranslationBackfiller
         $translation = new GlobalIngredientTranslation();
         $translation->setLocale($locale);
         $translation->setName($name);
+        $translation->setSource(GlobalIngredientTranslation::SOURCE_AI);
         $ingredient->addTranslation($translation);
         $this->em->persist($translation);
     }

@@ -1254,15 +1254,21 @@ class MenuAdminController extends AbstractController
             return $this->json([]);
         }
 
-        // Only ever matches/returns names in the current Admin Panel
-        // language — an ingredient translated in another locale must never
-        // appear in these results, even if it exists for this restaurant (or
-        // the global library).
+        // The restaurant's own ingredients are searched in the Admin Panel
+        // language and the menu language (where typed and imported names are
+        // written); the Global Ingredient Library also in en and es. Both
+        // show each match in the panel language when it has a name there.
         //
         // The restaurant's own ingredients are searched first; the Global
         // Ingredient Library only fills whatever's left of the result cap,
         // so a restaurant's own ingredients always take priority.
-        $restaurantMatches = $em->getRepository(Ingredient::class)->searchByLocale($restaurant, $locale, $query, $limit);
+        $restaurantMatches = $em->getRepository(Ingredient::class)->searchByLocales(
+            $restaurant,
+            [$locale, $restaurant->getDefaultLanguage()],
+            $locale,
+            $query,
+            $limit,
+        );
 
         $results = array_map(
             static fn (array $r) => ['value' => 'r:' . $r['id'], 'name' => $r['name'], 'source' => 'restaurant'],
@@ -1271,7 +1277,12 @@ class MenuAdminController extends AbstractController
 
         $remaining = $limit - count($results);
         if ($remaining > 0) {
-            $globalMatches = $em->getRepository(GlobalIngredient::class)->searchByLocale($locale, $query, $remaining);
+            $globalMatches = $em->getRepository(GlobalIngredient::class)->searchByLocales(
+                [$locale, $restaurant->getDefaultLanguage(), 'en', 'es'],
+                $locale,
+                $query,
+                $remaining,
+            );
             foreach ($globalMatches as $r) {
                 $results[] = ['value' => 'g:' . $r['id'], 'name' => $r['name'], 'source' => 'global'];
             }

@@ -114,13 +114,19 @@ final class ImportGlobalIngredientsCommand extends Command
                 }
 
                 $translation = $ingredient->getTranslation($locale);
+                if ($translation?->getSource() === GlobalIngredientTranslation::SOURCE_HUMAN) {
+                    // A hand-corrected name outranks the dataset it came from.
+                    continue;
+                }
                 if (!$translation) {
                     $translation = new GlobalIngredientTranslation();
                     $translation->setLocale($locale);
                     $ingredient->addTranslation($translation);
                     $this->em->persist($translation);
                 }
+                // Also upgrades an earlier AI name once the CSV carries one.
                 $translation->setName($name);
+                $translation->setSource(GlobalIngredientTranslation::SOURCE_DATASET);
                 $translationsWritten++;
             }
 

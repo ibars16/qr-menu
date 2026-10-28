@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Ingredient;
 use App\Entity\Restaurant;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,38 +17,52 @@ class IngredientRepository extends ServiceEntityRepository
     }
 
     /**
-     * Search for autocomplete: matches only within the given locale, so the
-     * admin never sees ingredient names from a language other than the one
-     * their Admin Panel is currently displayed in. Ranked by relevance — see
-     * IngredientRelevanceRanking — not alphabetically.
+     * Search for autocomplete across $locales — the Admin Panel language and
+     * the menu language, where a typed or imported name is written. Each
+     * ingredient appears once, ranked by its best-matching name (see
+     * IngredientRelevanceRanking), and is shown in $displayLocale, or by the
+     * name that matched when it has none there.
      *
      * Uses a raw query (rather than DQL) so the ranking's ILIKE/similarity
      * matches can hit the pg_trgm GIN index on ingredient_translation.name.
      *
+     * @param  list<string> $locales
      * @return list<array{id: int, name: string}>
      */
-    public function searchByLocale(Restaurant $restaurant, string $locale, string $query, int $limit = 20): array
+    public function searchByLocales(Restaurant $restaurant, array $locales, string $displayLocale, string $query, int $limit = 20): array
     {
         $ranking = IngredientRelevanceRanking::build('it.name', $query);
 
         $rows = $this->getEntityManager()->getConnection()->executeQuery(
-            "SELECT i.id, it.name
-             FROM ingredient i
-             INNER JOIN ingredient_translation it ON it.ingredient_id = i.id
-             WHERE i.restaurant_id = :restaurant
-               AND it.locale = :locale
-               AND {$ranking['where']}
-             ORDER BY {$ranking['orderBy']}
+            "WITH matches AS (
+                 SELECT i.id,
+                        it.name AS matched,
+                        ROW_NUMBER() OVER (PARTITION BY i.id ORDER BY {$ranking['orderBy']}) AS best,
+                        ROW_NUMBER() OVER (ORDER BY {$ranking['orderBy']}) AS position
+                 FROM ingredient i
+                 INNER JOIN ingredient_translation it ON it.ingredient_id = i.id
+                 WHERE i.restaurant_id = :restaurant
+                   AND it.locale IN (:locales)
+                   AND {$ranking['where']}
+             )
+             SELECT m.id, COALESCE(shown.name, m.matched) AS name
+             FROM matches m
+             LEFT JOIN ingredient_translation shown
+                 ON shown.ingredient_id = m.id AND shown.locale = :display
+             WHERE m.best = 1
+             ORDER BY m.position
              LIMIT :limit",
             [
                 'restaurant' => $restaurant->getId(),
-                'locale'     => $locale,
+                'locales'    => array_values(array_unique($locales)),
+                'display'    => $displayLocale,
                 ...$ranking['params'],
                 'limit'      => $limit,
             ],
             [
                 'restaurant' => ParameterType::INTEGER,
-                'locale'     => ParameterType::STRING,
+                'locales'    => ArrayParameterType::STRING,
+                'display'    => ParameterType::STRING,
                 ...$ranking['types'],
                 'limit'      => ParameterType::INTEGER,
             ]

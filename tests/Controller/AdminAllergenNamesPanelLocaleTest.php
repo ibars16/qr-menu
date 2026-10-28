@@ -87,6 +87,7 @@ final class AdminAllergenNamesPanelLocaleTest extends WebTestCase
         $gt = new GlobalIngredientTranslation();
         $gt->setLocale('es');
         $gt->setName('Leche de test ' . $u);
+        $gt->setSource(GlobalIngredientTranslation::SOURCE_DATASET);
         $global->addTranslation($gt);
         $link = new GlobalIngredientAllergen();
         $link->setAllergen($milk);
