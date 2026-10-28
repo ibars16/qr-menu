@@ -87,3 +87,5 @@ footer:
         fri: "T6"
         sat: "T7"
         sun: "CN"
+unavailable:
+    message: "Thực đơn hiện không khả dụng"

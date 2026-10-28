@@ -87,3 +87,5 @@ footer:
         fri: "Vie"
         sat: "Sáb"
         sun: "Dom"
+unavailable:
+    message: "Carta no disponible en este momento"

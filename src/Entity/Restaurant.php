@@ -116,6 +116,24 @@ class Restaurant
     #[ORM\Column]
     private int $menuContentVersion = 1;
 
+    /**
+     * The only thing that decides whether this restaurant is active: expired
+     * = paidUntil before today (so paidUntil itself is still an active day).
+     * Starts at signup + TRIAL_DAYS (the free trial); afterwards it only
+     * moves via markPaid() / deactivateNow() from the platform panel
+     * (Platform\PlatformController). "Today" is the PHP default timezone (UTC).
+     */
+    #[ORM\Column(type: 'date_immutable')]
+    private \DateTimeImmutable $paidUntil;
+
+    /** Last plan paid for (PLAN_MONTHLY | PLAN_YEARLY); null = never paid, i.e. on the free trial. */
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $plan = null;
+
+    /** Day the last payment was registered from /platform; null = none. */
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $lastPaidAt = null;
+
     #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Table::class, cascade: ['persist', 'remove'])]
     private Collection $tables;
 
@@ -139,6 +157,7 @@ class Restaurant
         $this->categories  = new ArrayCollection();
         $this->users       = new ArrayCollection();
         $this->productTags = new ArrayCollection();
+        $this->paidUntil   = new \DateTimeImmutable('today +' . self::TRIAL_DAYS . ' days');
     }
 
     public function getId(): ?int
@@ -337,25 +356,92 @@ class Restaurant
 
     private const TRIAL_DAYS = 30;
 
-    /** Purely computed from createdAt — no stored column, nothing to migrate. */
-    public function getTrialEndsAt(): \DateTimeImmutable
+    public const PLAN_MONTHLY = 'monthly';
+    public const PLAN_YEARLY  = 'yearly';
+
+    /** How far each plan extends paidUntil. */
+    public const PLAN_MONTHS = [self::PLAN_MONTHLY => 1, self::PLAN_YEARLY => 12];
+
+    public function getPaidUntil(): \DateTimeImmutable
     {
-        return $this->getCreatedAt()->modify('+' . self::TRIAL_DAYS . ' days');
+        return $this->paidUntil;
     }
 
-    public function isTrialActive(): bool
+    public function isExpired(?\DateTimeImmutable $today = null): bool
     {
-        return new \DateTimeImmutable() < $this->getTrialEndsAt();
+        return $this->paidUntil < ($today ?? new \DateTimeImmutable('today'));
     }
 
-    public function getTrialDaysRemaining(): int
+    /**
+     * One more period of $plan (PLAN_MONTHS) from whichever is later,
+     * today or the current paidUntil — so paying early never loses days, and
+     * paying late never back-dates. Clamped to the target month's last day
+     * (31/01 +1 month → 28/02 or 29/02; 29/02 +1 year → 28/02), unlike PHP's
+     * own '+1 month' which would overflow to 03/03.
+     */
+    public function markPaid(string $plan, ?\DateTimeImmutable $today = null): void
     {
-        if (!$this->isTrialActive()) {
+        $today = $today ?? new \DateTimeImmutable('today');
+
+        $this->paidUntil  = $this->paidUntilAfter($plan, $today);
+        $this->plan       = $plan;
+        $this->lastPaidAt = $today;
+    }
+
+    public function getPlan(): ?string
+    {
+        return $this->plan;
+    }
+
+    public function getLastPaidAt(): ?\DateTimeImmutable
+    {
+        return $this->lastPaidAt;
+    }
+
+    /** Days from today to paidUntil: 0 = expires today, negative = expired that many days ago. */
+    public function getDaysLeft(?\DateTimeImmutable $today = null): int
+    {
+        $diff = ($today ?? new \DateTimeImmutable('today'))->diff($this->paidUntil);
+
+        return $diff->invert ? -$diff->days : $diff->days;
+    }
+
+    /** The paidUntil markPaid($plan) would set, without setting it (for /platform's payment dialog). */
+    public function paidUntilAfter(string $plan, ?\DateTimeImmutable $today = null): \DateTimeImmutable
+    {
+        if (!isset(self::PLAN_MONTHS[$plan])) {
+            throw new \InvalidArgumentException(sprintf('Unknown plan "%s".', $plan));
+        }
+
+        $months = self::PLAN_MONTHS[$plan];
+        $today  = $today ?? new \DateTimeImmutable('today');
+        $base  = $this->paidUntil > $today ? $this->paidUntil : $today;
+
+        $target = $base->modify('first day of +' . $months . ' months');
+        $day    = min((int) $base->format('j'), (int) $target->format('t'));
+
+        return $target->setDate((int) $target->format('Y'), (int) $target->format('n'), $day);
+    }
+
+    public function deactivateNow(?\DateTimeImmutable $today = null): void
+    {
+        $this->paidUntil = ($today ?? new \DateTimeImmutable('today'))->modify('-1 day');
+    }
+
+    /** On the free trial: never paid (plan null) and not expired. */
+    public function isTrialActive(?\DateTimeImmutable $today = null): bool
+    {
+        return $this->plan === null && !$this->isExpired($today);
+    }
+
+    public function getTrialDaysRemaining(?\DateTimeImmutable $today = null): int
+    {
+        if (!$this->isTrialActive($today)) {
             return 0;
         }
 
-        // +1 rounds up so signup day shows "30 días", not "29".
-        return (new \DateTimeImmutable())->diff($this->getTrialEndsAt())->days + 1;
+        // paidUntil itself is still an active day, so the last day shows "1", not "0".
+        return max(1, $this->getDaysLeft($today));
     }
 
     public function getTables(): Collection

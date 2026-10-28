@@ -87,3 +87,5 @@ footer:
         fri: "금"
         sat: "토"
         sun: "일"
+unavailable:
+    message: "현재 메뉴를 이용할 수 없습니다"

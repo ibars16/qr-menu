@@ -87,3 +87,5 @@ footer:
         fri: "Fr"
         sat: "Sa"
         sun: "So"
+unavailable:
+    message: "Speisekarte derzeit nicht verfügbar"

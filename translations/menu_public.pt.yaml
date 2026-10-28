@@ -87,3 +87,5 @@ footer:
         fri: "Sex"
         sat: "Sáb"
         sun: "Dom"
+unavailable:
+    message: "Menu indisponível de momento"

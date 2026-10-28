@@ -40,3 +40,9 @@ bottom_nav:
     qr: QR
     users: Equipa
     settings: Config
+
+subscription_expired: "A sua subscrição expirou em %date%"
+
+trial:
+    days_left_singular: "Teste gratuito · resta %count% dia"
+    days_left_plural: "Teste gratuito · restam %count% dias"

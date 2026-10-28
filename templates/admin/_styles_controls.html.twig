@@ -1,0 +1,27 @@
+{# Buttons and flash messages — shared by admin/base.html.twig and
+   platform/index.html.twig. Included inside a <style> block. #}
+        /* ══ BUTTONS ══ */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+            cursor: pointer; text-decoration: none; border: 1px solid var(--bd-2);
+            background: var(--bg-input); color: var(--tx-1); transition: border-color 0.15s, color 0.15s; min-height: 36px;
+        }
+        .btn:hover { border-color: var(--tx-6); color: var(--tx-hi); }
+        .btn i { font-size: 15px; }
+        .btn-primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+        .btn-primary:hover { opacity: 0.9; color: #fff; }
+        .btn-ai { background: #2a2060; border-color: #534AB7; color: #a09aee; }
+        .btn-ai:hover { background: #342870; color: #c0baff; }
+        .btn-danger { background: var(--bg-input); border-color: var(--bd-2); color: var(--tx-4); }
+        .btn-danger:hover { color: var(--err-text);border-color: rgba(240,153,123,0.3); }
+        @media (max-width: 767px) { .btn { min-height: 44px; padding: 0 14px; font-size: 14px; } }
+
+        .flash { padding: 10px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .flash-success { background: rgba(40,80,10,0.2); border: 1px solid rgba(99,153,34,0.3); color: #7aad40; }
+        .flash-error   { background: rgba(193,68,14,0.15); border: 1px solid rgba(193,68,14,0.3); color: var(--err-text); }
+        /* Distinct from flash-error on purpose: a quality warning (see
+           SettingsController's hero-image "needs confirmation" branch) is
+           not a rejection — amber, not red, so it doesn't read as something
+           broken. */
+        .flash-warning { background: rgba(193,150,14,0.15); border: 1px solid rgba(193,150,14,0.3); color: var(--warn-fg); }

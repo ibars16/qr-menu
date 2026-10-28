@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    {# Login is a Turbo page: without a full reload, its inline styles
+       (background glow, centered body) stay applied after the redirect here.
+       See public/base.html.twig's turbo_meta block. #}
+    <meta name="turbo-visit-control" content="reload">
+    <title>Plataforma — QR Menu</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+    <script>(function(){try{if(localStorage.getItem('admin-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
+    <style>
+        {% include 'admin/_styles_tokens.html.twig' %}
+        {% include 'admin/_styles_controls.html.twig' %}
+        {% include 'admin/_styles_modal.html.twig' %}
+
+        /* Same bar as admin's .main-header. */
+        .platform-header {
+            padding: 14px 24px; border-bottom: 1px solid var(--bd-1);
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            background: var(--bg-nav); position: sticky; top: 0; z-index: 100;
+        }
+        .platform-title { font-size: var(--fs-lg); font-weight: 600; color: var(--tx-hi); letter-spacing: -0.3px; }
+        .platform-body { padding: var(--sp-6); }
+
+        /* Summary cards */
+        .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-3); margin-bottom: var(--sp-5); }
+        .summary-card {
+            background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg);
+            padding: var(--sp-4);
+        }
+        .summary-value { font-size: var(--fs-2xl); font-weight: 700; color: var(--tx-hi); line-height: 1.1; }
+        .summary-label { margin-top: var(--sp-1); font-size: var(--fs-sm); color: var(--tx-muted); }
+
+        /* List */
+        .table-wrap {
+            width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+            background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
+        th, td { text-align: left; padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--bd-1); vertical-align: middle; }
+        th { font-size: var(--fs-sm); font-weight: 600; color: var(--tx-3); white-space: nowrap; }
+        td { color: var(--tx-1); }
+        tbody tr:last-child td { border-bottom: none; }
+        th.actions-col { text-align: right; }
+
+        .r-name { font-weight: 600; color: var(--tx-hi); }
+        .sub { margin-top: 2px; font-size: var(--fs-sm); color: var(--tx-muted); }
+        .sub a { color: var(--tx-muted); }
+        .sub a:hover { color: var(--tx-hi); }
+
+        /* Same green as admin's .flash-success. */
+        .status { font-weight: 600; white-space: nowrap; }
+        .status-active  { color: #7aad40; }
+        .status-trial   { color: var(--warn-fg); }
+        .status-expired { color: var(--err-text); }
+
+        .until { white-space: nowrap; }
+        .until-soon, .until-soon .sub { color: var(--warn-fg); }
+        .until-expired, .until-expired .sub { color: var(--err-text); }
+
+        .actions { display: flex; justify-content: flex-end; align-items: center; gap: var(--sp-2); }
+        .actions form { display: contents; }
+        .empty { color: var(--tx-muted); }
+
+        /* Payment dialog options */
+        .plan-options { display: flex; flex-direction: column; gap: var(--sp-2); }
+        .plan-option {
+            display: flex; align-items: center; gap: var(--sp-3);
+            padding: var(--sp-3) 14px; border: 1px solid var(--bd-2); border-radius: 10px;
+            background: var(--bg-input); cursor: pointer; font-size: var(--fs-md); color: var(--tx-1);
+        }
+        .plan-option:has(input:checked) { border-color: var(--brand); }
+        .plan-option input { accent-color: var(--brand); }
+
+        @media (max-width: 767px) {
+            .platform-header { padding: 12px 16px; }
+            .platform-title { font-size: 17px; }
+            .platform-body { padding: 12px; }
+            .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        /* Mobile: one stacked card per restaurant. */
+        @media (max-width: 639px) {
+            .table-wrap { background: none; border: none; overflow: visible; }
+            table, tbody, tr, td { display: block; }
+            thead { display: none; }
+            tbody { display: flex; flex-direction: column; gap: var(--sp-2); }
+            tr { background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg); padding: var(--sp-1) 0; }
+            td { border-bottom: none; padding: var(--sp-2) var(--sp-4); }
+            tbody tr:last-child td { border-bottom: none; }
+            td[data-label]::before {
+                content: attr(data-label); display: block; margin-bottom: 2px;
+                font-size: var(--fs-xs); font-weight: 600; color: var(--tx-5);
+                text-transform: uppercase; letter-spacing: 0.07em;
+            }
+            .actions { padding-top: var(--sp-1); }
+            .actions .btn { flex: 1; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <header class="platform-header">
+        <div class="platform-title">Plataforma</div>
+        <a class="btn" href="{{ path('admin_logout') }}"><i class="ti ti-logout" aria-hidden="true"></i> Cerrar sesión</a>
+    </header>
+
+    <main class="platform-body">
+        {% for message in app.flashes('success') %}
+            <div class="flash flash-success">{{ message }}</div>
+        {% endfor %}
+
+        <div class="summary">
+            <div class="summary-card"><div class="summary-value">{{ summary.active }}</div><div class="summary-label">Activas</div></div>
+            <div class="summary-card"><div class="summary-value">{{ summary.trial }}</div><div class="summary-label">En prueba</div></div>
+            <div class="summary-card"><div class="summary-value">{{ summary.expiringSoon }}</div><div class="summary-label">Vencen en 7 días</div></div>
+            <div class="summary-card"><div class="summary-value">{{ summary.expired }}</div><div class="summary-label">Vencidas</div></div>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Restaurante</th>
+                        <th>Suscripción</th>
+                        <th>Válida hasta</th>
+                        <th class="actions-col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        {% set restaurant = row.restaurant %}
+                        {% set days = restaurant.daysLeft %}
+                        <tr>
+                            <td>
+                                <div class="r-name">{{ restaurant.name }}</div>
+                                <div class="sub">
+                                    {{ row.owner ? row.owner.email : 'Sin dueño' }}
+                                    · <a href="{{ path('menu_show', {slug: restaurant.slug}) }}" target="_blank" rel="noopener">Ver carta</a>
+                                </div>
+                            </td>
+                            <td data-label="Suscripción">
+                                {% if restaurant.expired %}
+                                    <div class="status status-expired">🔴 Vencida</div>
+                                {% elseif restaurant.plan is null %}
+                                    <div class="status status-trial">🟡 Prueba gratis</div>
+                                {% else %}
+                                    <div class="status status-active">🟢 Activa · {{ restaurant.plan == 'yearly' ? 'Anual' : 'Mensual' }}</div>
+                                {% endif %}
+                                <div class="sub">{{ restaurant.lastPaidAt ? 'Último cobro ' ~ restaurant.lastPaidAt|date('d/m/Y') : 'Sin cobros' }}</div>
+                            </td>
+                            <td data-label="Válida hasta" class="until {{ days < 0 ? 'until-expired' : (days <= 7 ? 'until-soon' : '') }}">
+                                <div>{{ restaurant.paidUntil|date('d/m/Y') }}</div>
+                                <div class="sub">
+                                    {%- if days < 0 -%}
+                                        venció hace {{ -days }} {{ days == -1 ? 'día' : 'días' }}
+                                    {%- elseif days == 0 -%}
+                                        vence hoy
+                                    {%- elseif days == 1 -%}
+                                        queda 1 día
+                                    {%- else -%}
+                                        quedan {{ days }} días
+                                    {%- endif -%}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="actions">
+                                    <button type="button" class="btn btn-primary" onclick="PaymentUI.open(this)"
+                                            data-name="{{ restaurant.name }}"
+                                            data-action="{{ path('platform_register_payment', {id: restaurant.id}) }}"
+                                            data-token="{{ csrf_token('platform-register-payment-' ~ restaurant.id) }}"
+                                            data-until-monthly="{{ restaurant.paidUntilAfter('monthly')|date('d/m/Y') }}"
+                                            data-until-yearly="{{ restaurant.paidUntilAfter('yearly')|date('d/m/Y') }}">
+                                        Registrar pago
+                                    </button>
+                                    <form method="post" action="{{ path('platform_deactivate', {id: restaurant.id}) }}"
+                                          onsubmit="return confirm({{ ('¿Desactivar ' ~ restaurant.name ~ '? Su carta dejará de verse.')|json_encode }})">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('platform-deactivate-' ~ restaurant.id) }}">
+                                        <button type="submit" class="btn btn-danger">Desactivar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="empty">No hay restaurantes.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    {# Payment dialog: admin's modal (desktop) + bottom sheet (mobile) pair,
+       each with its own copy of the form; PaymentUI fills in the restaurant. #}
+    {% for panel in [{id: 'payment-modal', overlay: 'modal-overlay', box: 'modal'}, {id: 'payment-sheet', overlay: 'sheet-overlay', box: 'sheet'}] %}
+        <div class="{{ panel.overlay }}" id="{{ panel.id }}" onclick="if(event.target===this)PaymentUI.close()">
+            <div class="{{ panel.box }}" role="dialog" aria-modal="true" aria-labelledby="{{ panel.id }}-title">
+                {% if panel.box == 'sheet' %}<div class="sheet-handle"></div>{% endif %}
+                <div class="panel-header">
+                    <div class="panel-title" id="{{ panel.id }}-title" data-title></div>
+                    <button type="button" class="panel-close" onclick="PaymentUI.close()" aria-label="Cerrar">
+                        <i class="ti ti-x" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <form method="post" class="payment-form" style="display: contents">
+                    <input type="hidden" name="_token" value="">
+                    <div class="panel-body">
+                        <div class="plan-options">
+                            <label class="plan-option">
+                                <input type="radio" name="plan" value="monthly" checked>
+                                <span>1 mes → activa hasta <span data-until="monthly"></span></span>
+                            </label>
+                            <label class="plan-option">
+                                <input type="radio" name="plan" value="yearly">
+                                <span>1 año → activa hasta <span data-until="yearly"></span></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button type="button" class="btn" onclick="PaymentUI.close()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="ti ti-check" aria-hidden="true"></i> Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+
+    <script>
+        const PaymentUI = {
+            panels: ['payment-modal', 'payment-sheet'].map(id => document.getElementById(id)),
+            open(button) {
+                const d = button.dataset;
+                this.panels.forEach(panel => {
+                    panel.querySelector('[data-title]').textContent = 'Registrar pago · ' + d.name;
+                    const form = panel.querySelector('.payment-form');
+                    form.action = d.action;
+                    form.elements._token.value = d.token;
+                    form.querySelector('input[value="monthly"]').checked = true;
+                    panel.querySelector('[data-until="monthly"]').textContent = d.untilMonthly;
+                    panel.querySelector('[data-until="yearly"]').textContent = d.untilYearly;
+                });
+                // Same breakpoint as admin's window.isMobile().
+                (window.innerWidth < 768 ? this.panels[1] : this.panels[0]).classList.add('open');
+            },
+            close() {
+                this.panels.forEach(panel => panel.classList.remove('open'));
+            },
+        };
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') PaymentUI.close(); });
+    </script>
+</body>
+</html>

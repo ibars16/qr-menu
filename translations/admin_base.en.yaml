@@ -40,3 +40,9 @@ bottom_nav:
     qr: QR
     users: Team
     settings: Config
+
+subscription_expired: "Your subscription expired on %date%"
+
+trial:
+    days_left_singular: "Free trial · %count% day left"
+    days_left_plural: "Free trial · %count% days left"

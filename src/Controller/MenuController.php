@@ -86,6 +86,15 @@ class MenuController extends AbstractController
             throw $this->createNotFoundException('Restaurante no encontrado.');
         }
 
+        // Expired subscription (Restaurant::isExpired()): a plain page with
+        // just the name, and nothing below runs — no translation or AI work.
+        if ($restaurant->isExpired()) {
+            return $this->render('menu/unavailable.html.twig', [
+                'restaurant' => $restaurant,
+                'locale'     => $this->resolveLocale($restaurant, $request, $menuPreferencesResolver),
+            ], new Response(status: Response::HTTP_SERVICE_UNAVAILABLE));
+        }
+
         return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $productTranslationService, $categoryTranslationService, $productRepo, $productViewRepo, $menuPreferencesResolver, $allergenResolver, $categoryTypeFilterResolver, $translator, $ownerTextTranslationService);
     }
 
@@ -119,6 +128,9 @@ class MenuController extends AbstractController
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
             return $this->json(['ok' => false], 404);
+        }
+        if ($restaurant->isExpired()) {
+            return $this->json(['ok' => false], 503);
         }
 
         $locale = $request->query->get('lang', '');
@@ -170,6 +182,9 @@ class MenuController extends AbstractController
         if (!$restaurant) {
             return $this->json(['ok' => false], 404);
         }
+        if ($restaurant->isExpired()) {
+            return $this->json(['ok' => false], 503);
+        }
 
         if (!$this->allowViewTracking($cache, $restaurant->getId(), $request->getClientIp() ?? '')) {
             return $this->json(['error' => 'rate_limited'], 429);
@@ -217,6 +232,21 @@ class MenuController extends AbstractController
         return true;
     }
 
+    /**
+     * Language: explicit ?lang= override > saved preference > device
+     * language (if supported) > restaurant's own fallback language.
+     */
+    private function resolveLocale(\App\Entity\Restaurant $restaurant, Request $request, MenuPreferencesResolver $menuPreferencesResolver): string
+    {
+        $queryLang = $request->query->get('lang');
+        if ($menuPreferencesResolver->isLanguageSupported($queryLang)) {
+            return $queryLang;
+        }
+
+        return $menuPreferencesResolver->readCookie($request)['lang']
+            ?? $menuPreferencesResolver->detectLanguage($request, $restaurant->getDefaultLanguage());
+    }
+
     private function renderMenu(
         \App\Entity\Restaurant $restaurant,
         Request $request,
@@ -239,12 +269,8 @@ class MenuController extends AbstractController
         // a previous visit — never the restaurant's own settings.
         $savedPrefs = $menuPreferencesResolver->readCookie($request);
 
-        // Language: explicit ?lang= override > saved preference > device
-        // language (if supported) > restaurant's own fallback language.
         $queryLang = $request->query->get('lang');
-        $locale    = $menuPreferencesResolver->isLanguageSupported($queryLang)
-            ? $queryLang
-            : ($savedPrefs['lang'] ?? $menuPreferencesResolver->detectLanguage($request, $restaurant->getDefaultLanguage()));
+        $locale    = $this->resolveLocale($restaurant, $request, $menuPreferencesResolver);
 
         // null on the owner's own live preview request — every cache read/
         // write below is skipped entirely in that case (see

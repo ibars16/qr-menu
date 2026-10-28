@@ -36,6 +36,9 @@ class SmartWaiterController extends AbstractController
         if (!$restaurant) {
             throw $this->createNotFoundException('Restaurante no encontrado.');
         }
+        if ($restaurant->isExpired()) {
+            return $this->json(['error' => 'unavailable'], 503);
+        }
 
         if (!$this->allowRequest($cache, $restaurant->getId(), $request->getClientIp() ?? 'unknown')) {
             return $this->json(['error' => 'rate_limited'], 429);

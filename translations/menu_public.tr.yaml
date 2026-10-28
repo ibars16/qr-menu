@@ -87,3 +87,5 @@ footer:
         fri: "Cum"
         sat: "Cmt"
         sun: "Paz"
+unavailable:
+    message: "Menü şu anda kullanılamıyor"

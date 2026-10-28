@@ -40,3 +40,9 @@ bottom_nav:
     qr: QR
     users: Équipe
     settings: Config
+
+subscription_expired: "Votre abonnement a expiré le %date%"
+
+trial:
+    days_left_singular: "Essai gratuit · %count% jour restant"
+    days_left_plural: "Essai gratuit · %count% jours restants"

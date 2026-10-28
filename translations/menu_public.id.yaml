@@ -87,3 +87,5 @@ footer:
         fri: "Jum"
         sat: "Sab"
         sun: "Min"
+unavailable:
+    message: "Menu sedang tidak tersedia saat ini"

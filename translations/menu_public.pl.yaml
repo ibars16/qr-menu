@@ -87,3 +87,5 @@ footer:
         fri: "Pt"
         sat: "Sob"
         sun: "Nd"
+unavailable:
+    message: "Menu jest obecnie niedostępne"

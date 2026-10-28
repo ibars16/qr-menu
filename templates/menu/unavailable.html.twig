@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}" dir="{{ menu_dir(locale) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>{{ restaurant.name }}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🍽️</text></svg>">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #150d2e;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            text-align: center;
+            padding: 24px;
+        }
+        .name { font-size: 22px; font-weight: 600; }
+        .text { font-size: 15px; color: #b8aed6; }
+    </style>
+</head>
+<body>
+    <h1 class="name">{{ restaurant.name }}</h1>
+    <p class="text">{{ 'unavailable.message'|trans({}, 'menu_public', locale) }}</p>
+</body>
+</html>

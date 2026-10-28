@@ -87,3 +87,5 @@ footer:
         fri: "Ven"
         sat: "Sam"
         sun: "Dim"
+unavailable:
+    message: "Carte non disponible pour le moment"

@@ -87,3 +87,5 @@ footer:
         fri: "शुक्र"
         sat: "शनि"
         sun: "रवि"
+unavailable:
+    message: "मेन्यू इस समय उपलब्ध नहीं है"

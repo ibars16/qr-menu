@@ -87,3 +87,5 @@ footer:
         fri: "Fre"
         sat: "Lør"
         sun: "Søn"
+unavailable:
+    message: "Menyen er ikke tilgjengelig akkurat nå"

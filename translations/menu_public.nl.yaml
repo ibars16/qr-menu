@@ -87,3 +87,5 @@ footer:
         fri: "Vr"
         sat: "Za"
         sun: "Zo"
+unavailable:
+    message: "Menukaart is momenteel niet beschikbaar"

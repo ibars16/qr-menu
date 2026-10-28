@@ -40,3 +40,9 @@ bottom_nav:
     qr: QR
     users: Team
     settings: Konfig.
+
+subscription_expired: "Ihr Abonnement ist am %date% abgelaufen"
+
+trial:
+    days_left_singular: "Kostenlose Testphase · noch %count% Tag"
+    days_left_plural: "Kostenlose Testphase · noch %count% Tage"

@@ -87,3 +87,5 @@ footer:
         fri: "Fri"
         sat: "Sat"
         sun: "Sun"
+unavailable:
+    message: "Menu not available at the moment"

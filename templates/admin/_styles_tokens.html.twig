@@ -1,0 +1,145 @@
+{# Theme tokens (dark + html.light), reset and body — shared by
+   admin/base.html.twig and platform/index.html.twig. Included inside a
+   <style> block. #}
+        /* ══ THEME TOKENS ══ */
+        :root {
+            --brand:         #C1440E;
+            --bg-page:       #0a0a0a;
+            --bg-nav:        #111;
+            --bg-card:       #141414;
+            --bg-input:      #1a1a1a;
+            --bg-hover:      #161616;
+            --bg-deep:       #1e1e1e;
+            --bg-tgl:        #222;
+            --bd-1:          #1c1c1c;
+            --bd-2:          #2a2a2a;
+            --bd-3:          #242424;
+            --tx-hi:         #fff;
+            --tx-1:          #ccc;
+            --tx-2:          #aaa;
+            --tx-3:          #888;
+            --tx-4:          #666;
+            --tx-5:          #555;
+            --tx-6:          #444;
+            --tx-7:          #333;
+            --tx-8:          #2a2a2a;
+            --overlay:       rgba(0,0,0,0.75);
+
+            /* Secondary text that must stay readable (hints, URLs, quiet
+               buttons) — distinct from the --tx-6/--tx-7 decorative-label
+               rungs of the grayscale, which are not guaranteed AA. */
+            --tx-muted:      #7e7e7e;
+
+            /* Error red — the product editor's required-field state
+               (.field-error, input.error, #cat-select-error in
+               _product_modal_css.html.twig/_cat_select.html.twig) and the
+               shared .flash-error/.toast.error/.btn-danger:hover text.
+               Dark: --err-text on --bg-card (.panel-body) 8.38:1, on
+               .flash-error's fill over --bg-page 8.11:1, on --bg-deep
+               (.toast) 7.58:1, on --bg-input (.btn-danger) 7.91:1;
+               --err-border on --bg-input (.field input) 5.29:1. Light-mode
+               values differ from dark — see html.light. */
+            --err-text:      #F0997B;
+            --err-border:    #D9704E;
+
+            /* Amber "heads up" text (.flash-warning, settings' .quality-warning*
+               and .quality-note) on its own translucent amber fill. Dark, on
+               rgba(193,150,14,·): .flash-warning over --bg-page 8.70:1, the
+               warning/note over --bg-card 8.21:1, the confirm button 6.05:1
+               (5.03:1 on hover). Light-mode value in html.light. */
+            --warn-fg:       #E0B84D;
+
+            /* ── Type scale ── */
+            --fs-xs:         11px;
+            --fs-sm:         12px;
+            --fs-base:       13px;
+            --fs-md:         14px;
+            --fs-lg:         16px;
+            --fs-xl:         20px;
+            --fs-2xl:        28px;
+
+            /* ── Spacing (base 4) ── */
+            --sp-1:          4px;
+            --sp-2:          8px;
+            --sp-3:          12px;
+            --sp-4:          16px;
+            --sp-5:          20px;
+            --sp-6:          24px;
+            --sp-7:          28px;
+            --sp-8:          32px;
+
+            /* ── Radii ── */
+            --r-sm:          6px;
+            --r-md:          9px;
+            --r-lg:          14px;
+            --r-xl:          18px;
+            --r-pill:        999px;
+
+            /* ── Elevation (calibrated for dark surfaces — needs more
+                   opacity to read against near-black backgrounds) ── */
+            --shadow-sm:     0 1px 2px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.24);
+            --shadow-md:     0 8px 20px -6px rgba(0,0,0,0.45);
+            --shadow-lg:     0 24px 64px -12px rgba(0,0,0,0.5);
+
+            /* ── Line-height ── */
+            --lh-body:       1.5;
+        }
+        html.light {
+            --bg-page:       #f2f2f3;
+            --bg-nav:        #fff;
+            --bg-card:       #fafafa;
+            --bg-input:      #efefef;
+            --bg-hover:      #e8e8e8;
+            --bg-deep:       #f5f5f5;
+            --bg-tgl:        #d8d8d8;
+            --bd-1:          #e4e4e7;
+            --bd-2:          #d4d4d8;
+            --bd-3:          #dadada;
+            --tx-hi:         #111;
+            --tx-1:          #333;
+            --tx-2:          #555;
+            --tx-3:          #666;
+            --tx-4:          #777;
+            --tx-5:          #888;
+            --tx-6:          #999;
+            --tx-7:          #aaa;
+            --tx-8:          #ccc;
+            --overlay:       rgba(0,0,0,0.4);
+
+            /* Secondary text — same role as dark mode, recalibrated: the
+               dark-mode hex is too light to pass AA on white/near-white. */
+            --tx-muted:      #707070;
+
+            /* Required-field error state — same recalibration as --tx-muted
+               above and the same scope note (see :root). The dark-mode
+               values measure 2.11:1 (--err-text on --bg-card) / 2.86:1
+               (--err-border on --bg-input) here — far under AA — so light
+               mode gets its own darker values: --err-text on --bg-card is
+               6.34:1, on .flash-error's fill over --bg-page 4.82:1, on
+               --bg-deep (.toast) 6.07:1, on --bg-input (.btn-danger) 5.76:1
+               (#F0997B was 1.6–2.0:1 on those); --err-border on --bg-input
+               is 5.16:1. */
+            --err-text:      #A8341B;
+            --err-border:    #B33A1F;
+
+            /* The dark-mode amber measures ~1.5:1 on the light amber fills.
+               This one: .flash-warning over --bg-page 5.55:1, the
+               warning/note over --bg-card 6.06:1, the confirm button 5.24:1
+               (4.82:1 on hover — #7A5A00 fell to 4.37:1 there). */
+            --warn-fg:       #725400;
+
+            /* ── Elevation — much lower opacity than dark mode: on a light
+                   surface a dark-mode-strength shadow reads as a muddy
+                   smudge instead of a lift. ── */
+            --shadow-sm:     0 1px 2px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md:     0 6px 16px -6px rgba(0,0,0,0.12);
+            --shadow-lg:     0 20px 50px -12px rgba(0,0,0,0.18);
+        }
+
+        /* ══ ICON VISIBILITY per theme ══ */
+        .theme-icon-light { display: none; }
+        html.light .theme-icon-dark  { display: none; }
+        html.light .theme-icon-light { display: block; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-page); color: var(--tx-1); min-height: 100vh; }

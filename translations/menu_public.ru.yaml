@@ -87,3 +87,5 @@ footer:
         fri: "Пт"
         sat: "Сб"
         sun: "Вс"
+unavailable:
+    message: "Меню сейчас недоступно"

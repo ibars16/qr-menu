@@ -20,6 +20,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /** Content-only access — see security.yaml's role_hierarchy (ROLE_OWNER implies this) and the per-controller #[IsGranted] split. */
     public const ROLE_STAFF = 'ROLE_STAFF';
 
+    /** Platform owner: no restaurant, only /platform (see SubscriptionGate, which redirects /admin there). */
+    public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

@@ -87,3 +87,5 @@ footer:
         fri: "金"
         sat: "土"
         sun: "日"
+unavailable:
+    message: "現在メニューはご利用いただけません"
