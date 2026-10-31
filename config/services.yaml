@@ -8,6 +8,21 @@ parameters:
     # "uploads/..." — only the folder on disk moves (see when@test below).
     app.uploads_dir:        '%kernel.project_dir%/public/uploads'
 
+    # Subscription prices in euros — the ONLY place they're written. Shown
+    # in the admin (plan dialog, expired page) as a translation variable;
+    # what Stripe actually charges is the Price behind STRIPE_PRICE_* below,
+    # so keep both in sync when prices change.
+    app.billing_prices:
+        monthly: 30
+        yearly: 300
+
+    # Stripe (see App\Service\Billing\StripeBilling). Values go in
+    # .env.local; empty defaults here so the app still boots without them.
+    env(STRIPE_SECRET_KEY): ''
+    env(STRIPE_WEBHOOK_SECRET): ''
+    env(STRIPE_PRICE_MONTHLY): ''
+    env(STRIPE_PRICE_YEARLY): ''
+
 services:
 
     _defaults:
@@ -158,8 +173,34 @@ services:
     App\Service\Upload\ContentModerationInterface:
         alias: App\Service\Upload\NullContentModeration
 
+    # API version pinned so a Stripe SDK upgrade never silently changes the
+    # shape of what we read (period ends, invoice → subscription link).
+    Stripe\StripeClient:
+        arguments:
+            - api_key: '%env(STRIPE_SECRET_KEY)%'
+              stripe_version: '2026-09-30.endive'
+
+    App\Service\Billing\StripeGatewayInterface:
+        alias: App\Service\Billing\StripeGateway
+
+    App\Service\Billing\StripeBilling:
+        arguments:
+            $priceIds:
+                monthly: '%env(STRIPE_PRICE_MONTHLY)%'
+                yearly: '%env(STRIPE_PRICE_YEARLY)%'
+
+    App\Controller\StripeWebhookController:
+        arguments:
+            $webhookSecret: '%env(STRIPE_WEBHOOK_SECRET)%'
+
 # Tests never write into the real public/uploads: upload tests use this
 # folder and empty it in their tearDown.
 when@test:
     parameters:
         app.uploads_dir: '%kernel.project_dir%/var/test-uploads'
+
+    # Tests never call Stripe.
+    services:
+        App\Tests\Support\FakeStripeGateway: ~
+        App\Service\Billing\StripeGatewayInterface:
+            alias: App\Tests\Support\FakeStripeGateway

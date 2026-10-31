@@ -46,3 +46,20 @@ subscription_expired: "Your subscription expired on %date%"
 trial:
     days_left_singular: "Free trial · %count% day left"
     days_left_plural: "Free trial · %count% days left"
+
+billing:
+    nav: "Subscription"
+    choose_plan: "Choose a plan"
+    dialog_title: "Choose your plan"
+    plan_monthly: "Monthly · €%price%/month"
+    plan_yearly: "Yearly · €%price%/year"
+    cancel: "Cancel"
+    go_to_payment: "Go to payment"
+    close_aria: "Close"
+    staff_expired: "Ask the owner to renew the subscription"
+    error: "Could not connect to Stripe. Please try again."
+    checkout_no_charge_until: "No charge until %date%"
+
+header:
+    subscription_aria: "Subscription"
+    logout_aria: "Log out"

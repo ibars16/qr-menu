@@ -46,3 +46,20 @@ subscription_expired: "Ihr Abonnement ist am %date% abgelaufen"
 trial:
     days_left_singular: "Kostenlose Testphase · noch %count% Tag"
     days_left_plural: "Kostenlose Testphase · noch %count% Tage"
+
+billing:
+    nav: "Abonnement"
+    choose_plan: "Tarif wählen"
+    dialog_title: "Wählen Sie Ihren Tarif"
+    plan_monthly: "Monatlich · %price% €/Monat"
+    plan_yearly: "Jährlich · %price% €/Jahr"
+    cancel: "Abbrechen"
+    go_to_payment: "Zur Zahlung"
+    close_aria: "Schließen"
+    staff_expired: "Bitten Sie den Inhaber, das Abonnement zu verlängern"
+    error: "Verbindung zu Stripe fehlgeschlagen. Bitte versuchen Sie es erneut."
+    checkout_no_charge_until: "Keine Abbuchung bis zum %date%"
+
+header:
+    subscription_aria: "Abonnement"
+    logout_aria: "Abmelden"

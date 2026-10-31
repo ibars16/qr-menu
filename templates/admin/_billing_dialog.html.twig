@@ -1,0 +1,60 @@
+{# "Elegir plan" dialog (owner without a live Stripe subscription): admin's
+   modal on desktop, bottom sheet on mobile, each with its own copy of the
+   form. Posts to BillingController::checkout(), which redirects to Stripe.
+   Styles: .billing-dialog in admin/base.html.twig. Prices come from
+   app.billing_prices (config/services.yaml). #}
+<div class="billing-dialog">
+    {% for panel in [{id: 'billing-modal', overlay: 'modal-overlay', box: 'modal'}, {id: 'billing-sheet', overlay: 'sheet-overlay', box: 'sheet'}] %}
+        <div class="{{ panel.overlay }}" id="{{ panel.id }}" onclick="if(event.target===this)BillingUI.close()">
+            <div class="{{ panel.box }}" role="dialog" aria-modal="true" aria-labelledby="{{ panel.id }}-title">
+                {% if panel.box == 'sheet' %}<div class="sheet-handle"></div>{% endif %}
+                <div class="panel-header">
+                    <div class="panel-title" id="{{ panel.id }}-title">{{ 'billing.dialog_title'|trans({}, 'admin_base') }}</div>
+                    <button type="button" class="panel-close" onclick="BillingUI.close()" aria-label="{{ 'billing.close_aria'|trans({}, 'admin_base') }}">
+                        <i class="ti ti-x" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <form method="post" action="{{ path('admin_billing_checkout') }}" style="display: contents">
+                    <input type="hidden" name="_token" value="{{ csrf_token('billing-checkout') }}">
+                    <div class="panel-body">
+                        <div class="plan-options">
+                            <label class="plan-option">
+                                <input type="radio" name="plan" value="monthly" checked>
+                                <span>{{ 'billing.plan_monthly'|trans({'%price%': billing_prices.monthly}, 'admin_base') }}</span>
+                            </label>
+                            <label class="plan-option">
+                                <input type="radio" name="plan" value="yearly">
+                                <span>{{ 'billing.plan_yearly'|trans({'%price%': billing_prices.yearly}, 'admin_base') }}</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button type="button" class="btn" onclick="BillingUI.close()">{{ 'billing.cancel'|trans({}, 'admin_base') }}</button>
+                        <button type="submit" class="btn btn-primary"><i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.go_to_payment'|trans({}, 'admin_base') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<script>
+    const BillingUI = {
+        open() {
+            document.getElementById(window.innerWidth < 768 ? 'billing-sheet' : 'billing-modal').classList.add('open');
+        },
+        close() {
+            document.getElementById('billing-modal').classList.remove('open');
+            document.getElementById('billing-sheet').classList.remove('open');
+        },
+    };
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') BillingUI.close(); });
+    // Arriving from the payment link (BillingController::pay()).
+    (function () {
+        const url = new URL(location.href);
+        if (url.searchParams.get('billing') === 'choose') {
+            BillingUI.open();
+            url.searchParams.delete('billing');
+            history.replaceState(history.state, '', url);
+        }
+    }());
+</script>

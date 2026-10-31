@@ -62,6 +62,7 @@
 
         .actions { display: flex; justify-content: flex-end; align-items: center; gap: var(--sp-2); }
         .actions form { display: contents; }
+        .btn:disabled { opacity: 0.5; cursor: default; }
         .empty { color: var(--tx-muted); }
 
         /* Payment dialog options */
@@ -96,6 +97,7 @@
                 text-transform: uppercase; letter-spacing: 0.07em;
             }
             .actions { padding-top: var(--sp-1); }
+            .actions { flex-wrap: wrap; }
             .actions .btn { flex: 1; justify-content: center; }
         }
     </style>
@@ -149,6 +151,9 @@
                                     <div class="status status-active">🟢 Activa · {{ restaurant.plan == 'yearly' ? 'Anual' : 'Mensual' }}</div>
                                 {% endif %}
                                 <div class="sub">{{ restaurant.lastPaidAt ? 'Último cobro ' ~ restaurant.lastPaidAt|date('d/m/Y') : 'Sin cobros' }}</div>
+                                {% if restaurant.hasLiveSubscription %}
+                                    <div class="sub auto-pay">{{ restaurant.stripeCancelPending ? '💳 Cancelada · no renovará' : '💳 Pago automático' }}</div>
+                                {% endif %}
                             </td>
                             <td data-label="Válida hasta" class="until {{ days < 0 ? 'until-expired' : (days <= 7 ? 'until-soon' : '') }}">
                                 <div>{{ restaurant.paidUntil|date('d/m/Y') }}</div>
@@ -174,6 +179,14 @@
                                             data-until-yearly="{{ restaurant.paidUntilAfter('yearly')|date('d/m/Y') }}">
                                         Registrar pago
                                     </button>
+                                    {% if not restaurant.hasLiveSubscription %}
+                                        {% if row.owner %}
+                                            <button type="button" class="btn copy-link" onclick="copyPaymentLink(this)"
+                                                    data-url="{{ url('admin_billing_pay', {id: restaurant.id}) }}">Copiar enlace de pago</button>
+                                        {% else %}
+                                            <button type="button" class="btn copy-link" disabled>Sin dueño</button>
+                                        {% endif %}
+                                    {% endif %}
                                     <form method="post" action="{{ path('platform_deactivate', {id: restaurant.id}) }}"
                                           onsubmit="return confirm({{ ('¿Desactivar ' ~ restaurant.name ~ '? Su carta dejará de verse.')|json_encode }})">
                                         <input type="hidden" name="_token" value="{{ csrf_token('platform-deactivate-' ~ restaurant.id) }}">
@@ -247,6 +260,29 @@
             },
         };
         document.addEventListener('keydown', e => { if (e.key === 'Escape') PaymentUI.close(); });
+
+        // navigator.clipboard needs a secure context (https / localhost);
+        // plain http on a LAN address falls back to execCommand.
+        function copyPaymentLink(button) {
+            const url = button.dataset.url;
+            const done = () => {
+                button.textContent = 'Copiado ✓';
+                clearTimeout(button.copyTimer);
+                button.copyTimer = setTimeout(() => { button.textContent = 'Copiar enlace de pago'; }, 2000);
+            };
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(done);
+                return;
+            }
+            const area = document.createElement('textarea');
+            area.value = url;
+            area.style.position = 'fixed';
+            area.style.opacity = '0';
+            document.body.appendChild(area);
+            area.select();
+            if (document.execCommand('copy')) done();
+            area.remove();
+        }
     </script>
 </body>
 </html>

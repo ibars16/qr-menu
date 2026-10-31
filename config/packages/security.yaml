@@ -34,6 +34,11 @@ security:
                 secret: '%kernel.secret%'
                 lifetime: 604800
 
+            # The platform owner viewing /admin "as" a restaurant's owner
+            # (BillingController::pay()); ?_switch_user=_exit to leave.
+            switch_user:
+                role: ROLE_SUPER_ADMIN
+
     # Owner (User::ROLE_OWNER) automatically satisfies any ROLE_STAFF check
     # too — the per-restaurant "full access vs content-only" split lives in
     # each Admin\*Controller's own #[IsGranted], not here.
@@ -46,3 +51,4 @@ security:
         - { path: ^/admin,       roles: ROLE_USER }
         - { path: ^/platform,    roles: ROLE_SUPER_ADMIN }
         - { path: ^/r/,          roles: PUBLIC_ACCESS }
+        - { path: ^/stripe/webhook, roles: PUBLIC_ACCESS }

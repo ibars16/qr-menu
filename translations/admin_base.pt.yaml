@@ -46,3 +46,20 @@ subscription_expired: "A sua subscrição expirou em %date%"
 trial:
     days_left_singular: "Teste gratuito · resta %count% dia"
     days_left_plural: "Teste gratuito · restam %count% dias"
+
+billing:
+    nav: "Subscrição"
+    choose_plan: "Escolher plano"
+    dialog_title: "Escolha o seu plano"
+    plan_monthly: "Mensal · %price% €/mês"
+    plan_yearly: "Anual · %price% €/ano"
+    cancel: "Cancelar"
+    go_to_payment: "Ir para o pagamento"
+    close_aria: "Fechar"
+    staff_expired: "Peça ao proprietário que renove a subscrição"
+    error: "Não foi possível ligar ao Stripe. Tente novamente."
+    checkout_no_charge_until: "Sem cobrança até %date%"
+
+header:
+    subscription_aria: "Subscrição"
+    logout_aria: "Terminar sessão"

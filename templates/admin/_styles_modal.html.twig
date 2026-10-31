@@ -1,6 +1,7 @@
 {# Dialog (desktop modal) + bottom sheet (mobile) — same rules as the per-screen
    copies in admin/users.html.twig, tags, categories, menus. Used by
-   platform/index.html.twig only; the admin screens keep their own copies.
+   platform/index.html.twig and, scoped under .billing-dialog, by
+   admin/base.html.twig; the admin screens keep their own copies.
    Included inside a <style> block. #}
         .modal-overlay {
             position: fixed; inset: 0; background: var(--overlay);

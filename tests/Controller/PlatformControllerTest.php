@@ -166,6 +166,62 @@ final class PlatformControllerTest extends WebTestCase
         self::assertCount(1, $row->filter('.' . $class));
     }
 
+    public function testAutoPayMarkOnlyWithLiveSubscription(): void
+    {
+        self::assertCount(0, $this->row()->filter('.auto-pay'));
+
+        $restaurant = $this->reloaded();
+        $restaurant->setStripeSubscriptionId('sub_platform_test');
+        $this->em->flush();
+
+        self::assertSame('💳 Pago automático', $this->row()->filter('.auto-pay')->text());
+    }
+
+    public function testCancelledSubscriptionShowsNoRenewalButSameStatus(): void
+    {
+        $restaurant = $this->reloaded();
+        $restaurant->setStripeSubscriptionId('sub_platform_test');
+        $this->em->flush();
+        $statusBefore = $this->row()->filter('.status')->text();
+
+        $restaurant = $this->reloaded();
+        $restaurant->setStripeCancelPending(true);
+        $this->em->flush();
+
+        $row = $this->row();
+        self::assertSame('💳 Cancelada · no renovará', $row->filter('.auto-pay')->text());
+        self::assertSame($statusBefore, $row->filter('.status')->text());
+    }
+
+    public function testCopyPaymentLinkPointsAtOwnersPayRoute(): void
+    {
+        $button = $this->row()->filter('button.copy-link');
+
+        self::assertSame('Copiar enlace de pago', $button->text());
+        self::assertNull($button->attr('disabled'));
+        self::assertSame('http://localhost/admin/billing/pay/' . $this->restaurant->getId(), $button->attr('data-url'));
+    }
+
+    public function testCopyPaymentLinkDisabledWithoutOwner(): void
+    {
+        $this->owner->setRestaurant(null);
+        $this->em->flush();
+
+        $button = $this->row()->filter('button.copy-link');
+        self::assertSame('Sin dueño', $button->text());
+        self::assertNotNull($button->attr('disabled'));
+        self::assertNull($button->attr('data-url'));
+    }
+
+    public function testCopyPaymentLinkHiddenWithAutoPay(): void
+    {
+        $restaurant = $this->reloaded();
+        $restaurant->setStripeSubscriptionId('sub_platform_test');
+        $this->em->flush();
+
+        self::assertCount(0, $this->row()->filter('button.copy-link'));
+    }
+
     public function testExpiredRowShowsVencida(): void
     {
         $this->restaurant->deactivateNow();

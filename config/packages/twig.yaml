@@ -1,5 +1,7 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        billing_prices: '%app.billing_prices%'
 
 when@test:
     twig:

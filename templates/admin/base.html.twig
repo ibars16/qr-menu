@@ -149,11 +149,39 @@
         .theme-toggle-btn:hover { color: var(--tx-hi); border-color: var(--tx-6); }
         @media (min-width: 768px) { .theme-toggle-btn { display: none; } }
         @media (max-width: 767px) { .theme-toggle-btn { width: 40px; height: 40px; } }
+        /* Mobile header icons (subscription, theme, logout) — each one a .theme-toggle-btn. */
+        .header-icons { display: flex; align-items: center; gap: 6px; }
+        .header-icons form { display: contents; }
+
+        /* ══ SUBSCRIPTION (Stripe) ══ */
+        .trial-choose {
+            display: inline-flex; margin-top: 6px; padding: 0; border: none; background: none;
+            font: inherit; font-size: 12px; font-weight: 600; color: var(--brand); cursor: pointer;
+        }
+        .trial-choose:hover { text-decoration: underline; }
+        .sidebar-footer form { display: contents; }
+        button.nav-item { width: 100%; border-top: none; border-bottom: none; border-left: none; background: none; font: inherit; font-size: 13px; cursor: pointer; text-align: left; }
+
+        /* Plan dialog: admin's modal (desktop) + sheet (mobile), scoped to
+           .billing-dialog with CSS nesting so it can't touch the per-screen
+           modal copies (users, tags, categories, menus). */
+        .billing-dialog {
+            {% include 'admin/_styles_modal.html.twig' %}
+        }
+        .plan-options { display: flex; flex-direction: column; gap: var(--sp-2); }
+        .plan-option {
+            display: flex; align-items: center; gap: var(--sp-3);
+            padding: var(--sp-3) 14px; border: 1px solid var(--bd-2); border-radius: 10px;
+            background: var(--bg-input); cursor: pointer; font-size: var(--fs-md); color: var(--tx-1);
+        }
+        .plan-option:has(input:checked) { border-color: var(--brand); }
+        .plan-option input { accent-color: var(--brand); }
     </style>
     {% block stylesheets %}{% endblock %}
     {{ importmap('admin') }}
 </head>
 <body>
+{% include 'admin/_impersonation_bar.html.twig' %}
 
 <div class="admin-layout">
     <aside class="sidebar">
@@ -166,6 +194,9 @@
                     {% set trialDays = app.user.restaurant.trialDaysRemaining %}
                     {{ (trialDays == 1 ? 'trial.days_left_singular' : 'trial.days_left_plural')|trans({'%count%': trialDays}, 'admin_base') }}
                 </div>
+                {% if is_granted('ROLE_OWNER') %}
+                    <button type="button" class="trial-choose" onclick="BillingUI.open()">{{ 'billing.choose_plan'|trans({}, 'admin_base') }}</button>
+                {% endif %}
             {% endif %}
         </div>
 
@@ -232,6 +263,20 @@
                     <span class="sidebar-theme-knob"></span>
                 </button>
             </div>
+            {% if is_granted('ROLE_OWNER') and app.user.restaurant %}
+                {% if app.user.restaurant.hasLiveSubscription %}
+                    <form method="post" action="{{ path('admin_billing_portal') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('billing-portal') }}">
+                        <button type="submit" class="nav-item">
+                            <i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.nav'|trans({}, 'admin_base') }}
+                        </button>
+                    </form>
+                {% else %}
+                    <button type="button" class="nav-item" onclick="BillingUI.open()">
+                        <i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.nav'|trans({}, 'admin_base') }}
+                    </button>
+                {% endif %}
+            {% endif %}
             <a href="{{ path('admin_logout') }}" class="nav-item">
                 <i class="ti ti-logout" aria-hidden="true"></i> {{ 'nav.item.logout'|trans({}, 'admin_base') }}
             </a>
@@ -242,13 +287,32 @@
         <div class="main-header">
             <div class="main-header-top">
                 <div class="main-header-title">{% block page_title %}{% endblock %}</div>
-                <button class="theme-toggle-btn"
-                        onclick="toggleAdminTheme()"
-                        title="{{ 'theme.toggle_title'|trans({}, 'admin_base') }}"
-                        aria-label="{{ 'theme.toggle_aria'|trans({}, 'admin_base') }}">
-                    <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
-                    <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
-                </button>
+                <div class="header-icons">
+                    {% if is_granted('ROLE_OWNER') and app.user.restaurant %}
+                        {% if app.user.restaurant.hasLiveSubscription %}
+                            <form method="post" action="{{ path('admin_billing_portal') }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('billing-portal') }}">
+                                <button type="submit" class="theme-toggle-btn" aria-label="{{ 'header.subscription_aria'|trans({}, 'admin_base') }}">
+                                    <i class="ti ti-credit-card" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <button type="button" class="theme-toggle-btn" onclick="BillingUI.open()" aria-label="{{ 'header.subscription_aria'|trans({}, 'admin_base') }}">
+                                <i class="ti ti-credit-card" aria-hidden="true"></i>
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                    <button class="theme-toggle-btn"
+                            onclick="toggleAdminTheme()"
+                            title="{{ 'theme.toggle_title'|trans({}, 'admin_base') }}"
+                            aria-label="{{ 'theme.toggle_aria'|trans({}, 'admin_base') }}">
+                        <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
+                        <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
+                    </button>
+                    <a href="{{ path('admin_logout') }}" class="theme-toggle-btn" aria-label="{{ 'header.logout_aria'|trans({}, 'admin_base') }}">
+                        <i class="ti ti-logout" aria-hidden="true"></i>
+                    </a>
+                </div>
             </div>
             <div class="main-header-actions">{% block header_actions %}{% endblock %}</div>
         </div>
@@ -302,6 +366,10 @@
         </a>
     {% endif %}
 </nav>
+
+{% if is_granted('ROLE_OWNER') and app.user.restaurant and not app.user.restaurant.hasLiveSubscription %}
+    {% include 'admin/_billing_dialog.html.twig' %}
+{% endif %}
 
 <div class="toast" id="global-toast" role="status" aria-live="polite"></div>
 

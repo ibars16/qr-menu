@@ -46,3 +46,20 @@ subscription_expired: "Votre abonnement a expiré le %date%"
 trial:
     days_left_singular: "Essai gratuit · %count% jour restant"
     days_left_plural: "Essai gratuit · %count% jours restants"
+
+billing:
+    nav: "Abonnement"
+    choose_plan: "Choisir une formule"
+    dialog_title: "Choisissez votre formule"
+    plan_monthly: "Mensuel · %price% €/mois"
+    plan_yearly: "Annuel · %price% €/an"
+    cancel: "Annuler"
+    go_to_payment: "Passer au paiement"
+    close_aria: "Fermer"
+    staff_expired: "Demandez au propriétaire de renouveler l'abonnement"
+    error: "Impossible de se connecter à Stripe. Veuillez réessayer."
+    checkout_no_charge_until: "Aucun prélèvement avant le %date%"
+
+header:
+    subscription_aria: "Abonnement"
+    logout_aria: "Se déconnecter"

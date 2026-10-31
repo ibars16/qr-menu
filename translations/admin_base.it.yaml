@@ -46,3 +46,20 @@ subscription_expired: "Il tuo abbonamento è scaduto il %date%"
 trial:
     days_left_singular: "Prova gratuita · manca %count% giorno"
     days_left_plural: "Prova gratuita · mancano %count% giorni"
+
+billing:
+    nav: "Abbonamento"
+    choose_plan: "Scegli un piano"
+    dialog_title: "Scegli il tuo piano"
+    plan_monthly: "Mensile · %price% €/mese"
+    plan_yearly: "Annuale · %price% €/anno"
+    cancel: "Annulla"
+    go_to_payment: "Vai al pagamento"
+    close_aria: "Chiudi"
+    staff_expired: "Chiedi al titolare di rinnovare l'abbonamento"
+    error: "Impossibile collegarsi a Stripe. Riprova."
+    checkout_no_charge_until: "Nessun addebito fino al %date%"
+
+header:
+    subscription_aria: "Abbonamento"
+    logout_aria: "Esci"

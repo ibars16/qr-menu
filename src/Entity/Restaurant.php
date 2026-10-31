@@ -134,6 +134,26 @@ class Restaurant
     #[ORM\Column(type: 'date_immutable', nullable: true)]
     private ?\DateTimeImmutable $lastPaidAt = null;
 
+    /** Stripe customer (cus_…), created on the first checkout and reused afterwards. */
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
+    private ?string $stripeCustomerId = null;
+
+    /**
+     * Current Stripe subscription (sub_…) while it's alive; cleared when
+     * Stripe deletes it (customer.subscription.deleted). See
+     * App\Service\Billing\StripeBilling.
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $stripeSubscriptionId = null;
+
+    /**
+     * The live subscription won't renew (cancel_at_period_end or a cancel_at
+     * date, set from the Stripe portal). Only shown on /platform; the dates
+     * don't change — the restaurant simply expires on its own paidUntil.
+     */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $stripeCancelPending = false;
+
     #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Table::class, cascade: ['persist', 'remove'])]
     private Collection $tables;
 
@@ -391,6 +411,72 @@ class Restaurant
     public function getPlan(): ?string
     {
         return $this->plan;
+    }
+
+    /**
+     * A period confirmed by Stripe (App\Service\Billing\StripeBilling). Only
+     * ever moves dates forward, so a repeated or out-of-order webhook can't
+     * undo a later one. $paidAt is null for a 0 € invoice (the trial's), which
+     * must not count as a payment.
+     */
+    public function applyStripePeriod(\DateTimeImmutable $paidUntil, string $plan, ?\DateTimeImmutable $paidAt): void
+    {
+        if (!isset(self::PLAN_MONTHS[$plan])) {
+            throw new \InvalidArgumentException(sprintf('Unknown plan "%s".', $plan));
+        }
+
+        if ($paidUntil > $this->paidUntil) {
+            $this->paidUntil = $paidUntil;
+        }
+        $this->plan = $plan;
+        if ($paidAt !== null && ($this->lastPaidAt === null || $paidAt > $this->lastPaidAt)) {
+            $this->lastPaidAt = $paidAt;
+        }
+    }
+
+    public function setPlan(string $plan): void
+    {
+        if (!isset(self::PLAN_MONTHS[$plan])) {
+            throw new \InvalidArgumentException(sprintf('Unknown plan "%s".', $plan));
+        }
+
+        $this->plan = $plan;
+    }
+
+    public function getStripeCustomerId(): ?string
+    {
+        return $this->stripeCustomerId;
+    }
+
+    public function setStripeCustomerId(?string $stripeCustomerId): void
+    {
+        $this->stripeCustomerId = $stripeCustomerId;
+    }
+
+    public function getStripeSubscriptionId(): ?string
+    {
+        return $this->stripeSubscriptionId;
+    }
+
+    public function setStripeSubscriptionId(?string $stripeSubscriptionId): void
+    {
+        $this->stripeSubscriptionId = $stripeSubscriptionId;
+    }
+
+    public function isStripeCancelPending(): bool
+    {
+        return $this->stripeCancelPending;
+    }
+
+    public function setStripeCancelPending(bool $stripeCancelPending): void
+    {
+        $this->stripeCancelPending = $stripeCancelPending;
+    }
+
+    /** Pays automatically through Stripe (subscription not deleted yet, even if set to cancel at period end). */
+    public function hasLiveSubscription(): bool
+    {
+        return $this->stripeSubscriptionId !== null;
     }
 
     public function getLastPaidAt(): ?\DateTimeImmutable

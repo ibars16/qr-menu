@@ -103,6 +103,29 @@ final class RestaurantPaidUntilTest extends TestCase
         self::assertSame(-2, $this->restaurantPaidUntil('2026-10-26')->getDaysLeft($today));
     }
 
+    public function testStripePeriodOnlyMovesDatesForward(): void
+    {
+        $restaurant = $this->restaurantPaidUntil('2027-03-10');
+
+        $restaurant->applyStripePeriod(new \DateTimeImmutable('2027-02-10'), Restaurant::PLAN_MONTHLY, new \DateTimeImmutable('2027-02-01'));
+        self::assertSame('2027-03-10', $restaurant->getPaidUntil()->format('Y-m-d'));
+        self::assertSame('2027-02-01', $restaurant->getLastPaidAt()->format('Y-m-d'));
+
+        $restaurant->applyStripePeriod(new \DateTimeImmutable('2027-04-10'), Restaurant::PLAN_MONTHLY, new \DateTimeImmutable('2027-01-01'));
+        self::assertSame('2027-04-10', $restaurant->getPaidUntil()->format('Y-m-d'));
+        self::assertSame('2027-02-01', $restaurant->getLastPaidAt()->format('Y-m-d'), 'older payment date ignored');
+    }
+
+    public function testStripePeriodWithoutPaymentKeepsLastPaidAtEmpty(): void
+    {
+        $restaurant = $this->restaurantPaidUntil('2027-03-10');
+
+        $restaurant->applyStripePeriod(new \DateTimeImmutable('2027-03-11'), Restaurant::PLAN_YEARLY, null);
+
+        self::assertSame(Restaurant::PLAN_YEARLY, $restaurant->getPlan());
+        self::assertNull($restaurant->getLastPaidAt());
+    }
+
     public function testDeactivateNowSetsYesterdayAndExpires(): void
     {
         $today = new \DateTimeImmutable('2026-10-28');

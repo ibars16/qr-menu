@@ -39,7 +39,8 @@ class SubscriptionGate implements EventSubscriberInterface
         }
 
         $path = $event->getRequest()->getPathInfo();
-        if (!str_starts_with($path, '/admin') || str_starts_with($path, '/admin/login') || str_starts_with($path, '/admin/logout')) {
+        // /admin/billing: an expired owner has to be able to pay.
+        if (!str_starts_with($path, '/admin') || str_starts_with($path, '/admin/login') || str_starts_with($path, '/admin/logout') || str_starts_with($path, '/admin/billing')) {
             return;
         }
 

@@ -46,3 +46,20 @@ subscription_expired: "Tu suscripción venció el %date%"
 trial:
     days_left_singular: "Prueba gratuita · queda %count% día"
     days_left_plural: "Prueba gratuita · quedan %count% días"
+
+billing:
+    nav: "Suscripción"
+    choose_plan: "Elegir plan"
+    dialog_title: "Elige tu plan"
+    plan_monthly: "Mensual · %price% €/mes"
+    plan_yearly: "Anual · %price% €/año"
+    cancel: "Cancelar"
+    go_to_payment: "Ir al pago"
+    close_aria: "Cerrar"
+    staff_expired: "Pide al propietario que renueve la suscripción"
+    error: "No se pudo conectar con Stripe. Inténtalo de nuevo."
+    checkout_no_charge_until: "Sin cargo hasta el %date%"
+
+header:
+    subscription_aria: "Suscripción"
+    logout_aria: "Cerrar sesión"
