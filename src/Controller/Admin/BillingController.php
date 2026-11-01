@@ -17,10 +17,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * The owner's own subscription: redirects to Stripe Checkout / the Stripe
- * Customer Portal, no screens of its own. Owner only — staff never pay —
- * except the payment link, which sorts everyone else out itself.
- * Reachable while expired: SubscriptionGate lets /admin/billing through.
+ * The owner's own subscription: the "Suscripción" screen (plan, next
+ * charge, card, plan change, cancel, invoices — all through the Stripe
+ * API), Stripe Checkout to subscribe, and the portal only for the card
+ * form. Owner only — staff never pay — except the payment link, which
+ * sorts everyone else out itself. Reachable while expired:
+ * SubscriptionGate lets /admin/billing through.
  */
 #[Route('/admin/billing', name: 'admin_billing_')]
 class BillingController extends AbstractController
@@ -30,6 +32,91 @@ class BillingController extends AbstractController
         private readonly LoggerInterface $logger,
         private readonly TranslatorInterface $translator,
     ) {
+    }
+
+    #[IsGranted(User::ROLE_OWNER)]
+    #[Route('', name: 'index', methods: ['GET'])]
+    public function index(): Response
+    {
+        $restaurant = $this->restaurant();
+        $overview = null;
+        $invoices = null;
+        $stripeError = false;
+
+        if ($restaurant->hasLiveSubscription()) {
+            try {
+                $overview = $this->billing->overview($restaurant);
+            } catch (\Throwable $e) {
+                $this->logger->error('Stripe subscription overview failed', ['exception' => $e]);
+                $stripeError = true;
+            }
+        }
+        if ($restaurant->getStripeCustomerId() !== null) {
+            try {
+                $invoices = $this->billing->invoices($restaurant);
+            } catch (\Throwable $e) {
+                $this->logger->error('Stripe invoice list failed', ['exception' => $e]);
+            }
+        }
+
+        return $this->render('admin/billing.html.twig', [
+            'restaurant'   => $restaurant,
+            'overview'     => $overview,
+            'invoices'     => $invoices,
+            'stripe_error' => $stripeError,
+        ]);
+    }
+
+    #[IsGranted(User::ROLE_OWNER)]
+    #[Route('/plan', name: 'change_plan', methods: ['POST'])]
+    public function changePlan(Request $request): Response
+    {
+        $plan = (string) $request->request->get('plan');
+
+        return $this->manage($request, function (Restaurant $restaurant) use ($plan): void {
+            if (isset(Restaurant::PLAN_MONTHS[$plan])) {
+                $this->billing->changePlan($restaurant, $plan);
+            }
+        });
+    }
+
+    #[IsGranted(User::ROLE_OWNER)]
+    #[Route('/plan/undo', name: 'undo_plan_change', methods: ['POST'])]
+    public function undoPlanChange(Request $request): Response
+    {
+        return $this->manage($request, fn (Restaurant $restaurant) => $this->billing->undoPlanChange($restaurant));
+    }
+
+    #[IsGranted(User::ROLE_OWNER)]
+    #[Route('/cancel', name: 'cancel', methods: ['POST'])]
+    public function cancel(Request $request): Response
+    {
+        return $this->manage($request, fn (Restaurant $restaurant) => $this->billing->cancel($restaurant));
+    }
+
+    #[IsGranted(User::ROLE_OWNER)]
+    #[Route('/resume', name: 'resume', methods: ['POST'])]
+    public function resume(Request $request): Response
+    {
+        return $this->manage($request, fn (Restaurant $restaurant) => $this->billing->resume($restaurant));
+    }
+
+    /** "Cambiar tarjeta": the portal straight on its card form, back through portal-return. */
+    #[IsGranted(User::ROLE_OWNER)]
+    #[Route('/card', name: 'card', methods: ['POST'])]
+    public function card(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('billing-manage', $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        try {
+            $url = $this->billing->cardUpdateUrl($this->restaurant(), $this->generateUrl('admin_billing_portal_return', [], UrlGeneratorInterface::ABSOLUTE_URL));
+        } catch (\Throwable $e) {
+            return $this->stripeFailed($e);
+        }
+
+        return $url !== null ? new RedirectResponse($url, Response::HTTP_SEE_OTHER) : $this->redirectToRoute('admin_billing_index');
     }
 
     #[IsGranted(User::ROLE_OWNER)]
@@ -48,9 +135,9 @@ class BillingController extends AbstractController
         $restaurant = $this->restaurant();
 
         // Already paying through Stripe: never a second subscription —
-        // changing plan or card happens in the portal.
+        // changing plan or card happens on the subscription screen.
         if ($restaurant->hasLiveSubscription()) {
-            return $this->toPortal($restaurant);
+            return $this->redirectToRoute('admin_billing_index');
         }
 
         try {
@@ -85,27 +172,7 @@ class BillingController extends AbstractController
         return $this->redirectToRoute('admin_menu');
     }
 
-    /**
-     * Back from the portal: picks up a cancel (or its undo) right away
-     * instead of waiting for customer.subscription.updated.
-     */
-    #[IsGranted(User::ROLE_OWNER)]
-    #[Route('/portal-return', name: 'portal_return', methods: ['GET'])]
-    public function portalReturn(): Response
-    {
-        $subscriptionId = $this->restaurant()->getStripeSubscriptionId();
-        if ($subscriptionId !== null) {
-            try {
-                $this->billing->syncSubscription($subscriptionId);
-            } catch (\Throwable $e) {
-                // The webhook will apply it anyway; just don't block the owner.
-                $this->logger->error('Stripe portal return sync failed', ['exception' => $e]);
-            }
-        }
-
-        return $this->redirectToRoute('admin_menu');
-    }
-
+    /** The expired page's button (a live subscription whose charge failed): the portal, card and invoices only. */
     #[IsGranted(User::ROLE_OWNER)]
     #[Route('/portal', name: 'portal', methods: ['POST'])]
     public function portal(Request $request): Response
@@ -114,7 +181,35 @@ class BillingController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        return $this->toPortal($this->restaurant());
+        try {
+            $url = $this->billing->portalUrl($this->restaurant(), $this->generateUrl('admin_billing_portal_return', [], UrlGeneratorInterface::ABSOLUTE_URL));
+        } catch (\Throwable $e) {
+            return $this->stripeFailed($e);
+        }
+
+        return $url !== null ? new RedirectResponse($url, Response::HTTP_SEE_OTHER) : $this->redirectToRoute('admin_menu');
+    }
+
+    /**
+     * Back from the portal's card form: makes the new card the one the
+     * subscription charges, and picks up any other change right away
+     * instead of waiting for customer.subscription.updated.
+     */
+    #[IsGranted(User::ROLE_OWNER)]
+    #[Route('/portal-return', name: 'portal_return', methods: ['GET'])]
+    public function portalReturn(): Response
+    {
+        $restaurant = $this->restaurant();
+        if ($restaurant->hasLiveSubscription()) {
+            try {
+                $this->billing->syncCardFromPortal($restaurant);
+                $this->billing->syncSubscription($restaurant->getStripeSubscriptionId());
+            } catch (\Throwable $e) {
+                $this->logger->error('Stripe portal return sync failed', ['exception' => $e]);
+            }
+        }
+
+        return $this->redirectToRoute('admin_billing_index');
     }
 
     /**
@@ -157,7 +252,7 @@ class BillingController extends AbstractController
         }
 
         if ($restaurant->hasLiveSubscription()) {
-            return $this->toPortal($restaurant);
+            return $this->redirectToRoute('admin_billing_index');
         }
 
         // Expired, admin_menu is the expired page with the same two plans.
@@ -176,23 +271,37 @@ class BillingController extends AbstractController
         return null;
     }
 
-    private function toPortal(Restaurant $restaurant): Response
+    /**
+     * A subscription-screen action (CSRF "billing-manage", live subscription
+     * only); StripeBilling syncs the restaurant afterwards. Back on the
+     * screen either way.
+     *
+     * @param callable(Restaurant): mixed $action
+     */
+    private function manage(Request $request, callable $action): Response
     {
-        try {
-            $url = $this->billing->portalUrl($restaurant, $this->generateUrl('admin_billing_portal_return', [], UrlGeneratorInterface::ABSOLUTE_URL));
-        } catch (\Throwable $e) {
-            return $this->stripeFailed($e);
+        if (!$this->isCsrfTokenValid('billing-manage', $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
         }
 
-        return $url !== null ? new RedirectResponse($url, Response::HTTP_SEE_OTHER) : $this->redirectToRoute('admin_menu');
+        $restaurant = $this->restaurant();
+        if ($restaurant->hasLiveSubscription()) {
+            try {
+                $action($restaurant);
+            } catch (\Throwable $e) {
+                return $this->stripeFailed($e, 'admin_billing_index');
+            }
+        }
+
+        return $this->redirectToRoute('admin_billing_index');
     }
 
-    private function stripeFailed(\Throwable $e): Response
+    private function stripeFailed(\Throwable $e, string $route = 'admin_menu'): Response
     {
         $this->logger->error('Stripe request failed', ['exception' => $e]);
         $this->addFlash('error', $this->translator->trans('billing.error', [], 'admin_base'));
 
-        return $this->redirectToRoute('admin_menu');
+        return $this->redirectToRoute($route);
     }
 
     private function restaurant(): Restaurant

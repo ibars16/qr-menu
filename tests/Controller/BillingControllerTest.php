@@ -12,9 +12,11 @@ use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * /admin/billing/*: owner only, CSRF-protected, reachable while expired;
- * never a second subscription (a live one goes to the portal instead). Plus
- * where the owner reaches it: trial badge, sidebar, mobile header, expired
- * page — and staff never sees it.
+ * never a second subscription (a live one goes to the subscription screen
+ * instead). The screen itself (status, card, plan change, cancel,
+ * invoices) against FakeStripeGateway. Plus where the owner reaches it:
+ * trial badge, sidebar, mobile header, expired page — and staff never
+ * sees it.
  */
 final class BillingControllerTest extends WebTestCase
 {
@@ -104,15 +106,15 @@ final class BillingControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextSame('.trial-choose', 'Elegir plan');
-        self::assertSelectorExists('.sidebar-footer button.nav-item[onclick="BillingUI.open()"]');
-        self::assertSelectorExists('.header-icons button[aria-label="Suscripción"]');
+        self::assertSelectorExists('.sidebar-footer a.nav-item[href="/admin/billing"]');
+        self::assertSelectorExists('.header-icons a[href="/admin/billing"][aria-label="Suscripción"]');
         self::assertSelectorExists('.header-icons a[aria-label="Cerrar sesión"]');
         self::assertCount(2, $crawler->filter('.billing-dialog form[action="/admin/billing/checkout"]'));
         self::assertStringContainsString('Mensual · 30 €/mes', $crawler->filter('.billing-dialog')->text());
         self::assertStringContainsString('Anual · 300 €/año', $crawler->filter('.billing-dialog')->text());
     }
 
-    public function testOwnerWithLiveSubscriptionGetsPortalInsteadOfDialog(): void
+    public function testOwnerWithLiveSubscriptionGetsScreenLinkAndNoDialog(): void
     {
         $this->linkSubscription();
 
@@ -120,7 +122,8 @@ final class BillingControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/admin/menu');
 
         self::assertSelectorNotExists('.billing-dialog');
-        self::assertCount(2, $crawler->filter('form[action="/admin/billing/portal"]'));
+        self::assertCount(2, $crawler->filter('a[href="/admin/billing"]'));
+        self::assertCount(0, $crawler->filter('form[action="/admin/billing/portal"]'));
     }
 
     public function testStaffSeesNoSubscriptionButLogoutIcon(): void
@@ -199,8 +202,7 @@ final class BillingControllerTest extends WebTestCase
 
         $this->client->request('POST', '/admin/billing/checkout', ['_token' => $token, 'plan' => 'monthly']);
 
-        self::assertResponseStatusCodeSame(303);
-        self::assertStringStartsWith('https://billing.stripe.test/portal/', $this->client->getResponse()->headers->get('Location'));
+        self::assertResponseRedirects('/admin/billing');
         self::assertSame([], FakeStripeGateway::$checkoutParams);
     }
 
@@ -232,16 +234,6 @@ final class BillingControllerTest extends WebTestCase
         self::assertSame(Restaurant::PLAN_MONTHLY, $restaurant->getPlan());
     }
 
-    public function testPortalReturnsThroughSyncRoute(): void
-    {
-        $this->linkSubscription();
-
-        $this->client->loginUser($this->owner);
-        $crawler = $this->client->request('GET', '/admin/menu');
-        $this->client->submit($crawler->filter('form[action="/admin/billing/portal"]')->first()->form());
-
-        self::assertSame(['http://localhost/admin/billing/portal-return'], FakeStripeGateway::$portalReturnUrls);
-    }
 
     public function testReturnFromPortalSyncsCancelRightAway(): void
     {
@@ -252,7 +244,7 @@ final class BillingControllerTest extends WebTestCase
         $this->client->loginUser($this->owner);
         $this->client->request('GET', '/admin/billing/portal-return');
 
-        self::assertResponseRedirects('/admin/menu');
+        self::assertResponseRedirects('/admin/billing');
         self::assertTrue($this->managed()->isStripeCancelPending());
     }
 
@@ -292,15 +284,14 @@ final class BillingControllerTest extends WebTestCase
         self::assertResponseRedirects('/admin/menu?billing=choose');
     }
 
-    public function testPayLinkGoesToPortalWhenAlreadySubscribed(): void
+    public function testPayLinkGoesToScreenWhenAlreadySubscribed(): void
     {
         $this->linkSubscription();
 
         $this->client->loginUser($this->owner);
         $this->client->request('GET', $this->payPath());
 
-        self::assertResponseStatusCodeSame(303);
-        self::assertStringStartsWith('https://billing.stripe.test/portal/', $this->client->getResponse()->headers->get('Location'));
+        self::assertResponseRedirects('/admin/billing');
     }
 
     public function testPayLinkForExpiredOwnerShowsExpiredPageWithPlans(): void
@@ -397,13 +388,12 @@ final class BillingControllerTest extends WebTestCase
         self::assertSelectorExists('.impersonation-bar');
     }
 
-    public function testSuperAdminAsOwnerGetsPortalWhenSubscribed(): void
+    public function testSuperAdminAsOwnerGetsScreenWhenSubscribed(): void
     {
         $this->linkSubscription();
         $this->openPayLinkAsSuperAdmin();
 
-        self::assertResponseStatusCodeSame(303);
-        self::assertStringStartsWith('https://billing.stripe.test/portal/', $this->client->getResponse()->headers->get('Location'));
+        self::assertResponseRedirects('/admin/billing');
     }
 
     public function testSuperAdminAsOwnerSeesExpiredPageWithBar(): void
@@ -486,5 +476,337 @@ final class BillingControllerTest extends WebTestCase
         $this->client->request('GET', '/admin/menu');
 
         self::assertSelectorNotExists('.impersonation-bar');
+    }
+
+    // ── Subscription screen (/admin/billing) ────────────────────────────────
+
+    /**
+     * A live Stripe subscription with a card, prices of 30 € / 300 €.
+     * $status 'trialing' ends the trial on $periodEnd.
+     */
+    private function stripeSubscription(string $status = 'active', string $periodEnd = '+20 days'): void
+    {
+        $this->linkSubscription();
+        FakeStripeGateway::price('price_test_monthly', 3000, 'month');
+        FakeStripeGateway::price('price_test_yearly', 30000, 'year');
+        FakeStripeGateway::subscription('sub_live', $this->restaurant->getId(), 'price_test_monthly');
+        $end = (new \DateTimeImmutable('today ' . $periodEnd, new \DateTimeZone('UTC')))->getTimestamp();
+        FakeStripeGateway::$objects['sub_live']['status'] = $status;
+        FakeStripeGateway::$objects['sub_live']['trial_end'] = $status === 'trialing' ? $end : null;
+        FakeStripeGateway::$objects['sub_live']['items']['data'][0]['current_period_start'] = time() - 86400;
+        FakeStripeGateway::$objects['sub_live']['items']['data'][0]['current_period_end'] = $end;
+        FakeStripeGateway::$objects['sub_live']['default_payment_method'] = FakeStripeGateway::card('pm_old', '4242', 1000);
+    }
+
+    private function screen(): Crawler
+    {
+        $this->client->loginUser($this->owner);
+        $crawler = $this->client->request('GET', '/admin/billing');
+        self::assertResponseIsSuccessful();
+
+        return $crawler;
+    }
+
+    private function post(string $path, array $params = []): void
+    {
+        $token = $this->screen()->filter('form[action="/admin/billing/cancel"] input[name="_token"], form[action="/admin/billing/resume"] input[name="_token"], form[action="/admin/billing/card"] input[name="_token"]')->first()->attr('value');
+        $this->client->request('POST', $path, ['_token' => $token] + $params);
+        self::assertResponseRedirects('/admin/billing');
+    }
+
+    private static function day(string $relative): string
+    {
+        return (new \DateTimeImmutable('today ' . $relative, new \DateTimeZone('UTC')))->format('d/m/Y');
+    }
+
+    public function testScreenInTrialWithoutStripeShowsDaysLeftAndChoosePlan(): void
+    {
+        $crawler = $this->screen();
+
+        self::assertStringStartsWith('Prueba gratis · quedan ', $crawler->filter('#billing-status')->text());
+        self::assertCount(1, $crawler->filter('.billing-actions button[onclick="BillingUI.open()"]'));
+        self::assertCount(2, $crawler->filter('.billing-dialog form[action="/admin/billing/checkout"]'));
+        self::assertSelectorNotExists('.invoice-list');
+        self::assertSame([], FakeStripeGateway::$calls);
+    }
+
+    public function testScreenWithManualPaymentShowsActiveUntil(): void
+    {
+        $restaurant = $this->managed();
+        $restaurant->markPaid(Restaurant::PLAN_MONTHLY);
+        $this->em->flush();
+
+        self::assertSame('Activa hasta el ' . $restaurant->getPaidUntil()->format('d/m/Y'), $this->screen()->filter('#billing-status')->text());
+    }
+
+    public function testExpiredOwnerReachesScreenWithChoosePlan(): void
+    {
+        $this->expire();
+
+        $crawler = $this->screen();
+        self::assertSame('Vencida', $crawler->filter('#billing-status')->text());
+        self::assertCount(1, $crawler->filter('.billing-actions button[onclick="BillingUI.open()"]'));
+    }
+
+    public function testStaffCannotSeeScreen(): void
+    {
+        $this->client->loginUser($this->staff);
+        $this->client->request('GET', '/admin/billing');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testScreenWithStripeShowsPlanNextChargeCardAndInvoices(): void
+    {
+        $this->stripeSubscription();
+        FakeStripeGateway::$invoices = [
+            ['created' => strtotime('2026-10-01 10:00 UTC'), 'total' => 3000, 'currency' => 'eur', 'status' => 'paid', 'hosted_invoice_url' => 'https://invoice.stripe.test/1', 'invoice_pdf' => null],
+            ['created' => strtotime('2026-10-02 10:00 UTC'), 'total' => 3000, 'currency' => 'eur', 'status' => 'draft', 'hosted_invoice_url' => null, 'invoice_pdf' => null],
+        ];
+
+        $crawler = $this->screen();
+
+        self::assertSame('Mensual · 30,00 €/mes', $crawler->filter('#billing-plan')->text());
+        self::assertSame('Activa', $crawler->filter('#billing-status')->text());
+        self::assertSame('30,00 € el ' . self::day('+20 days'), $crawler->filter('#billing-next-charge')->text());
+        self::assertSame('Visa •••• 4242 · caduca 04/30', $crawler->filter('#billing-card')->text());
+        self::assertSame('Pasar a anual', $crawler->filter('form[action="/admin/billing/plan"] button')->text());
+        self::assertStringContainsString('al terminar el periodo actual, el ' . self::day('+20 days') . '. Ese día se cobrarán 300,00 €.', $crawler->filter('form[action="/admin/billing/plan"]')->attr('data-confirm'));
+        self::assertStringContainsString('Seguirá activa hasta el ' . $this->managed()->getPaidUntil()->format('d/m/Y') . ' y no se renovará.', $crawler->filter('form[action="/admin/billing/cancel"]')->attr('data-confirm'));
+        self::assertCount(1, $crawler->filter('.invoice-list li'), 'drafts left out');
+        self::assertStringContainsString('01/10/2026', $crawler->filter('.invoice-list li')->text());
+        self::assertStringContainsString('Pagada', $crawler->filter('.invoice-list li')->text());
+        self::assertSame('https://invoice.stripe.test/1', $crawler->filter('.invoice-list a')->attr('href'));
+        self::assertSelectorNotExists('.billing-dialog');
+    }
+
+    public function testInvoiceFailureDoesNotBreakScreen(): void
+    {
+        $this->stripeSubscription();
+        FakeStripeGateway::$failInvoices = true;
+
+        $crawler = $this->screen();
+
+        self::assertSame('No se pudieron cargar las facturas.', $crawler->filter('#invoices-error')->text());
+        self::assertSame('Activa', $crawler->filter('#billing-status')->text());
+    }
+
+    public function testStripeDownStillShowsLocalStatus(): void
+    {
+        $this->stripeSubscription();
+        FakeStripeGateway::$fail = true;
+        FakeStripeGateway::$failInvoices = true;
+
+        $crawler = $this->screen();
+
+        self::assertCount(1, $crawler->filter('.billing-notice .ti-alert-triangle'));
+        self::assertSelectorExists('#billing-status');
+        self::assertSame('No se pudieron cargar las facturas.', $crawler->filter('#invoices-error')->text());
+    }
+
+    public function testChangePlanInTrialIsImmediateWithoutCharge(): void
+    {
+        $this->stripeSubscription('trialing', '+20 days');
+        $crawler = $this->screen();
+        self::assertStringContainsString('ahora, sin cargo. El primer cobro será de 300,00 € el ' . self::day('+20 days'), $crawler->filter('form[action="/admin/billing/plan"]')->attr('data-confirm'));
+
+        $this->post('/admin/billing/plan', ['plan' => 'yearly']);
+
+        [$method, $id, $params] = FakeStripeGateway::$calls[0];
+        self::assertSame(['updateSubscription', 'sub_live'], [$method, $id]);
+        self::assertSame([['id' => 'si_sub_live', 'price' => 'price_test_yearly']], $params['items']);
+        self::assertSame('none', $params['proration_behavior']);
+        self::assertSame(FakeStripeGateway::$objects['sub_live']['trial_end'], $params['trial_end']);
+        self::assertSame(Restaurant::PLAN_YEARLY, $this->managed()->getPlan());
+        self::assertSame('Anual · 300,00 €/año', $this->screen()->filter('#billing-plan')->text());
+    }
+
+    public function testChangePlanWithPaidPeriodIsScheduledAtPeriodEndAndCanBeUndone(): void
+    {
+        $this->stripeSubscription('active', '+20 days');
+        $this->managed()->setPlan(Restaurant::PLAN_MONTHLY);
+        $this->em->flush();
+
+        $this->post('/admin/billing/plan', ['plan' => 'yearly']);
+
+        self::assertSame('createSubscriptionSchedule', FakeStripeGateway::$calls[0][0]);
+        [, , $params] = FakeStripeGateway::$calls[1];
+        self::assertSame('release', $params['end_behavior']);
+        self::assertSame('none', $params['proration_behavior']);
+        self::assertSame('price_test_monthly', $params['phases'][0]['items'][0]['price']);
+        self::assertSame(FakeStripeGateway::$objects['sub_live']['items']['data'][0]['current_period_end'], $params['phases'][0]['end_date']);
+        self::assertSame('price_test_yearly', $params['phases'][1]['items'][0]['price']);
+        self::assertSame(['interval' => 'year', 'interval_count' => 1], $params['phases'][1]['duration']);
+        self::assertSame(Restaurant::PLAN_MONTHLY, $this->managed()->getPlan(), 'still monthly until the period ends');
+
+        $crawler = $this->screen();
+        self::assertSame('Pasará al plan anual el ' . self::day('+20 days') . ' (300,00 €).', $crawler->filter('#billing-pending-change')->text());
+        self::assertSame('300,00 € el ' . self::day('+20 days'), $crawler->filter('#billing-next-charge')->text());
+        self::assertSelectorNotExists('form[action="/admin/billing/plan"]');
+        self::assertStringContainsString('Se anulará el cambio de plan programado.', $crawler->filter('form[action="/admin/billing/cancel"]')->attr('data-confirm'));
+
+        $this->post('/admin/billing/plan/undo');
+
+        self::assertSame('releaseSubscriptionSchedule', FakeStripeGateway::$calls[2][0]);
+        self::assertSelectorNotExists('#billing-pending-change');
+        self::assertCount(1, $this->screen()->filter('form[action="/admin/billing/plan"]'));
+    }
+
+    public function testCancelThenResume(): void
+    {
+        $this->stripeSubscription();
+
+        $this->post('/admin/billing/cancel');
+
+        self::assertSame(['updateSubscription', 'sub_live', ['cancel_at_period_end' => true]], FakeStripeGateway::$calls[0]);
+        self::assertTrue($this->managed()->isStripeCancelPending());
+        $crawler = $this->screen();
+        self::assertSame('Activa hasta el ' . $this->managed()->getPaidUntil()->format('d/m/Y') . ', no se renovará.', $crawler->filter('#billing-cancel-notice')->text());
+        self::assertSelectorNotExists('#billing-next-charge');
+        self::assertSelectorNotExists('form[action="/admin/billing/plan"]');
+        self::assertSelectorNotExists('form[action="/admin/billing/cancel"]');
+
+        $this->post('/admin/billing/resume');
+
+        self::assertSame(['updateSubscription', 'sub_live', ['cancel_at_period_end' => false]], FakeStripeGateway::$calls[1]);
+        self::assertFalse($this->managed()->isStripeCancelPending());
+        self::assertSelectorNotExists('#billing-cancel-notice');
+    }
+
+    public function testCancelWithScheduledChangeReleasesScheduleFirst(): void
+    {
+        $this->stripeSubscription();
+        $this->post('/admin/billing/plan', ['plan' => 'yearly']);
+        $schedule = FakeStripeGateway::$objects['sub_live']['schedule'];
+
+        $this->post('/admin/billing/cancel');
+
+        self::assertSame(['releaseSubscriptionSchedule', $schedule, []], FakeStripeGateway::$calls[2]);
+        self::assertSame(['updateSubscription', 'sub_live', ['cancel_at_period_end' => true]], FakeStripeGateway::$calls[3]);
+    }
+
+    public function testResumeClearsCancelAtDateToo(): void
+    {
+        $this->stripeSubscription();
+        FakeStripeGateway::$objects['sub_live']['cancel_at'] = time() + 86400 * 10;
+        $this->managed()->setStripeCancelPending(true);
+        $this->em->flush();
+
+        $this->post('/admin/billing/resume');
+
+        self::assertSame(['updateSubscription', 'sub_live', ['cancel_at' => '']], FakeStripeGateway::$calls[0]);
+        self::assertFalse($this->managed()->isStripeCancelPending());
+    }
+
+    public function testChangePlanRefusedWhileCancelled(): void
+    {
+        $this->stripeSubscription();
+        FakeStripeGateway::$objects['sub_live']['cancel_at_period_end'] = true;
+
+        $this->post('/admin/billing/plan', ['plan' => 'yearly']);
+
+        self::assertSame([], FakeStripeGateway::$calls);
+    }
+
+    public function testActionsNeedCsrf(): void
+    {
+        $this->stripeSubscription();
+        $this->client->loginUser($this->owner);
+
+        foreach (['/admin/billing/plan', '/admin/billing/plan/undo', '/admin/billing/cancel', '/admin/billing/resume', '/admin/billing/card'] as $path) {
+            $this->client->request('POST', $path, ['_token' => 'wrong', 'plan' => 'yearly']);
+            self::assertResponseStatusCodeSame(403, $path);
+        }
+        self::assertSame([], FakeStripeGateway::$calls);
+        self::assertSame([], FakeStripeGateway::$portalCustomers);
+    }
+
+    public function testStaffCannotManage(): void
+    {
+        $this->stripeSubscription();
+        $token = $this->screen()->filter('form[action="/admin/billing/cancel"] input[name="_token"]')->attr('value');
+        $this->client->loginUser($this->staff);
+
+        $this->client->request('POST', '/admin/billing/cancel', ['_token' => $token]);
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertSame([], FakeStripeGateway::$calls);
+    }
+
+    public function testChangeCardOpensPortalCardFormAndComesBackHere(): void
+    {
+        $this->stripeSubscription();
+
+        $token = $this->screen()->filter('form[action="/admin/billing/card"] input[name="_token"]')->attr('value');
+        $this->client->request('POST', '/admin/billing/card', ['_token' => $token]);
+
+        self::assertResponseStatusCodeSame(303);
+        self::assertStringStartsWith('https://billing.stripe.test/portal/', $this->client->getResponse()->headers->get('Location'));
+        self::assertSame(['http://localhost/admin/billing/portal-return'], FakeStripeGateway::$portalReturnUrls);
+        self::assertSame([
+            'type' => 'payment_method_update',
+            'after_completion' => ['type' => 'redirect', 'redirect' => ['return_url' => 'http://localhost/admin/billing/portal-return']],
+        ], FakeStripeGateway::$portalFlows[0]);
+    }
+
+    public function testPortalReturnMakesNewerCustomerCardTheSubscriptions(): void
+    {
+        $this->stripeSubscription();
+        $customer = FakeStripeGateway::$objects['sub_live']['customer'];
+        FakeStripeGateway::$objects[$customer] = ['id' => $customer, 'invoice_settings' => ['default_payment_method' => FakeStripeGateway::card('pm_new', '1881', 2000, 'mastercard')]];
+
+        $this->client->loginUser($this->owner);
+        $this->client->request('GET', '/admin/billing/portal-return');
+
+        self::assertResponseRedirects('/admin/billing');
+        self::assertSame(['updateSubscription', 'sub_live', ['default_payment_method' => 'pm_new']], FakeStripeGateway::$calls[0]);
+        self::assertSame('Mastercard •••• 1881 · caduca 04/30', $this->screen()->filter('#billing-card')->text());
+    }
+
+    public function testPortalReturnKeepsSubscriptionCardWhenCustomerCardIsOlder(): void
+    {
+        $this->stripeSubscription();
+        $customer = FakeStripeGateway::$objects['sub_live']['customer'];
+        FakeStripeGateway::$objects[$customer] = ['id' => $customer, 'invoice_settings' => ['default_payment_method' => FakeStripeGateway::card('pm_ancient', '0005', 500)]];
+
+        $this->client->loginUser($this->owner);
+        $this->client->request('GET', '/admin/billing/portal-return');
+
+        self::assertSame([], FakeStripeGateway::$calls);
+        self::assertSame('Visa •••• 4242 · caduca 04/30', $this->screen()->filter('#billing-card')->text());
+    }
+
+    public function testCardShownFallsBackToCustomerDefault(): void
+    {
+        $this->stripeSubscription();
+        FakeStripeGateway::$objects['sub_live']['default_payment_method'] = null;
+        $customer = FakeStripeGateway::$objects['sub_live']['customer'];
+        FakeStripeGateway::$objects[$customer] = ['id' => $customer, 'invoice_settings' => ['default_payment_method' => FakeStripeGateway::card('pm_cust', '3220', 2000)]];
+
+        self::assertSame('Visa •••• 3220 · caduca 04/30', $this->screen()->filter('#billing-card')->text());
+    }
+
+    public function testExpiredPageWithLiveSubscriptionKeepsPortalButton(): void
+    {
+        $this->stripeSubscription();
+        $this->expire();
+
+        $this->client->loginUser($this->owner);
+        $crawler = $this->client->request('GET', '/admin/menu');
+        $this->client->submit($crawler->filter('form[action="/admin/billing/portal"]')->form());
+
+        self::assertResponseStatusCodeSame(303);
+        self::assertSame([null], FakeStripeGateway::$portalFlows);
+        self::assertSame(['http://localhost/admin/billing/portal-return'], FakeStripeGateway::$portalReturnUrls);
+    }
+
+    public function testSuperAdminAsOwnerSeesScreen(): void
+    {
+        $this->stripeSubscription();
+        $this->openPayLinkAsSuperAdmin();
+        $this->client->followRedirect();
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('Activa', $this->client->getCrawler()->filter('#billing-status')->text());
     }
 }

@@ -38,16 +38,57 @@ class StripeGateway implements StripeGatewayInterface
         return $this->stripe->invoices->retrieve($id)->toArray();
     }
 
-    public function retrieveSubscription(string $id): array
+    public function retrieveSubscription(string $id, array $expand = []): array
     {
-        return $this->stripe->subscriptions->retrieve($id)->toArray();
+        return $this->stripe->subscriptions->retrieve($id, $expand !== [] ? ['expand' => $expand] : [])->toArray();
     }
 
-    public function createPortalSession(string $customerId, string $returnUrl): string
+    public function updateSubscription(string $id, array $params): array
     {
-        return $this->stripe->billingPortal->sessions->create([
+        return $this->stripe->subscriptions->update($id, $params)->toArray();
+    }
+
+    public function retrieveCustomer(string $id): array
+    {
+        return $this->stripe->customers->retrieve($id, ['expand' => ['invoice_settings.default_payment_method']])->toArray();
+    }
+
+    public function retrievePrice(string $id): array
+    {
+        return $this->stripe->prices->retrieve($id)->toArray();
+    }
+
+    public function listInvoices(string $customerId, int $limit): array
+    {
+        return $this->stripe->invoices->all(['customer' => $customerId, 'limit' => $limit])->toArray()['data'];
+    }
+
+    public function retrieveSubscriptionSchedule(string $id): array
+    {
+        return $this->stripe->subscriptionSchedules->retrieve($id)->toArray();
+    }
+
+    public function createSubscriptionSchedule(array $params): array
+    {
+        return $this->stripe->subscriptionSchedules->create($params)->toArray();
+    }
+
+    public function updateSubscriptionSchedule(string $id, array $params): array
+    {
+        return $this->stripe->subscriptionSchedules->update($id, $params)->toArray();
+    }
+
+    public function releaseSubscriptionSchedule(string $id): void
+    {
+        $this->stripe->subscriptionSchedules->release($id);
+    }
+
+    public function createPortalSession(string $customerId, string $returnUrl, ?array $flowData = null): string
+    {
+        return $this->stripe->billingPortal->sessions->create(array_filter([
             'customer'   => $customerId,
             'return_url' => $returnUrl,
-        ])->url;
+            'flow_data'  => $flowData,
+        ], static fn ($value): bool => $value !== null))->url;
     }
 }

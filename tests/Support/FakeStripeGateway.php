@@ -26,7 +26,18 @@ class FakeStripeGateway implements StripeGatewayInterface
     /** @var list<string> */
     public static array $portalReturnUrls = [];
 
+    /** @var list<array<string, mixed>|null> */
+    public static array $portalFlows = [];
+
+    /** @var list<array{0: string, 1: string, 2: array<string, mixed>}> Writes: [method, id, params]. */
+    public static array $calls = [];
+
+    /** @var list<array<string, mixed>> What listInvoices() returns, newest first. */
+    public static array $invoices = [];
+
     public static bool $fail = false;
+
+    public static bool $failInvoices = false;
 
     public static function reset(): void
     {
@@ -35,7 +46,11 @@ class FakeStripeGateway implements StripeGatewayInterface
         self::$createdCustomers = [];
         self::$portalCustomers = [];
         self::$portalReturnUrls = [];
+        self::$portalFlows = [];
+        self::$calls = [];
+        self::$invoices = [];
         self::$fail = false;
+        self::$failInvoices = false;
     }
 
     public function createCustomer(string $email, string $name, int $restaurantId): string
@@ -65,16 +80,110 @@ class FakeStripeGateway implements StripeGatewayInterface
         return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
     }
 
-    public function retrieveSubscription(string $id): array
+    public function retrieveSubscription(string $id, array $expand = []): array
     {
+        $this->maybeFail();
+
         return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
     }
 
-    public function createPortalSession(string $customerId, string $returnUrl): string
+    /** Applies the few params StripeBilling sends, the way Stripe would. */
+    public function updateSubscription(string $id, array $params): array
+    {
+        $this->maybeFail();
+        self::$calls[] = ['updateSubscription', $id, $params];
+        $subscription = &self::$objects[$id];
+        foreach ($params['items'] ?? [] as $item) {
+            $subscription['items']['data'][0]['price'] = self::$objects[$item['price']] ?? ['id' => $item['price']];
+        }
+        if (array_key_exists('cancel_at_period_end', $params)) {
+            $subscription['cancel_at_period_end'] = $params['cancel_at_period_end'];
+            $subscription['cancel_at'] = $params['cancel_at_period_end'] ? $subscription['items']['data'][0]['current_period_end'] ?? 1 : null;
+        }
+        if (array_key_exists('cancel_at', $params)) {
+            $subscription['cancel_at'] = $params['cancel_at'] === '' ? null : $params['cancel_at'];
+        }
+        if (isset($params['default_payment_method'])) {
+            $subscription['default_payment_method'] = self::$objects[$params['default_payment_method']] ?? $params['default_payment_method'];
+        }
+
+        return $subscription;
+    }
+
+    public function retrieveCustomer(string $id): array
+    {
+        $this->maybeFail();
+
+        return self::$objects[$id] ?? ['id' => $id, 'invoice_settings' => ['default_payment_method' => null]];
+    }
+
+    public function retrievePrice(string $id): array
+    {
+        $this->maybeFail();
+
+        return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
+    }
+
+    public function listInvoices(string $customerId, int $limit): array
+    {
+        if (self::$failInvoices) {
+            throw new \RuntimeException('Fake Stripe invoices failure');
+        }
+
+        return array_slice(self::$invoices, 0, $limit);
+    }
+
+    public function retrieveSubscriptionSchedule(string $id): array
+    {
+        $this->maybeFail();
+
+        return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
+    }
+
+    /** Only from_subscription: one phase, the current period. */
+    public function createSubscriptionSchedule(array $params): array
+    {
+        $this->maybeFail();
+        self::$calls[] = ['createSubscriptionSchedule', '', $params];
+        $subscription = &self::$objects[$params['from_subscription']];
+        $item = $subscription['items']['data'][0];
+        $id = 'sub_sched_' . count(self::$calls);
+        $subscription['schedule'] = $id;
+
+        return self::$objects[$id] = ['id' => $id, 'subscription' => $subscription['id'], 'phases' => [[
+            'start_date' => $item['current_period_start'] ?? 0,
+            'end_date'   => $item['current_period_end'] ?? 0,
+            'items'      => [['price' => $item['price']['id'], 'quantity' => 1]],
+        ]]];
+    }
+
+    public function updateSubscriptionSchedule(string $id, array $params): array
+    {
+        $this->maybeFail();
+        self::$calls[] = ['updateSubscriptionSchedule', $id, $params];
+        $phases = $params['phases'];
+        // Stripe fills in a phase's start_date from the previous end_date.
+        foreach ($phases as $i => &$phase) {
+            $phase['start_date'] ??= $phases[$i - 1]['end_date'];
+        }
+        self::$objects[$id]['phases'] = $phases;
+
+        return self::$objects[$id];
+    }
+
+    public function releaseSubscriptionSchedule(string $id): void
+    {
+        $this->maybeFail();
+        self::$calls[] = ['releaseSubscriptionSchedule', $id, []];
+        self::$objects[self::$objects[$id]['subscription']]['schedule'] = null;
+    }
+
+    public function createPortalSession(string $customerId, string $returnUrl, ?array $flowData = null): string
     {
         $this->maybeFail();
         self::$portalCustomers[] = $customerId;
         self::$portalReturnUrls[] = $returnUrl;
+        self::$portalFlows[] = $flowData;
 
         return 'https://billing.stripe.test/portal/' . $customerId;
     }
@@ -85,9 +194,27 @@ class FakeStripeGateway implements StripeGatewayInterface
         return self::$objects[$id] = [
             'id' => $id,
             'customer' => $customer,
+            'status' => 'active',
             'metadata' => ['restaurant_id' => (string) $restaurantId],
-            'items' => ['data' => [['price' => ['id' => $priceId]]]],
+            'items' => ['data' => [['id' => 'si_' . $id, 'price' => self::$objects[$priceId] ?? ['id' => $priceId]]]],
+            'cancel_at_period_end' => false,
+            'cancel_at' => null,
+            'trial_end' => null,
+            'schedule' => null,
+            'default_payment_method' => null,
         ];
+    }
+
+    /** A recurring EUR price; store it before subscription() so the subscription embeds it. */
+    public static function price(string $id, int $unitAmount, string $interval): array
+    {
+        return self::$objects[$id] = ['id' => $id, 'unit_amount' => $unitAmount, 'currency' => 'eur', 'recurring' => ['interval' => $interval]];
+    }
+
+    /** A card payment method; $created tells which one is newer. */
+    public static function card(string $id, string $last4, int $created, string $brand = 'visa'): array
+    {
+        return self::$objects[$id] = ['id' => $id, 'created' => $created, 'card' => ['brand' => $brand, 'last4' => $last4, 'exp_month' => 4, 'exp_year' => 2030]];
     }
 
     /** A paid invoice for $subscriptionId covering up to $periodEnd. */

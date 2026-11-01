@@ -1,0 +1,66 @@
+title: "Abonnement"
+stripe_error: "Die Stripe-Daten konnten nicht geladen werden. Bitte später erneut versuchen."
+next_charge: "%amount% am %date%"
+cancel_pending: "Aktiv bis %date%, wird nicht verlängert."
+
+section:
+    plan: "Ihr Tarif"
+    card: "Karte"
+    invoices: "Rechnungen"
+
+label:
+    plan: "Tarif"
+    status: "Status"
+    next_charge: "Nächste Abbuchung"
+
+plan:
+    monthly: "Monatlich · %price%/Monat"
+    yearly: "Jährlich · %price%/Jahr"
+
+status:
+    trial_days: "Kostenlose Testphase · noch %count% Tage"
+    trial_day: "Kostenlose Testphase · noch 1 Tag"
+    manual: "Aktiv bis %date%"
+    expired: "Abgelaufen"
+    trialing: "Kostenlose Testphase"
+    active: "Aktiv"
+    past_due: "Zahlung ausstehend"
+    other: "Unvollständig"
+
+pending_change:
+    monthly: "Wechselt am %date% zum Monatstarif (%amount%)."
+    yearly: "Wechselt am %date% zum Jahrestarif (%amount%)."
+
+action:
+    choose_plan: "Tarif wählen"
+    to_yearly: "Zu jährlich wechseln"
+    to_monthly: "Zu monatlich wechseln"
+    undo_change: "Aktuellen Tarif behalten"
+    cancel: "Abonnement kündigen"
+    resume: "Nicht kündigen"
+    change_card: "Karte ändern"
+
+card:
+    value: "%brand% •••• %last4% · gültig bis %exp%"
+    none: "Keine Karte gespeichert."
+
+confirm:
+    change_now:
+        yearly: "Sie wechseln jetzt kostenlos zum Jahrestarif. Die erste Abbuchung beträgt %amount% am %date%."
+        monthly: "Sie wechseln jetzt kostenlos zum Monatstarif. Die erste Abbuchung beträgt %amount% am %date%."
+    change_later:
+        yearly: "Sie wechseln zum Ende des aktuellen Zeitraums, am %date%, zum Jahrestarif. An diesem Tag werden %amount% abgebucht."
+        monthly: "Sie wechseln zum Ende des aktuellen Zeitraums, am %date%, zum Monatstarif. An diesem Tag werden %amount% abgebucht."
+    cancel: "Es bleibt bis %date% aktiv und wird nicht verlängert."
+    cancel_drops_change: "Der geplante Tarifwechsel wird verworfen."
+
+invoices:
+    error: "Die Rechnungen konnten nicht geladen werden."
+    empty: "Noch keine Rechnungen."
+    view: "Rechnung ansehen"
+
+invoice_status:
+    paid: "Bezahlt"
+    open: "Offen"
+    void: "Storniert"
+    uncollectible: "Unbezahlt"

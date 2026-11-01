@@ -1,0 +1,66 @@
+title: "Suscripción"
+stripe_error: "No se pudieron cargar los datos de Stripe. Inténtalo de nuevo más tarde."
+next_charge: "%amount% el %date%"
+cancel_pending: "Activa hasta el %date%, no se renovará."
+
+section:
+    plan: "Tu plan"
+    card: "Tarjeta"
+    invoices: "Facturas"
+
+label:
+    plan: "Plan"
+    status: "Estado"
+    next_charge: "Próximo cobro"
+
+plan:
+    monthly: "Mensual · %price%/mes"
+    yearly: "Anual · %price%/año"
+
+status:
+    trial_days: "Prueba gratis · quedan %count% días"
+    trial_day: "Prueba gratis · queda 1 día"
+    manual: "Activa hasta el %date%"
+    expired: "Vencida"
+    trialing: "Prueba gratis"
+    active: "Activa"
+    past_due: "Pago pendiente"
+    other: "Incompleta"
+
+pending_change:
+    monthly: "Pasará al plan mensual el %date% (%amount%)."
+    yearly: "Pasará al plan anual el %date% (%amount%)."
+
+action:
+    choose_plan: "Elegir plan"
+    to_yearly: "Pasar a anual"
+    to_monthly: "Pasar a mensual"
+    undo_change: "Mantener el plan actual"
+    cancel: "Cancelar suscripción"
+    resume: "No cancelar"
+    change_card: "Cambiar tarjeta"
+
+card:
+    value: "%brand% •••• %last4% · caduca %exp%"
+    none: "No hay ninguna tarjeta guardada."
+
+confirm:
+    change_now:
+        yearly: "Cambiarás al plan anual ahora, sin cargo. El primer cobro será de %amount% el %date%."
+        monthly: "Cambiarás al plan mensual ahora, sin cargo. El primer cobro será de %amount% el %date%."
+    change_later:
+        yearly: "Pasarás al plan anual al terminar el periodo actual, el %date%. Ese día se cobrarán %amount%."
+        monthly: "Pasarás al plan mensual al terminar el periodo actual, el %date%. Ese día se cobrarán %amount%."
+    cancel: "Seguirá activa hasta el %date% y no se renovará."
+    cancel_drops_change: "Se anulará el cambio de plan programado."
+
+invoices:
+    error: "No se pudieron cargar las facturas."
+    empty: "Todavía no hay facturas."
+    view: "Ver factura"
+
+invoice_status:
+    paid: "Pagada"
+    open: "Pendiente"
+    void: "Anulada"
+    uncollectible: "Impagada"

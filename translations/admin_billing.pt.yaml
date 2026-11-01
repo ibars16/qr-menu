@@ -1,0 +1,66 @@
+title: "Assinatura"
+stripe_error: "Não foi possível carregar os dados do Stripe. Tente novamente mais tarde."
+next_charge: "%amount% em %date%"
+cancel_pending: "Ativa até %date%, não será renovada."
+
+section:
+    plan: "O seu plano"
+    card: "Cartão"
+    invoices: "Faturas"
+
+label:
+    plan: "Plano"
+    status: "Estado"
+    next_charge: "Próxima cobrança"
+
+plan:
+    monthly: "Mensal · %price%/mês"
+    yearly: "Anual · %price%/ano"
+
+status:
+    trial_days: "Teste gratuito · faltam %count% dias"
+    trial_day: "Teste gratuito · falta 1 dia"
+    manual: "Ativa até %date%"
+    expired: "Expirada"
+    trialing: "Teste gratuito"
+    active: "Ativa"
+    past_due: "Pagamento pendente"
+    other: "Incompleta"
+
+pending_change:
+    monthly: "Passará para o plano mensal em %date% (%amount%)."
+    yearly: "Passará para o plano anual em %date% (%amount%)."
+
+action:
+    choose_plan: "Escolher plano"
+    to_yearly: "Mudar para anual"
+    to_monthly: "Mudar para mensal"
+    undo_change: "Manter o plano atual"
+    cancel: "Cancelar assinatura"
+    resume: "Não cancelar"
+    change_card: "Alterar cartão"
+
+card:
+    value: "%brand% •••• %last4% · expira %exp%"
+    none: "Nenhum cartão guardado."
+
+confirm:
+    change_now:
+        yearly: "Mudará agora para o plano anual, sem custos. A primeira cobrança será de %amount% em %date%."
+        monthly: "Mudará agora para o plano mensal, sem custos. A primeira cobrança será de %amount% em %date%."
+    change_later:
+        yearly: "Mudará para o plano anual no fim do período atual, em %date%. Nesse dia serão cobrados %amount%."
+        monthly: "Mudará para o plano mensal no fim do período atual, em %date%. Nesse dia serão cobrados %amount%."
+    cancel: "Continuará ativa até %date% e não será renovada."
+    cancel_drops_change: "A mudança de plano agendada será anulada."
+
+invoices:
+    error: "Não foi possível carregar as faturas."
+    empty: "Ainda não há faturas."
+    view: "Ver fatura"
+
+invoice_status:
+    paid: "Paga"
+    open: "Pendente"
+    void: "Anulada"
+    uncollectible: "Não paga"

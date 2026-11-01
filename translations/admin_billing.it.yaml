@@ -1,0 +1,66 @@
+title: "Abbonamento"
+stripe_error: "Non è stato possibile caricare i dati di Stripe. Riprova più tardi."
+next_charge: "%amount% il %date%"
+cancel_pending: "Attivo fino al %date%, non verrà rinnovato."
+
+section:
+    plan: "Il tuo piano"
+    card: "Carta"
+    invoices: "Fatture"
+
+label:
+    plan: "Piano"
+    status: "Stato"
+    next_charge: "Prossimo addebito"
+
+plan:
+    monthly: "Mensile · %price%/mese"
+    yearly: "Annuale · %price%/anno"
+
+status:
+    trial_days: "Prova gratuita · %count% giorni rimasti"
+    trial_day: "Prova gratuita · 1 giorno rimasto"
+    manual: "Attivo fino al %date%"
+    expired: "Scaduto"
+    trialing: "Prova gratuita"
+    active: "Attivo"
+    past_due: "Pagamento in sospeso"
+    other: "Incompleto"
+
+pending_change:
+    monthly: "Passerà al piano mensile il %date% (%amount%)."
+    yearly: "Passerà al piano annuale il %date% (%amount%)."
+
+action:
+    choose_plan: "Scegli piano"
+    to_yearly: "Passa all'annuale"
+    to_monthly: "Passa al mensile"
+    undo_change: "Mantieni il piano attuale"
+    cancel: "Annulla l'abbonamento"
+    resume: "Non annullare"
+    change_card: "Cambia carta"
+
+card:
+    value: "%brand% •••• %last4% · scade %exp%"
+    none: "Nessuna carta salvata."
+
+confirm:
+    change_now:
+        yearly: "Passerai subito al piano annuale, senza addebito. Il primo addebito sarà di %amount% il %date%."
+        monthly: "Passerai subito al piano mensile, senza addebito. Il primo addebito sarà di %amount% il %date%."
+    change_later:
+        yearly: "Passerai al piano annuale alla fine del periodo attuale, il %date%. Quel giorno verranno addebitati %amount%."
+        monthly: "Passerai al piano mensile alla fine del periodo attuale, il %date%. Quel giorno verranno addebitati %amount%."
+    cancel: "Resterà attivo fino al %date% e non verrà rinnovato."
+    cancel_drops_change: "Il cambio di piano programmato verrà annullato."
+
+invoices:
+    error: "Non è stato possibile caricare le fatture."
+    empty: "Ancora nessuna fattura."
+    view: "Vedi fattura"
+
+invoice_status:
+    paid: "Pagata"
+    open: "In sospeso"
+    void: "Annullata"
+    uncollectible: "Non pagata"

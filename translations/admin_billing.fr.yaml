@@ -1,0 +1,66 @@
+title: "Abonnement"
+stripe_error: "Les données Stripe n'ont pas pu être chargées. Réessayez plus tard."
+next_charge: "%amount% le %date%"
+cancel_pending: "Actif jusqu'au %date%, ne sera pas renouvelé."
+
+section:
+    plan: "Votre formule"
+    card: "Carte"
+    invoices: "Factures"
+
+label:
+    plan: "Formule"
+    status: "Statut"
+    next_charge: "Prochain prélèvement"
+
+plan:
+    monthly: "Mensuelle · %price%/mois"
+    yearly: "Annuelle · %price%/an"
+
+status:
+    trial_days: "Essai gratuit · %count% jours restants"
+    trial_day: "Essai gratuit · 1 jour restant"
+    manual: "Actif jusqu'au %date%"
+    expired: "Expiré"
+    trialing: "Essai gratuit"
+    active: "Actif"
+    past_due: "Paiement en attente"
+    other: "Incomplet"
+
+pending_change:
+    monthly: "Passera à la formule mensuelle le %date% (%amount%)."
+    yearly: "Passera à la formule annuelle le %date% (%amount%)."
+
+action:
+    choose_plan: "Choisir une formule"
+    to_yearly: "Passer à l'annuel"
+    to_monthly: "Passer au mensuel"
+    undo_change: "Garder la formule actuelle"
+    cancel: "Résilier l'abonnement"
+    resume: "Ne pas résilier"
+    change_card: "Changer de carte"
+
+card:
+    value: "%brand% •••• %last4% · expire %exp%"
+    none: "Aucune carte enregistrée."
+
+confirm:
+    change_now:
+        yearly: "Vous passerez à la formule annuelle maintenant, sans frais. Le premier prélèvement sera de %amount% le %date%."
+        monthly: "Vous passerez à la formule mensuelle maintenant, sans frais. Le premier prélèvement sera de %amount% le %date%."
+    change_later:
+        yearly: "Vous passerez à la formule annuelle à la fin de la période en cours, le %date%. %amount% seront prélevés ce jour-là."
+        monthly: "Vous passerez à la formule mensuelle à la fin de la période en cours, le %date%. %amount% seront prélevés ce jour-là."
+    cancel: "Il restera actif jusqu'au %date% et ne sera pas renouvelé."
+    cancel_drops_change: "Le changement de formule prévu sera annulé."
+
+invoices:
+    error: "Les factures n'ont pas pu être chargées."
+    empty: "Pas encore de factures."
+    view: "Voir la facture"
+
+invoice_status:
+    paid: "Payée"
+    open: "En attente"
+    void: "Annulée"
+    uncollectible: "Impayée"

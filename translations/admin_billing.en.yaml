@@ -1,0 +1,66 @@
+title: "Subscription"
+stripe_error: "Stripe data could not be loaded. Please try again later."
+next_charge: "%amount% on %date%"
+cancel_pending: "Active until %date%, will not renew."
+
+section:
+    plan: "Your plan"
+    card: "Card"
+    invoices: "Invoices"
+
+label:
+    plan: "Plan"
+    status: "Status"
+    next_charge: "Next charge"
+
+plan:
+    monthly: "Monthly · %price%/month"
+    yearly: "Yearly · %price%/year"
+
+status:
+    trial_days: "Free trial · %count% days left"
+    trial_day: "Free trial · 1 day left"
+    manual: "Active until %date%"
+    expired: "Expired"
+    trialing: "Free trial"
+    active: "Active"
+    past_due: "Payment pending"
+    other: "Incomplete"
+
+pending_change:
+    monthly: "Switches to the monthly plan on %date% (%amount%)."
+    yearly: "Switches to the yearly plan on %date% (%amount%)."
+
+action:
+    choose_plan: "Choose plan"
+    to_yearly: "Switch to yearly"
+    to_monthly: "Switch to monthly"
+    undo_change: "Keep current plan"
+    cancel: "Cancel subscription"
+    resume: "Don't cancel"
+    change_card: "Change card"
+
+card:
+    value: "%brand% •••• %last4% · expires %exp%"
+    none: "No card saved."
+
+confirm:
+    change_now:
+        yearly: "You'll switch to the yearly plan now, at no charge. The first charge will be %amount% on %date%."
+        monthly: "You'll switch to the monthly plan now, at no charge. The first charge will be %amount% on %date%."
+    change_later:
+        yearly: "You'll switch to the yearly plan when the current period ends, on %date%. %amount% will be charged that day."
+        monthly: "You'll switch to the monthly plan when the current period ends, on %date%. %amount% will be charged that day."
+    cancel: "It will stay active until %date% and will not renew."
+    cancel_drops_change: "The scheduled plan change will be dropped."
+
+invoices:
+    error: "Invoices could not be loaded."
+    empty: "No invoices yet."
+    view: "View invoice"
+
+invoice_status:
+    paid: "Paid"
+    open: "Open"
+    void: "Void"
+    uncollectible: "Unpaid"
