@@ -23,6 +23,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /** Platform owner: no restaurant, only /platform (see SubscriptionGate, which redirects /admin there). */
     public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
 
+    /** A reseller's login: no restaurant, its own panel (see $reseller). */
+    public const ROLE_RESELLER = 'ROLE_RESELLER';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -51,6 +54,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToOne(targetEntity: Restaurant::class, inversedBy: 'users')]
     #[ORM\JoinColumn(nullable: true)]
     private ?Restaurant $restaurant = null;
+
+    /** The reseller this user logs in for (ROLE_RESELLER); null for everyone else. */
+    #[ORM\ManyToOne(targetEntity: Reseller::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
+    private ?Reseller $reseller = null;
 
     public function getId(): ?int
     {
@@ -135,5 +143,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRestaurant(?Restaurant $restaurant): void
     {
         $this->restaurant = $restaurant;
+    }
+
+    public function getReseller(): ?Reseller
+    {
+        return $this->reseller;
+    }
+
+    public function setReseller(?Reseller $reseller): void
+    {
+        $this->reseller = $reseller;
     }
 }

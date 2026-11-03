@@ -42,6 +42,8 @@ bottom_nav:
     settings: Konfig.
 
 subscription_expired: "Ihr Abonnement ist am %date% abgelaufen"
+reseller_inactive: "Dieses Restaurant ist nicht aktiv"
+reseller_inactive_hint: "Wenden Sie sich an das Unternehmen, das Ihre Speisekarte verwaltet."
 
 trial:
     days_left_singular: "Kostenlose Testphase · noch %count% Tag"

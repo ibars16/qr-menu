@@ -22,7 +22,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * API), Stripe Checkout to subscribe, and the portal only for the card
  * form. Owner only — staff never pay — except the payment link, which
  * sorts everyone else out itself. Reachable while expired:
- * SubscriptionGate lets /admin/billing through.
+ * SubscriptionGate lets /admin/billing through. Not for a reseller's
+ * restaurant (Restaurant::isBilledByReseller()): the reseller pays.
  */
 #[Route('/admin/billing', name: 'admin_billing_')]
 class BillingController extends AbstractController
@@ -242,6 +243,10 @@ class BillingController extends AbstractController
             return $this->redirectToRoute('admin_menu');
         }
 
+        if ($restaurant->isBilledByReseller()) {
+            return $this->redirectToRoute('admin_menu');
+        }
+
         if (!$this->isGranted(User::ROLE_OWNER)) {
             // Expired: the expired page already says it.
             if (!$restaurant->isExpired()) {
@@ -306,6 +311,11 @@ class BillingController extends AbstractController
 
     private function restaurant(): Restaurant
     {
-        return $this->getUser()?->getRestaurant() ?? throw $this->createAccessDeniedException();
+        $restaurant = $this->getUser()?->getRestaurant() ?? throw $this->createAccessDeniedException();
+        if ($restaurant->isBilledByReseller()) {
+            throw $this->createNotFoundException();
+        }
+
+        return $restaurant;
     }
 }

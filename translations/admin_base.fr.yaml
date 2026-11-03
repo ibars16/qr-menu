@@ -42,6 +42,8 @@ bottom_nav:
     settings: Config
 
 subscription_expired: "Votre abonnement a expiré le %date%"
+reseller_inactive: "Ce restaurant n'est pas actif"
+reseller_inactive_hint: "Contactez l'entreprise qui gère votre carte."
 
 trial:
     days_left_singular: "Essai gratuit · %count% jour restant"

@@ -64,6 +64,7 @@
         .actions form { display: contents; }
         .btn:disabled { opacity: 0.5; cursor: default; }
         .empty { color: var(--tx-muted); }
+        .section-title { margin: var(--sp-6) 0 var(--sp-3); font-size: var(--fs-md); font-weight: 600; color: var(--tx-hi); }
 
         /* Payment dialog options */
         .plan-options { display: flex; flex-direction: column; gap: var(--sp-2); }
@@ -133,7 +134,6 @@
                 <tbody>
                     {% for row in rows %}
                         {% set restaurant = row.restaurant %}
-                        {% set days = restaurant.daysLeft %}
                         <tr>
                             <td>
                                 <div class="r-name">{{ restaurant.name }}</div>
@@ -142,58 +142,38 @@
                                     · <a href="{{ path('menu_show', {slug: restaurant.slug}) }}" target="_blank" rel="noopener">Ver carta</a>
                                 </div>
                             </td>
-                            <td data-label="Suscripción">
-                                {% if restaurant.expired %}
-                                    <div class="status status-expired">🔴 Vencida</div>
-                                {% elseif restaurant.plan is null %}
-                                    <div class="status status-trial">🟡 Prueba gratis</div>
-                                {% else %}
-                                    <div class="status status-active">🟢 Activa · {{ restaurant.plan == 'yearly' ? 'Anual' : 'Mensual' }}</div>
-                                {% endif %}
-                                <div class="sub">{{ restaurant.lastPaidAt ? 'Último cobro ' ~ restaurant.lastPaidAt|date('d/m/Y') : 'Sin cobros' }}</div>
-                                {% if restaurant.hasLiveSubscription %}
-                                    <div class="sub auto-pay">{{ restaurant.stripeCancelPending ? '💳 Cancelada · no renovará' : '💳 Pago automático' }}</div>
-                                {% endif %}
-                            </td>
-                            <td data-label="Válida hasta" class="until {{ days < 0 ? 'until-expired' : (days <= 7 ? 'until-soon' : '') }}">
-                                <div>{{ restaurant.paidUntil|date('d/m/Y') }}</div>
-                                <div class="sub">
-                                    {%- if days < 0 -%}
-                                        venció hace {{ -days }} {{ days == -1 ? 'día' : 'días' }}
-                                    {%- elseif days == 0 -%}
-                                        vence hoy
-                                    {%- elseif days == 1 -%}
-                                        queda 1 día
-                                    {%- else -%}
-                                        quedan {{ days }} días
-                                    {%- endif -%}
-                                </div>
-                            </td>
-                            <td>
-                                <div class="actions">
-                                    <button type="button" class="btn btn-primary" onclick="PaymentUI.open(this)"
-                                            data-name="{{ restaurant.name }}"
-                                            data-action="{{ path('platform_register_payment', {id: restaurant.id}) }}"
-                                            data-token="{{ csrf_token('platform-register-payment-' ~ restaurant.id) }}"
-                                            data-until-monthly="{{ restaurant.paidUntilAfter('monthly')|date('d/m/Y') }}"
-                                            data-until-yearly="{{ restaurant.paidUntilAfter('yearly')|date('d/m/Y') }}">
-                                        Registrar pago
-                                    </button>
-                                    {% if not restaurant.hasLiveSubscription %}
-                                        {% if row.owner %}
-                                            <button type="button" class="btn copy-link" onclick="copyPaymentLink(this)"
-                                                    data-url="{{ url('admin_billing_pay', {id: restaurant.id}) }}">Copiar enlace de pago</button>
-                                        {% else %}
-                                            <button type="button" class="btn copy-link" disabled>Sin dueño</button>
-                                        {% endif %}
+                            {% if restaurant.billedByReseller %}
+                                {# Billed through its reseller: no dates or actions of its own. #}
+                                <td data-label="Suscripción">
+                                    {% if restaurant.archived %}
+                                        <div class="status">⚪ Archivado</div>
+                                    {% elseif restaurant.expired %}
+                                        <div class="status status-expired">🔴 Vencida</div>
+                                    {% else %}
+                                        <div class="status status-active">🟢 Activa</div>
                                     {% endif %}
-                                    <form method="post" action="{{ path('platform_deactivate', {id: restaurant.id}) }}"
-                                          onsubmit="return confirm({{ ('¿Desactivar ' ~ restaurant.name ~ '? Su carta dejará de verse.')|json_encode }})">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('platform-deactivate-' ~ restaurant.id) }}">
-                                        <button type="submit" class="btn btn-danger">Desactivar</button>
-                                    </form>
-                                </div>
-                            </td>
+                                    <div class="sub reseller-of">Revendedor · {{ restaurant.reseller.name }}</div>
+                                </td>
+                                <td data-label="Válida hasta" class="until"><div class="sub">Lo paga el revendedor</div></td>
+                                <td></td>
+                            {% else %}
+                                {{ _self.status_cell(restaurant, 'Prueba gratis') }}
+                                {{ _self.until_cell(restaurant) }}
+                                <td>
+                                    <div class="actions">
+                                        {{ _self.payment_button(restaurant, 'platform_register_payment', 'platform-register-payment-') }}
+                                        {% if not restaurant.hasLiveSubscription %}
+                                            {% if row.owner %}
+                                                <button type="button" class="btn copy-link" onclick="copyPaymentLink(this)"
+                                                        data-url="{{ url('admin_billing_pay', {id: restaurant.id}) }}">Copiar enlace de pago</button>
+                                            {% else %}
+                                                <button type="button" class="btn copy-link" disabled>Sin dueño</button>
+                                            {% endif %}
+                                        {% endif %}
+                                        {{ _self.deactivate_form(restaurant, 'platform_deactivate', 'platform-deactivate-', '¿Desactivar ' ~ restaurant.name ~ '? Su carta dejará de verse.') }}
+                                    </div>
+                                </td>
+                            {% endif %}
                         </tr>
                     {% else %}
                         <tr><td colspan="4" class="empty">No hay restaurantes.</td></tr>
@@ -201,6 +181,46 @@
                 </tbody>
             </table>
         </div>
+
+        {% if resellerRows is not empty %}
+            <h2 class="section-title">Revendedores</h2>
+            <div class="table-wrap" id="resellers">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Revendedor</th>
+                            <th>Restaurantes</th>
+                            <th>Suscripción</th>
+                            <th>Válida hasta</th>
+                            <th class="actions-col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in resellerRows %}
+                            {% set reseller = row.reseller %}
+                            <tr>
+                                <td>
+                                    <div class="r-name">{{ reseller.name }}</div>
+                                    <div class="sub">{{ row.user ? row.user.email : 'Sin usuario' }}</div>
+                                </td>
+                                <td data-label="Restaurantes" class="reseller-count">
+                                    <div>{{ row.restaurants.active }} en uso</div>
+                                    {% if row.restaurants.archived %}<div class="sub">{{ row.restaurants.archived }} {{ row.restaurants.archived == 1 ? 'archivado' : 'archivados' }}</div>{% endif %}
+                                </td>
+                                {{ _self.status_cell(reseller, 'Sin pagar') }}
+                                {{ _self.until_cell(reseller) }}
+                                <td>
+                                    <div class="actions">
+                                        {{ _self.payment_button(reseller, 'platform_reseller_register_payment', 'platform-reseller-register-payment-') }}
+                                        {{ _self.deactivate_form(reseller, 'platform_reseller_deactivate', 'platform-reseller-deactivate-', '¿Desactivar ' ~ reseller.name ~ '? Se apagarán todos sus restaurantes.') }}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
     </main>
 
     {# Payment dialog: admin's modal (desktop) + bottom sheet (mobile) pair,
@@ -286,3 +306,59 @@
     </script>
 </body>
 </html>
+
+{# Shared by the restaurant and reseller tables: c is a Restaurant (billed on
+   its own) or a Reseller. #}
+{% macro status_cell(c, unpaid_label) %}
+    <td data-label="Suscripción">
+        {% if c.expired %}
+            <div class="status status-expired">🔴 Vencida</div>
+        {% elseif c.plan is null %}
+            <div class="status status-trial">🟡 {{ unpaid_label }}</div>
+        {% else %}
+            <div class="status status-active">🟢 Activa · {{ c.plan == 'yearly' ? 'Anual' : 'Mensual' }}</div>
+        {% endif %}
+        <div class="sub">{{ c.lastPaidAt ? 'Último cobro ' ~ c.lastPaidAt|date('d/m/Y') : 'Sin cobros' }}</div>
+        {% if c.hasLiveSubscription %}
+            <div class="sub auto-pay">{{ c.stripeCancelPending ? '💳 Cancelada · no renovará' : '💳 Pago automático' }}</div>
+        {% endif %}
+    </td>
+{% endmacro %}
+
+{% macro until_cell(c) %}
+    {% set days = c.daysLeft %}
+    <td data-label="Válida hasta" class="until {{ days < 0 ? 'until-expired' : (days <= 7 ? 'until-soon' : '') }}">
+        <div>{{ c.paidUntil|date('d/m/Y') }}</div>
+        <div class="sub">
+            {%- if days < 0 -%}
+                venció hace {{ -days }} {{ days == -1 ? 'día' : 'días' }}
+            {%- elseif days == 0 -%}
+                vence hoy
+            {%- elseif days == 1 -%}
+                queda 1 día
+            {%- else -%}
+                quedan {{ days }} días
+            {%- endif -%}
+        </div>
+    </td>
+{% endmacro %}
+
+{# The payment dialog's opener; route/token prefix tell restaurants and resellers apart. #}
+{% macro payment_button(c, route, token_prefix) %}
+    <button type="button" class="btn btn-primary" onclick="PaymentUI.open(this)"
+            data-name="{{ c.name }}"
+            data-action="{{ path(route, {id: c.id}) }}"
+            data-token="{{ csrf_token(token_prefix ~ c.id) }}"
+            data-until-monthly="{{ c.paidUntilAfter('monthly')|date('d/m/Y') }}"
+            data-until-yearly="{{ c.paidUntilAfter('yearly')|date('d/m/Y') }}">
+        Registrar pago
+    </button>
+{% endmacro %}
+
+{% macro deactivate_form(c, route, token_prefix, confirm_text) %}
+    <form method="post" action="{{ path(route, {id: c.id}) }}"
+          onsubmit="return confirm({{ confirm_text|json_encode }})">
+        <input type="hidden" name="_token" value="{{ csrf_token(token_prefix ~ c.id) }}">
+        <button type="submit" class="btn btn-danger">Desactivar</button>
+    </form>
+{% endmacro %}

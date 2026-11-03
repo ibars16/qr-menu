@@ -2,6 +2,7 @@
 
 namespace App\Controller\Platform;
 
+use App\Entity\Reseller;
 use App\Entity\Restaurant;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,9 +15,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * The platform owner's own panel (ROLE_SUPER_ADMIN only, Spanish only):
- * every restaurant with its Restaurant::$paidUntil, and the two manual
- * billing actions. Nothing here ever deletes anything — "Desactivar ya"
- * only moves paidUntil to yesterday.
+ * every restaurant with its Restaurant::$paidUntil, every reseller with its
+ * own, and the two manual billing actions for each. A reseller's
+ * restaurants aren't billed on their own, so they get neither. Nothing here
+ * ever deletes anything — "Desactivar ya" only moves paidUntil to yesterday.
  */
 #[Route('/platform', name: 'platform_')]
 #[IsGranted(User::ROLE_SUPER_ADMIN)]
@@ -28,16 +30,40 @@ class PlatformController extends AbstractController
         // Expired and soonest-to-expire first.
         $restaurants = $em->getRepository(Restaurant::class)->findBy([], ['paidUntil' => 'ASC', 'name' => 'ASC']);
 
-        // First owner per restaurant. Queried from the owning side rather
-        // than read off Restaurant::$users (the inverse side, which isn't
-        // kept in sync in memory when a user is linked).
+        // First owner per restaurant, first user per reseller. Queried from
+        // the owning side rather than read off Restaurant::$users (the
+        // inverse side, which isn't kept in sync in memory when a user is
+        // linked).
         $owners = [];
+        $resellerUsers = [];
         foreach ($em->getRepository(User::class)->findBy([], ['id' => 'ASC']) as $user) {
             $restaurantId = $user->getRestaurant()?->getId();
             if ($restaurantId !== null && !isset($owners[$restaurantId]) && in_array(User::ROLE_OWNER, $user->getRoles(), true)) {
                 $owners[$restaurantId] = $user;
             }
+            $resellerId = $user->getReseller()?->getId();
+            if ($resellerId !== null && !isset($resellerUsers[$resellerId])) {
+                $resellerUsers[$resellerId] = $user;
+            }
         }
+
+        // Per reseller: restaurants in use (what it pays for) and archived.
+        $counts = [];
+        foreach ($restaurants as $restaurant) {
+            $resellerId = $restaurant->getReseller()?->getId();
+            if ($resellerId !== null) {
+                $counts[$resellerId] ??= ['active' => 0, 'archived' => 0];
+                $counts[$resellerId][$restaurant->isArchived() ? 'archived' : 'active']++;
+            }
+        }
+        $resellerRows = array_map(
+            static fn (Reseller $reseller): array => [
+                'reseller'    => $reseller,
+                'user'        => $resellerUsers[$reseller->getId()] ?? null,
+                'restaurants' => $counts[$reseller->getId()] ?? ['active' => 0, 'archived' => 0],
+            ],
+            $em->getRepository(Reseller::class)->findBy([], ['paidUntil' => 'ASC', 'name' => 'ASC']),
+        );
 
         $rows = array_map(
             static fn (Restaurant $restaurant): array => ['restaurant' => $restaurant, 'owner' => $owners[$restaurant->getId()] ?? null],
@@ -46,8 +72,12 @@ class PlatformController extends AbstractController
 
         // Summary cards — informative only. "Expiring soon" overlaps with
         // active/trial on purpose (today up to today + 7 days, not expired).
+        // Only restaurants billed on their own.
         $summary = ['active' => 0, 'trial' => 0, 'expiringSoon' => 0, 'expired' => 0];
         foreach ($restaurants as $restaurant) {
+            if ($restaurant->isBilledByReseller()) {
+                continue;
+            }
             if ($restaurant->isExpired()) {
                 $summary['expired']++;
                 continue;
@@ -58,15 +88,55 @@ class PlatformController extends AbstractController
             }
         }
 
-        return $this->render('platform/index.html.twig', ['rows' => $rows, 'summary' => $summary]);
+        return $this->render('platform/index.html.twig', ['rows' => $rows, 'resellerRows' => $resellerRows, 'summary' => $summary]);
     }
 
     #[Route('/restaurants/{id}/register-payment', name: 'register_payment', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function registerPayment(int $id, Request $request, EntityManagerInterface $em): Response
     {
-        $restaurant = $em->find(Restaurant::class, $id) ?? throw $this->createNotFoundException();
+        $restaurant = $this->ownBilledRestaurant($id, $em);
 
-        if (!$this->isCsrfTokenValid('platform-register-payment-' . $restaurant->getId(), $request->request->get('_token'))) {
+        return $this->registerPaymentFor($restaurant, $restaurant->getName(), 'platform-register-payment-' . $restaurant->getId(), $request, $em);
+    }
+
+    #[Route('/restaurants/{id}/deactivate', name: 'deactivate', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function deactivate(int $id, Request $request, EntityManagerInterface $em): Response
+    {
+        $restaurant = $this->ownBilledRestaurant($id, $em);
+
+        return $this->deactivateFor($restaurant, $restaurant->getName(), 'platform-deactivate-' . $restaurant->getId(), $request, $em);
+    }
+
+    #[Route('/resellers/{id}/register-payment', name: 'reseller_register_payment', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function registerResellerPayment(int $id, Request $request, EntityManagerInterface $em): Response
+    {
+        $reseller = $em->find(Reseller::class, $id) ?? throw $this->createNotFoundException();
+
+        return $this->registerPaymentFor($reseller, $reseller->getName(), 'platform-reseller-register-payment-' . $reseller->getId(), $request, $em);
+    }
+
+    #[Route('/resellers/{id}/deactivate', name: 'reseller_deactivate', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function deactivateReseller(int $id, Request $request, EntityManagerInterface $em): Response
+    {
+        $reseller = $em->find(Reseller::class, $id) ?? throw $this->createNotFoundException();
+
+        return $this->deactivateFor($reseller, $reseller->getName(), 'platform-reseller-deactivate-' . $reseller->getId(), $request, $em);
+    }
+
+    /** A reseller's restaurant has no billing of its own: its reseller pays. */
+    private function ownBilledRestaurant(int $id, EntityManagerInterface $em): Restaurant
+    {
+        $restaurant = $em->find(Restaurant::class, $id) ?? throw $this->createNotFoundException();
+        if ($restaurant->isBilledByReseller()) {
+            throw new BadRequestHttpException('Lo paga su revendedor.');
+        }
+
+        return $restaurant;
+    }
+
+    private function registerPaymentFor(Restaurant|Reseller $customer, string $name, string $tokenId, Request $request, EntityManagerInterface $em): Response
+    {
+        if (!$this->isCsrfTokenValid($tokenId, $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Token CSRF no válido.');
         }
 
@@ -75,27 +145,24 @@ class PlatformController extends AbstractController
             throw new BadRequestHttpException('Plan no válido.');
         }
 
-        $restaurant->markPaid($plan);
+        $customer->markPaid($plan);
         $em->flush();
 
-        $this->addFlash('success', sprintf('Pago registrado: %s queda activo hasta el %s.', $restaurant->getName(), $restaurant->getPaidUntil()->format('d/m/Y')));
+        $this->addFlash('success', sprintf('Pago registrado: %s queda activo hasta el %s.', $name, $customer->getPaidUntil()->format('d/m/Y')));
 
         return $this->redirectToRoute('platform_index');
     }
 
-    #[Route('/restaurants/{id}/deactivate', name: 'deactivate', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function deactivate(int $id, Request $request, EntityManagerInterface $em): Response
+    private function deactivateFor(Restaurant|Reseller $customer, string $name, string $tokenId, Request $request, EntityManagerInterface $em): Response
     {
-        $restaurant = $em->find(Restaurant::class, $id) ?? throw $this->createNotFoundException();
-
-        if (!$this->isCsrfTokenValid('platform-deactivate-' . $restaurant->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid($tokenId, $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Token CSRF no válido.');
         }
 
-        $restaurant->deactivateNow();
+        $customer->deactivateNow();
         $em->flush();
 
-        $this->addFlash('success', sprintf('%s: desactivado.', $restaurant->getName()));
+        $this->addFlash('success', sprintf('%s: desactivado.', $name));
 
         return $this->redirectToRoute('platform_index');
     }

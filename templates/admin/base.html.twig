@@ -304,7 +304,7 @@
                     <span class="sidebar-theme-knob"></span>
                 </button>
             </div>
-            {% if is_granted('ROLE_OWNER') and app.user.restaurant %}
+            {% if is_granted('ROLE_OWNER') and app.user.restaurant and not app.user.restaurant.billedByReseller %}
                 <a href="{{ path('admin_billing_index') }}"
                    class="nav-item {{ app.request.attributes.get('_route') == 'admin_billing_index' ? 'active' : '' }}">
                     <i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.nav'|trans({}, 'admin_base') }}
@@ -327,7 +327,7 @@
             <div class="main-header-top">
                 <div class="main-header-title">{% block page_title %}{% endblock %}</div>
                 <div class="header-icons">
-                    {% if is_granted('ROLE_OWNER') and app.user.restaurant %}
+                    {% if is_granted('ROLE_OWNER') and app.user.restaurant and not app.user.restaurant.billedByReseller %}
                         <a href="{{ path('admin_billing_index') }}" class="theme-toggle-btn" aria-label="{{ 'header.subscription_aria'|trans({}, 'admin_base') }}">
                             <i class="ti ti-credit-card" aria-hidden="true"></i>
                         </a>
@@ -407,7 +407,7 @@
     {% endif %}
 </nav>
 
-{% if is_granted('ROLE_OWNER') and app.user.restaurant and not app.user.restaurant.hasLiveSubscription %}
+{% if is_granted('ROLE_OWNER') and app.user.restaurant and not app.user.restaurant.billedByReseller and not app.user.restaurant.hasLiveSubscription %}
     {% include 'admin/_billing_dialog.html.twig' %}
 {% endif %}
 

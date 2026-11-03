@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Trait\PaidPeriodTrait;
 use App\Entity\Trait\TimestampableTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -12,6 +13,11 @@ use Doctrine\ORM\Mapping as ORM;
 class Restaurant
 {
     use TimestampableTrait;
+    use PaidPeriodTrait {
+        isExpired as private isPeriodExpired;
+        isTrialActive as private isPeriodTrialActive;
+        isEndingSoon as private isPeriodEndingSoon;
+    }
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -116,43 +122,14 @@ class Restaurant
     #[ORM\Column]
     private int $menuContentVersion = 1;
 
-    /**
-     * The only thing that decides whether this restaurant is active: expired
-     * = paidUntil before today (so paidUntil itself is still an active day).
-     * Starts at signup + TRIAL_DAYS (the free trial); afterwards it only
-     * moves via markPaid() / deactivateNow() from the platform panel
-     * (Platform\PlatformController). "Today" is the PHP default timezone (UTC).
-     */
-    #[ORM\Column(type: 'date_immutable')]
-    private \DateTimeImmutable $paidUntil;
+    /** Billed through a reseller: active while the reseller is (isExpired()), never billed on its own. */
+    #[ORM\ManyToOne(targetEntity: Reseller::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
+    private ?Reseller $reseller = null;
 
-    /** Last plan paid for (PLAN_MONTHLY | PLAN_YEARLY); null = never paid, i.e. on the free trial. */
-    #[ORM\Column(length: 10, nullable: true)]
-    private ?string $plan = null;
-
-    /** Day the last payment was registered from /platform; null = none. */
-    #[ORM\Column(type: 'date_immutable', nullable: true)]
-    private ?\DateTimeImmutable $lastPaidAt = null;
-
-    /** Stripe customer (cus_…), created on the first checkout and reused afterwards. */
-    #[ORM\Column(length: 255, unique: true, nullable: true)]
-    private ?string $stripeCustomerId = null;
-
-    /**
-     * Current Stripe subscription (sub_…) while it's alive; cleared when
-     * Stripe deletes it (customer.subscription.deleted). See
-     * App\Service\Billing\StripeBilling.
-     */
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $stripeSubscriptionId = null;
-
-    /**
-     * The live subscription won't renew (cancel_at_period_end or a cancel_at
-     * date, set from the Stripe portal). Only shown on /platform; the dates
-     * don't change — the restaurant simply expires on its own paidUntil.
-     */
-    #[ORM\Column(options: ['default' => false])]
-    private bool $stripeCancelPending = false;
+    /** Taken out of use by its reseller (never deleted): menu and admin off, not counted for the reseller's extra restaurants. */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $archivedAt = null;
 
     #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Table::class, cascade: ['persist', 'remove'])]
     private Collection $tables;
@@ -376,171 +353,66 @@ class Restaurant
 
     private const TRIAL_DAYS = 30;
 
-    public const PLAN_MONTHLY = 'monthly';
-    public const PLAN_YEARLY  = 'yearly';
-
-    /** How far each plan extends paidUntil. */
-    public const PLAN_MONTHS = [self::PLAN_MONTHLY => 1, self::PLAN_YEARLY => 12];
-
-    public function getPaidUntil(): \DateTimeImmutable
-    {
-        return $this->paidUntil;
-    }
-
+    /**
+     * Archived, or billed through a reseller who has expired — otherwise
+     * its own paidUntil. Everything that turns a restaurant off (admin
+     * gate, public menu, Smart Waiter, /platform) asks only this.
+     */
     public function isExpired(?\DateTimeImmutable $today = null): bool
     {
-        return $this->paidUntil < ($today ?? new \DateTimeImmutable('today'));
-    }
-
-    /**
-     * One more period of $plan (PLAN_MONTHS) from whichever is later,
-     * today or the current paidUntil — so paying early never loses days, and
-     * paying late never back-dates. Clamped to the target month's last day
-     * (31/01 +1 month → 28/02 or 29/02; 29/02 +1 year → 28/02), unlike PHP's
-     * own '+1 month' which would overflow to 03/03.
-     */
-    public function markPaid(string $plan, ?\DateTimeImmutable $today = null): void
-    {
-        $today = $today ?? new \DateTimeImmutable('today');
-
-        $this->paidUntil  = $this->paidUntilAfter($plan, $today);
-        $this->plan       = $plan;
-        $this->lastPaidAt = $today;
-    }
-
-    public function getPlan(): ?string
-    {
-        return $this->plan;
-    }
-
-    /**
-     * A period confirmed by Stripe (App\Service\Billing\StripeBilling). Only
-     * ever moves dates forward, so a repeated or out-of-order webhook can't
-     * undo a later one. $paidAt is null for a 0 € invoice (the trial's), which
-     * must not count as a payment.
-     */
-    public function applyStripePeriod(\DateTimeImmutable $paidUntil, string $plan, ?\DateTimeImmutable $paidAt): void
-    {
-        if (!isset(self::PLAN_MONTHS[$plan])) {
-            throw new \InvalidArgumentException(sprintf('Unknown plan "%s".', $plan));
+        if ($this->archivedAt !== null) {
+            return true;
         }
 
-        if ($paidUntil > $this->paidUntil) {
-            $this->paidUntil = $paidUntil;
-        }
-        $this->plan = $plan;
-        if ($paidAt !== null && ($this->lastPaidAt === null || $paidAt > $this->lastPaidAt)) {
-            $this->lastPaidAt = $paidAt;
-        }
+        return $this->reseller !== null ? $this->reseller->isExpired($today) : $this->isPeriodExpired($today);
     }
 
-    public function setPlan(string $plan): void
-    {
-        if (!isset(self::PLAN_MONTHS[$plan])) {
-            throw new \InvalidArgumentException(sprintf('Unknown plan "%s".', $plan));
-        }
-
-        $this->plan = $plan;
-    }
-
-    public function getStripeCustomerId(): ?string
-    {
-        return $this->stripeCustomerId;
-    }
-
-    public function setStripeCustomerId(?string $stripeCustomerId): void
-    {
-        $this->stripeCustomerId = $stripeCustomerId;
-    }
-
-    public function getStripeSubscriptionId(): ?string
-    {
-        return $this->stripeSubscriptionId;
-    }
-
-    public function setStripeSubscriptionId(?string $stripeSubscriptionId): void
-    {
-        $this->stripeSubscriptionId = $stripeSubscriptionId;
-    }
-
-    public function isStripeCancelPending(): bool
-    {
-        return $this->stripeCancelPending;
-    }
-
-    public function setStripeCancelPending(bool $stripeCancelPending): void
-    {
-        $this->stripeCancelPending = $stripeCancelPending;
-    }
-
-    /** Pays automatically through Stripe (subscription not deleted yet, even if set to cancel at period end). */
-    public function hasLiveSubscription(): bool
-    {
-        return $this->stripeSubscriptionId !== null;
-    }
-
-    public function getLastPaidAt(): ?\DateTimeImmutable
-    {
-        return $this->lastPaidAt;
-    }
-
-    /** Days from today to paidUntil: 0 = expires today, negative = expired that many days ago. */
-    public function getDaysLeft(?\DateTimeImmutable $today = null): int
-    {
-        $diff = ($today ?? new \DateTimeImmutable('today'))->diff($this->paidUntil);
-
-        return $diff->invert ? -$diff->days : $diff->days;
-    }
-
-    /** The paidUntil markPaid($plan) would set, without setting it (for /platform's payment dialog). */
-    public function paidUntilAfter(string $plan, ?\DateTimeImmutable $today = null): \DateTimeImmutable
-    {
-        if (!isset(self::PLAN_MONTHS[$plan])) {
-            throw new \InvalidArgumentException(sprintf('Unknown plan "%s".', $plan));
-        }
-
-        $months = self::PLAN_MONTHS[$plan];
-        $today  = $today ?? new \DateTimeImmutable('today');
-        $base  = $this->paidUntil > $today ? $this->paidUntil : $today;
-
-        $target = $base->modify('first day of +' . $months . ' months');
-        $day    = min((int) $base->format('j'), (int) $target->format('t'));
-
-        return $target->setDate((int) $target->format('Y'), (int) $target->format('n'), $day);
-    }
-
-    public function deactivateNow(?\DateTimeImmutable $today = null): void
-    {
-        $this->paidUntil = ($today ?? new \DateTimeImmutable('today'))->modify('-1 day');
-    }
-
-    /** On the free trial: never paid (plan null) and not expired. */
+    /** Never for a reseller's restaurant: it has no billing of its own. */
     public function isTrialActive(?\DateTimeImmutable $today = null): bool
     {
-        return $this->plan === null && !$this->isExpired($today);
+        return $this->reseller === null && $this->isPeriodTrialActive($today);
     }
 
-    public function getTrialDaysRemaining(?\DateTimeImmutable $today = null): int
-    {
-        if (!$this->isTrialActive($today)) {
-            return 0;
-        }
-
-        // paidUntil itself is still an active day, so the last day shows "1", not "0".
-        return max(1, $this->getDaysLeft($today));
-    }
-
-    /**
-     * The admin's "vence pronto" notice: a paid plan (never the trial) with 7
-     * days or fewer left that won't renew by itself — paid by hand, or a
-     * Stripe subscription set to cancel.
-     */
+    /** Never for a reseller's restaurant: it has no billing of its own. */
     public function isEndingSoon(?\DateTimeImmutable $today = null): bool
     {
-        return $this->plan !== null
-            && !$this->isExpired($today)
-            && $this->getDaysLeft($today) <= 7
-            && (!$this->hasLiveSubscription() || $this->stripeCancelPending);
+        return $this->reseller === null && $this->isPeriodEndingSoon($today);
+    }
+
+    public function getReseller(): ?Reseller
+    {
+        return $this->reseller;
+    }
+
+    public function setReseller(?Reseller $reseller): void
+    {
+        $this->reseller = $reseller;
+    }
+
+    /** No billing screens, notices or payment actions: the reseller pays. */
+    public function isBilledByReseller(): bool
+    {
+        return $this->reseller !== null;
+    }
+
+    public function getArchivedAt(): ?\DateTimeImmutable
+    {
+        return $this->archivedAt;
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archivedAt !== null;
+    }
+
+    public function archive(): void
+    {
+        $this->archivedAt ??= new \DateTimeImmutable();
+    }
+
+    public function unarchive(): void
+    {
+        $this->archivedAt = null;
     }
 
     public function getTables(): Collection

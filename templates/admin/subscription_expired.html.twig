@@ -31,28 +31,34 @@
         <div class="flash flash-error"><i class="ti ti-alert-circle" aria-hidden="true"></i> {{ message }}</div>
     {% endfor %}
 
-    <p class="message">{{ 'subscription_expired'|trans({'%date%': restaurant.paidUntil|date('d/m/Y')}, 'admin_base') }}</p>
-
-    {% if is_granted('ROLE_OWNER') %}
-        <div class="plans">
-            {% if not restaurant.hasLiveSubscription %}
-                {% for plan in ['monthly', 'yearly'] %}
-                    <form method="post" action="{{ path('admin_billing_checkout') }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('billing-checkout') }}">
-                        <input type="hidden" name="plan" value="{{ plan }}">
-                        <button type="submit" class="btn btn-primary">{{ ('billing.plan_' ~ plan)|trans({'%price%': billing_prices[plan]}, 'admin_base') }}</button>
-                    </form>
-                {% endfor %}
-            {% endif %}
-            {% if restaurant.stripeCustomerId %}
-                <form method="post" action="{{ path('admin_billing_portal') }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('billing-portal') }}">
-                    <button type="submit" class="btn"><i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.nav'|trans({}, 'admin_base') }}</button>
-                </form>
-            {% endif %}
-        </div>
+    {% if restaurant.billedByReseller or restaurant.archived %}
+        {# The reseller pays (or archived it): nothing to pay here. #}
+        <p class="message">{{ 'reseller_inactive'|trans({}, 'admin_base') }}</p>
+        <p class="hint">{{ 'reseller_inactive_hint'|trans({}, 'admin_base') }}</p>
     {% else %}
-        <p class="hint">{{ 'billing.staff_expired'|trans({}, 'admin_base') }}</p>
+        <p class="message">{{ 'subscription_expired'|trans({'%date%': restaurant.paidUntil|date('d/m/Y')}, 'admin_base') }}</p>
+
+        {% if is_granted('ROLE_OWNER') %}
+            <div class="plans">
+                {% if not restaurant.hasLiveSubscription %}
+                    {% for plan in ['monthly', 'yearly'] %}
+                        <form method="post" action="{{ path('admin_billing_checkout') }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('billing-checkout') }}">
+                            <input type="hidden" name="plan" value="{{ plan }}">
+                            <button type="submit" class="btn btn-primary">{{ ('billing.plan_' ~ plan)|trans({'%price%': billing_prices[plan]}, 'admin_base') }}</button>
+                        </form>
+                    {% endfor %}
+                {% endif %}
+                {% if restaurant.stripeCustomerId %}
+                    <form method="post" action="{{ path('admin_billing_portal') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('billing-portal') }}">
+                        <button type="submit" class="btn"><i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.nav'|trans({}, 'admin_base') }}</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% else %}
+            <p class="hint">{{ 'billing.staff_expired'|trans({}, 'admin_base') }}</p>
+        {% endif %}
     {% endif %}
 
     {# The super-admin "como" the owner leaves impersonation instead (Spanish only). #}

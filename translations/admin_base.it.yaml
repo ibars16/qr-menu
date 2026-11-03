@@ -42,6 +42,8 @@ bottom_nav:
     settings: Config
 
 subscription_expired: "Il tuo abbonamento è scaduto il %date%"
+reseller_inactive: "Questo ristorante non è attivo"
+reseller_inactive_hint: "Contatta l'azienda che gestisce il tuo menù."
 
 trial:
     days_left_singular: "Prova gratuita · manca %count% giorno"
