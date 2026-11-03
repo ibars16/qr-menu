@@ -94,9 +94,9 @@
 
         /* ══ MOBILE ══ */
         @media (max-width: 767px) {
-            .admin-layout { flex-direction: column; min-height: 100vh; padding-bottom: 68px; }
+            .admin-layout { flex-direction: column; min-height: calc(100vh - var(--billing-strip-h, 0px)); padding-bottom: 68px; }
             .sidebar { display: none !important; }
-            .main-header { padding: 12px 16px; flex-direction: column; align-items: stretch; gap: 10px; }
+            .main-header { padding: 12px 16px; flex-direction: column; align-items: stretch; gap: 10px; top: var(--billing-strip-h, 0px); }
             .main-header-title { font-size: 17px; }
             .main-header-top { justify-content: space-between; }
             .main-header-actions { flex-wrap: wrap; gap: 6px; }
@@ -152,10 +152,30 @@
         /* Mobile header icons (subscription, theme, logout) — each one a .theme-toggle-btn. */
         .header-icons { display: flex; align-items: center; gap: 6px; }
 
+        /* Mobile only: the trial / "vence pronto" notice as a bar stuck to
+           the top of the page (in the flow, so nothing sits under it), the
+           header sticking right below it (--billing-strip-h). */
+        .billing-strip { display: none; }
+        @media (max-width: 767px) {
+            :root:has(body > .billing-strip) { --billing-strip-h: 40px; }
+            .billing-strip {
+                display: flex; align-items: center; gap: var(--sp-2);
+                position: sticky; top: 0; z-index: 200;
+                height: var(--billing-strip-h); padding: 0 var(--sp-4);
+                font-size: var(--fs-md); line-height: 1; text-decoration: none;
+                background: var(--warn-bg-solid); color: var(--warn-fg);
+            }
+            .billing-strip.is-renewal { background: var(--renew-bg); color: var(--renew-fg); }
+            .billing-strip i { font-size: 16px; flex-shrink: 0; }
+            .billing-strip-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .billing-strip-action { font-weight: 600; white-space: nowrap; }
+        }
+
         /* ══ SUBSCRIPTION (Stripe) ══ */
         .trial-choose {
             display: inline-flex; margin-top: 6px; padding: 0; border: none; background: none;
             font: inherit; font-size: 12px; font-weight: 600; color: var(--brand); cursor: pointer;
+            text-decoration: none;
         }
         .trial-choose:hover { text-decoration: underline; }
 
@@ -178,7 +198,26 @@
     {{ importmap('admin') }}
 </head>
 <body>
-{% include 'admin/_impersonation_bar.html.twig' %}
+
+{# The trial / "vence pronto" notice: the sidebar badge on desktop, the
+   .billing-strip at the top of the page on mobile. The trial one shows to staff
+   too (sidebar only); "vence pronto" is the owner's. #}
+{% set billingNotice = null %}
+{% if app.user.restaurant and app.user.restaurant.trialActive %}
+    {% set trialDays = app.user.restaurant.trialDaysRemaining %}
+    {% set billingNotice = (trialDays == 1 ? 'trial.days_left_singular' : 'trial.days_left_plural')|trans({'%count%': trialDays}, 'admin_base') %}
+{% elseif is_granted('ROLE_OWNER') and app.user.restaurant and app.user.restaurant.endingSoon %}
+    {% set daysLeft = app.user.restaurant.daysLeft %}
+    {% set billingNotice = ('renewal.' ~ (app.user.restaurant.stripeCancelPending ? 'ends' : 'expires') ~ (daysLeft == 0 ? '_today' : (daysLeft == 1 ? '_singular' : '_plural')))|trans({'%count%': daysLeft}, 'admin_base') %}
+{% endif %}
+{% if billingNotice and is_granted('ROLE_OWNER') %}
+    {% set trial = app.user.restaurant.trialActive %}
+    <a class="billing-strip{{ trial ? '' : ' is-renewal' }}" href="{{ path('admin_billing_index') }}">
+        <i class="ti {{ trial ? 'ti-clock' : 'ti-alert-circle' }}" aria-hidden="true"></i>
+        <span class="billing-strip-text">{{ billingNotice }}</span>
+        <span class="billing-strip-action">{{ (trial ? 'billing.choose_plan' : 'renewal.renew')|trans({}, 'admin_base') }} →</span>
+    </a>
+{% endif %}
 
 <div class="admin-layout">
     <aside class="sidebar">
@@ -188,12 +227,17 @@
             {% if app.user.restaurant and app.user.restaurant.trialActive %}
                 <div class="trial-badge">
                     <i class="ti ti-clock" aria-hidden="true"></i>
-                    {% set trialDays = app.user.restaurant.trialDaysRemaining %}
-                    {{ (trialDays == 1 ? 'trial.days_left_singular' : 'trial.days_left_plural')|trans({'%count%': trialDays}, 'admin_base') }}
+                    {{ billingNotice }}
                 </div>
                 {% if is_granted('ROLE_OWNER') %}
                     <button type="button" class="trial-choose" onclick="BillingUI.open()">{{ 'billing.choose_plan'|trans({}, 'admin_base') }}</button>
                 {% endif %}
+            {% elseif billingNotice %}
+                <div class="trial-badge renewal-badge">
+                    <i class="ti ti-clock" aria-hidden="true"></i>
+                    {{ billingNotice }}
+                </div>
+                <a class="trial-choose" href="{{ path('admin_billing_index') }}">{{ 'renewal.renew'|trans({}, 'admin_base') }}</a>
             {% endif %}
         </div>
 
@@ -266,9 +310,15 @@
                     <i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.nav'|trans({}, 'admin_base') }}
                 </a>
             {% endif %}
-            <a href="{{ path('admin_logout') }}" class="nav-item">
-                <i class="ti ti-logout" aria-hidden="true"></i> {{ 'nav.item.logout'|trans({}, 'admin_base') }}
-            </a>
+            {% if is_granted('IS_IMPERSONATOR') %}
+                <a href="{{ impersonation_exit_path(path('platform_index')) }}" class="nav-item">
+                    <i class="ti ti-logout" aria-hidden="true"></i> Volver a Plataforma
+                </a>
+            {% else %}
+                <a href="{{ path('admin_logout') }}" class="nav-item">
+                    <i class="ti ti-logout" aria-hidden="true"></i> {{ 'nav.item.logout'|trans({}, 'admin_base') }}
+                </a>
+            {% endif %}
         </div>
     </aside>
 
@@ -289,9 +339,19 @@
                         <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
                         <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
                     </button>
-                    <a href="{{ path('admin_logout') }}" class="theme-toggle-btn" aria-label="{{ 'header.logout_aria'|trans({}, 'admin_base') }}">
-                        <i class="ti ti-logout" aria-hidden="true"></i>
-                    </a>
+                    {# The super-admin "como" the owner (switch_user, see
+                       BillingController::pay()): logout leaves impersonation
+                       instead, here and in the sidebar. Spanish only: the
+                       platform owner's tool. #}
+                    {% if is_granted('IS_IMPERSONATOR') %}
+                        <a href="{{ impersonation_exit_path(path('platform_index')) }}" class="theme-toggle-btn" aria-label="Volver a Plataforma">
+                            <i class="ti ti-logout" aria-hidden="true"></i>
+                        </a>
+                    {% else %}
+                        <a href="{{ path('admin_logout') }}" class="theme-toggle-btn" aria-label="{{ 'header.logout_aria'|trans({}, 'admin_base') }}">
+                            <i class="ti ti-logout" aria-hidden="true"></i>
+                        </a>
+                    {% endif %}
                 </div>
             </div>
             <div class="main-header-actions">{% block header_actions %}{% endblock %}</div>

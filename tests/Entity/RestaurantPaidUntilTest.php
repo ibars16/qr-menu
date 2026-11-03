@@ -103,6 +103,30 @@ final class RestaurantPaidUntilTest extends TestCase
         self::assertSame(-2, $this->restaurantPaidUntil('2026-10-26')->getDaysLeft($today));
     }
 
+    public function testEndingSoonOnlyForPaidPlanThatWontRenewWithinSevenDays(): void
+    {
+        $today = new \DateTimeImmutable('2026-10-28');
+        $paid = function (string $until): Restaurant {
+            $restaurant = $this->restaurantPaidUntil($until);
+            $restaurant->setPlan(Restaurant::PLAN_MONTHLY);
+
+            return $restaurant;
+        };
+
+        self::assertTrue($paid('2026-11-04')->isEndingSoon($today), '7 days left');
+        self::assertTrue($paid('2026-10-28')->isEndingSoon($today), 'last day');
+        self::assertFalse($paid('2026-11-05')->isEndingSoon($today), '8 days left');
+        self::assertFalse($paid('2026-10-27')->isEndingSoon($today), 'expired');
+        self::assertFalse($this->restaurantPaidUntil('2026-10-30')->isEndingSoon($today), 'trial (no plan)');
+
+        $autoRenew = $paid('2026-10-30');
+        $autoRenew->setStripeSubscriptionId('sub_1');
+        self::assertFalse($autoRenew->isEndingSoon($today), 'Stripe renews it');
+
+        $autoRenew->setStripeCancelPending(true);
+        self::assertTrue($autoRenew->isEndingSoon($today), 'Stripe set to cancel');
+    }
+
     public function testStripePeriodOnlyMovesDatesForward(): void
     {
         $restaurant = $this->restaurantPaidUntil('2027-03-10');

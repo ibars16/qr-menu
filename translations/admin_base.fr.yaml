@@ -47,6 +47,15 @@ trial:
     days_left_singular: "Essai gratuit · %count% jour restant"
     days_left_plural: "Essai gratuit · %count% jours restants"
 
+renewal:
+    expires_today: "Votre abonnement expire aujourd'hui"
+    expires_singular: "Votre abonnement expire dans %count% jour"
+    expires_plural: "Votre abonnement expire dans %count% jours"
+    ends_today: "Votre abonnement se termine aujourd'hui"
+    ends_singular: "Votre abonnement se termine dans %count% jour"
+    ends_plural: "Votre abonnement se termine dans %count% jours"
+    renew: "Renouveler"
+
 billing:
     nav: "Abonnement"
     choose_plan: "Choisir une formule"

@@ -530,6 +530,19 @@ class Restaurant
         return max(1, $this->getDaysLeft($today));
     }
 
+    /**
+     * The admin's "vence pronto" notice: a paid plan (never the trial) with 7
+     * days or fewer left that won't renew by itself — paid by hand, or a
+     * Stripe subscription set to cancel.
+     */
+    public function isEndingSoon(?\DateTimeImmutable $today = null): bool
+    {
+        return $this->plan !== null
+            && !$this->isExpired($today)
+            && $this->getDaysLeft($today) <= 7
+            && (!$this->hasLiveSubscription() || $this->stripeCancelPending);
+    }
+
     public function getTables(): Collection
     {
         return $this->tables;

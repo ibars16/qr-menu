@@ -6,6 +6,7 @@ use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Tests\Support\FakeStripeGateway;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
@@ -108,6 +109,8 @@ final class BillingControllerTest extends WebTestCase
         self::assertSelectorTextSame('.trial-choose', 'Elegir plan');
         self::assertSelectorExists('.sidebar-footer a.nav-item[href="/admin/billing"]');
         self::assertSelectorExists('.header-icons a[href="/admin/billing"][aria-label="Suscripción"]');
+        self::assertSelectorTextSame('body > a.billing-strip[href="/admin/billing"] .billing-strip-text', $crawler->filter('.trial-badge')->text());
+        self::assertSelectorTextSame('.billing-strip:not(.is-renewal) .billing-strip-action', 'Elegir plan →');
         self::assertSelectorExists('.header-icons a[aria-label="Cerrar sesión"]');
         self::assertCount(2, $crawler->filter('.billing-dialog form[action="/admin/billing/checkout"]'));
         self::assertStringContainsString('Mensual · 30 €/mes', $crawler->filter('.billing-dialog')->text());
@@ -122,7 +125,7 @@ final class BillingControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/admin/menu');
 
         self::assertSelectorNotExists('.billing-dialog');
-        self::assertCount(2, $crawler->filter('a[href="/admin/billing"]'));
+        self::assertCount(2, $crawler->filter('.sidebar-footer a[href="/admin/billing"], .header-icons a[href="/admin/billing"]'));
         self::assertCount(0, $crawler->filter('form[action="/admin/billing/portal"]'));
     }
 
@@ -375,8 +378,11 @@ final class BillingControllerTest extends WebTestCase
         $this->client->followRedirect();
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('.billing-dialog');
-        self::assertSelectorTextContains('.impersonation-bar', 'Viendo como Billing Test Restaurant');
-        self::assertSelectorExists('.impersonation-bar a[href="/platform?_switch_user=_exit"]');
+        self::assertSelectorNotExists('.impersonation-bar');
+        // Logout leaves impersonation instead: sidebar (desktop) and header icon (mobile).
+        self::assertSelectorTextSame('.sidebar-footer a.nav-item[href="/platform?_switch_user=_exit"]', 'Volver a Plataforma');
+        self::assertSelectorExists('.header-icons a[href="/platform?_switch_user=_exit"][aria-label="Volver a Plataforma"]');
+        self::assertSelectorNotExists('a[href="/admin/logout"]');
     }
 
     public function testSuperAdminAsOwnerIsNotSentToPlatformFromAdmin(): void
@@ -385,7 +391,7 @@ final class BillingControllerTest extends WebTestCase
 
         $this->client->request('GET', '/admin/menu');
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists('.impersonation-bar');
+        self::assertSelectorExists('a[href="/platform?_switch_user=_exit"]');
     }
 
     public function testSuperAdminAsOwnerGetsScreenWhenSubscribed(): void
@@ -396,7 +402,18 @@ final class BillingControllerTest extends WebTestCase
         self::assertResponseRedirects('/admin/billing');
     }
 
-    public function testSuperAdminAsOwnerSeesExpiredPageWithBar(): void
+    public function testOwnerSeesExpiredPageWithLogout(): void
+    {
+        $this->expire();
+        $this->client->loginUser($this->owner);
+        $this->client->request('GET', '/admin/menu');
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertSelectorTextSame('a.logout[href="/admin/logout"]', 'Cerrar sesión');
+        self::assertSelectorNotExists('a[href="/platform?_switch_user=_exit"]');
+    }
+
+    public function testSuperAdminAsOwnerSeesExpiredPageWithWayBack(): void
     {
         $this->expire();
         $this->openPayLinkAsSuperAdmin();
@@ -404,7 +421,9 @@ final class BillingControllerTest extends WebTestCase
         $crawler = $this->client->followRedirect();
         self::assertResponseStatusCodeSame(403);
         self::assertCount(2, $crawler->filter('form[action="/admin/billing/checkout"]'));
-        self::assertSelectorTextContains('.impersonation-bar', 'Viendo como Billing Test Restaurant');
+        self::assertSelectorNotExists('.impersonation-bar');
+        self::assertSelectorTextSame('a.logout[href="/platform?_switch_user=_exit"]', 'Volver a Plataforma');
+        self::assertSelectorNotExists('a[href="/admin/logout"]');
     }
 
     public function testVolverAPlataformaLeavesImpersonation(): void
@@ -475,7 +494,9 @@ final class BillingControllerTest extends WebTestCase
         $this->client->loginUser($this->owner);
         $this->client->request('GET', '/admin/menu');
 
-        self::assertSelectorNotExists('.impersonation-bar');
+        self::assertSelectorNotExists('a[href="/platform?_switch_user=_exit"]');
+        self::assertSelectorTextSame('.sidebar-footer a.nav-item[href="/admin/logout"]', 'Cerrar sesión');
+        self::assertSelectorExists('.header-icons a[href="/admin/logout"][aria-label="Cerrar sesión"]');
     }
 
     // ── Subscription screen (/admin/billing) ────────────────────────────────
@@ -808,5 +829,136 @@ final class BillingControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSame('Activa', $this->client->getCrawler()->filter('#billing-status')->text());
+    }
+
+    // ── "Vence pronto" notice ───────────────────────────────────────────────
+
+    private function paidUntil(string $relative, bool $live = false, bool $cancelPending = false): void
+    {
+        $restaurant = $this->managed();
+        $restaurant->setPlan(Restaurant::PLAN_MONTHLY);
+        (new \ReflectionProperty(Restaurant::class, 'paidUntil'))->setValue($restaurant, new \DateTimeImmutable('today ' . $relative));
+        $restaurant->setStripeSubscriptionId($live ? 'sub_live' : null);
+        $restaurant->setStripeCancelPending($cancelPending);
+        $this->em->flush();
+    }
+
+    private function renewalNotice(User $user): ?string
+    {
+        $this->client->loginUser($user);
+        $crawler = $this->client->request('GET', '/admin/menu');
+        self::assertResponseIsSuccessful();
+        $badge = $crawler->filter('.renewal-badge');
+
+        return $badge->count() > 0 ? $badge->text() : null;
+    }
+
+    #[DataProvider('renewalCases')]
+    public function testRenewalNotice(string $until, bool $live, bool $cancelPending, ?string $expected): void
+    {
+        $this->paidUntil($until, $live, $cancelPending);
+
+        self::assertSame($expected, $this->renewalNotice($this->owner));
+        if ($expected !== null) {
+            self::assertSelectorTextSame('.sidebar-header a.trial-choose[href="/admin/billing"]', 'Renovar');
+            self::assertSelectorNotExists('.sidebar-header button.trial-choose');
+        }
+    }
+
+    public static function renewalCases(): iterable
+    {
+        yield 'manual, 7 days' => ['+7 days', false, false, 'Tu suscripción vence en 7 días'];
+        yield 'manual, 1 day' => ['+1 day', false, false, 'Tu suscripción vence en 1 día'];
+        yield 'manual, last day' => ['+0 days', false, false, 'Tu suscripción vence hoy'];
+        yield 'manual, 8 days' => ['+8 days', false, false, null];
+        yield 'cancelled, 3 days' => ['+3 days', true, true, 'Tu suscripción termina en 3 días'];
+        yield 'cancelled, last day' => ['+0 days', true, true, 'Tu suscripción termina hoy'];
+        yield 'Stripe renews' => ['+3 days', true, false, null];
+    }
+
+    public function testStaffNeverSeesRenewalNotice(): void
+    {
+        $this->paidUntil('+3 days');
+
+        self::assertNull($this->renewalNotice($this->staff));
+    }
+
+    public function testTrialNoticeUnchangedAndNeverBoth(): void
+    {
+        self::assertNull($this->renewalNotice($this->owner));
+        self::assertSelectorTextSame('.trial-choose', 'Elegir plan');
+        self::assertCount(1, $this->client->getCrawler()->filter('.trial-badge'));
+    }
+
+    public function testSuperAdminAsOwnerSeesRenewalNotice(): void
+    {
+        $this->paidUntil('+2 days');
+        $this->openPayLinkAsSuperAdmin();
+        $this->client->request('GET', '/admin/menu');
+
+        self::assertSelectorTextSame('.renewal-badge', 'Tu suscripción vence en 2 días');
+    }
+
+    public function testMobileStripRepeatsEndingSoonNotice(): void
+    {
+        $this->paidUntil('+3 days');
+        $this->renewalNotice($this->owner);
+
+        self::assertSelectorTextSame('body > a.billing-strip.is-renewal[href="/admin/billing"] .billing-strip-text', 'Tu suscripción vence en 3 días');
+        self::assertSelectorTextSame('.billing-strip .billing-strip-action', 'Renovar →');
+        self::assertSelectorExists('.header-icons a[href="/admin/billing"][aria-label="Suscripción"]');
+    }
+
+    public function testNoMobileStripWithoutNotice(): void
+    {
+        $this->paidUntil('+20 days');
+        $this->renewalNotice($this->owner);
+
+        self::assertSelectorNotExists('.billing-strip');
+        self::assertSelectorExists('.header-icons a[href="/admin/billing"][aria-label="Suscripción"]');
+    }
+
+    public function testStaffInTrialGetsNoMobileStrip(): void
+    {
+        $this->client->loginUser($this->staff);
+        $this->client->request('GET', '/admin/menu');
+
+        self::assertSelectorExists('.trial-badge');
+        self::assertSelectorNotExists('.billing-strip');
+    }
+
+    public function testSuperAdminAsOwnerGetsMobileStripAtTopOfPage(): void
+    {
+        $this->paidUntil('+2 days');
+        $this->openPayLinkAsSuperAdmin();
+        $this->client->request('GET', '/admin/menu');
+
+        self::assertSelectorTextSame('body > .billing-strip .billing-strip-text', 'Tu suscripción vence en 2 días');
+        $html = $this->client->getResponse()->getContent();
+        self::assertLessThan(strpos($html, 'class="admin-layout"'), strpos($html, 'class="billing-strip'));
+    }
+
+    /** The strip sits at the top of the page, before the layout, on every admin screen. */
+    #[DataProvider('adminScreens')]
+    public function testMobileStripIsAtTopOfPageOnEveryScreen(string $path): void
+    {
+        $this->paidUntil('+3 days');
+        $this->managed()->setSetMenusEnabled(true);
+        $this->em->flush();
+        $this->openPayLinkAsSuperAdmin();
+        $crawler = $this->client->request('GET', $path);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextSame('body > a.billing-strip[href="/admin/billing"] .billing-strip-text', 'Tu suscripción vence en 3 días');
+        self::assertCount(1, $crawler->filter('.billing-strip'));
+        self::assertCount(0, $crawler->filter('.admin-layout .billing-strip'));
+        self::assertSelectorExists('.header-icons a[aria-label="Volver a Plataforma"]');
+    }
+
+    public static function adminScreens(): iterable
+    {
+        foreach (['/admin/menu', '/admin/menus', '/admin/theme', '/admin/estadisticas', '/admin/qr', '/admin/usuarios', '/admin/settings', '/admin/billing', '/admin/menu/import'] as $path) {
+            yield $path => [$path];
+        }
     }
 }

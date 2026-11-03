@@ -47,6 +47,15 @@ trial:
     days_left_singular: "Free trial · %count% day left"
     days_left_plural: "Free trial · %count% days left"
 
+renewal:
+    expires_today: "Your subscription expires today"
+    expires_singular: "Your subscription expires in %count% day"
+    expires_plural: "Your subscription expires in %count% days"
+    ends_today: "Your subscription ends today"
+    ends_singular: "Your subscription ends in %count% day"
+    ends_plural: "Your subscription ends in %count% days"
+    renew: "Renew"
+
 billing:
     nav: "Subscription"
     choose_plan: "Choose a plan"

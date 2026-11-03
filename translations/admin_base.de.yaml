@@ -47,6 +47,15 @@ trial:
     days_left_singular: "Kostenlose Testphase · noch %count% Tag"
     days_left_plural: "Kostenlose Testphase · noch %count% Tage"
 
+renewal:
+    expires_today: "Ihr Abonnement läuft heute ab"
+    expires_singular: "Ihr Abonnement läuft in %count% Tag ab"
+    expires_plural: "Ihr Abonnement läuft in %count% Tagen ab"
+    ends_today: "Ihr Abonnement endet heute"
+    ends_singular: "Ihr Abonnement endet in %count% Tag"
+    ends_plural: "Ihr Abonnement endet in %count% Tagen"
+    renew: "Verlängern"
+
 billing:
     nav: "Abonnement"
     choose_plan: "Tarif wählen"

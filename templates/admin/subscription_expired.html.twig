@@ -24,11 +24,9 @@
         .plans { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
         .plans form { display: contents; }
         .logout { font-size: 14px; color: var(--tx-muted); }
-        .impersonation-bar { position: fixed; top: 0; left: 0; right: 0; }
     </style>
 </head>
 <body>
-    {% include 'admin/_impersonation_bar.html.twig' %}
     {% for message in app.flashes('error') %}
         <div class="flash flash-error"><i class="ti ti-alert-circle" aria-hidden="true"></i> {{ message }}</div>
     {% endfor %}
@@ -57,6 +55,11 @@
         <p class="hint">{{ 'billing.staff_expired'|trans({}, 'admin_base') }}</p>
     {% endif %}
 
-    <a class="logout" href="{{ path('admin_logout') }}">{{ 'nav.item.logout'|trans({}, 'admin_base') }}</a>
+    {# The super-admin "como" the owner leaves impersonation instead (Spanish only). #}
+    {% if is_granted('IS_IMPERSONATOR') %}
+        <a class="logout" href="{{ impersonation_exit_path(path('platform_index')) }}">Volver a Plataforma</a>
+    {% else %}
+        <a class="logout" href="{{ path('admin_logout') }}">{{ 'nav.item.logout'|trans({}, 'admin_base') }}</a>
+    {% endif %}
 </body>
 </html>
