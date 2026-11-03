@@ -22,6 +22,7 @@ nav:
         users: Utilizadores
         settings: Configurações
         logout: Sair
+        back_to_partners: "Voltar ao meu painel"
 
 theme:
     dark_mode: Modo escuro

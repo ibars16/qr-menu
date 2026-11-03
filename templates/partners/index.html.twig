@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    {# Login is a Turbo page: see platform/index.html.twig. #}
+    <meta name="turbo-visit-control" content="reload">
+    <title>{{ reseller.name }} — QR Menu</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+    <script>(function(){try{if(localStorage.getItem('admin-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
+    <style>
+        {% include 'admin/_styles_tokens.html.twig' %}
+        {% include 'admin/_styles_controls.html.twig' %}
+        {% include 'admin/_styles_modal.html.twig' %}
+
+        /* Same bar as admin's .main-header (and /platform's). */
+        .partners-header {
+            padding: 14px 24px; border-bottom: 1px solid var(--bd-1);
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            background: var(--bg-nav); position: sticky; top: 0; z-index: 100;
+        }
+        .partners-title { font-size: var(--fs-lg); font-weight: 600; color: var(--tx-hi); letter-spacing: -0.3px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .partners-body { padding: var(--sp-6); max-width: 960px; }
+
+        .toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-4); }
+        .count { font-size: var(--fs-md); color: var(--tx-1); }
+        .count strong { color: var(--tx-hi); }
+
+        .table-wrap {
+            width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+            background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
+        th, td { text-align: left; padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--bd-1); vertical-align: middle; }
+        th { font-size: var(--fs-sm); font-weight: 600; color: var(--tx-3); white-space: nowrap; }
+        td { color: var(--tx-1); }
+        tbody tr:last-child td { border-bottom: none; }
+        .r-name { font-weight: 600; color: var(--tx-hi); }
+        .sub { margin-top: 2px; font-size: var(--fs-sm); color: var(--tx-muted); }
+        .sub a { color: var(--tx-muted); }
+        .sub a:hover { color: var(--tx-hi); }
+        .actions { display: flex; justify-content: flex-end; align-items: center; gap: var(--sp-2); }
+        .actions form { display: contents; }
+        .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: default; pointer-events: none; }
+        .empty { color: var(--tx-muted); }
+
+        .section-title { margin: var(--sp-6) 0 var(--sp-3); font-size: var(--fs-md); font-weight: 600; color: var(--tx-hi); }
+        .archived-list tr { opacity: 0.6; }
+
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label { font-size: var(--fs-sm); font-weight: 600; color: var(--tx-3); }
+        .field input {
+            padding: 10px 12px; border-radius: var(--r-md); border: 1px solid var(--bd-2);
+            background: var(--bg-input); color: var(--tx-hi); font-size: var(--fs-md); font-family: inherit;
+        }
+        .panel-body { display: flex; flex-direction: column; gap: var(--sp-3); }
+        .form-error { font-size: var(--fs-base); color: var(--err-text); }
+
+        @media (max-width: 767px) {
+            .partners-header { padding: 12px 16px; }
+            .partners-title { font-size: 17px; }
+            .partners-body { padding: 12px; }
+        }
+
+        /* Mobile: one stacked card per restaurant. */
+        @media (max-width: 639px) {
+            .table-wrap { background: none; border: none; overflow: visible; }
+            table, tbody, tr, td { display: block; }
+            thead { display: none; }
+            tbody { display: flex; flex-direction: column; gap: var(--sp-2); }
+            tr { background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg); padding: var(--sp-1) 0; }
+            td { border-bottom: none; padding: var(--sp-2) var(--sp-4); }
+            .actions { flex-wrap: wrap; padding-top: var(--sp-1); }
+            .actions .btn { flex: 1; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    {% set expired = reseller.expired %}
+    <header class="partners-header">
+        <div class="partners-title">{{ reseller.name }}</div>
+        <a class="btn" href="{{ path('admin_logout') }}"><i class="ti ti-logout" aria-hidden="true"></i> {{ 'logout'|trans({}, 'partners') }}</a>
+    </header>
+
+    <main class="partners-body">
+        {% for message in app.flashes('success') %}
+            <div class="flash flash-success"><i class="ti ti-check" aria-hidden="true"></i> {{ message }}</div>
+        {% endfor %}
+
+        {% if expired %}
+            <div class="flash flash-warning" id="account-inactive"><i class="ti ti-alert-triangle" aria-hidden="true"></i> {{ 'inactive'|trans({}, 'partners') }}</div>
+        {% endif %}
+
+        <div class="toolbar">
+            <div class="count" id="restaurant-count">
+                {%- if extra > 0 -%}
+                    {{ 'count.extra'|trans({'%total%': active|length, '%extra%': extra}, 'partners')|raw }}
+                {%- else -%}
+                    {{ 'count.included'|trans({'%total%': active|length, '%included%': included}, 'partners')|raw }}
+                {%- endif -%}
+            </div>
+            <button type="button" class="btn btn-primary" id="new-restaurant" onclick="NewRestaurantUI.open()" {{ expired ? 'disabled' }}>
+                <i class="ti ti-plus" aria-hidden="true"></i> {{ 'new.button'|trans({}, 'partners') }}
+            </button>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>{{ 'list.restaurant'|trans({}, 'partners') }}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody class="active-list">
+                    {% for restaurant in active %}
+                        {% set owner = owners[restaurant.id] ?? null %}
+                        <tr>
+                            <td>
+                                <div class="r-name">{{ restaurant.name }}</div>
+                                <div class="sub">
+                                    {{ owner ? owner.email : 'list.no_owner'|trans({}, 'partners') }}
+                                    · <a href="{{ path('menu_show', {slug: restaurant.slug}) }}" target="_blank" rel="noopener">{{ 'list.view_menu'|trans({}, 'partners') }}</a>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="actions">
+                                    {% if owner and not expired %}
+                                        <a class="btn btn-primary enter" href="{{ path('admin_menu', {_switch_user: owner.email}) }}">{{ 'list.enter'|trans({}, 'partners') }}</a>
+                                    {% else %}
+                                        <button type="button" class="btn btn-primary enter" disabled>{{ 'list.enter'|trans({}, 'partners') }}</button>
+                                    {% endif %}
+                                    <form method="post" action="{{ path('partners_restaurant_archive', {id: restaurant.id}) }}"
+                                          onsubmit="return confirm({{ 'list.archive_confirm'|trans({'%name%': restaurant.name}, 'partners')|json_encode }})">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('partners-restaurant-archive-' ~ restaurant.id) }}">
+                                        <button type="submit" class="btn archive" {{ expired ? 'disabled' }}>{{ 'list.archive'|trans({}, 'partners') }}</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="2" class="empty">{{ 'list.empty'|trans({}, 'partners') }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if archived is not empty %}
+            <h2 class="section-title">{{ 'list.archived_title'|trans({}, 'partners') }}</h2>
+            <div class="table-wrap">
+                <table>
+                    <tbody class="archived-list">
+                        {% for restaurant in archived %}
+                            {% set owner = owners[restaurant.id] ?? null %}
+                            <tr>
+                                <td>
+                                    <div class="r-name">{{ restaurant.name }}</div>
+                                    <div class="sub">{{ owner ? owner.email : 'list.no_owner'|trans({}, 'partners') }}</div>
+                                </td>
+                                <td>
+                                    <div class="actions">
+                                        <form method="post" action="{{ path('partners_restaurant_restore', {id: restaurant.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('partners-restaurant-restore-' ~ restaurant.id) }}">
+                                            <button type="submit" class="btn restore" {{ expired ? 'disabled' }}>{{ 'list.restore'|trans({}, 'partners') }}</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </main>
+
+    {# "+ Nuevo restaurante": admin's modal (desktop) + bottom sheet (mobile)
+       pair, each with its own copy of the form. On a validation error the
+       page comes back (422) with the dialog open, the message and the
+       values typed (the password never). #}
+    {% if not expired %}
+        {% set values = dialog.values ?? {name: '', email: ''} %}
+        {% for panel in [{id: 'new-modal', overlay: 'modal-overlay', box: 'modal'}, {id: 'new-sheet', overlay: 'sheet-overlay', box: 'sheet'}] %}
+            <div class="{{ panel.overlay }}" id="{{ panel.id }}" onclick="if(event.target===this)NewRestaurantUI.close()">
+                <div class="{{ panel.box }}" role="dialog" aria-modal="true" aria-labelledby="{{ panel.id }}-title">
+                    {% if panel.box == 'sheet' %}<div class="sheet-handle"></div>{% endif %}
+                    <div class="panel-header">
+                        <div class="panel-title" id="{{ panel.id }}-title">{{ 'new.title'|trans({}, 'partners') }}</div>
+                        <button type="button" class="panel-close" onclick="NewRestaurantUI.close()" aria-label="{{ 'new.close'|trans({}, 'partners') }}">
+                            <i class="ti ti-x" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <form method="post" action="{{ path('partners_restaurant_create') }}" class="new-restaurant-form" style="display: contents">
+                        <input type="hidden" name="_token" value="{{ csrf_token('partners-restaurant-create') }}">
+                        <div class="panel-body">
+                            {% if dialog.error is defined %}
+                                <div class="form-error" role="alert">{{ dialog.error }}</div>
+                            {% endif %}
+                            <div class="field">
+                                <label for="{{ panel.id }}-name">{{ 'new.name'|trans({}, 'partners') }}</label>
+                                <input type="text" id="{{ panel.id }}-name" name="name" value="{{ values.name }}" required minlength="2" maxlength="100">
+                            </div>
+                            <div class="field">
+                                <label for="{{ panel.id }}-email">{{ 'new.email'|trans({}, 'partners') }}</label>
+                                <input type="email" id="{{ panel.id }}-email" name="email" value="{{ values.email }}" required autocomplete="off">
+                            </div>
+                            <div class="field">
+                                <label for="{{ panel.id }}-password">{{ 'new.password'|trans({}, 'partners') }}</label>
+                                <input type="password" id="{{ panel.id }}-password" name="password" required minlength="8" autocomplete="new-password">
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <button type="button" class="btn" onclick="NewRestaurantUI.close()">{{ 'new.cancel'|trans({}, 'partners') }}</button>
+                            <button type="submit" class="btn btn-primary"><i class="ti ti-check" aria-hidden="true"></i> {{ 'new.submit'|trans({}, 'partners') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+
+        <script>
+            const NewRestaurantUI = {
+                panels: ['new-modal', 'new-sheet'].map(id => document.getElementById(id)),
+                open() {
+                    // Same breakpoint as admin's window.isMobile().
+                    const panel = window.innerWidth < 768 ? this.panels[1] : this.panels[0];
+                    panel.classList.add('open');
+                    panel.querySelector('input[name="name"]').focus();
+                },
+                close() {
+                    this.panels.forEach(panel => panel.classList.remove('open'));
+                },
+            };
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') NewRestaurantUI.close(); });
+            {% if dialog.error is defined %}NewRestaurantUI.open();{% endif %}
+        </script>
+    {% endif %}
+</body>
+</html>

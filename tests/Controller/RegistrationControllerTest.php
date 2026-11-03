@@ -67,4 +67,37 @@ final class RegistrationControllerTest extends WebTestCase
         self::assertContains(User::ROLE_OWNER, $user->getRoles());
         self::assertInstanceOf(Restaurant::class, $user->getRestaurant());
     }
+
+    public function testTakenEmailShowsErrorAndKeepsWhatWasTyped(): void
+    {
+        $existing = new User();
+        $existing->setEmail('registration-taken-' . uniqid() . '@example.test');
+        $existing->setPassword('unused-in-tests');
+        $this->em->persist($existing);
+        $this->em->flush();
+
+        $crawler = $this->client->request('GET', '/register');
+        $form = $crawler->filter('form')->form();
+        $form['registration_form[restaurantName]'] = 'Registration Taken Restaurant';
+        $form['registration_form[email]'] = $existing->getEmail();
+        $form['registration_form[password][first]'] = 'a-strong-password-1';
+        $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[currency]'] = 'GBP';
+        $form['registration_form[language]'] = 'fr';
+        $form['registration_form[adminLocale]'] = 'es';
+        $this->client->submit($form);
+
+        self::assertResponseIsUnprocessable();
+        $page = $this->client->getCrawler();
+        self::assertContains('Ya hay una cuenta con ese email.', $page->filter('.errors li')->each(fn ($li) => $li->text()));
+        self::assertSame('Registration Taken Restaurant', $page->filter('input[name="registration_form[restaurantName]"]')->attr('value'));
+        self::assertSame($existing->getEmail(), $page->filter('input[name="registration_form[email]"]')->attr('value'));
+        self::assertSame('GBP', $page->filter('select[name="registration_form[currency]"] option[selected]')->attr('value'));
+        self::assertSame('fr', $page->filter('select[name="registration_form[language]"] option[selected]')->attr('value'));
+
+        $this->em->clear();
+        self::assertNull($this->em->getRepository(Restaurant::class)->findOneBy(['name' => 'Registration Taken Restaurant']));
+        $this->em->remove($this->em->find(User::class, $existing->getId()));
+        $this->em->flush();
+    }
 }

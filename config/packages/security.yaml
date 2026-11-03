@@ -34,10 +34,12 @@ security:
                 secret: '%kernel.secret%'
                 lifetime: 604800
 
-            # The platform owner viewing /admin "as" a restaurant's owner
-            # (BillingController::pay()); ?_switch_user=_exit to leave.
+            # "Entrar" as a restaurant's owner: the platform owner anywhere
+            # (BillingController::pay()), a reseller only into its own
+            # restaurants — see App\Security\SwitchUserVoter.
+            # ?_switch_user=_exit to leave.
             switch_user:
-                role: ROLE_SUPER_ADMIN
+                role: CAN_SWITCH_USER
 
     # Owner (User::ROLE_OWNER) automatically satisfies any ROLE_STAFF check
     # too — the per-restaurant "full access vs content-only" split lives in
@@ -48,6 +50,8 @@ security:
     access_control:
         - { path: ^/admin/login, roles: PUBLIC_ACCESS }
         - { path: ^/register,    roles: PUBLIC_ACCESS }
+        - { path: ^/partners/registro, roles: PUBLIC_ACCESS }
+        - { path: ^/partners,    roles: ROLE_RESELLER }
         - { path: ^/admin,       roles: ROLE_USER }
         - { path: ^/platform,    roles: ROLE_SUPER_ADMIN }
         - { path: ^/r/,          roles: PUBLIC_ACCESS }

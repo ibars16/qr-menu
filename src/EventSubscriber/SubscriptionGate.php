@@ -15,7 +15,8 @@ use Twig\Environment;
 /**
  * Two rules on every /admin request (login and logout excepted):
  *
- * - A super-admin (platform owner, no restaurant) is sent to /platform.
+ * - A super-admin (platform owner, no restaurant) is sent to /platform,
+ *   a reseller (no restaurant either) to its own panel, /partners.
  * - A user whose restaurant is expired (Restaurant::isExpired(), i.e.
  *   paidUntil before today) gets only the "subscription expired" page.
  *
@@ -51,6 +52,11 @@ class SubscriptionGate implements EventSubscriberInterface
 
         if (in_array(User::ROLE_SUPER_ADMIN, $user->getRoles(), true)) {
             $event->setResponse(new RedirectResponse($this->urlGenerator->generate('platform_index')));
+            return;
+        }
+
+        if (in_array(User::ROLE_RESELLER, $user->getRoles(), true)) {
+            $event->setResponse(new RedirectResponse($this->urlGenerator->generate('partners_index')));
             return;
         }
 

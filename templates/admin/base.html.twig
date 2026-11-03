@@ -202,6 +202,12 @@
 {# The trial / "vence pronto" notice: the sidebar badge on desktop, the
    .billing-strip at the top of the page on mobile. The trial one shows to staff
    too (sidebar only); "vence pronto" is the owner's. #}
+{# Leaving "como" the owner (switch_user): back to /platform for the
+   super-admin (Spanish only, its own tool), to /partners for a reseller. #}
+{% set impersonating = is_granted('IS_IMPERSONATOR') %}
+{% set exitToPartners = impersonating and 'ROLE_RESELLER' in app.token.originalToken.roleNames %}
+{% set exitUrl = impersonating ? impersonation_exit_path(path(exitToPartners ? 'partners_index' : 'platform_index')) : null %}
+{% set exitLabel = exitToPartners ? 'nav.item.back_to_partners'|trans({}, 'admin_base') : 'Volver a Plataforma' %}
 {% set billingNotice = null %}
 {% if app.user.restaurant and app.user.restaurant.trialActive %}
     {% set trialDays = app.user.restaurant.trialDaysRemaining %}
@@ -310,9 +316,9 @@
                     <i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.nav'|trans({}, 'admin_base') }}
                 </a>
             {% endif %}
-            {% if is_granted('IS_IMPERSONATOR') %}
-                <a href="{{ impersonation_exit_path(path('platform_index')) }}" class="nav-item">
-                    <i class="ti ti-logout" aria-hidden="true"></i> Volver a Plataforma
+            {% if impersonating %}
+                <a href="{{ exitUrl }}" class="nav-item">
+                    <i class="ti ti-logout" aria-hidden="true"></i> {{ exitLabel }}
                 </a>
             {% else %}
                 <a href="{{ path('admin_logout') }}" class="nav-item">
@@ -339,12 +345,10 @@
                         <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
                         <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
                     </button>
-                    {# The super-admin "como" the owner (switch_user, see
-                       BillingController::pay()): logout leaves impersonation
-                       instead, here and in the sidebar. Spanish only: the
-                       platform owner's tool. #}
-                    {% if is_granted('IS_IMPERSONATOR') %}
-                        <a href="{{ impersonation_exit_path(path('platform_index')) }}" class="theme-toggle-btn" aria-label="Volver a Plataforma">
+                    {# "Como" the owner, logout leaves impersonation instead,
+                       here and in the sidebar (exitUrl, at the top). #}
+                    {% if impersonating %}
+                        <a href="{{ exitUrl }}" class="theme-toggle-btn" aria-label="{{ exitLabel }}">
                             <i class="ti ti-logout" aria-hidden="true"></i>
                         </a>
                     {% else %}

@@ -1,0 +1,67 @@
+# Reseller sign-up (/partners/registro) and panel (/partners).
+register:
+    title: "Reseller sign-up"
+    tagline: "Digital menus for the restaurants you manage"
+    subtitle: "Create your company's account. You can add restaurants once your subscription is active."
+    section_company: "Your company"
+    section_account: "Your account"
+    company: "Company name"
+    name: "Your name"
+    email: "Email"
+    password: "Password"
+    password_repeat: "Repeat password"
+    password_placeholder: "At least 8 characters"
+    admin_locale: "Language of your panel"
+    submit: "Create account and sign in →"
+    have_account: "Already have an account?"
+    login: "Sign in"
+    theme_aria: "Switch between dark and light mode"
+    error:
+        company_blank: "Enter the company name."
+        company_length: "The name must be 2 to 100 characters long."
+        name_blank: "Enter your name."
+        name_length: "The name is too long."
+        email_blank: "Enter your email."
+        email_invalid: "The email isn't valid."
+        email_taken: "There's already an account with this email."
+        password_blank: "Enter a password."
+        password_short: "At least 8 characters."
+        password_mismatch: "The passwords don't match."
+
+logout: "Log out"
+inactive: "Your account isn't active. Until it is, you can't create, enter or archive restaurants, and their menus aren't shown."
+
+count:
+    included: "Restaurants: <strong>%total%</strong> of %included% included"
+    extra: "Restaurants: <strong>%total%</strong> · %extra% extra"
+
+list:
+    restaurant: "Restaurant"
+    no_owner: "No owner"
+    view_menu: "View menu"
+    enter: "Enter"
+    archive: "Archive"
+    archive_confirm: "Archive %name%? Its menu will stop being shown."
+    restore: "Restore"
+    archived_title: "Archived"
+    empty: "You don't have any restaurants yet."
+
+new:
+    button: "New restaurant"
+    title: "New restaurant"
+    name: "Restaurant name"
+    email: "Owner's email"
+    password: "Owner's password"
+    cancel: "Cancel"
+    submit: "Create"
+    close: "Close"
+    error:
+        name: "The name must be 2 to 100 characters long."
+        email_invalid: "The owner's email isn't valid."
+        password_short: "The password must be at least 8 characters long."
+        email_taken: "There's already an account with that email. Use another one for the owner."
+
+flash:
+    created: "%name% created. You can now enter its panel."
+    archived: "%name% archived: its menu is no longer shown."
+    restored: "%name% restored."

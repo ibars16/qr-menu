@@ -12,8 +12,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Applies each restaurant's Admin Panel language preference to admin
- * requests. Scoped to /admin routes only — the public menu keeps resolving
- * its own language independently (Restaurant::$defaultLanguage).
+ * requests, and the reseller's own to its panel (/partners; the sign-up,
+ * logged out, follows the browser). Scoped to /admin and /partners only —
+ * the public menu keeps resolving its own language independently
+ * (Restaurant::$defaultLanguage).
  */
 class AdminLocaleSubscriber implements EventSubscriberInterface
 {
@@ -31,7 +33,9 @@ class AdminLocaleSubscriber implements EventSubscriberInterface
         }
 
         $request = $event->getRequest();
-        if (!str_starts_with($request->getPathInfo(), '/admin')) {
+        $path    = $request->getPathInfo();
+        $partners = str_starts_with($path, '/partners');
+        if (!str_starts_with($path, '/admin') && !$partners) {
             return;
         }
 
@@ -40,6 +44,10 @@ class AdminLocaleSubscriber implements EventSubscriberInterface
 
         if ($user instanceof User && ($restaurant = $user->getRestaurant())) {
             $locale = $this->localeResolver->resolve($restaurant->getAdminLocale());
+        } elseif ($user instanceof User && ($reseller = $user->getReseller())) {
+            $locale = $this->localeResolver->resolve($reseller->getAdminLocale());
+        } elseif ($partners && !$user instanceof User) {
+            $locale = $this->localeResolver->resolveFromRequest($request);
         }
 
         $request->setLocale($locale);

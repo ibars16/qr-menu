@@ -22,6 +22,7 @@ nav:
         users: Utilisateurs
         settings: Paramètres
         logout: Déconnexion
+        back_to_partners: "Retour à mon espace"
 
 theme:
     dark_mode: Mode sombre

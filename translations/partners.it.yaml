@@ -1,0 +1,67 @@
+# Reseller sign-up (/partners/registro) and panel (/partners).
+register:
+    title: "Registrazione rivenditore"
+    tagline: "Menù digitali per i ristoranti che gestisci"
+    subtitle: "Crea l'account della tua azienda. Potrai aggiungere ristoranti quando l'abbonamento sarà attivo."
+    section_company: "La tua azienda"
+    section_account: "Il tuo account"
+    company: "Nome dell'azienda"
+    name: "Il tuo nome"
+    email: "Email"
+    password: "Password"
+    password_repeat: "Ripeti la password"
+    password_placeholder: "Almeno 8 caratteri"
+    admin_locale: "Lingua del tuo pannello"
+    submit: "Crea account ed entra →"
+    have_account: "Hai già un account?"
+    login: "Accedi"
+    theme_aria: "Passa tra modalità scura e chiara"
+    error:
+        company_blank: "Inserisci il nome dell'azienda."
+        company_length: "Il nome deve avere tra 2 e 100 caratteri."
+        name_blank: "Inserisci il tuo nome."
+        name_length: "Il nome è troppo lungo."
+        email_blank: "Inserisci la tua email."
+        email_invalid: "L'email non è valida."
+        email_taken: "Esiste già un account con questa email."
+        password_blank: "Inserisci una password."
+        password_short: "Almeno 8 caratteri."
+        password_mismatch: "Le password non coincidono."
+
+logout: "Esci"
+inactive: "Il tuo account non è attivo. Nel frattempo non puoi creare, aprire né archiviare ristoranti, e i loro menù non si vedono."
+
+count:
+    included: "Ristoranti: <strong>%total%</strong> su %included% inclusi"
+    extra: "Ristoranti: <strong>%total%</strong> · %extra% extra"
+
+list:
+    restaurant: "Ristorante"
+    no_owner: "Senza titolare"
+    view_menu: "Vedi menù"
+    enter: "Entra"
+    archive: "Archivia"
+    archive_confirm: "Archiviare %name%? Il menù non si vedrà più."
+    restore: "Ripristina"
+    archived_title: "Archiviati"
+    empty: "Non hai ancora ristoranti."
+
+new:
+    button: "Nuovo ristorante"
+    title: "Nuovo ristorante"
+    name: "Nome del ristorante"
+    email: "Email del titolare"
+    password: "Password del titolare"
+    cancel: "Annulla"
+    submit: "Crea"
+    close: "Chiudi"
+    error:
+        name: "Il nome deve avere tra 2 e 100 caratteri."
+        email_invalid: "L'email del titolare non è valida."
+        password_short: "La password deve avere almeno 8 caratteri."
+        email_taken: "Esiste già un account con questa email. Usane un'altra per il titolare."
+
+flash:
+    created: "%name% creato. Ora puoi entrare nel suo pannello."
+    archived: "%name% archiviato: il menù non si vede più."
+    restored: "%name% ripristinato."

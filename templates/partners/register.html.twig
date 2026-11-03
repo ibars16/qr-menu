@@ -1,0 +1,114 @@
+{% extends 'base.html.twig' %}
+
+{# The reseller sign-up (ResellerRegistrationController): same look as
+   /register (security/_auth_styles.html.twig), in the browser's admin
+   language. Linked from nothing a restaurant sees. #}
+
+{% block title %}{{ 'register.title'|trans({}, 'partners') }} — QR Menu{% endblock %}
+
+{# See public/base.html.twig's turbo_meta block. #}
+{% block turbo_meta %}
+    <meta name="turbo-visit-control" content="reload">
+{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>(function(){try{if(localStorage.getItem('admin-theme')==='light'||localStorage.getItem('site-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
+    {% include 'security/_auth_styles.html.twig' %}
+{% endblock %}
+
+{% macro errors(field) %}
+    <ul class="errors">
+        {% for error in field.vars.errors %}
+            <li>{{ error.messageTemplate|trans(error.messageParameters, 'partners') }}</li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% block body %}
+    {% import _self as m %}
+    <button type="button" class="theme-toggle-btn" onclick="toggleSiteTheme()" aria-label="{{ 'register.theme_aria'|trans({}, 'partners') }}">
+        <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
+        <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
+    </button>
+
+    <div class="wrap">
+
+        <div class="logo">
+            <div class="logo-link">
+                <div class="logo-mark">Q</div>
+                <div class="logo-name">QR Menu</div>
+            </div>
+            <div class="logo-sub">{{ 'register.tagline'|trans({}, 'partners') }}</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">{{ 'register.title'|trans({}, 'partners') }}</div>
+            <div class="card-sub">{{ 'register.subtitle'|trans({}, 'partners') }}</div>
+
+            {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+
+            <div class="section-divider">{{ 'register.section_company'|trans({}, 'partners') }}</div>
+
+            <div class="field">
+                {{ form_label(form.company) }}
+                {{ form_widget(form.company) }}
+                {{ m.errors(form.company) }}
+            </div>
+
+            <div class="field">
+                {{ form_label(form.adminLocale) }}
+                {{ form_widget(form.adminLocale) }}
+            </div>
+
+            <div class="section-divider">{{ 'register.section_account'|trans({}, 'partners') }}</div>
+
+            <div class="field">
+                {{ form_label(form.name) }}
+                {{ form_widget(form.name) }}
+                {{ m.errors(form.name) }}
+            </div>
+
+            <div class="field">
+                {{ form_label(form.email) }}
+                {{ form_widget(form.email) }}
+                {{ m.errors(form.email) }}
+            </div>
+
+            <div class="field">
+                {{ form_label(form.password.first) }}
+                {{ form_widget(form.password.first, { attr: { placeholder: 'register.password_placeholder'|trans({}, 'partners') } }) }}
+                {{ m.errors(form.password) }}
+                {{ m.errors(form.password.first) }}
+            </div>
+
+            <div class="field">
+                {{ form_label(form.password.second) }}
+                {{ form_widget(form.password.second) }}
+            </div>
+
+            <button type="submit" class="submit-btn">{{ 'register.submit'|trans({}, 'partners') }}</button>
+
+            {{ form_end(form) }}
+        </div>
+
+        <div class="login-link">
+            {{ 'register.have_account'|trans({}, 'partners') }} <a href="{{ path('admin_login') }}">{{ 'register.login'|trans({}, 'partners') }}</a>
+        </div>
+
+    </div>
+
+    <script>
+        window.toggleSiteTheme = function () {
+            var isLight = document.documentElement.classList.toggle('light');
+            var value = isLight ? 'light' : 'dark';
+            try {
+                localStorage.setItem('admin-theme', value);
+                localStorage.setItem('site-theme', value);
+            } catch (e) {}
+        };
+    </script>
+{% endblock %}

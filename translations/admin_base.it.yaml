@@ -22,6 +22,7 @@ nav:
         users: Utenti
         settings: Impostazioni
         logout: Esci
+        back_to_partners: "Torna al mio pannello"
 
 theme:
     dark_mode: Modalità scura

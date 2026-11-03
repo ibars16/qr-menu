@@ -1,0 +1,67 @@
+# Reseller sign-up (/partners/registro) and panel (/partners).
+register:
+    title: "Registrierung als Wiederverkäufer"
+    tagline: "Digitale Speisekarten für die Restaurants, die Sie betreuen"
+    subtitle: "Legen Sie das Konto Ihres Unternehmens an. Restaurants können Sie hinzufügen, sobald Ihr Abonnement aktiv ist."
+    section_company: "Ihr Unternehmen"
+    section_account: "Ihr Konto"
+    company: "Name des Unternehmens"
+    name: "Ihr Name"
+    email: "E-Mail"
+    password: "Passwort"
+    password_repeat: "Passwort wiederholen"
+    password_placeholder: "Mindestens 8 Zeichen"
+    admin_locale: "Sprache Ihres Bereichs"
+    submit: "Konto erstellen und anmelden →"
+    have_account: "Sie haben schon ein Konto?"
+    login: "Anmelden"
+    theme_aria: "Zwischen dunklem und hellem Modus wechseln"
+    error:
+        company_blank: "Geben Sie den Namen des Unternehmens ein."
+        company_length: "Der Name muss 2 bis 100 Zeichen lang sein."
+        name_blank: "Geben Sie Ihren Namen ein."
+        name_length: "Der Name ist zu lang."
+        email_blank: "Geben Sie Ihre E-Mail ein."
+        email_invalid: "Die E-Mail ist ungültig."
+        email_taken: "Mit dieser E-Mail gibt es bereits ein Konto."
+        password_blank: "Geben Sie ein Passwort ein."
+        password_short: "Mindestens 8 Zeichen."
+        password_mismatch: "Die Passwörter stimmen nicht überein."
+
+logout: "Abmelden"
+inactive: "Ihr Konto ist nicht aktiv. Bis dahin können Sie keine Restaurants anlegen, öffnen oder archivieren, und ihre Speisekarten werden nicht angezeigt."
+
+count:
+    included: "Restaurants: <strong>%total%</strong> von %included% inklusive"
+    extra: "Restaurants: <strong>%total%</strong> · %extra% zusätzlich"
+
+list:
+    restaurant: "Restaurant"
+    no_owner: "Kein Inhaber"
+    view_menu: "Speisekarte ansehen"
+    enter: "Öffnen"
+    archive: "Archivieren"
+    archive_confirm: "%name% archivieren? Die Speisekarte wird dann nicht mehr angezeigt."
+    restore: "Wiederherstellen"
+    archived_title: "Archiviert"
+    empty: "Sie haben noch keine Restaurants."
+
+new:
+    button: "Neues Restaurant"
+    title: "Neues Restaurant"
+    name: "Name des Restaurants"
+    email: "E-Mail des Inhabers"
+    password: "Passwort des Inhabers"
+    cancel: "Abbrechen"
+    submit: "Anlegen"
+    close: "Schließen"
+    error:
+        name: "Der Name muss 2 bis 100 Zeichen lang sein."
+        email_invalid: "Die E-Mail des Inhabers ist ungültig."
+        password_short: "Das Passwort muss mindestens 8 Zeichen lang sein."
+        email_taken: "Mit dieser E-Mail gibt es bereits ein Konto. Verwenden Sie für den Inhaber eine andere."
+
+flash:
+    created: "%name% angelegt. Sie können jetzt seinen Bereich öffnen."
+    archived: "%name% archiviert: Die Speisekarte wird nicht mehr angezeigt."
+    restored: "%name% wiederhergestellt."

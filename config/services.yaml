@@ -16,6 +16,10 @@ parameters:
         monthly: 30
         yearly: 300
 
+    # Restaurants a reseller's base plan includes; each one in use over
+    # this is an extra (Controller\Partners\PartnersController).
+    app.reseller_included_restaurants: 5
+
     # Stripe (see App\Service\Billing\StripeBilling). Values go in
     # .env.local; empty defaults here so the app still boots without them.
     env(STRIPE_SECRET_KEY): ''

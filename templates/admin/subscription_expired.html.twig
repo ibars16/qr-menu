@@ -61,9 +61,14 @@
         {% endif %}
     {% endif %}
 
-    {# The super-admin "como" the owner leaves impersonation instead (Spanish only). #}
-    {% if is_granted('IS_IMPERSONATOR') %}
-        <a class="logout" href="{{ impersonation_exit_path(path('platform_index')) }}">Volver a Plataforma</a>
+    {# Leaving "como" the owner (switch_user): back to /platform for the
+       super-admin (Spanish only, its own tool), to /partners for a reseller. #}
+    {% set impersonating = is_granted('IS_IMPERSONATOR') %}
+    {% set exitToPartners = impersonating and 'ROLE_RESELLER' in app.token.originalToken.roleNames %}
+    {% set exitUrl = impersonating ? impersonation_exit_path(path(exitToPartners ? 'partners_index' : 'platform_index')) : null %}
+    {% set exitLabel = exitToPartners ? 'nav.item.back_to_partners'|trans({}, 'admin_base') : 'Volver a Plataforma' %}
+    {% if impersonating %}
+        <a class="logout" href="{{ exitUrl }}">{{ exitLabel }}</a>
     {% else %}
         <a class="logout" href="{{ path('admin_logout') }}">{{ 'nav.item.logout'|trans({}, 'admin_base') }}</a>
     {% endif %}

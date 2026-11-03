@@ -15,6 +15,9 @@ use Symfony\Component\Security\Http\SecurityEvents;
  * longer puts it there — so with a non-Equatable User every impersonated
  * session is logged out on the next request.
  *
+ * Only for the two who may switch (Security\SwitchUserVoter): the
+ * super-admin and a reseller.
+ *
  * The marker lives only on the session token, never in User::$roles, and
  * grants nothing (not in role_hierarchy, checked nowhere). Exiting restores
  * the original token, which never had it.
@@ -27,7 +30,7 @@ class SwitchUserMarker implements EventSubscriberInterface
     {
         $token = $event->getToken();
         if (!$token instanceof SwitchUserToken
-            || !in_array(User::ROLE_SUPER_ADMIN, $token->getOriginalToken()->getRoleNames(), true)
+            || array_intersect([User::ROLE_SUPER_ADMIN, User::ROLE_RESELLER], $token->getOriginalToken()->getRoleNames()) === []
             || in_array(self::ROLE_PREVIOUS_ADMIN, $token->getRoleNames(), true)) {
             return;
         }

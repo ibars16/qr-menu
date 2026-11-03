@@ -10,7 +10,7 @@ use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Event\SwitchUserEvent;
 
-/** ROLE_PREVIOUS_ADMIN goes on the switched token only, and only for a super-admin switching. */
+/** ROLE_PREVIOUS_ADMIN goes on the switched token only, and only for a super-admin or a reseller switching. */
 final class SwitchUserMarkerTest extends TestCase
 {
     private static function user(string $email, string $role): User
@@ -44,6 +44,15 @@ final class SwitchUserMarkerTest extends TestCase
         self::assertSame('/admin/billing/pay/1', $token->getOriginatedFromUri());
         self::assertSame('impersonator@example.test', $token->getOriginalToken()->getUserIdentifier());
         self::assertNotContains('ROLE_PREVIOUS_ADMIN', $token->getUser()->getRoles());
+    }
+
+    public function testResellerSwitchGetsMarkerToo(): void
+    {
+        $event = self::switched(User::ROLE_RESELLER);
+        (new SwitchUserMarker())->onSwitchUser($event);
+
+        self::assertContains('ROLE_PREVIOUS_ADMIN', $event->getToken()->getRoleNames());
+        self::assertNotContains('ROLE_PREVIOUS_ADMIN', $event->getToken()->getUser()->getRoles());
     }
 
     public function testOtherSwitcherGetsNoMarker(): void

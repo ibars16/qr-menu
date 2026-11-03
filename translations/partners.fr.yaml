@@ -1,0 +1,67 @@
+# Reseller sign-up (/partners/registro) and panel (/partners).
+register:
+    title: "Inscription revendeur"
+    tagline: "Cartes digitales pour les restaurants que vous gérez"
+    subtitle: "Créez le compte de votre entreprise. Vous pourrez ajouter des restaurants une fois votre abonnement activé."
+    section_company: "Votre entreprise"
+    section_account: "Votre compte"
+    company: "Nom de l'entreprise"
+    name: "Votre nom"
+    email: "Email"
+    password: "Mot de passe"
+    password_repeat: "Répéter le mot de passe"
+    password_placeholder: "8 caractères minimum"
+    admin_locale: "Langue de votre espace"
+    submit: "Créer le compte et entrer →"
+    have_account: "Vous avez déjà un compte ?"
+    login: "Connectez-vous"
+    theme_aria: "Basculer entre mode sombre et clair"
+    error:
+        company_blank: "Saisissez le nom de l'entreprise."
+        company_length: "Le nom doit contenir entre 2 et 100 caractères."
+        name_blank: "Saisissez votre nom."
+        name_length: "Le nom est trop long."
+        email_blank: "Saisissez votre email."
+        email_invalid: "L'email n'est pas valide."
+        email_taken: "Un compte existe déjà avec cet email."
+        password_blank: "Saisissez un mot de passe."
+        password_short: "8 caractères minimum."
+        password_mismatch: "Les mots de passe ne correspondent pas."
+
+logout: "Se déconnecter"
+inactive: "Votre compte n'est pas actif. En attendant, vous ne pouvez ni créer, ni ouvrir, ni archiver de restaurants, et leurs cartes ne s'affichent pas."
+
+count:
+    included: "Restaurants : <strong>%total%</strong> sur %included% inclus"
+    extra: "Restaurants : <strong>%total%</strong> · %extra% en plus"
+
+list:
+    restaurant: "Restaurant"
+    no_owner: "Sans propriétaire"
+    view_menu: "Voir la carte"
+    enter: "Entrer"
+    archive: "Archiver"
+    archive_confirm: "Archiver %name% ? La carte ne s'affichera plus."
+    restore: "Restaurer"
+    archived_title: "Archivés"
+    empty: "Vous n'avez encore aucun restaurant."
+
+new:
+    button: "Nouveau restaurant"
+    title: "Nouveau restaurant"
+    name: "Nom du restaurant"
+    email: "Email du propriétaire"
+    password: "Mot de passe du propriétaire"
+    cancel: "Annuler"
+    submit: "Créer"
+    close: "Fermer"
+    error:
+        name: "Le nom doit contenir entre 2 et 100 caractères."
+        email_invalid: "L'email du propriétaire n'est pas valide."
+        password_short: "Le mot de passe doit contenir au moins 8 caractères."
+        email_taken: "Un compte existe déjà avec cet email. Utilisez-en un autre pour le propriétaire."
+
+flash:
+    created: "%name% créé. Vous pouvez maintenant ouvrir son espace."
+    archived: "%name% archivé : sa carte ne s'affiche plus."
+    restored: "%name% restauré."
