@@ -122,7 +122,7 @@ class Restaurant
     #[ORM\Column]
     private int $menuContentVersion = 1;
 
-    /** Billed through a reseller: active while the reseller is (isExpired()), never billed on its own. */
+    /** Billed through a reseller: active while the reseller is and its own paidUntil (set by the reseller in /partners) hasn't passed — see isExpired(). Never billed through Stripe on its own. */
     #[ORM\ManyToOne(targetEntity: Reseller::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
     private ?Reseller $reseller = null;
@@ -354,17 +354,38 @@ class Restaurant
     private const TRIAL_DAYS = 30;
 
     /**
-     * Archived, or billed through a reseller who has expired — otherwise
-     * its own paidUntil. Everything that turns a restaurant off (admin
-     * gate, public menu, Smart Waiter, /platform) asks only this.
+     * Its own paidUntil passed; a reseller's restaurant is also off when
+     * archived or when its reseller has expired. Everything that turns a
+     * restaurant off (admin gate, public menu, Smart Waiter, /platform,
+     * /partners) asks only this.
      */
     public function isExpired(?\DateTimeImmutable $today = null): bool
     {
-        if ($this->archivedAt !== null) {
+        if ($this->archivedAt !== null || $this->reseller?->isExpired($today)) {
             return true;
         }
 
-        return $this->reseller !== null ? $this->reseller->isExpired($today) : $this->isPeriodExpired($today);
+        return $this->isPeriodExpired($today);
+    }
+
+    /**
+     * Only its own paidUntil, whatever its reseller or archiving say: the
+     * status the reseller manages for it in /partners.
+     */
+    public function isOwnPeriodExpired(?\DateTimeImmutable $today = null): bool
+    {
+        return $this->isPeriodExpired($today);
+    }
+
+    /**
+     * The owner's "vence pronto" notice for a reseller's restaurant
+     * ("contacta con tu revendedor", no payment button): its own paidUntil
+     * 7 days or fewer away, still active. Trial or paid alike — the
+     * reseller renews it by hand from /partners.
+     */
+    public function isResellerServiceEndingSoon(?\DateTimeImmutable $today = null): bool
+    {
+        return $this->reseller !== null && !$this->isExpired($today) && $this->getDaysLeft($today) <= 7;
     }
 
     /** Never for a reseller's restaurant: it has no billing of its own. */
@@ -389,7 +410,7 @@ class Restaurant
         $this->reseller = $reseller;
     }
 
-    /** No billing screens, notices or payment actions: the reseller pays. */
+    /** No billing screens, Stripe or payment actions of its own: the reseller pays and renews it from /partners. */
     public function isBilledByReseller(): bool
     {
         return $this->reseller !== null;

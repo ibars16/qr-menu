@@ -44,7 +44,13 @@ bottom_nav:
 
 subscription_expired: "Ihr Abonnement ist am %date% abgelaufen"
 reseller_inactive: "Dieses Restaurant ist nicht aktiv"
-reseller_inactive_hint: "Wenden Sie sich an das Unternehmen, das Ihre Speisekarte verwaltet."
+reseller_inactive_hint: "Wenden Sie sich an %name%."
+
+# A reseller's restaurant, its own paid_until 7 days or fewer away (no payment button).
+reseller_notice:
+    today: "Ihr Service läuft heute ab. Wenden Sie sich an %name%."
+    singular: "Ihr Service läuft in %count% Tag ab. Wenden Sie sich an %name%."
+    plural: "Ihr Service läuft in %count% Tagen ab. Wenden Sie sich an %name%."
 
 trial:
     days_left_singular: "Kostenlose Testphase · noch %count% Tag"

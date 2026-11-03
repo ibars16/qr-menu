@@ -2,6 +2,7 @@
 
 namespace App\Service\Billing;
 
+use App\Entity\Reseller;
 use App\Entity\Restaurant;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,6 +13,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * Owners paying their own subscription through Stripe Checkout (mode
  * subscription), plus the webhook-side sync that turns Stripe's confirmed
  * payments into Restaurant::$paidUntil / $plan / $lastPaidAt.
+ *
+ * Resellers pay the same way (the same fields, PaidPeriodTrait), with two
+ * lines: the base plan (quantity 1) and, only while there are any, the
+ * restaurants in use over the included ones (quantity = how many). The
+ * customer and the subscription carry reseller_id instead of restaurant_id.
  *
  * Every sync re-reads the object from Stripe (never trusts the webhook
  * payload's shape) and only moves dates forward (Restaurant::applyStripePeriod()),
@@ -27,13 +33,22 @@ class StripeBilling
      */
     private const MIN_TRIAL_SECONDS = 48 * 3600;
 
-    /** @param array<string, string> $priceIds plan => Stripe Price id (price_…) */
+    /** Checkout's client_reference_id for a reseller: "reseller-<id>" (a restaurant's is its bare id). */
+    private const RESELLER_REFERENCE = 'reseller-';
+
+    /**
+     * @param array<string, string> $priceIds plan => Stripe Price id (price_…)
+     * @param array<string, string> $resellerPriceIds plan => base Price id, and
+     *        extra_<plan> => the extra restaurant's Price id
+     */
     public function __construct(
         private readonly StripeGatewayInterface $gateway,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
         private readonly TranslatorInterface $translator,
         private readonly array $priceIds,
+        private readonly array $resellerPriceIds,
+        private readonly int $includedRestaurants,
     ) {
     }
 
@@ -48,7 +63,7 @@ class StripeBilling
         // Saved before the session is created, so a second checkout (another
         // tab) reuses the same customer instead of creating a new one.
         if ($restaurant->getStripeCustomerId() === null) {
-            $restaurant->setStripeCustomerId($this->gateway->createCustomer($owner->getEmail(), $restaurant->getName(), $restaurant->getId()));
+            $restaurant->setStripeCustomerId($this->gateway->createCustomer($owner->getEmail(), $restaurant->getName(), ['restaurant_id' => (string) $restaurant->getId()]));
             $this->em->flush();
         }
 
@@ -73,6 +88,85 @@ class StripeBilling
     }
 
     /**
+     * A reseller subscribing: no trial, charged right away — the base plan
+     * plus the extra restaurants already in use (resellerExtraQuantity()).
+     *
+     * @return string The Stripe Checkout URL.
+     */
+    public function startResellerCheckout(Reseller $reseller, User $user, string $plan, string $successUrl, string $cancelUrl): string
+    {
+        $basePriceId  = $this->resellerPriceIds[$plan] ?? '';
+        $extraPriceId = $this->resellerPriceIds['extra_' . $plan] ?? '';
+        if ($basePriceId === '' || $extraPriceId === '') {
+            throw new \InvalidArgumentException(sprintf('No Stripe reseller prices configured for plan "%s".', $plan));
+        }
+
+        if ($reseller->getStripeCustomerId() === null) {
+            $reseller->setStripeCustomerId($this->gateway->createCustomer($user->getEmail(), $reseller->getName(), ['reseller_id' => (string) $reseller->getId()]));
+            $this->em->flush();
+        }
+
+        $lineItems = [['price' => $basePriceId, 'quantity' => 1]];
+        if (($extra = $this->resellerExtraQuantity($reseller)) > 0) {
+            $lineItems[] = ['price' => $extraPriceId, 'quantity' => $extra];
+        }
+
+        return $this->gateway->createCheckoutSession([
+            'mode'                => 'subscription',
+            'customer'            => $reseller->getStripeCustomerId(),
+            'client_reference_id' => self::RESELLER_REFERENCE . $reseller->getId(),
+            'line_items'          => $lineItems,
+            'subscription_data'   => ['metadata' => ['reseller_id' => (string) $reseller->getId()]],
+            'success_url'         => $successUrl,
+            'cancel_url'          => $cancelUrl,
+        ]);
+    }
+
+    /** The reseller's restaurants in use (not archived) over the included ones. */
+    public function resellerExtraQuantity(Reseller $reseller): int
+    {
+        $inUse = (int) $this->em->getRepository(Restaurant::class)->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->where('r.reseller = :reseller')->andWhere('r.archivedAt IS NULL')
+            ->setParameter('reseller', $reseller)
+            ->getQuery()->getSingleScalarResult();
+
+        return max(0, $inUse - $this->includedRestaurants);
+    }
+
+    /**
+     * After a restaurant is created, archived or restored: sets the extra
+     * line to the count (not +1/-1, so a missed update is fixed by the next
+     * one), prorated on the next invoice. Added when it's needed, removed
+     * when it drops to 0. Nothing to do without a live subscription.
+     */
+    public function syncResellerExtras(Reseller $reseller): void
+    {
+        if (!$reseller->hasLiveSubscription()) {
+            return;
+        }
+
+        $subscription = $this->liveSubscription($reseller);
+        $plan = $this->planFor($subscription) ?? throw new \LogicException('Reseller subscription without a known base price.');
+        $extraPriceId = $this->resellerPriceIds['extra_' . $plan] ?? '';
+        $wanted = $this->resellerExtraQuantity($reseller);
+        $item = $this->extraItem($subscription);
+
+        $change = match (true) {
+            $item === null && $wanted > 0                          => ['price' => $extraPriceId, 'quantity' => $wanted],
+            $item !== null && $wanted === 0                        => ['id' => $item['id'], 'deleted' => true],
+            $item !== null && (int) ($item['quantity'] ?? 0) !== $wanted => ['id' => $item['id'], 'quantity' => $wanted],
+            default                                                => null,
+        };
+        if ($change !== null) {
+            $this->gateway->updateSubscription($subscription['id'], [
+                'items'              => [$change],
+                'proration_behavior' => 'create_prorations',
+            ]);
+        }
+    }
+
+    /**
      * Unix time the first charge should fall on: the end of the last day
      * already covered (paidUntil inclusive, UTC), so the owner keeps the
      * days left. Null = charge now (expired, or under 48 hours left).
@@ -91,7 +185,7 @@ class StripeBilling
         return $trialEnd - $now->getTimestamp() >= self::MIN_TRIAL_SECONDS ? $trialEnd : null;
     }
 
-    public function portalUrl(Restaurant $restaurant, string $returnUrl): ?string
+    public function portalUrl(Restaurant|Reseller $restaurant, string $returnUrl): ?string
     {
         if ($restaurant->getStripeCustomerId() === null) {
             return null;
@@ -104,7 +198,7 @@ class StripeBilling
      * The portal straight on its card form (the portal is configured to
      * allow only that and invoices); back on $returnUrl either way.
      */
-    public function cardUpdateUrl(Restaurant $restaurant, string $returnUrl): ?string
+    public function cardUpdateUrl(Restaurant|Reseller $restaurant, string $returnUrl): ?string
     {
         if ($restaurant->getStripeCustomerId() === null) {
             return null;
@@ -122,32 +216,40 @@ class StripeBilling
      * Everything the screen shows about the live subscription, read from
      * Stripe. Amounts in cents; dates are Unix times.
      *
+     * A reseller's also has its extra line (null without one), and no plan
+     * change (other_plan null): that's only for restaurants. Its next charge
+     * is the lines' total, prorations not included.
+     *
      * @return array{plan: ?string, amount: int, currency: string, status: string, trialing: bool,
      *     cancel_pending: bool, next_charge: ?array{date: int, amount: int},
      *     card: ?array{brand: string, last4: string, exp_month: int, exp_year: int},
      *     pending_change: ?array{plan: string, date: int, amount: int},
-     *     other_plan: ?array{plan: string, amount: int}, change_at: ?int}
+     *     other_plan: ?array{plan: string, amount: int}, change_at: ?int,
+     *     extra: ?array{quantity: int, unit_amount: int}}
      */
-    public function overview(Restaurant $restaurant): array
+    public function overview(Restaurant|Reseller $restaurant): array
     {
         $subscription = $this->liveSubscription($restaurant, ['default_payment_method']);
-        $price = $subscription['items']['data'][0]['price'];
+        $baseItem = $this->baseItem($subscription);
+        $price = $baseItem['price'];
         $plan = $this->planFor($subscription);
         $trialing = ($subscription['status'] ?? null) === 'trialing';
         $cancelPending = self::cancelPending($subscription);
         $pendingChange = $this->pendingChange($subscription);
+        $extraItem = $restaurant instanceof Reseller ? $this->extraItem($subscription) : null;
+        $extra = $extraItem !== null ? ['quantity' => (int) $extraItem['quantity'], 'unit_amount' => (int) $extraItem['price']['unit_amount']] : null;
 
         $nextCharge = null;
         if (!$cancelPending) {
             $nextCharge = [
-                'date'   => (int) ($trialing ? $subscription['trial_end'] : $subscription['items']['data'][0]['current_period_end']),
-                'amount' => $pendingChange['amount'] ?? (int) $price['unit_amount'],
+                'date'   => (int) ($trialing ? $subscription['trial_end'] : $baseItem['current_period_end']),
+                'amount' => $pendingChange['amount'] ?? (int) $price['unit_amount'] + ($extra !== null ? $extra['quantity'] * $extra['unit_amount'] : 0),
             ];
         }
 
         $otherPlan = null;
         $otherKey = $plan === Restaurant::PLAN_MONTHLY ? Restaurant::PLAN_YEARLY : ($plan === Restaurant::PLAN_YEARLY ? Restaurant::PLAN_MONTHLY : null);
-        if ($otherKey !== null && ($this->priceIds[$otherKey] ?? '') !== '') {
+        if ($restaurant instanceof Restaurant && $otherKey !== null && ($this->priceIds[$otherKey] ?? '') !== '') {
             $otherPlan = ['plan' => $otherKey, 'amount' => (int) $this->gateway->retrievePrice($this->priceIds[$otherKey])['unit_amount']];
         }
 
@@ -163,7 +265,8 @@ class StripeBilling
             'pending_change' => $pendingChange,
             'other_plan'     => $otherPlan,
             // When a plan change takes effect: null = right away (trial).
-            'change_at'      => $trialing ? null : (int) $subscription['items']['data'][0]['current_period_end'],
+            'change_at'      => $trialing ? null : (int) $baseItem['current_period_end'],
+            'extra'          => $extra,
         ];
     }
 
@@ -172,7 +275,7 @@ class StripeBilling
      *
      * @return list<array{date: int, amount: int, currency: string, status: string, url: ?string}>
      */
-    public function invoices(Restaurant $restaurant, int $limit = 12): array
+    public function invoices(Restaurant|Reseller $restaurant, int $limit = 12): array
     {
         if ($restaurant->getStripeCustomerId() === null) {
             return [];
@@ -247,7 +350,7 @@ class StripeBilling
     }
 
     /** At period end. A scheduled plan change is dropped first (Stripe won't cancel a scheduled subscription). */
-    public function cancel(Restaurant $restaurant): void
+    public function cancel(Restaurant|Reseller $restaurant): void
     {
         $subscription = $this->liveSubscription($restaurant);
         if (($subscription['schedule'] ?? null) !== null) {
@@ -258,7 +361,7 @@ class StripeBilling
     }
 
     /** "No cancelar": clears both ways a cancel can be stored. */
-    public function resume(Restaurant $restaurant): void
+    public function resume(Restaurant|Reseller $restaurant): void
     {
         $subscription = $this->liveSubscription($restaurant);
         if (($subscription['cancel_at_period_end'] ?? false) === true) {
@@ -275,7 +378,7 @@ class StripeBilling
      * customer (newer than the subscription's own), the subscription would
      * keep charging the old one — so it's copied over.
      */
-    public function syncCardFromPortal(Restaurant $restaurant): void
+    public function syncCardFromPortal(Restaurant|Reseller $restaurant): void
     {
         $subscription = $this->liveSubscription($restaurant, ['default_payment_method']);
         $own = is_array($subscription['default_payment_method'] ?? null) ? $subscription['default_payment_method'] : null;
@@ -290,7 +393,7 @@ class StripeBilling
      * @param list<string> $expand
      * @return array<string, mixed>
      */
-    private function liveSubscription(Restaurant $restaurant, array $expand = []): array
+    private function liveSubscription(Restaurant|Reseller $restaurant, array $expand = []): array
     {
         $id = $restaurant->getStripeSubscriptionId() ?? throw new \LogicException('No live Stripe subscription.');
 
@@ -375,17 +478,20 @@ class StripeBilling
      * during the trial counts as "Activa" from here, not "Prueba gratis" —
      * and applies the first invoice if it's already paid.
      *
-     * @param Restaurant|null $expected When given (owner's return), the
-     *        session must belong to it — anything else is ignored.
+     * @param Restaurant|Reseller|null $expected When given (the customer's own
+     *        return), the session must belong to it — anything else is ignored.
      */
-    public function syncCheckoutSession(string $sessionId, ?Restaurant $expected = null): void
+    public function syncCheckoutSession(string $sessionId, Restaurant|Reseller|null $expected = null): void
     {
         $session = $this->gateway->retrieveCheckoutSession($sessionId);
         if (($session['mode'] ?? null) !== 'subscription' || !is_string($session['subscription'] ?? null)) {
             return;
         }
 
-        $restaurant = $this->em->find(Restaurant::class, (int) ($session['client_reference_id'] ?? 0));
+        $reference = (string) ($session['client_reference_id'] ?? '');
+        $restaurant = str_starts_with($reference, self::RESELLER_REFERENCE)
+            ? $this->em->find(Reseller::class, (int) substr($reference, strlen(self::RESELLER_REFERENCE)))
+            : $this->em->find(Restaurant::class, (int) $reference);
         if ($restaurant === null || ($expected !== null && $restaurant !== $expected)) {
             return;
         }
@@ -412,7 +518,7 @@ class StripeBilling
         }
 
         $subscription = $this->gateway->retrieveSubscription($subscriptionId);
-        $restaurant = $this->restaurantFor($subscription);
+        $restaurant = $this->customerFor($subscription);
         $plan = $this->planFor($subscription);
         $periodEnd = max(array_map(static fn (array $line): int => (int) ($line['period']['end'] ?? 0), $invoice['lines']['data'] ?? []) ?: [0]);
 
@@ -445,7 +551,7 @@ class StripeBilling
      */
     public function syncSubscription(string $subscriptionId): void
     {
-        $restaurant = $this->em->getRepository(Restaurant::class)->findOneBy(['stripeSubscriptionId' => $subscriptionId]);
+        $restaurant = $this->linkedTo($subscriptionId);
         if ($restaurant === null) {
             return;
         }
@@ -461,7 +567,7 @@ class StripeBilling
     /** customer.subscription.deleted: no longer paying automatically. Dates and plan are left alone. */
     public function syncSubscriptionDeleted(string $subscriptionId): void
     {
-        $restaurant = $this->em->getRepository(Restaurant::class)->findOneBy(['stripeSubscriptionId' => $subscriptionId]);
+        $restaurant = $this->linkedTo($subscriptionId);
         if ($restaurant !== null) {
             $restaurant->setStripeSubscriptionId(null);
             $restaurant->setStripeCancelPending(false);
@@ -470,15 +576,15 @@ class StripeBilling
     }
 
     /** @param array<string, mixed> $subscription */
-    private function link(Restaurant $restaurant, array $subscription): void
+    private function link(Restaurant|Reseller $restaurant, array $subscription): void
     {
         $current = $restaurant->getStripeSubscriptionId();
         if ($current !== null && $current !== $subscription['id']) {
             // A second live subscription (e.g. two checkout tabs): logged for
             // the platform owner to cancel by hand in Stripe; the restaurant
             // keeps pointing at the first one.
-            $this->logger->warning('Second Stripe subscription for one restaurant', [
-                'restaurant' => $restaurant->getId(), 'kept' => $current, 'extra' => $subscription['id'],
+            $this->logger->warning('Second Stripe subscription for one customer', [
+                $restaurant instanceof Reseller ? 'reseller' : 'restaurant' => $restaurant->getId(), 'kept' => $current, 'extra' => $subscription['id'],
             ]);
             return;
         }
@@ -490,24 +596,95 @@ class StripeBilling
         }
     }
 
-    /** @param array<string, mixed> $subscription */
-    private function restaurantFor(array $subscription): ?Restaurant
+    /**
+     * Whose subscription this is: its metadata (reseller_id or
+     * restaurant_id), else whoever is already linked to it.
+     *
+     * @param array<string, mixed> $subscription
+     */
+    private function customerFor(array $subscription): Restaurant|Reseller|null
     {
+        $resellerId = (int) ($subscription['metadata']['reseller_id'] ?? 0);
+        if ($resellerId > 0 && ($reseller = $this->em->find(Reseller::class, $resellerId)) !== null) {
+            return $reseller;
+        }
         $id = (int) ($subscription['metadata']['restaurant_id'] ?? 0);
         if ($id > 0 && ($restaurant = $this->em->find(Restaurant::class, $id)) !== null) {
             return $restaurant;
         }
 
-        return $this->em->getRepository(Restaurant::class)->findOneBy(['stripeSubscriptionId' => $subscription['id']]);
+        return $this->linkedTo($subscription['id']);
     }
 
-    /** @param array<string, mixed> $subscription */
+    private function linkedTo(string $subscriptionId): Restaurant|Reseller|null
+    {
+        return $this->em->getRepository(Restaurant::class)->findOneBy(['stripeSubscriptionId' => $subscriptionId])
+            ?? $this->em->getRepository(Reseller::class)->findOneBy(['stripeSubscriptionId' => $subscriptionId]);
+    }
+
+    /**
+     * The plan of the subscription's base line: a restaurant's price, or a
+     * reseller's base price (never the extra one).
+     *
+     * @param array<string, mixed> $subscription
+     */
     private function planFor(array $subscription): ?string
     {
-        $priceId = $subscription['items']['data'][0]['price']['id'] ?? null;
-        $plan = $priceId !== null ? array_search($priceId, $this->priceIds, true) : false;
+        foreach ($subscription['items']['data'] ?? [] as $item) {
+            $priceId = (string) ($item['price']['id'] ?? '');
+            if ($priceId === '') {
+                continue;
+            }
+            foreach ([$this->priceIds, $this->resellerPriceIds] as $prices) {
+                $plan = array_search($priceId, $prices, true);
+                if (is_string($plan) && isset(Restaurant::PLAN_MONTHS[$plan])) {
+                    return $plan;
+                }
+            }
+        }
 
-        return $plan === false || $priceId === '' ? null : $plan;
+        return null;
+    }
+
+    /**
+     * The line that isn't the extra one (a restaurant's only line).
+     *
+     * @param array<string, mixed> $subscription
+     * @return array<string, mixed>
+     */
+    private function baseItem(array $subscription): array
+    {
+        foreach ($subscription['items']['data'] as $item) {
+            if (!$this->isExtraPrice((string) ($item['price']['id'] ?? ''))) {
+                return $item;
+            }
+        }
+
+        return $subscription['items']['data'][0];
+    }
+
+    /**
+     * A reseller's extra-restaurants line, if it has one.
+     *
+     * @param array<string, mixed> $subscription
+     * @return array<string, mixed>|null
+     */
+    private function extraItem(array $subscription): ?array
+    {
+        foreach ($subscription['items']['data'] ?? [] as $item) {
+            if ($this->isExtraPrice((string) ($item['price']['id'] ?? ''))) {
+                return $item;
+            }
+        }
+
+        return null;
+    }
+
+    private function isExtraPrice(string $priceId): bool
+    {
+        $plan = $priceId !== '' ? array_search($priceId, $this->resellerPriceIds, true) : false;
+
+        return is_string($plan) && str_starts_with($plan, 'extra_');
     }
 
     /**

@@ -7,10 +7,12 @@ use App\Entity\Restaurant;
 use PHPUnit\Framework\TestCase;
 
 /**
- * A reseller's restaurant is active exactly while its reseller is
- * (Restaurant::isExpired()), never shows trial or "vence pronto" notices,
- * and an archived one is off whatever anyone paid. A new reseller has no
- * trial: expired until its first payment.
+ * A reseller's restaurant is active while its reseller is AND its own
+ * paid_until (set by the reseller in /partners) hasn't passed
+ * (Restaurant::isExpired()); it never shows the Stripe trial or "vence
+ * pronto" notices, only its own "contacta con tu revendedor" one, and an
+ * archived one is off whatever anyone paid. A new reseller has no trial:
+ * expired until its first payment.
  */
 final class RestaurantResellerTest extends TestCase
 {
@@ -40,7 +42,7 @@ final class RestaurantResellerTest extends TestCase
         self::assertSame('monthly', $reseller->getPlan());
     }
 
-    public function testRestaurantFollowsItsResellerNotItsOwnDate(): void
+    public function testUnpaidResellerTurnsItOffDespiteItsOwnDate(): void
     {
         $reseller   = new Reseller('Agencia');
         $restaurant = $this->restaurantOf($reseller);
@@ -49,23 +51,28 @@ final class RestaurantResellerTest extends TestCase
         self::assertTrue($restaurant->isBilledByReseller());
         self::assertGreaterThan(new \DateTimeImmutable('today'), $restaurant->getPaidUntil());
         self::assertTrue($restaurant->isExpired());
+        self::assertFalse($restaurant->isOwnPeriodExpired());
 
         $reseller->markPaid(Reseller::PLAN_YEARLY);
-        $this->paidUntil($restaurant, 'yesterday');
 
         self::assertFalse($restaurant->isExpired());
     }
 
-    /** With a reseller, its own paid_until (the 30-day trial) never counts: only archived or reseller expired. */
-    public function testResellerRestaurantIgnoresItsOwnPaidUntil(): void
+    /** Expired = archived OR reseller expired OR its own paid_until passed. */
+    public function testResellerRestaurantAlsoExpiresOnItsOwnPaidUntil(): void
     {
         $reseller = new Reseller('Agencia');
         $reseller->markPaid(Reseller::PLAN_MONTHLY);
         $restaurant = $this->restaurantOf($reseller);
 
-        foreach (['-1 year', 'yesterday', 'today', '+30 days'] as $own) {
+        foreach (['today', '+30 days'] as $own) {
             $this->paidUntil($restaurant, $own);
             self::assertFalse($restaurant->isExpired(), "own paid_until $own, reseller up to date");
+        }
+        foreach (['-1 year', 'yesterday'] as $own) {
+            $this->paidUntil($restaurant, $own);
+            self::assertTrue($restaurant->isExpired(), "own paid_until $own, reseller up to date");
+            self::assertTrue($restaurant->isOwnPeriodExpired());
         }
 
         $reseller->deactivateNow();
@@ -73,6 +80,49 @@ final class RestaurantResellerTest extends TestCase
             $this->paidUntil($restaurant, $own);
             self::assertTrue($restaurant->isExpired(), "own paid_until $own, reseller expired");
         }
+    }
+
+    /** The reseller renews it by hand, like /platform does for a self-billed one. */
+    public function testResellerCanRenewOrDeactivateIt(): void
+    {
+        $reseller = new Reseller('Agencia');
+        $reseller->markPaid(Reseller::PLAN_MONTHLY);
+        $restaurant = $this->restaurantOf($reseller);
+
+        $restaurant->deactivateNow();
+        self::assertTrue($restaurant->isExpired());
+
+        $restaurant->markPaid(Restaurant::PLAN_MONTHLY);
+        self::assertFalse($restaurant->isExpired());
+        self::assertSame('monthly', $restaurant->getPlan());
+        self::assertEquals(new \DateTimeImmutable('today'), $restaurant->getLastPaidAt());
+    }
+
+    public function testOwnerNoticeWhenItsOwnDateIsSevenDaysOrLess(): void
+    {
+        $reseller = new Reseller('Agencia');
+        $reseller->markPaid(Reseller::PLAN_YEARLY);
+        $restaurant = $this->restaurantOf($reseller);
+
+        $this->paidUntil($restaurant, '+8 days');
+        self::assertFalse($restaurant->isResellerServiceEndingSoon());
+
+        foreach (['+7 days', '+1 day', 'today'] as $own) {
+            $this->paidUntil($restaurant, $own);
+            self::assertTrue($restaurant->isResellerServiceEndingSoon(), "own paid_until $own");
+        }
+
+        // Expired (its own date, or archived): the expired page instead.
+        $this->paidUntil($restaurant, 'yesterday');
+        self::assertFalse($restaurant->isResellerServiceEndingSoon());
+        $this->paidUntil($restaurant, '+2 days');
+        $restaurant->archive();
+        self::assertFalse($restaurant->isResellerServiceEndingSoon());
+
+        // Never for a self-billed restaurant: it has the Stripe notices.
+        $own = new Restaurant();
+        $this->paidUntil($own, '+2 days');
+        self::assertFalse($own->isResellerServiceEndingSoon());
     }
 
     public function testResellerRestaurantNeverShowsTrialOrEndingSoon(): void

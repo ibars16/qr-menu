@@ -27,6 +27,9 @@ register:
         password_blank: "Enter a password."
         password_short: "At least 8 characters."
         password_mismatch: "The passwords don't match."
+        admin_locale: "Choose a language from the list."
+        expired: "The page has expired. Please submit the form again."
+        general: "The form could not be sent. Reload the page and try again."
 
 logout: "Log out"
 inactive: "Your account isn't active. Until it is, you can't create, enter or archive restaurants, and their menus aren't shown."
@@ -45,6 +48,12 @@ list:
     restore: "Restore"
     archived_title: "Archived"
     empty: "You don't have any restaurants yet."
+    status: "Status"
+    until: "Active until"
+    last_paid: "Last payment %date%"
+    no_payments: "No payments"
+    deactivate: "Deactivate"
+    deactivate_confirm: "Deactivate %name%? Its menu will stop showing until you register a payment. It will still count in your subscription. If it is no longer your client, use Archive."
 
 new:
     button: "New restaurant"
@@ -65,3 +74,50 @@ flash:
     created: "%name% created. You can now enter its panel."
     archived: "%name% archived: its menu is no longer shown."
     restored: "%name% restored."
+    paid: "Payment registered: %name% is active until %date%."
+    deactivated: "%name% deactivated: its menu no longer shows."
+
+summary:
+    active: "Active"
+    trial: "On trial"
+    expiring_soon: "Expire within 7 days"
+    expired: "Expired"
+
+status:
+    trial: "On trial"
+    paid: "Paid"
+    expired: "Expired"
+
+days:
+    today: "expires today"
+    left_one: "%count% day left"
+    left: "%count% days left"
+    ago_one: "expired %count% day ago"
+    ago: "expired %count% days ago"
+
+payment:
+    button: "Register payment"
+    title: "Register payment"
+    monthly: "1 month → active until"
+    yearly: "1 year → active until"
+    save: "Save"
+
+billing:
+    nav: "Subscription"
+    choose_plan: "Choose plan"
+    plan:
+        monthly: "Monthly"
+        yearly: "Yearly"
+    per:
+        monthly: "/month"
+        yearly: "/year"
+    amount: "€%price%"
+    included: "%included% restaurants included"
+    extra:
+        monthly: "+€%extra%/month for each one more"
+        yearly: "+€%extra%/year for each one more"
+    saving: "Save €%amount%"
+    estimate:
+        monthly: "With your %total% current restaurants: €%amount%/month"
+        yearly: "With your %total% current restaurants: €%amount%/year"
+    note: "You are charged when you confirm, on Stripe's secure page. You can cancel any time from \"Subscription\"."

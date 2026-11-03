@@ -27,6 +27,9 @@ register:
         password_blank: "Inserisci una password."
         password_short: "Almeno 8 caratteri."
         password_mismatch: "Le password non coincidono."
+        admin_locale: "Scegli una lingua dall'elenco."
+        expired: "La pagina è scaduta. Invia di nuovo il modulo."
+        general: "Impossibile inviare il modulo. Ricarica la pagina e riprova."
 
 logout: "Esci"
 inactive: "Il tuo account non è attivo. Nel frattempo non puoi creare, aprire né archiviare ristoranti, e i loro menù non si vedono."
@@ -45,6 +48,12 @@ list:
     restore: "Ripristina"
     archived_title: "Archiviati"
     empty: "Non hai ancora ristoranti."
+    status: "Stato"
+    until: "Attivo fino al"
+    last_paid: "Ultimo pagamento %date%"
+    no_payments: "Nessun pagamento"
+    deactivate: "Disattiva"
+    deactivate_confirm: "Disattivare %name%? Il suo menù non sarà più visibile finché non registri un pagamento. Continuerà a essere conteggiato nel tuo abbonamento. Se non è più tuo cliente, usa Archivia."
 
 new:
     button: "Nuovo ristorante"
@@ -65,3 +74,50 @@ flash:
     created: "%name% creato. Ora puoi entrare nel suo pannello."
     archived: "%name% archiviato: il menù non si vede più."
     restored: "%name% ripristinato."
+    paid: "Pagamento registrato: %name% è attivo fino al %date%."
+    deactivated: "%name% disattivato: il suo menù non è più visibile."
+
+summary:
+    active: "Attivi"
+    trial: "In prova"
+    expiring_soon: "Scadono entro 7 giorni"
+    expired: "Scaduti"
+
+status:
+    trial: "In prova"
+    paid: "Pagato"
+    expired: "Scaduto"
+
+days:
+    today: "scade oggi"
+    left_one: "manca %count% giorno"
+    left: "mancano %count% giorni"
+    ago_one: "scaduto da %count% giorno"
+    ago: "scaduto da %count% giorni"
+
+payment:
+    button: "Registra pagamento"
+    title: "Registra pagamento"
+    monthly: "1 mese → attivo fino al"
+    yearly: "1 anno → attivo fino al"
+    save: "Salva"
+
+billing:
+    nav: "Abbonamento"
+    choose_plan: "Scegli il piano"
+    plan:
+        monthly: "Mensile"
+        yearly: "Annuale"
+    per:
+        monthly: "/mese"
+        yearly: "/anno"
+    amount: "%price% €"
+    included: "%included% ristoranti inclusi"
+    extra:
+        monthly: "+%extra% €/mese per ogni ristorante in più"
+        yearly: "+%extra% €/anno per ogni ristorante in più"
+    saving: "Risparmi %amount% €"
+    estimate:
+        monthly: "Con i tuoi %total% ristoranti attuali: %amount% €/mese"
+        yearly: "Con i tuoi %total% ristoranti attuali: %amount% €/anno"
+    note: "L'addebito avviene alla conferma, sulla pagina sicura di Stripe. Puoi annullare quando vuoi da «Abbonamento»."

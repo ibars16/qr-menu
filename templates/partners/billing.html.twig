@@ -1,0 +1,26 @@
+{% extends 'partners/_base.html.twig' %}
+
+{# The reseller's subscription (PartnersBillingController::index()): the
+   owners' billing/_subscription.html.twig with the reseller's routes — no
+   plan change — and its extra-restaurants line. #}
+
+{% block title %}{{ 'title'|trans({}, 'admin_billing') }}{% endblock %}
+
+{% block stylesheets %}
+    {% include 'billing/_subscription_styles.html.twig' %}
+{% endblock %}
+
+{% block main %}
+    <h1 class="page-title">{{ 'title'|trans({}, 'admin_billing') }}</h1>
+    {% include 'billing/_subscription.html.twig' with {
+        customer: reseller,
+        token_id: 'partners-billing-manage',
+        routes: {resume: 'partners_billing_resume', cancel: 'partners_billing_cancel', card: 'partners_billing_card'},
+    } %}
+{% endblock %}
+
+{% block after_main %}
+    {% if not reseller.hasLiveSubscription %}
+        {% include 'partners/_plan_dialog.html.twig' %}
+    {% endif %}
+{% endblock %}

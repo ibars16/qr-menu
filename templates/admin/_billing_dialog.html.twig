@@ -2,7 +2,17 @@
    modal on desktop, bottom sheet on mobile, each with its own copy of the
    form. Posts to BillingController::checkout(), which redirects to Stripe.
    Styles: .billing-dialog in admin/base.html.twig. Prices come from
-   app.billing_prices (config/services.yaml). #}
+   app.billing_prices (config/services.yaml).
+
+   The reseller's panel passes its own checkout_route, checkout_token_id,
+   plan_option_template (each option's content, given `plan`) and
+   plan_note (a line under the options). #}
+{% set checkout_route = checkout_route|default('admin_billing_checkout') %}
+{% set checkout_token_id = checkout_token_id|default('billing-checkout') %}
+{% set plan_labels = plan_labels|default({
+    monthly: 'billing.plan_monthly'|trans({'%price%': billing_prices.monthly}, 'admin_base'),
+    yearly: 'billing.plan_yearly'|trans({'%price%': billing_prices.yearly}, 'admin_base'),
+}) %}
 <div class="billing-dialog">
     {% for panel in [{id: 'billing-modal', overlay: 'modal-overlay', box: 'modal'}, {id: 'billing-sheet', overlay: 'sheet-overlay', box: 'sheet'}] %}
         <div class="{{ panel.overlay }}" id="{{ panel.id }}" onclick="if(event.target===this)BillingUI.close()">
@@ -14,19 +24,22 @@
                         <i class="ti ti-x" aria-hidden="true"></i>
                     </button>
                 </div>
-                <form method="post" action="{{ path('admin_billing_checkout') }}" style="display: contents">
-                    <input type="hidden" name="_token" value="{{ csrf_token('billing-checkout') }}">
+                <form method="post" action="{{ path(checkout_route) }}" style="display: contents">
+                    <input type="hidden" name="_token" value="{{ csrf_token(checkout_token_id) }}">
                     <div class="panel-body">
                         <div class="plan-options">
-                            <label class="plan-option">
-                                <input type="radio" name="plan" value="monthly" checked>
-                                <span>{{ 'billing.plan_monthly'|trans({'%price%': billing_prices.monthly}, 'admin_base') }}</span>
-                            </label>
-                            <label class="plan-option">
-                                <input type="radio" name="plan" value="yearly">
-                                <span>{{ 'billing.plan_yearly'|trans({'%price%': billing_prices.yearly}, 'admin_base') }}</span>
-                            </label>
+                            {% for plan in ['monthly', 'yearly'] %}
+                                <label class="plan-option">
+                                    <input type="radio" name="plan" value="{{ plan }}" {{ loop.first ? 'checked' }}>
+                                    {% if plan_option_template is defined %}
+                                        {% include plan_option_template %}
+                                    {% else %}
+                                        <span>{{ plan_labels[plan] }}</span>
+                                    {% endif %}
+                                </label>
+                            {% endfor %}
                         </div>
+                        {% if plan_note is defined %}<p class="plan-note">{{ plan_note }}</p>{% endif %}
                     </div>
                     <div class="panel-footer">
                         <button type="button" class="btn" onclick="BillingUI.close()">{{ 'billing.cancel'|trans({}, 'admin_base') }}</button>

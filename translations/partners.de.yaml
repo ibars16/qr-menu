@@ -27,6 +27,9 @@ register:
         password_blank: "Geben Sie ein Passwort ein."
         password_short: "Mindestens 8 Zeichen."
         password_mismatch: "Die Passwörter stimmen nicht überein."
+        admin_locale: "Wählen Sie eine Sprache aus der Liste."
+        expired: "Die Seite ist abgelaufen. Bitte senden Sie das Formular erneut."
+        general: "Das Formular konnte nicht gesendet werden. Laden Sie die Seite neu und versuchen Sie es noch einmal."
 
 logout: "Abmelden"
 inactive: "Ihr Konto ist nicht aktiv. Bis dahin können Sie keine Restaurants anlegen, öffnen oder archivieren, und ihre Speisekarten werden nicht angezeigt."
@@ -45,6 +48,12 @@ list:
     restore: "Wiederherstellen"
     archived_title: "Archiviert"
     empty: "Sie haben noch keine Restaurants."
+    status: "Status"
+    until: "Aktiv bis"
+    last_paid: "Letzte Zahlung %date%"
+    no_payments: "Keine Zahlungen"
+    deactivate: "Deaktivieren"
+    deactivate_confirm: "%name% deaktivieren? Die Speisekarte ist nicht mehr sichtbar, bis Sie eine Zahlung erfassen. Es wird weiterhin in Ihrem Abonnement berechnet. Wenn es nicht mehr Ihr Kunde ist, verwenden Sie Archivieren."
 
 new:
     button: "Neues Restaurant"
@@ -65,3 +74,50 @@ flash:
     created: "%name% angelegt. Sie können jetzt seinen Bereich öffnen."
     archived: "%name% archiviert: Die Speisekarte wird nicht mehr angezeigt."
     restored: "%name% wiederhergestellt."
+    paid: "Zahlung erfasst: %name% ist aktiv bis %date%."
+    deactivated: "%name% deaktiviert: die Speisekarte ist nicht mehr sichtbar."
+
+summary:
+    active: "Aktiv"
+    trial: "Testphase"
+    expiring_soon: "Laufen in 7 Tagen ab"
+    expired: "Abgelaufen"
+
+status:
+    trial: "Testphase"
+    paid: "Bezahlt"
+    expired: "Abgelaufen"
+
+days:
+    today: "läuft heute ab"
+    left_one: "noch %count% Tag"
+    left: "noch %count% Tage"
+    ago_one: "seit %count% Tag abgelaufen"
+    ago: "seit %count% Tagen abgelaufen"
+
+payment:
+    button: "Zahlung erfassen"
+    title: "Zahlung erfassen"
+    monthly: "1 Monat → aktiv bis"
+    yearly: "1 Jahr → aktiv bis"
+    save: "Speichern"
+
+billing:
+    nav: "Abonnement"
+    choose_plan: "Tarif wählen"
+    plan:
+        monthly: "Monatlich"
+        yearly: "Jährlich"
+    per:
+        monthly: "/Monat"
+        yearly: "/Jahr"
+    amount: "%price% €"
+    included: "%included% Restaurants inklusive"
+    extra:
+        monthly: "+%extra% €/Monat je weiteres Restaurant"
+        yearly: "+%extra% €/Jahr je weiteres Restaurant"
+    saving: "Sie sparen %amount% €"
+    estimate:
+        monthly: "Mit Ihren aktuell %total% Restaurants: %amount% €/Monat"
+        yearly: "Mit Ihren aktuell %total% Restaurants: %amount% €/Jahr"
+    note: "Die Abbuchung erfolgt bei der Bestätigung auf der sicheren Stripe-Seite. Sie können jederzeit unter „Abonnement“ kündigen."

@@ -100,4 +100,42 @@ final class RegistrationControllerTest extends WebTestCase
         $this->em->remove($this->em->find(User::class, $existing->getId()));
         $this->em->flush();
     }
+
+    public function testShortPasswordShowsNextToPasswordAndKeepsWhatWasTyped(): void
+    {
+        $crawler = $this->client->request('GET', '/register');
+        // Turbo would reload this page (turbo-visit-control) and drop the errors.
+        self::assertSame('false', $crawler->filter('form')->attr('data-turbo'));
+
+        $form = $crawler->filter('form')->form();
+        $form['registration_form[restaurantName]'] = 'Registration Short Restaurant';
+        $form['registration_form[email]'] = 'registration-short@example.test';
+        $form['registration_form[password][first]'] = 'short';
+        $form['registration_form[password][second]'] = 'short';
+        $form['registration_form[currency]'] = 'GBP';
+        $page = $this->client->submit($form);
+
+        self::assertResponseIsUnprocessable();
+        $field = $page->filter('input[name="registration_form[password][first]"]')->closest('.field');
+        self::assertSame(['Mínimo 8 caracteres.'], $field->filter('.errors li')->each(fn ($li) => $li->text()));
+        self::assertSame('Registration Short Restaurant', $page->filter('input[name="registration_form[restaurantName]"]')->attr('value'));
+        self::assertSame('registration-short@example.test', $page->filter('input[name="registration_form[email]"]')->attr('value'));
+        self::assertSame('GBP', $page->filter('select[name="registration_form[currency]"] option[selected]')->attr('value'));
+        self::assertNull($page->filter('input[name="registration_form[password][first]"]')->attr('value'));
+    }
+
+    public function testExpiredPageShowsGeneralError(): void
+    {
+        $form = $this->client->request('GET', '/register')->filter('form')->form();
+        $form['registration_form[_token]'] = 'expired';
+        $form['registration_form[restaurantName]'] = 'Registration Expired Restaurant';
+        $form['registration_form[email]'] = 'registration-expired@example.test';
+        $form['registration_form[password][first]'] = 'a-strong-password-1';
+        $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $page = $this->client->submit($form);
+
+        self::assertResponseIsUnprocessable();
+        self::assertSame('La página ha caducado. Vuelve a enviar el formulario.', $page->filter('.form-errors[role="alert"] li')->text());
+        self::assertSame('Registration Expired Restaurant', $page->filter('input[name="registration_form[restaurantName]"]')->attr('value'));
+    }
 }

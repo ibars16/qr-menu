@@ -1,94 +1,21 @@
-<!DOCTYPE html>
-<html lang="{{ app.request.locale }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    {# Login is a Turbo page: see platform/index.html.twig. #}
-    <meta name="turbo-visit-control" content="reload">
-    <title>{{ reseller.name }} — QR Menu</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
-    <script>(function(){try{if(localStorage.getItem('admin-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
-    <style>
-        {% include 'admin/_styles_tokens.html.twig' %}
-        {% include 'admin/_styles_controls.html.twig' %}
-        {% include 'admin/_styles_modal.html.twig' %}
+{% extends 'partners/_base.html.twig' %}
 
-        /* Same bar as admin's .main-header (and /platform's). */
-        .partners-header {
-            padding: 14px 24px; border-bottom: 1px solid var(--bd-1);
-            display: flex; align-items: center; justify-content: space-between; gap: 12px;
-            background: var(--bg-nav); position: sticky; top: 0; z-index: 100;
-        }
-        .partners-title { font-size: var(--fs-lg); font-weight: 600; color: var(--tx-hi); letter-spacing: -0.3px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .partners-body { padding: var(--sp-6); max-width: 960px; }
+{# The reseller's panel (PartnersController), a /platform for its own
+   restaurants: summary cards, the list by paid_until with status and date,
+   "Registrar pago", "Entrar", "Desactivar", archive / restore; "+ Nuevo
+   restaurante"; while expired, "Elegir plan" and everything else disabled. #}
 
-        .toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-4); }
-        .count { font-size: var(--fs-md); color: var(--tx-1); }
-        .count strong { color: var(--tx-hi); }
-
-        .table-wrap {
-            width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
-            background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg);
-        }
-        table { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
-        th, td { text-align: left; padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--bd-1); vertical-align: middle; }
-        th { font-size: var(--fs-sm); font-weight: 600; color: var(--tx-3); white-space: nowrap; }
-        td { color: var(--tx-1); }
-        tbody tr:last-child td { border-bottom: none; }
-        .r-name { font-weight: 600; color: var(--tx-hi); }
-        .sub { margin-top: 2px; font-size: var(--fs-sm); color: var(--tx-muted); }
-        .sub a { color: var(--tx-muted); }
-        .sub a:hover { color: var(--tx-hi); }
-        .actions { display: flex; justify-content: flex-end; align-items: center; gap: var(--sp-2); }
-        .actions form { display: contents; }
-        .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: default; pointer-events: none; }
-        .empty { color: var(--tx-muted); }
-
-        .section-title { margin: var(--sp-6) 0 var(--sp-3); font-size: var(--fs-md); font-weight: 600; color: var(--tx-hi); }
-        .archived-list tr { opacity: 0.6; }
-
-        .field { display: flex; flex-direction: column; gap: 6px; }
-        .field label { font-size: var(--fs-sm); font-weight: 600; color: var(--tx-3); }
-        .field input {
-            padding: 10px 12px; border-radius: var(--r-md); border: 1px solid var(--bd-2);
-            background: var(--bg-input); color: var(--tx-hi); font-size: var(--fs-md); font-family: inherit;
-        }
-        .panel-body { display: flex; flex-direction: column; gap: var(--sp-3); }
-        .form-error { font-size: var(--fs-base); color: var(--err-text); }
-
-        @media (max-width: 767px) {
-            .partners-header { padding: 12px 16px; }
-            .partners-title { font-size: 17px; }
-            .partners-body { padding: 12px; }
-        }
-
-        /* Mobile: one stacked card per restaurant. */
-        @media (max-width: 639px) {
-            .table-wrap { background: none; border: none; overflow: visible; }
-            table, tbody, tr, td { display: block; }
-            thead { display: none; }
-            tbody { display: flex; flex-direction: column; gap: var(--sp-2); }
-            tr { background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg); padding: var(--sp-1) 0; }
-            td { border-bottom: none; padding: var(--sp-2) var(--sp-4); }
-            .actions { flex-wrap: wrap; padding-top: var(--sp-1); }
-            .actions .btn { flex: 1; justify-content: center; }
-        }
-    </style>
-</head>
-<body>
-    {% set expired = reseller.expired %}
-    <header class="partners-header">
-        <div class="partners-title">{{ reseller.name }}</div>
-        <a class="btn" href="{{ path('admin_logout') }}"><i class="ti ti-logout" aria-hidden="true"></i> {{ 'logout'|trans({}, 'partners') }}</a>
-    </header>
-
-    <main class="partners-body">
-        {% for message in app.flashes('success') %}
-            <div class="flash flash-success"><i class="ti ti-check" aria-hidden="true"></i> {{ message }}</div>
-        {% endfor %}
-
+{% block main %}
         {% if expired %}
-            <div class="flash flash-warning" id="account-inactive"><i class="ti ti-alert-triangle" aria-hidden="true"></i> {{ 'inactive'|trans({}, 'partners') }}</div>
+            <div class="flash flash-warning inactive-notice" id="account-inactive">
+                <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+                <span>{{ 'inactive'|trans({}, 'partners') }}</span>
+                {% if reseller.hasLiveSubscription %}
+                    <a class="btn btn-primary" href="{{ path('partners_billing_index') }}">{{ 'billing.nav'|trans({}, 'partners') }}</a>
+                {% else %}
+                    <button type="button" class="btn btn-primary" id="choose-plan" onclick="BillingUI.open()">{{ 'billing.choose_plan'|trans({}, 'partners') }}</button>
+                {% endif %}
+            </div>
         {% endif %}
 
         <div class="toolbar">
@@ -104,11 +31,20 @@
             </button>
         </div>
 
+        <div class="summary">
+            <div class="summary-card"><div class="summary-value">{{ summary.active }}</div><div class="summary-label">{{ 'summary.active'|trans({}, 'partners') }}</div></div>
+            <div class="summary-card"><div class="summary-value">{{ summary.trial }}</div><div class="summary-label">{{ 'summary.trial'|trans({}, 'partners') }}</div></div>
+            <div class="summary-card"><div class="summary-value">{{ summary.expiringSoon }}</div><div class="summary-label">{{ 'summary.expiring_soon'|trans({}, 'partners') }}</div></div>
+            <div class="summary-card"><div class="summary-value">{{ summary.expired }}</div><div class="summary-label">{{ 'summary.expired'|trans({}, 'partners') }}</div></div>
+        </div>
+
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
                         <th>{{ 'list.restaurant'|trans({}, 'partners') }}</th>
+                        <th>{{ 'list.status'|trans({}, 'partners') }}</th>
+                        <th>{{ 'list.until'|trans({}, 'partners') }}</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -123,13 +59,28 @@
                                     · <a href="{{ path('menu_show', {slug: restaurant.slug}) }}" target="_blank" rel="noopener">{{ 'list.view_menu'|trans({}, 'partners') }}</a>
                                 </div>
                             </td>
+                            {{ _self.status_cell(restaurant) }}
+                            {{ _self.until_cell(restaurant) }}
                             <td>
                                 <div class="actions">
+                                    <button type="button" class="btn btn-primary register-payment" onclick="PaymentUI.open(this)" {{ expired ? 'disabled' }}
+                                            data-name="{{ restaurant.name }}"
+                                            data-action="{{ path('partners_restaurant_register_payment', {id: restaurant.id}) }}"
+                                            data-token="{{ csrf_token('partners-restaurant-register-payment-' ~ restaurant.id) }}"
+                                            data-until-monthly="{{ restaurant.paidUntilAfter('monthly')|date('d/m/Y') }}"
+                                            data-until-yearly="{{ restaurant.paidUntilAfter('yearly')|date('d/m/Y') }}">
+                                        {{ 'payment.button'|trans({}, 'partners') }}
+                                    </button>
                                     {% if owner and not expired %}
                                         <a class="btn btn-primary enter" href="{{ path('admin_menu', {_switch_user: owner.email}) }}">{{ 'list.enter'|trans({}, 'partners') }}</a>
                                     {% else %}
                                         <button type="button" class="btn btn-primary enter" disabled>{{ 'list.enter'|trans({}, 'partners') }}</button>
                                     {% endif %}
+                                    <form method="post" action="{{ path('partners_restaurant_deactivate', {id: restaurant.id}) }}"
+                                          onsubmit="return confirm({{ 'list.deactivate_confirm'|trans({'%name%': restaurant.name}, 'partners')|json_encode }})">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('partners-restaurant-deactivate-' ~ restaurant.id) }}">
+                                        <button type="submit" class="btn btn-danger deactivate" {{ expired ? 'disabled' }}>{{ 'list.deactivate'|trans({}, 'partners') }}</button>
+                                    </form>
                                     <form method="post" action="{{ path('partners_restaurant_archive', {id: restaurant.id}) }}"
                                           onsubmit="return confirm({{ 'list.archive_confirm'|trans({'%name%': restaurant.name}, 'partners')|json_encode }})">
                                         <input type="hidden" name="_token" value="{{ csrf_token('partners-restaurant-archive-' ~ restaurant.id) }}">
@@ -139,7 +90,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="2" class="empty">{{ 'list.empty'|trans({}, 'partners') }}</td></tr>
+                        <tr><td colspan="4" class="empty">{{ 'list.empty'|trans({}, 'partners') }}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -171,7 +122,9 @@
                 </table>
             </div>
         {% endif %}
-    </main>
+{% endblock %}
+
+{% block after_main %}
 
     {# "+ Nuevo restaurante": admin's modal (desktop) + bottom sheet (mobile)
        pair, each with its own copy of the form. On a validation error the
@@ -217,7 +170,63 @@
             </div>
         {% endfor %}
 
+        {# "Registrar pago": /platform's dialog, admin's modal (desktop) +
+           bottom sheet (mobile) pair; PaymentUI fills in the restaurant. #}
+        {% for panel in [{id: 'payment-modal', overlay: 'modal-overlay', box: 'modal'}, {id: 'payment-sheet', overlay: 'sheet-overlay', box: 'sheet'}] %}
+            <div class="{{ panel.overlay }}" id="{{ panel.id }}" onclick="if(event.target===this)PaymentUI.close()">
+                <div class="{{ panel.box }}" role="dialog" aria-modal="true" aria-labelledby="{{ panel.id }}-title">
+                    {% if panel.box == 'sheet' %}<div class="sheet-handle"></div>{% endif %}
+                    <div class="panel-header">
+                        <div class="panel-title" id="{{ panel.id }}-title" data-title></div>
+                        <button type="button" class="panel-close" onclick="PaymentUI.close()" aria-label="{{ 'new.close'|trans({}, 'partners') }}">
+                            <i class="ti ti-x" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <form method="post" class="payment-form" style="display: contents">
+                        <input type="hidden" name="_token" value="">
+                        <div class="panel-body">
+                            <div class="plan-options">
+                                {% for plan in ['monthly', 'yearly'] %}
+                                    <label class="plan-option">
+                                        <input type="radio" name="plan" value="{{ plan }}" {{ loop.first ? 'checked' }}>
+                                        <span>{{ ('payment.' ~ plan)|trans({}, 'partners') }} <span data-until="{{ plan }}"></span></span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <button type="button" class="btn" onclick="PaymentUI.close()">{{ 'new.cancel'|trans({}, 'partners') }}</button>
+                            <button type="submit" class="btn btn-primary"><i class="ti ti-check" aria-hidden="true"></i> {{ 'payment.save'|trans({}, 'partners') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+
         <script>
+            const PaymentUI = {
+                panels: ['payment-modal', 'payment-sheet'].map(id => document.getElementById(id)),
+                title: {{ 'payment.title'|trans({}, 'partners')|json_encode|raw }},
+                open(button) {
+                    const d = button.dataset;
+                    this.panels.forEach(panel => {
+                        panel.querySelector('[data-title]').textContent = this.title + ' · ' + d.name;
+                        const form = panel.querySelector('.payment-form');
+                        form.action = d.action;
+                        form.elements._token.value = d.token;
+                        form.querySelector('input[value="monthly"]').checked = true;
+                        panel.querySelector('[data-until="monthly"]').textContent = d.untilMonthly;
+                        panel.querySelector('[data-until="yearly"]').textContent = d.untilYearly;
+                    });
+                    // Same breakpoint as admin's window.isMobile().
+                    (window.innerWidth < 768 ? this.panels[1] : this.panels[0]).classList.add('open');
+                },
+                close() {
+                    this.panels.forEach(panel => panel.classList.remove('open'));
+                },
+            };
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') PaymentUI.close(); });
+
             const NewRestaurantUI = {
                 panels: ['new-modal', 'new-sheet'].map(id => document.getElementById(id)),
                 open() {
@@ -234,5 +243,42 @@
             {% if dialog.error is defined %}NewRestaurantUI.open();{% endif %}
         </script>
     {% endif %}
-</body>
-</html>
+
+    {# Expired without a live subscription: the plan dialog (the reseller's
+       prices); with one (a failed charge) the subscription screen instead. #}
+    {% if expired and not reseller.hasLiveSubscription %}
+        {% include 'partners/_plan_dialog.html.twig' %}
+    {% endif %}
+{% endblock %}
+
+{# Status by the restaurant's own paid_until (the reseller's own state has
+   the notice at the top): 🟡 trial (never paid), 🟢 paid, 🔴 expired. #}
+{% macro status_cell(r) %}
+    <td data-label="{{ 'list.status'|trans({}, 'partners') }}" class="status-cell">
+        {% if r.ownPeriodExpired %}
+            <div class="status status-expired">🔴 {{ 'status.expired'|trans({}, 'partners') }}</div>
+        {% elseif r.plan is null %}
+            <div class="status status-trial">🟡 {{ 'status.trial'|trans({}, 'partners') }}</div>
+        {% else %}
+            <div class="status status-active">🟢 {{ 'status.paid'|trans({}, 'partners') }}</div>
+        {% endif %}
+        <div class="sub last-paid">{{ r.lastPaidAt ? 'list.last_paid'|trans({'%date%': r.lastPaidAt|date('d/m/Y')}, 'partners') : 'list.no_payments'|trans({}, 'partners') }}</div>
+    </td>
+{% endmacro %}
+
+{# /platform's "Válida hasta": orange at 7 days or fewer, red once expired. #}
+{% macro until_cell(r) %}
+    {% set days = r.daysLeft %}
+    <td data-label="{{ 'list.until'|trans({}, 'partners') }}" class="until {{ days < 0 ? 'until-expired' : (days <= 7 ? 'until-soon' : '') }}">
+        <div>{{ r.paidUntil|date('d/m/Y') }}</div>
+        <div class="sub">
+            {%- if days < 0 -%}
+                {{ (days == -1 ? 'days.ago_one' : 'days.ago')|trans({'%count%': -days}, 'partners') }}
+            {%- elseif days == 0 -%}
+                {{ 'days.today'|trans({}, 'partners') }}
+            {%- else -%}
+                {{ (days == 1 ? 'days.left_one' : 'days.left')|trans({'%count%': days}, 'partners') }}
+            {%- endif -%}
+        </div>
+    </td>
+{% endmacro %}

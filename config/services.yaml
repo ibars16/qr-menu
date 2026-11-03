@@ -16,6 +16,15 @@ parameters:
         monthly: 30
         yearly: 300
 
+    # Same for resellers (STRIPE_PRICE_RESELLER_*): the base plan, with
+    # app.reseller_included_restaurants included, and each restaurant in
+    # use over that.
+    app.reseller_prices:
+        monthly: 40
+        yearly: 400
+        extra_monthly: 6
+        extra_yearly: 60
+
     # Restaurants a reseller's base plan includes; each one in use over
     # this is an extra (Controller\Partners\PartnersController).
     app.reseller_included_restaurants: 5
@@ -26,6 +35,10 @@ parameters:
     env(STRIPE_WEBHOOK_SECRET): ''
     env(STRIPE_PRICE_MONTHLY): ''
     env(STRIPE_PRICE_YEARLY): ''
+    env(STRIPE_PRICE_RESELLER_MONTHLY): ''
+    env(STRIPE_PRICE_RESELLER_YEARLY): ''
+    env(STRIPE_PRICE_RESELLER_EXTRA_MONTHLY): ''
+    env(STRIPE_PRICE_RESELLER_EXTRA_YEARLY): ''
 
 services:
 
@@ -192,6 +205,12 @@ services:
             $priceIds:
                 monthly: '%env(STRIPE_PRICE_MONTHLY)%'
                 yearly: '%env(STRIPE_PRICE_YEARLY)%'
+            $resellerPriceIds:
+                monthly: '%env(STRIPE_PRICE_RESELLER_MONTHLY)%'
+                yearly: '%env(STRIPE_PRICE_RESELLER_YEARLY)%'
+                extra_monthly: '%env(STRIPE_PRICE_RESELLER_EXTRA_MONTHLY)%'
+                extra_yearly: '%env(STRIPE_PRICE_RESELLER_EXTRA_YEARLY)%'
+            $includedRestaurants: '%app.reseller_included_restaurants%'
 
     App\Controller\StripeWebhookController:
         arguments:

@@ -44,7 +44,13 @@ bottom_nav:
 
 subscription_expired: "Tu suscripción venció el %date%"
 reseller_inactive: "Este restaurante no está activo"
-reseller_inactive_hint: "Contacta con la empresa que te gestiona la carta."
+reseller_inactive_hint: "Contacta con %name%."
+
+# A reseller's restaurant, its own paid_until 7 days or fewer away (no payment button).
+reseller_notice:
+    today: "Tu servicio vence hoy. Contacta con %name%."
+    singular: "Tu servicio vence en %count% día. Contacta con %name%."
+    plural: "Tu servicio vence en %count% días. Contacta con %name%."
 
 trial:
     days_left_singular: "Prueba gratuita · queda %count% día"

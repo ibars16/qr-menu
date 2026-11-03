@@ -27,6 +27,9 @@ register:
         password_blank: "Introduce una contraseña."
         password_short: "Mínimo 8 caracteres."
         password_mismatch: "Las contraseñas no coinciden."
+        admin_locale: "Elige un idioma de la lista."
+        expired: "La página ha caducado. Vuelve a enviar el formulario."
+        general: "No se ha podido enviar el formulario. Recarga la página y vuelve a intentarlo."
 
 logout: "Cerrar sesión"
 inactive: "Tu cuenta no está activa. Mientras tanto no puedes crear, entrar ni archivar restaurantes, y sus cartas no se ven."
@@ -45,6 +48,12 @@ list:
     restore: "Restaurar"
     archived_title: "Archivados"
     empty: "Todavía no tienes restaurantes."
+    status: "Estado"
+    until: "Activo hasta"
+    last_paid: "Último cobro %date%"
+    no_payments: "Sin cobros"
+    deactivate: "Desactivar"
+    deactivate_confirm: "¿Desactivar %name%? Su carta dejará de verse hasta que registres un pago. Seguirá contando en tu suscripción. Si ya no es tu cliente, usa Archivar."
 
 new:
     button: "Nuevo restaurante"
@@ -65,3 +74,50 @@ flash:
     created: "%name% creado. Ya puedes entrar en su panel."
     archived: "%name% archivado: su carta ya no se ve."
     restored: "%name% restaurado."
+    paid: "Pago registrado: %name% queda activo hasta el %date%."
+    deactivated: "%name% desactivado: su carta ya no se ve."
+
+summary:
+    active: "Activos"
+    trial: "En prueba"
+    expiring_soon: "Vencen en 7 días"
+    expired: "Vencidos"
+
+status:
+    trial: "En prueba"
+    paid: "Pagado"
+    expired: "Vencido"
+
+days:
+    today: "vence hoy"
+    left_one: "queda %count% día"
+    left: "quedan %count% días"
+    ago_one: "venció hace %count% día"
+    ago: "venció hace %count% días"
+
+payment:
+    button: "Registrar pago"
+    title: "Registrar pago"
+    monthly: "1 mes → activo hasta"
+    yearly: "1 año → activo hasta"
+    save: "Guardar"
+
+billing:
+    nav: "Suscripción"
+    choose_plan: "Elegir plan"
+    plan:
+        monthly: "Mensual"
+        yearly: "Anual"
+    per:
+        monthly: "/mes"
+        yearly: "/año"
+    amount: "%price% €"
+    included: "%included% restaurantes incluidos"
+    extra:
+        monthly: "+%extra% €/mes por cada restaurante más"
+        yearly: "+%extra% €/año por cada restaurante más"
+    saving: "Ahorras %amount% €"
+    estimate:
+        monthly: "Con tus %total% restaurantes de ahora: %amount% €/mes"
+        yearly: "Con tus %total% restaurantes de ahora: %amount% €/año"
+    note: "Se cobra al confirmar, en la página segura de Stripe. Puedes cancelar cuando quieras desde «Suscripción»."

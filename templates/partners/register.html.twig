@@ -20,8 +20,8 @@
     {% include 'security/_auth_styles.html.twig' %}
 {% endblock %}
 
-{% macro errors(field) %}
-    <ul class="errors">
+{% macro errors(field, class = 'errors') %}
+    <ul class="{{ class }}"{{ class != 'errors' ? ' role="alert"' }}>
         {% for error in field.vars.errors %}
             <li>{{ error.messageTemplate|trans(error.messageParameters, 'partners') }}</li>
         {% endfor %}
@@ -49,7 +49,12 @@
             <div class="card-title">{{ 'register.title'|trans({}, 'partners') }}</div>
             <div class="card-sub">{{ 'register.subtitle'|trans({}, 'partners') }}</div>
 
-            {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+            {# Never through Turbo: this page's turbo-visit-control=reload would
+               turn the 422 with the errors into a reload of the empty form. #}
+            {{ form_start(form, { attr: { novalidate: 'novalidate', 'data-turbo': 'false' } }) }}
+
+            {# Errors of the whole form (expired page, unexpected fields). #}
+            {% if form.vars.errors|length > 0 %}{{ m.errors(form, 'errors form-errors') }}{% endif %}
 
             <div class="section-divider">{{ 'register.section_company'|trans({}, 'partners') }}</div>
 
@@ -62,6 +67,7 @@
             <div class="field">
                 {{ form_label(form.adminLocale) }}
                 {{ form_widget(form.adminLocale) }}
+                {{ m.errors(form.adminLocale) }}
             </div>
 
             <div class="section-divider">{{ 'register.section_account'|trans({}, 'partners') }}</div>
@@ -88,6 +94,7 @@
             <div class="field">
                 {{ form_label(form.password.second) }}
                 {{ form_widget(form.password.second) }}
+                {{ m.errors(form.password.second) }}
             </div>
 
             <button type="submit" class="submit-btn">{{ 'register.submit'|trans({}, 'partners') }}</button>

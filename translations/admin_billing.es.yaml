@@ -1,6 +1,11 @@
 title: "Suscripción"
 stripe_error: "No se pudieron cargar los datos de Stripe. Inténtalo de nuevo más tarde."
 next_charge: "%amount% el %date%"
+
+# A reseller's extra-restaurants line: "3 extra × 6,00 €".
+extras:
+    value: "%quantity% extra × %price%"
+
 cancel_pending: "Activa hasta el %date%, no se renovará."
 
 section:
@@ -12,6 +17,7 @@ label:
     plan: "Plan"
     status: "Estado"
     next_charge: "Próximo cobro"
+    extras: "Restaurantes extra"
 
 plan:
     monthly: "Mensual · %price%/mes"

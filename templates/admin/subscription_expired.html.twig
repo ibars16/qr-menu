@@ -32,9 +32,9 @@
     {% endfor %}
 
     {% if restaurant.billedByReseller or restaurant.archived %}
-        {# The reseller pays (or archived it): nothing to pay here. #}
+        {# The reseller pays (its own date, its restaurant's, or archived): nothing to pay here. #}
         <p class="message">{{ 'reseller_inactive'|trans({}, 'admin_base') }}</p>
-        <p class="hint">{{ 'reseller_inactive_hint'|trans({}, 'admin_base') }}</p>
+        <p class="hint">{{ 'reseller_inactive_hint'|trans({'%name%': restaurant.reseller.name ?? ''}, 'admin_base') }}</p>
     {% else %}
         <p class="message">{{ 'subscription_expired'|trans({'%date%': restaurant.paidUntil|date('d/m/Y')}, 'admin_base') }}</p>
 

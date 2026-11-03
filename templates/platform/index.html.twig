@@ -55,6 +55,7 @@
         .status-active  { color: #7aad40; }
         .status-trial   { color: var(--warn-fg); }
         .status-expired { color: var(--err-text); }
+        .status-never-paid { color: var(--tx-2); }
 
         .until { white-space: nowrap; }
         .until-soon, .until-soon .sub { color: var(--warn-fg); }
@@ -207,8 +208,8 @@
                                     <div>{{ row.restaurants.active }} en uso</div>
                                     {% if row.restaurants.archived %}<div class="sub">{{ row.restaurants.archived }} {{ row.restaurants.archived == 1 ? 'archivado' : 'archivados' }}</div>{% endif %}
                                 </td>
-                                {{ _self.status_cell(reseller, 'Sin pagar') }}
-                                {{ _self.until_cell(reseller) }}
+                                {{ _self.status_cell(reseller, 'Sin pagar', 'Aún no ha pagado') }}
+                                {{ _self.until_cell(reseller, true) }}
                                 <td>
                                     <div class="actions">
                                         {{ _self.payment_button(reseller, 'platform_reseller_register_payment', 'platform-reseller-register-payment-') }}
@@ -308,24 +309,39 @@
 </html>
 
 {# Shared by the restaurant and reseller tables: c is a Restaurant (billed on
-   its own) or a Reseller. #}
-{% macro status_cell(c, unpaid_label) %}
+   its own) or a Reseller. never_paid_label (resellers): what a sign-up that
+   has never paid shows instead of "Vencida" — it starts expired, no trial. #}
+{% macro status_cell(c, unpaid_label, never_paid_label = null) %}
+    {% set never_paid = never_paid_label and c.lastPaidAt is null and c.plan is null and not c.hasLiveSubscription %}
     <td data-label="Suscripción">
-        {% if c.expired %}
+        {% if never_paid %}
+            <div class="status status-never-paid">⚪ {{ never_paid_label }}</div>
+            <div class="sub">Se dio de alta pero no ha elegido plan</div>
+        {% elseif c.expired %}
             <div class="status status-expired">🔴 Vencida</div>
         {% elseif c.plan is null %}
             <div class="status status-trial">🟡 {{ unpaid_label }}</div>
         {% else %}
             <div class="status status-active">🟢 Activa · {{ c.plan == 'yearly' ? 'Anual' : 'Mensual' }}</div>
         {% endif %}
-        <div class="sub">{{ c.lastPaidAt ? 'Último cobro ' ~ c.lastPaidAt|date('d/m/Y') : 'Sin cobros' }}</div>
+        {% if not never_paid %}
+            <div class="sub">{{ c.lastPaidAt ? 'Último cobro ' ~ c.lastPaidAt|date('d/m/Y') : 'Sin cobros' }}</div>
+        {% endif %}
         {% if c.hasLiveSubscription %}
             <div class="sub auto-pay">{{ c.stripeCancelPending ? '💳 Cancelada · no renovará' : '💳 Pago automático' }}</div>
         {% endif %}
     </td>
 {% endmacro %}
 
-{% macro until_cell(c) %}
+{# never_paid_dash: a reseller that has never paid has no date of its own
+   (paid_until is just the day before signing up): a dash instead. #}
+{% macro until_cell(c, never_paid_dash = false) %}
+    {% if never_paid_dash and c.lastPaidAt is null and c.plan is null and not c.hasLiveSubscription %}
+    <td data-label="Válida hasta" class="until">
+        <div>—</div>
+        <div class="sub">esperando el primer pago</div>
+    </td>
+    {% else %}
     {% set days = c.daysLeft %}
     <td data-label="Válida hasta" class="until {{ days < 0 ? 'until-expired' : (days <= 7 ? 'until-soon' : '') }}">
         <div>{{ c.paidUntil|date('d/m/Y') }}</div>
@@ -341,6 +357,7 @@
             {%- endif -%}
         </div>
     </td>
+    {% endif %}
 {% endmacro %}
 
 {# The payment dialog's opener; route/token prefix tell restaurants and resellers apart. #}

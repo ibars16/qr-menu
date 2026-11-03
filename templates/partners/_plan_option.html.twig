@@ -1,0 +1,27 @@
+{# One plan card inside the "Elegir plan" dialog (partners/_plan_dialog):
+   `plan` is monthly or yearly; label elements only (inside a <label>). #}
+{% set price = reseller_prices[plan] %}
+{% set extra_price = reseller_prices['extra_' ~ plan] %}
+{% set saving = reseller_prices.monthly * 12 - reseller_prices.yearly %}
+<span class="plan-card">
+    <span class="plan-card-main">
+        <span class="plan-card-head">
+            <span class="plan-name">{{ ('billing.plan.' ~ plan)|trans({}, 'partners') }}</span>
+            {% if plan == 'yearly' and saving > 0 %}
+                <span class="plan-badge">{{ 'billing.saving'|trans({'%amount%': saving}, 'partners') }}</span>
+            {% endif %}
+        </span>
+        <span class="plan-features">
+            <span class="plan-feature"><i class="ti ti-check" aria-hidden="true"></i>{{ 'billing.included'|trans({'%included%': included}, 'partners') }}</span>
+            <span class="plan-feature"><i class="ti ti-plus" aria-hidden="true"></i>{{ ('billing.extra.' ~ plan)|trans({'%extra%': extra_price}, 'partners') }}</span>
+        </span>
+        {% if restaurants_in_use %}
+            {% set today = price + max(0, restaurants_in_use - included) * extra_price %}
+            <span class="plan-estimate">{{ ('billing.estimate.' ~ plan)|trans({'%total%': restaurants_in_use, '%amount%': today}, 'partners') }}</span>
+        {% endif %}
+    </span>
+    <span class="plan-price">
+        <span class="plan-amount">{{ 'billing.amount'|trans({'%price%': price}, 'partners') }}</span>
+        <span class="plan-period">{{ ('billing.per.' ~ plan)|trans({}, 'partners') }}</span>
+    </span>
+</span>

@@ -1,0 +1,167 @@
+{# The reseller's pages (/partners, /partners/billing): admin's tokens and
+   controls, the same bar as admin's .main-header with the company name,
+   "Suscripción" and "Cerrar sesión". Children fill {% block main %}. #}
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    {# Login is a Turbo page: see platform/index.html.twig. #}
+    <meta name="turbo-visit-control" content="reload">
+    <title>{% block title %}{{ reseller.name }}{% endblock %} — QR Menu</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+    <script>(function(){try{if(localStorage.getItem('admin-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
+    <style>
+        {% include 'admin/_styles_tokens.html.twig' %}
+        {% include 'admin/_styles_controls.html.twig' %}
+        {% include 'admin/_styles_modal.html.twig' %}
+
+        /* Same bar as admin's .main-header (and /platform's). */
+        .partners-header {
+            padding: 14px 24px; border-bottom: 1px solid var(--bd-1);
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            background: var(--bg-nav); position: sticky; top: 0; z-index: 100;
+        }
+        .partners-title { font-size: var(--fs-lg); font-weight: 600; color: var(--tx-hi); letter-spacing: -0.3px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .partners-body { padding: var(--sp-6); max-width: 1120px; }
+
+        .toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-4); }
+        .count { font-size: var(--fs-md); color: var(--tx-1); }
+        .count strong { color: var(--tx-hi); }
+
+        .table-wrap {
+            width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+            background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
+        th, td { text-align: left; padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--bd-1); vertical-align: middle; }
+        th { font-size: var(--fs-sm); font-weight: 600; color: var(--tx-3); white-space: nowrap; }
+        td { color: var(--tx-1); }
+        tbody tr:last-child td { border-bottom: none; }
+        .r-name { font-weight: 600; color: var(--tx-hi); }
+        .sub { margin-top: 2px; font-size: var(--fs-sm); color: var(--tx-muted); }
+        .sub a { color: var(--tx-muted); }
+        .sub a:hover { color: var(--tx-hi); }
+        .actions { display: flex; justify-content: flex-end; align-items: center; gap: var(--sp-2); }
+        .actions form { display: contents; }
+        .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: default; pointer-events: none; }
+        .empty { color: var(--tx-muted); }
+
+        /* /platform's summary cards, status and "Activo hasta" colours. */
+        .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-3); margin-bottom: var(--sp-5); }
+        .summary-card { background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg); padding: var(--sp-4); }
+        .summary-value { font-size: var(--fs-2xl); font-weight: 700; color: var(--tx-hi); line-height: 1.1; }
+        .summary-label { margin-top: var(--sp-1); font-size: var(--fs-sm); color: var(--tx-muted); }
+        .status { font-weight: 600; white-space: nowrap; }
+        .status-active  { color: #7aad40; }
+        .status-trial   { color: var(--warn-fg); }
+        .status-expired { color: var(--err-text); }
+        .until { white-space: nowrap; }
+        .until-soon, .until-soon .sub { color: var(--warn-fg); }
+        .until-expired, .until-expired .sub { color: var(--err-text); }
+
+        .section-title { margin: var(--sp-6) 0 var(--sp-3); font-size: var(--fs-md); font-weight: 600; color: var(--tx-hi); }
+        .archived-list tr { opacity: 0.6; }
+
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label { font-size: var(--fs-sm); font-weight: 600; color: var(--tx-3); }
+        .field input {
+            padding: 10px 12px; border-radius: var(--r-md); border: 1px solid var(--bd-2);
+            background: var(--bg-input); color: var(--tx-hi); font-size: var(--fs-md); font-family: inherit;
+        }
+        .panel-body { display: flex; flex-direction: column; gap: var(--sp-3); }
+        .form-error { font-size: var(--fs-base); color: var(--err-text); }
+
+        .header-actions { display: flex; align-items: center; gap: var(--sp-2); flex-shrink: 0; }
+        .page-title { margin-bottom: var(--sp-4); font-size: var(--fs-lg); font-weight: 600; color: var(--tx-hi); }
+        .inactive-notice { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
+        .inactive-notice span { flex: 1; min-width: 200px; }
+        .header-actions .btn.active { border-color: var(--brand); color: var(--tx-hi); }
+
+        /* Plan dialog (admin/_billing_dialog.html.twig): one card per plan
+           (partners/_plan_option.html.twig), the chosen one outlined. */
+        .plan-options { display: flex; flex-direction: column; gap: var(--sp-3); }
+        .plan-option {
+            display: flex; align-items: flex-start; gap: var(--sp-3);
+            padding: var(--sp-4); border: 1.5px solid var(--bd-2); border-radius: var(--r-lg);
+            background: var(--bg-input); cursor: pointer; color: var(--tx-1);
+            transition: border-color .15s, background .15s;
+        }
+        .plan-option:hover { border-color: var(--bd-3); }
+        .plan-option:has(input:checked) {
+            border-color: var(--brand);
+            background: color-mix(in srgb, var(--brand) 8%, var(--bg-input));
+        }
+        .plan-option:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
+        .plan-option input { accent-color: var(--brand); width: 18px; height: 18px; margin: 3px 0 0; flex-shrink: 0; }
+        .plan-card { flex: 1; min-width: 0; display: flex; gap: var(--sp-3); justify-content: space-between; }
+        .plan-card-main { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+        .plan-card-head { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+        .plan-name { font-size: var(--fs-lg); font-weight: 700; color: var(--tx-hi); letter-spacing: -0.2px; }
+        .plan-badge {
+            padding: 2px 8px; border-radius: var(--r-pill);
+            background: var(--brand); color: #fff; font-size: var(--fs-xs); font-weight: 700;
+        }
+        .plan-features { display: flex; flex-direction: column; gap: 4px; }
+        .plan-feature { display: flex; align-items: flex-start; gap: 6px; font-size: var(--fs-sm); color: var(--tx-2); line-height: 1.4; }
+        .plan-feature .ti { font-size: 14px; margin-top: 1px; color: var(--brand); flex-shrink: 0; }
+        .plan-estimate {
+            margin-top: 2px; padding-top: var(--sp-2); border-top: 1px dashed var(--bd-2);
+            font-size: var(--fs-sm); font-weight: 600; color: var(--tx-hi);
+        }
+        .plan-price { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; text-align: right; }
+        .plan-amount { font-size: var(--fs-2xl); font-weight: 800; color: var(--tx-hi); line-height: 1.1; letter-spacing: -0.5px; white-space: nowrap; }
+        .plan-period { font-size: var(--fs-sm); color: var(--tx-muted); }
+        .plan-note { margin: 0; font-size: var(--fs-sm); color: var(--tx-muted); line-height: 1.5; }
+
+        @media (max-width: 767px) {
+            .partners-header { padding: 12px 16px; }
+            .partners-title { font-size: 17px; }
+            .partners-body { padding: 12px; }
+            .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        /* Mobile: one stacked card per restaurant. */
+        @media (max-width: 639px) {
+            .table-wrap { background: none; border: none; overflow: visible; }
+            table, tbody, tr, td { display: block; }
+            thead { display: none; }
+            tbody { display: flex; flex-direction: column; gap: var(--sp-2); }
+            tr { background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg); padding: var(--sp-1) 0; }
+            td { border-bottom: none; padding: var(--sp-2) var(--sp-4); }
+            td[data-label]::before {
+                content: attr(data-label); display: block; margin-bottom: 2px;
+                font-size: var(--fs-xs); font-weight: 600; color: var(--tx-5);
+                text-transform: uppercase; letter-spacing: 0.07em;
+            }
+            .actions { flex-wrap: wrap; padding-top: var(--sp-1); }
+            .actions .btn { flex: 1; justify-content: center; }
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {% set expired = reseller.expired %}
+    {% set route = app.request.attributes.get('_route') %}
+    <header class="partners-header">
+        <a class="partners-title" href="{{ path('partners_index') }}" style="text-decoration: none">{{ reseller.name }}</a>
+        <div class="header-actions">
+            <a class="btn {{ route starts with 'partners_billing' ? 'active' }}" id="billing-link" href="{{ path('partners_billing_index') }}"><i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.nav'|trans({}, 'partners') }}</a>
+            <a class="btn" href="{{ path('admin_logout') }}"><i class="ti ti-logout" aria-hidden="true"></i> {{ 'logout'|trans({}, 'partners') }}</a>
+        </div>
+    </header>
+
+    <main class="partners-body">
+        {% for message in app.flashes('success') %}
+            <div class="flash flash-success"><i class="ti ti-check" aria-hidden="true"></i> {{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="flash flash-error"><i class="ti ti-alert-circle" aria-hidden="true"></i> {{ message }}</div>
+        {% endfor %}
+        {% block main %}{% endblock %}
+    </main>
+
+    {% block after_main %}{% endblock %}
+</body>
+</html>
+

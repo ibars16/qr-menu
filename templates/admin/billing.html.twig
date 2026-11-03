@@ -1,213 +1,23 @@
 {% extends 'admin/base.html.twig' %}
 
-{# Owner's subscription screen (BillingController::index()). Without a live
-   Stripe subscription: the local status and "Elegir plan" (the plan dialog
-   in admin/base.html.twig). With one: what StripeBilling::overview() read
-   from Stripe, and the actions, each a POST with the "billing-manage" token.
-   Amounts are cents; Stripe dates are Unix times shown in UTC. #}
-
-{% macro money(cents, currency) -%}
-    {{ (cents / 100)|number_format(2, app.request.locale == 'en' ? '.' : ',', app.request.locale == 'en' ? ',' : '.') }} {{ currency == 'eur' ? '€' : currency|upper }}
-{%- endmacro %}
+{# Owner's subscription screen (BillingController::index()): the shared
+   billing/_subscription.html.twig with the owner's routes, plan change
+   included. #}
 
 {% block title %}{{ 'title'|trans({}, 'admin_billing') }}{% endblock %}
 {% block page_title %}{{ 'title'|trans({}, 'admin_billing') }}{% endblock %}
 
 {% block stylesheets %}
-    <style>
-        .billing-wrap { max-width: 560px; }
-
-        .billing-section {
-            background: var(--bg-card); border: 1px solid var(--bd-1);
-            border-radius: 14px; overflow: hidden; margin-bottom: 16px;
-        }
-        .billing-section-title {
-            font-size: 12px; font-weight: 600; color: var(--tx-6);
-            text-transform: uppercase; letter-spacing: 0.08em;
-            padding: 14px 18px 12px; border-bottom: 1px solid var(--bd-1);
-            background: var(--bg-nav);
-        }
-        .billing-section-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-
-        .billing-row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
-        .billing-row .label { color: var(--tx-6); }
-        .billing-row .value { color: var(--tx-hi); font-weight: 500; text-align: right; }
-
-        .billing-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-        .billing-actions form { display: contents; }
-
-        .billing-notice {
-            font-size: 13px; color: var(--tx-4); line-height: 1.5;
-            padding: 12px 14px; background: var(--bg-nav); border: 1px solid var(--bd-1);
-            border-radius: 10px; display: flex; gap: 10px; align-items: flex-start;
-        }
-        .billing-notice i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-
-        .invoice-list { list-style: none; margin: 0; padding: 0; }
-        .invoice-list li {
-            display: flex; align-items: center; gap: 12px; font-size: 14px;
-            padding: 10px 0; border-bottom: 1px solid var(--bd-1);
-        }
-        .invoice-list li:last-child { border-bottom: none; }
-        .invoice-date { color: var(--tx-4); min-width: 86px; }
-        .invoice-amount { color: var(--tx-hi); font-weight: 500; flex: 1; }
-        .invoice-status { font-size: 12px; color: var(--tx-6); }
-        .invoice-list a { color: var(--brand); font-size: 13px; text-decoration: none; }
-        .invoice-list a:hover { text-decoration: underline; }
-        .billing-muted { font-size: 13px; color: var(--tx-6); }
-
-        @media (max-width: 767px) {
-            .billing-section-body { padding: 16px 14px; }
-            .billing-actions .btn { flex: 1 1 100%; justify-content: center; }
-        }
-    </style>
+    {% include 'billing/_subscription_styles.html.twig' %}
 {% endblock %}
 
 {% block body %}
-    {% import _self as m %}
-    {% set token = csrf_token('billing-manage') %}
-    <div class="billing-wrap">
-
-        {% if stripe_error %}
-            <div class="billing-notice" style="margin-bottom:16px">
-                <i class="ti ti-alert-triangle" aria-hidden="true"></i> {{ 'stripe_error'|trans({}, 'admin_billing') }}
-            </div>
-        {% endif %}
-
-        <div class="billing-section">
-            <div class="billing-section-title">{{ 'section.plan'|trans({}, 'admin_billing') }}</div>
-            <div class="billing-section-body">
-                {% if overview %}
-                    {% set o = overview %}
-                    <div class="billing-row">
-                        <span class="label">{{ 'label.plan'|trans({}, 'admin_billing') }}</span>
-                        <span class="value" id="billing-plan">{{ ('plan.' ~ (o.plan ?? 'monthly'))|trans({'%price%': m.money(o.amount, o.currency)}, 'admin_billing') }}</span>
-                    </div>
-                    <div class="billing-row">
-                        <span class="label">{{ 'label.status'|trans({}, 'admin_billing') }}</span>
-                        <span class="value" id="billing-status">{{ ('status.' ~ (o.status in ['trialing', 'active', 'past_due'] ? o.status : 'other'))|trans({}, 'admin_billing') }}</span>
-                    </div>
-                    {% if o.next_charge %}
-                        <div class="billing-row">
-                            <span class="label">{{ 'label.next_charge'|trans({}, 'admin_billing') }}</span>
-                            <span class="value" id="billing-next-charge">{{ 'next_charge'|trans({'%amount%': m.money(o.next_charge.amount, o.currency), '%date%': o.next_charge.date|date('d/m/Y', 'UTC')}, 'admin_billing') }}</span>
-                        </div>
-                    {% endif %}
-
-                    {% if o.cancel_pending %}
-                        <div class="billing-notice" id="billing-cancel-notice">
-                            <i class="ti ti-calendar-x" aria-hidden="true"></i>
-                            {{ 'cancel_pending'|trans({'%date%': restaurant.paidUntil|date('d/m/Y')}, 'admin_billing') }}
-                        </div>
-                    {% elseif o.pending_change %}
-                        <div class="billing-notice" id="billing-pending-change">
-                            <i class="ti ti-calendar-event" aria-hidden="true"></i>
-                            {{ ('pending_change.' ~ o.pending_change.plan)|trans({'%date%': o.pending_change.date|date('d/m/Y', 'UTC'), '%amount%': m.money(o.pending_change.amount, o.currency)}, 'admin_billing') }}
-                        </div>
-                    {% endif %}
-
-                    <div class="billing-actions">
-                        {% if o.cancel_pending %}
-                            <form method="post" action="{{ path('admin_billing_resume') }}">
-                                <input type="hidden" name="_token" value="{{ token }}">
-                                <button type="submit" class="btn btn-primary">{{ 'action.resume'|trans({}, 'admin_billing') }}</button>
-                            </form>
-                        {% else %}
-                            {% if o.pending_change %}
-                                <form method="post" action="{{ path('admin_billing_undo_plan_change') }}">
-                                    <input type="hidden" name="_token" value="{{ token }}">
-                                    <button type="submit" class="btn">{{ 'action.undo_change'|trans({}, 'admin_billing') }}</button>
-                                </form>
-                            {% elseif o.other_plan %}
-                                {% set other = o.other_plan %}
-                                {% set confirmText = o.change_at is null
-                                    ? ('confirm.change_now.' ~ other.plan)|trans({'%amount%': m.money(other.amount, o.currency), '%date%': o.next_charge.date|date('d/m/Y', 'UTC')}, 'admin_billing')
-                                    : ('confirm.change_later.' ~ other.plan)|trans({'%amount%': m.money(other.amount, o.currency), '%date%': o.change_at|date('d/m/Y', 'UTC')}, 'admin_billing') %}
-                                <form method="post" action="{{ path('admin_billing_change_plan') }}" data-confirm="{{ confirmText }}" onsubmit="return confirm(this.dataset.confirm)">
-                                    <input type="hidden" name="_token" value="{{ token }}">
-                                    <input type="hidden" name="plan" value="{{ other.plan }}">
-                                    <button type="submit" class="btn">{{ ('action.to_' ~ other.plan)|trans({}, 'admin_billing') }}</button>
-                                </form>
-                            {% endif %}
-                            {% set cancelText = 'confirm.cancel'|trans({'%date%': restaurant.paidUntil|date('d/m/Y')}, 'admin_billing') ~ (o.pending_change ? ' ' ~ 'confirm.cancel_drops_change'|trans({}, 'admin_billing') : '') %}
-                            <form method="post" action="{{ path('admin_billing_cancel') }}" data-confirm="{{ cancelText }}" onsubmit="return confirm(this.dataset.confirm)">
-                                <input type="hidden" name="_token" value="{{ token }}">
-                                <button type="submit" class="btn btn-danger">{{ 'action.cancel'|trans({}, 'admin_billing') }}</button>
-                            </form>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div class="billing-row">
-                        <span class="label">{{ 'label.status'|trans({}, 'admin_billing') }}</span>
-                        <span class="value" id="billing-status">
-                            {%- if restaurant.expired -%}
-                                {{ 'status.expired'|trans({}, 'admin_billing') }}
-                            {%- elseif restaurant.trialActive -%}
-                                {% set days = restaurant.trialDaysRemaining %}
-                                {{ (days == 1 ? 'status.trial_day' : 'status.trial_days')|trans({'%count%': days}, 'admin_billing') }}
-                            {%- else -%}
-                                {{ 'status.manual'|trans({'%date%': restaurant.paidUntil|date('d/m/Y')}, 'admin_billing') }}
-                            {%- endif -%}
-                        </span>
-                    </div>
-                    {% if not restaurant.hasLiveSubscription %}
-                        <div class="billing-actions">
-                            <button type="button" class="btn btn-primary" onclick="BillingUI.open()">
-                                <i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'action.choose_plan'|trans({}, 'admin_billing') }}
-                            </button>
-                        </div>
-                    {% endif %}
-                {% endif %}
-            </div>
-        </div>
-
-        {% if overview %}
-            <div class="billing-section">
-                <div class="billing-section-title">{{ 'section.card'|trans({}, 'admin_billing') }}</div>
-                <div class="billing-section-body">
-                    {% if overview.card %}
-                        {% set c = overview.card %}
-                        <div class="billing-row">
-                            <span class="value" id="billing-card" style="text-align:left">{{ 'card.value'|trans({'%brand%': c.brand|capitalize, '%last4%': c.last4, '%exp%': '%02d'|format(c.exp_month) ~ '/' ~ (c.exp_year % 100)}, 'admin_billing') }}</span>
-                        </div>
-                    {% else %}
-                        <div class="billing-muted">{{ 'card.none'|trans({}, 'admin_billing') }}</div>
-                    {% endif %}
-                    <div class="billing-actions">
-                        <form method="post" action="{{ path('admin_billing_card') }}">
-                            <input type="hidden" name="_token" value="{{ token }}">
-                            <button type="submit" class="btn"><i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'action.change_card'|trans({}, 'admin_billing') }}</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
-
-        {% if restaurant.stripeCustomerId %}
-            <div class="billing-section">
-                <div class="billing-section-title">{{ 'section.invoices'|trans({}, 'admin_billing') }}</div>
-                <div class="billing-section-body">
-                    {% if invoices is null %}
-                        <div class="billing-muted" id="invoices-error">{{ 'invoices.error'|trans({}, 'admin_billing') }}</div>
-                    {% elseif invoices is empty %}
-                        <div class="billing-muted">{{ 'invoices.empty'|trans({}, 'admin_billing') }}</div>
-                    {% else %}
-                        <ul class="invoice-list">
-                            {% for invoice in invoices %}
-                                <li>
-                                    <span class="invoice-date">{{ invoice.date|date('d/m/Y', 'UTC') }}</span>
-                                    <span class="invoice-amount">{{ m.money(invoice.amount, invoice.currency) }}</span>
-                                    <span class="invoice-status">{{ ('invoice_status.' ~ (invoice.status in ['paid', 'open', 'void', 'uncollectible'] ? invoice.status : 'open'))|trans({}, 'admin_billing') }}</span>
-                                    {% if invoice.url %}
-                                        <a href="{{ invoice.url }}" target="_blank" rel="noopener">{{ 'invoices.view'|trans({}, 'admin_billing') }}</a>
-                                    {% endif %}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
-            </div>
-        {% endif %}
-
-    </div>
+    {% include 'billing/_subscription.html.twig' with {
+        customer: restaurant,
+        token_id: 'billing-manage',
+        routes: {
+            resume: 'admin_billing_resume', cancel: 'admin_billing_cancel', card: 'admin_billing_card',
+            change_plan: 'admin_billing_change_plan', undo_plan_change: 'admin_billing_undo_plan_change',
+        },
+    } %}
 {% endblock %}

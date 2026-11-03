@@ -13,8 +13,10 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * The reseller's sign-up (/partners/registro) and panel (/partners): its
- * restaurants, "+ Nuevo restaurante", archive / restore, "Entrar" as one of
- * its owners only (Security\SwitchUserVoter) and "Volver a mi panel".
+ * restaurants with /platform's cards, status and dates, "+ Nuevo
+ * restaurante", "Registrar pago" / "Desactivar" (each restaurant's own
+ * paid_until), archive / restore, "Entrar" as one of its owners only
+ * (Security\SwitchUserVoter) and "Volver a mi panel".
  */
 final class PartnersControllerTest extends WebTestCase
 {
@@ -123,6 +125,19 @@ final class PartnersControllerTest extends WebTestCase
         ]);
     }
 
+    private function paidUntil(Restaurant $restaurant, string $date): void
+    {
+        (new \ReflectionProperty(Restaurant::class, 'paidUntil'))->setValue($restaurant, new \DateTimeImmutable($date));
+    }
+
+    private function row(Crawler $crawler, string $name): Crawler
+    {
+        $row = $crawler->filter('.active-list tr')->reduce(fn (Crawler $tr) => $tr->filter('.r-name')->count() && $tr->filter('.r-name')->text() === $name);
+        self::assertCount(1, $row);
+
+        return $row;
+    }
+
     private function reloadedRestaurant(): Restaurant
     {
         $this->em->clear();
@@ -208,6 +223,78 @@ final class PartnersControllerTest extends WebTestCase
         self::assertContains('Introduce el nombre de la empresa.', $errors);
         self::assertContains('El email no es válido.', $errors);
         self::assertContains('Mínimo 8 caracteres.', $errors);
+    }
+
+    /** @return array<string, string> the text of each field's own errors, keyed by the field's input name */
+    private static function fieldErrors(Crawler $page): array
+    {
+        $errors = [];
+        $page->filter('.field')->each(function (Crawler $field) use (&$errors) {
+            $input = $field->filter('input, select');
+            if ($input->count() > 0) {
+                $errors[$input->attr('name')] = implode(' ', $field->filter('.errors li')->each(fn (Crawler $li) => $li->text()));
+            }
+        });
+
+        return $errors;
+    }
+
+    public function testSignUpErrorsShowNextToTheirFieldAndKeepWhatWasTyped(): void
+    {
+        $crawler = $this->client->request('GET', '/partners/registro');
+        // Turbo would reload this page (turbo-visit-control) and drop the errors.
+        self::assertSame('false', $crawler->filter('form')->attr('data-turbo'));
+
+        $form = $crawler->filter('form')->form();
+        $form['reseller_registration_form[company]'] = 'Partners Test Kept Agency';
+        $form['reseller_registration_form[name]'] = 'Ana';
+        $form['reseller_registration_form[email]'] = 'partners-test-kept@example.test';
+        $form['reseller_registration_form[password][first]'] = 'short';
+        $form['reseller_registration_form[password][second]'] = 'short';
+        $form['reseller_registration_form[adminLocale]'] = 'it';
+        $page = $this->client->submit($form);
+
+        self::assertResponseIsUnprocessable();
+        $errors = self::fieldErrors($page);
+        self::assertSame('Mínimo 8 caracteres.', $errors['reseller_registration_form[password][first]']);
+        self::assertSame('', $errors['reseller_registration_form[email]']);
+        self::assertCount(0, $page->filter('.form-errors'));
+
+        self::assertSame('Partners Test Kept Agency', $page->filter('input[name="reseller_registration_form[company]"]')->attr('value'));
+        self::assertSame('Ana', $page->filter('input[name="reseller_registration_form[name]"]')->attr('value'));
+        self::assertSame('partners-test-kept@example.test', $page->filter('input[name="reseller_registration_form[email]"]')->attr('value'));
+        self::assertSame('it', $page->filter('select[name="reseller_registration_form[adminLocale]"] option[selected]')->attr('value'));
+        self::assertNull($page->filter('input[name="reseller_registration_form[password][first]"]')->attr('value'));
+    }
+
+    public function testSignUpMismatchedPasswordsShowNextToPassword(): void
+    {
+        $form = $this->client->request('GET', '/partners/registro')->filter('form')->form();
+        $form['reseller_registration_form[company]'] = 'Partners Test Mismatch';
+        $form['reseller_registration_form[name]'] = 'Ana';
+        $form['reseller_registration_form[email]'] = 'partners-test-mismatch@example.test';
+        $form['reseller_registration_form[password][first]'] = 'a-strong-password-1';
+        $form['reseller_registration_form[password][second]'] = 'a-strong-password-2';
+        $page = $this->client->submit($form);
+
+        self::assertResponseIsUnprocessable();
+        self::assertSame('Las contraseñas no coinciden.', self::fieldErrors($page)['reseller_registration_form[password][first]']);
+    }
+
+    public function testSignUpExpiredPageShowsGeneralErrorInBrowserLanguage(): void
+    {
+        $form = $this->client->request('GET', '/partners/registro', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr'])->filter('form')->form();
+        $form['reseller_registration_form[_token]'] = 'expired';
+        $form['reseller_registration_form[company]'] = 'Partners Test Expired';
+        $form['reseller_registration_form[name]'] = 'Ana';
+        $form['reseller_registration_form[email]'] = 'partners-test-expired@example.test';
+        $form['reseller_registration_form[password][first]'] = 'a-strong-password-1';
+        $form['reseller_registration_form[password][second]'] = 'a-strong-password-1';
+        $page = $this->client->submit($form, serverParameters: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
+
+        self::assertResponseIsUnprocessable();
+        self::assertSame('La page a expiré. Veuillez renvoyer le formulaire.', $page->filter('.form-errors[role="alert"] li')->text());
+        self::assertSame('Partners Test Expired', $page->filter('input[name="reseller_registration_form[company]"]')->attr('value'));
     }
 
     public function testSignUpIsLinkedFromNothingRestaurantsSee(): void
@@ -309,6 +396,149 @@ final class PartnersControllerTest extends WebTestCase
         self::assertSelectorNotExists('a[href*="_switch_user"]');
     }
 
+    public function testPanelShowsCardsStatusAndDatesByPaidUntil(): void
+    {
+        // Bistro: on its 30-day trial.
+        $paid = $this->restaurant('Partners Test Paid', $this->reseller);
+        $paid->markPaid(Restaurant::PLAN_MONTHLY);
+        $this->paidUntil($paid, 'today +3 days');
+        $expired = $this->restaurant('Partners Test Expired', $this->reseller);
+        $this->paidUntil($expired, 'today -2 days');
+        $archived = $this->restaurant('Partners Test Archived', $this->reseller);
+        $archived->archive();
+        $this->paidUntil($archived, 'today -10 days');
+        $this->em->flush();
+
+        $crawler = $this->panel();
+
+        // Activos · En prueba · Vencen en 7 días · Vencidos (archived left out).
+        self::assertSame(['1', '1', '1', '1'], $crawler->filter('.summary-card .summary-value')->each(fn (Crawler $n) => $n->text()));
+        self::assertSame(['Activos', 'En prueba', 'Vencen en 7 días', 'Vencidos'], $crawler->filter('.summary-card .summary-label')->each(fn (Crawler $n) => $n->text()));
+
+        // Soonest to expire first; archived below, as before.
+        self::assertSame(['Partners Test Expired', 'Partners Test Paid', 'Partners Test Bistro'], $crawler->filter('.active-list .r-name')->each(fn (Crawler $n) => $n->text()));
+        self::assertSame(['Partners Test Archived'], $crawler->filter('.archived-list .r-name')->each(fn (Crawler $n) => $n->text()));
+
+        $row = $this->row($crawler, 'Partners Test Expired');
+        self::assertSame('🔴 Vencido', $row->filter('.status')->text());
+        self::assertSame('Sin cobros', $row->filter('.last-paid')->text());
+        self::assertStringContainsString('until-expired', $row->filter('td.until')->attr('class'));
+        self::assertSame('venció hace 2 días', $row->filter('td.until .sub')->text());
+
+        $row = $this->row($crawler, 'Partners Test Paid');
+        self::assertSame('🟢 Pagado', $row->filter('.status')->text());
+        self::assertSame('Último cobro ' . date('d/m/Y'), $row->filter('.last-paid')->text());
+        self::assertStringContainsString('until-soon', $row->filter('td.until')->attr('class'));
+        self::assertSame((new \DateTimeImmutable('today +3 days'))->format('d/m/Y'), $row->filter('td.until > div')->first()->text());
+        self::assertSame('quedan 3 días', $row->filter('td.until .sub')->text());
+
+        $row = $this->row($crawler, 'Partners Test Bistro');
+        self::assertSame('🟡 En prueba', $row->filter('.status')->text());
+        self::assertStringNotContainsString('until-', (string) $row->filter('td.until')->attr('class'));
+        self::assertSame('quedan 30 días', $row->filter('td.until .sub')->text());
+        self::assertSame('Registrar pago', $row->filter('button.register-payment')->text());
+        self::assertCount(1, $row->filter('a.enter'));
+        self::assertCount(1, $row->filter('button.deactivate'));
+        self::assertCount(1, $row->filter('button.archive'));
+    }
+
+    public function testRegisterPayment(): void
+    {
+        $this->paidUntil($this->restaurant, 'today +2 days');
+        $this->em->flush();
+
+        $button = $this->row($this->panel(), 'Partners Test Bistro')->filter('button.register-payment');
+        $expected = (new \DateTimeImmutable('today +2 days'))->modify('+1 year')->format('d/m/Y');
+        self::assertSame($expected, $button->attr('data-until-yearly'));
+        self::assertSelectorExists('#payment-modal input[name="plan"][value="monthly"]');
+        self::assertSelectorExists('#payment-sheet input[name="plan"][value="yearly"]');
+
+        $this->client->request('POST', $button->attr('data-action'), ['_token' => $button->attr('data-token'), 'plan' => 'yearly']);
+
+        self::assertResponseRedirects('/partners');
+        $restaurant = $this->reloadedRestaurant();
+        self::assertSame($expected, $restaurant->getPaidUntil()->format('d/m/Y'));
+        self::assertSame('yearly', $restaurant->getPlan());
+        self::assertEquals(new \DateTimeImmutable('today'), $restaurant->getLastPaidAt());
+
+        $this->client->followRedirect();
+        self::assertSelectorTextSame('.flash-success', 'Pago registrado: Partners Test Bistro queda activo hasta el ' . $expected . '.');
+    }
+
+    public function testRegisterPaymentRejectsUnknownPlan(): void
+    {
+        $button = $this->row($this->panel(), 'Partners Test Bistro')->filter('button.register-payment');
+
+        $this->client->request('POST', $button->attr('data-action'), ['_token' => $button->attr('data-token'), 'plan' => 'weekly']);
+
+        self::assertResponseStatusCodeSame(400);
+    }
+
+    public function testDeactivateTurnsMenuOffAndPaymentBringsItBack(): void
+    {
+        $crawler = $this->panel();
+        $form = $this->row($crawler, 'Partners Test Bistro')->filter('form[action$="/desactivar"]');
+        self::assertStringContainsString('Partners Test Bistro', $form->attr('onsubmit'));
+        self::assertStringContainsString('Su carta dejar\u00e1 de verse', $form->attr('onsubmit'));
+
+        $this->client->request('POST', $form->attr('action'), ['_token' => $form->filter('input[name="_token"]')->attr('value')]);
+
+        self::assertResponseRedirects('/partners');
+        $restaurant = $this->reloadedRestaurant();
+        self::assertTrue($restaurant->isExpired());
+        self::assertFalse($restaurant->isArchived());
+
+        $crawler = $this->client->followRedirect();
+        self::assertSame('🔴 Vencido', $this->row($crawler, 'Partners Test Bistro')->filter('.status')->text());
+        // Still counted: deactivating isn't archiving.
+        self::assertSelectorTextSame('#restaurant-count', 'Restaurantes: 1 de 5 incluidos');
+
+        $this->client->request('GET', '/r/' . $restaurant->getSlug() . '?lang=es');
+        self::assertResponseStatusCodeSame(503);
+
+        $button = $this->row($this->panel(), 'Partners Test Bistro')->filter('button.register-payment');
+        $this->client->request('POST', $button->attr('data-action'), ['_token' => $button->attr('data-token'), 'plan' => 'monthly']);
+        self::assertFalse($this->reloadedRestaurant()->isExpired());
+    }
+
+    public function testExpiredResellerCannotPayOrDeactivate(): void
+    {
+        $row = $this->row($this->panel(), 'Partners Test Bistro');
+        $button = $row->filter('button.register-payment');
+        $form = $row->filter('form[action$="/desactivar"]');
+        $before = $this->reloadedRestaurant()->getPaidUntil();
+        $this->expireReseller();
+
+        $crawler = $this->panel();
+        $row = $this->row($crawler, 'Partners Test Bistro');
+        self::assertNotNull($row->filter('button.register-payment')->attr('disabled'));
+        self::assertNotNull($row->filter('button.deactivate')->attr('disabled'));
+        self::assertSelectorNotExists('#payment-modal');
+
+        $this->client->request('POST', $button->attr('data-action'), ['_token' => $button->attr('data-token'), 'plan' => 'yearly']);
+        self::assertResponseRedirects('/partners');
+        $this->client->request('POST', $form->attr('action'), ['_token' => $form->filter('input[name="_token"]')->attr('value')]);
+        self::assertResponseRedirects('/partners');
+
+        $restaurant = $this->reloadedRestaurant();
+        self::assertEquals($before, $restaurant->getPaidUntil());
+        self::assertNull($restaurant->getPlan());
+    }
+
+    public function testCannotPayOrDeactivateAnotherResellersRestaurant(): void
+    {
+        $other = new Reseller('Partners Test Other');
+        $this->em->persist($other);
+        $theirs = $this->restaurant('Partners Test Theirs', $other);
+        $this->em->flush();
+
+        $this->panel();
+        $this->client->request('POST', '/partners/restaurantes/' . $theirs->getId() . '/pago', ['_token' => 'x', 'plan' => 'monthly']);
+        self::assertResponseStatusCodeSame(404);
+        $this->client->request('POST', '/partners/restaurantes/' . $theirs->getId() . '/desactivar', ['_token' => 'x']);
+        self::assertResponseStatusCodeSame(404);
+    }
+
     public function testCreateRestaurantWithOwner(): void
     {
         $email = 'partners-new-owner-' . uniqid() . '@example.test';
@@ -325,6 +555,10 @@ final class PartnersControllerTest extends WebTestCase
         self::assertSame('partners-test-new-place', $restaurant->getSlug());
         self::assertSame($this->reseller->getId(), $restaurant->getReseller()->getId());
         self::assertSame('EUR', $restaurant->getCurrency());
+        // The reseller's 30-day trial: its own paid_until, never paid.
+        self::assertEquals(new \DateTimeImmutable('today +30 days'), $restaurant->getPaidUntil());
+        self::assertNull($restaurant->getPlan());
+        self::assertFalse($restaurant->isExpired());
         self::assertTrue(static::getContainer()->get(UserPasswordHasherInterface::class)->isPasswordValid($owner, 'a-strong-password-1'));
 
         $this->client->followRedirect();

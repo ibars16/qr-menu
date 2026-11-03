@@ -1,6 +1,11 @@
 title: "Assinatura"
 stripe_error: "Não foi possível carregar os dados do Stripe. Tente novamente mais tarde."
 next_charge: "%amount% em %date%"
+
+# A reseller's extra-restaurants line: "3 extra × 6,00 €".
+extras:
+    value: "%quantity% extra × %price%"
+
 cancel_pending: "Ativa até %date%, não será renovada."
 
 section:
@@ -12,6 +17,7 @@ label:
     plan: "Plano"
     status: "Estado"
     next_charge: "Próxima cobrança"
+    extras: "Restaurantes extra"
 
 plan:
     monthly: "Mensal · %price%/mês"

@@ -9,8 +9,11 @@ namespace App\Service\Billing;
  */
 interface StripeGatewayInterface
 {
-    /** @return string The new customer's id (cus_…). */
-    public function createCustomer(string $email, string $name, int $restaurantId): string;
+    /**
+     * @param array<string, string> $metadata restaurant_id or reseller_id
+     * @return string The new customer's id (cus_…).
+     */
+    public function createCustomer(string $email, string $name, array $metadata): string;
 
     /**
      * @param array<string, mixed> $params Stripe Checkout Session params

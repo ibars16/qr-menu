@@ -38,7 +38,18 @@
             <div class="card-title">Crea tu cuenta</div>
             <div class="card-sub">Empieza tu prueba gratuita de 1 mes. Sin tarjeta de crédito.</div>
 
-            {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+            {# Never through Turbo: this page's turbo-visit-control=reload would
+               turn the 422 with the errors into a reload of the empty form. #}
+            {{ form_start(form, { attr: { novalidate: 'novalidate', 'data-turbo': 'false' } }) }}
+
+            {# Errors of the whole form (expired page, unexpected fields). #}
+            {% if form.vars.errors|length > 0 %}
+                <ul class="errors form-errors" role="alert">
+                    {% for error in form.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
 
             {# ── Restaurante ── #}
             <div class="section-divider">Tu restaurante</div>
@@ -57,16 +68,31 @@
                 <div class="field">
                     {{ form_label(form.currency) }}
                     {{ form_widget(form.currency) }}
+                    <ul class="errors">
+                        {% for error in form.currency.vars.errors %}
+                            <li>{{ error.message }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
                 <div class="field">
                     {{ form_label(form.language) }}
                     {{ form_widget(form.language) }}
+                    <ul class="errors">
+                        {% for error in form.language.vars.errors %}
+                            <li>{{ error.message }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
 
             <div class="field">
                 {{ form_label(form.adminLocale) }}
                 {{ form_widget(form.adminLocale) }}
+                <ul class="errors">
+                    {% for error in form.adminLocale.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
                 <div class="field-help">{{ form.adminLocale.vars.help }}</div>
             </div>
 
@@ -90,12 +116,20 @@
                     {% for error in form.password.vars.errors %}
                         <li>{{ error.message }}</li>
                     {% endfor %}
+                    {% for error in form.password.first.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
                 </ul>
             </div>
 
             <div class="field">
                 {{ form_label(form.password.second) }}
                 {{ form_widget(form.password.second, { attr: { placeholder: 'Repite la contraseña' } }) }}
+                <ul class="errors">
+                    {% for error in form.password.second.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
             </div>
 
             <button type="submit" class="submit-btn">Crear cuenta y entrar →</button>

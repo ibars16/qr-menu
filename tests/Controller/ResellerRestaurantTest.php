@@ -11,11 +11,13 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
- * A reseller's restaurant: no billing of its own anywhere (admin panel,
- * /admin/billing, /platform actions), active exactly while its reseller is
- * — the same expired page and unavailable menu as any expired restaurant,
- * without the payment buttons. /platform lists the reseller itself with
- * its own manual billing actions.
+ * A reseller's restaurant: no Stripe billing of its own anywhere (admin
+ * panel, /admin/billing, /platform actions), active while its reseller is
+ * and its own paid_until (managed in /partners) hasn't passed — the same
+ * expired page and unavailable menu as any expired restaurant, without the
+ * payment buttons, and "contacta con {revendedor}" instead. Its owner gets
+ * a "vence en N días" notice with no payment link. /platform lists the
+ * reseller itself with its own manual billing actions.
  */
 final class ResellerRestaurantTest extends WebTestCase
 {
@@ -125,6 +127,75 @@ final class ResellerRestaurantTest extends WebTestCase
         self::assertSelectorNotExists('.billing-strip');
     }
 
+    private function setOwnPaidUntil(string $date): void
+    {
+        $this->em->clear();
+        $restaurant = $this->em->find(Restaurant::class, $this->restaurant->getId());
+        (new \ReflectionProperty(Restaurant::class, 'paidUntil'))->setValue($restaurant, new \DateTimeImmutable($date));
+        $this->em->flush();
+    }
+
+    public function testOwnerSeesContactNoticeWhenSevenDaysOrLessLeft(): void
+    {
+        $this->setOwnPaidUntil('today +5 days');
+
+        $this->client->loginUser($this->owner);
+        $crawler = $this->client->request('GET', '/admin/menu');
+
+        self::assertResponseIsSuccessful();
+        $notice = 'Tu servicio vence en 5 días. Contacta con Reseller Test Agency.';
+        // Mobile strip: same place and colours as "vence pronto", no link or action.
+        self::assertSelectorTextSame('div.billing-strip.is-renewal.reseller-notice .billing-strip-text', $notice);
+        self::assertSelectorNotExists('a.billing-strip');
+        self::assertSelectorNotExists('.billing-strip-action');
+        // Desktop sidebar badge, without "Renovar".
+        self::assertSelectorTextSame('.sidebar-header .renewal-badge', $notice);
+        self::assertCount(0, $crawler->filter('.sidebar-header .trial-choose'));
+        self::assertSelectorNotExists('a[href="/admin/billing"]');
+        self::assertSelectorNotExists('.billing-dialog');
+    }
+
+    public function testContactNoticeSingularAndToday(): void
+    {
+        $this->client->loginUser($this->owner);
+
+        $this->setOwnPaidUntil('today +1 day');
+        $this->client->request('GET', '/admin/menu');
+        self::assertSelectorTextSame('.billing-strip-text', 'Tu servicio vence en 1 día. Contacta con Reseller Test Agency.');
+
+        $this->setOwnPaidUntil('today');
+        $this->client->request('GET', '/admin/menu');
+        self::assertSelectorTextSame('.billing-strip-text', 'Tu servicio vence hoy. Contacta con Reseller Test Agency.');
+    }
+
+    public function testNoContactNoticeWithMoreThanSevenDays(): void
+    {
+        $this->setOwnPaidUntil('today +8 days');
+
+        $this->client->loginUser($this->owner);
+        $this->client->request('GET', '/admin/menu');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('.billing-strip');
+        self::assertSelectorNotExists('.trial-badge');
+    }
+
+    public function testOwnDateExpiredBlocksPanelAndMenuWhileResellerPays(): void
+    {
+        $this->setOwnPaidUntil('yesterday');
+
+        $this->client->request('GET', '/r/' . $this->restaurant->getSlug() . '?lang=es');
+        self::assertResponseStatusCodeSame(503);
+
+        $this->client->loginUser($this->owner);
+        $this->client->request('GET', '/admin/menu');
+        self::assertResponseStatusCodeSame(403);
+        self::assertSelectorTextSame('.message', 'Este restaurante no está activo');
+        self::assertSelectorTextSame('.hint', 'Contacta con Reseller Test Agency.');
+        self::assertSelectorNotExists('form[action="/admin/billing/checkout"]');
+        self::assertSelectorNotExists('form[action="/admin/billing/portal"]');
+    }
+
     public function testBillingScreenIsNotFound(): void
     {
         $this->client->loginUser($this->owner);
@@ -150,7 +221,7 @@ final class ResellerRestaurantTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(403);
         self::assertSelectorTextSame('.message', 'Este restaurante no está activo');
-        self::assertSelectorTextSame('.hint', 'Contacta con la empresa que te gestiona la carta.');
+        self::assertSelectorTextSame('.hint', 'Contacta con Reseller Test Agency.');
         self::assertSelectorNotExists('form[action="/admin/billing/checkout"]');
         self::assertSelectorNotExists('form[action="/admin/billing/portal"]');
         self::assertSelectorExists('a.logout[href="/admin/logout"]');

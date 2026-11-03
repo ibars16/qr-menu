@@ -53,10 +53,10 @@ class FakeStripeGateway implements StripeGatewayInterface
         self::$failInvoices = false;
     }
 
-    public function createCustomer(string $email, string $name, int $restaurantId): string
+    public function createCustomer(string $email, string $name, array $metadata): string
     {
         $this->maybeFail();
-        $id = 'cus_fake_' . (count(self::$createdCustomers) + 1) . '_' . $restaurantId;
+        $id = 'cus_fake_' . (count(self::$createdCustomers) + 1) . '_' . implode('_', $metadata);
         self::$createdCustomers[] = $id;
 
         return $id;
@@ -87,14 +87,38 @@ class FakeStripeGateway implements StripeGatewayInterface
         return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
     }
 
-    /** Applies the few params StripeBilling sends, the way Stripe would. */
+    /**
+     * Applies the few params StripeBilling sends, the way Stripe would: an
+     * item with an id is changed (price, quantity) or deleted, one without
+     * is added.
+     */
     public function updateSubscription(string $id, array $params): array
     {
         $this->maybeFail();
         self::$calls[] = ['updateSubscription', $id, $params];
         $subscription = &self::$objects[$id];
         foreach ($params['items'] ?? [] as $item) {
-            $subscription['items']['data'][0]['price'] = self::$objects[$item['price']] ?? ['id' => $item['price']];
+            if (!isset($item['id'])) {
+                $subscription['items']['data'][] = ['id' => 'si_added_' . count(self::$calls), 'price' => self::$objects[$item['price']] ?? ['id' => $item['price']], 'quantity' => $item['quantity'] ?? 1];
+                continue;
+            }
+            foreach ($subscription['items']['data'] as $i => &$existing) {
+                if ($existing['id'] !== $item['id']) {
+                    continue;
+                }
+                if ($item['deleted'] ?? false) {
+                    unset($subscription['items']['data'][$i]);
+                } else {
+                    if (isset($item['price'])) {
+                        $existing['price'] = self::$objects[$item['price']] ?? ['id' => $item['price']];
+                    }
+                    if (isset($item['quantity'])) {
+                        $existing['quantity'] = $item['quantity'];
+                    }
+                }
+            }
+            unset($existing);
+            $subscription['items']['data'] = array_values($subscription['items']['data']);
         }
         if (array_key_exists('cancel_at_period_end', $params)) {
             $subscription['cancel_at_period_end'] = $params['cancel_at_period_end'];
@@ -196,13 +220,25 @@ class FakeStripeGateway implements StripeGatewayInterface
             'customer' => $customer,
             'status' => 'active',
             'metadata' => ['restaurant_id' => (string) $restaurantId],
-            'items' => ['data' => [['id' => 'si_' . $id, 'price' => self::$objects[$priceId] ?? ['id' => $priceId]]]],
+            'items' => ['data' => [['id' => 'si_' . $id, 'price' => self::$objects[$priceId] ?? ['id' => $priceId], 'quantity' => 1]]],
             'cancel_at_period_end' => false,
             'cancel_at' => null,
             'trial_end' => null,
             'schedule' => null,
             'default_payment_method' => null,
         ];
+    }
+
+    /** A reseller's subscription: the base plan, plus the extra-restaurants line when $extra > 0. */
+    public static function resellerSubscription(string $id, int $resellerId, string $basePriceId, string $extraPriceId, int $extra, string $customer = 'cus_x'): array
+    {
+        self::subscription($id, 0, $basePriceId, $customer);
+        self::$objects[$id]['metadata'] = ['reseller_id' => (string) $resellerId];
+        if ($extra > 0) {
+            self::$objects[$id]['items']['data'][] = ['id' => 'si_extra_' . $id, 'price' => self::$objects[$extraPriceId] ?? ['id' => $extraPriceId], 'quantity' => $extra];
+        }
+
+        return self::$objects[$id];
     }
 
     /** A recurring EUR price; store it before subscription() so the subscription embeds it. */

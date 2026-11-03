@@ -70,6 +70,7 @@ class ResellerRegistrationFormType extends AbstractType
                 'choices'                   => $adminLocaleChoices,
                 'choice_translation_domain' => false,
                 'data'                      => $options['detected_admin_locale'],
+                'invalid_message'           => 'register.error.admin_locale',
             ])
         ;
     }
@@ -79,6 +80,9 @@ class ResellerRegistrationFormType extends AbstractType
         $resolver->setDefaults([
             'data_class'            => null,
             'translation_domain'    => 'partners',
+            // Shown above the form (errors of the form itself).
+            'csrf_message'          => 'register.error.expired',
+            'extra_fields_message'  => 'register.error.general',
             'detected_admin_locale' => $this->adminLocaleResolver->getDefaultLocale(),
         ]);
         $resolver->setAllowedTypes('detected_admin_locale', 'string');

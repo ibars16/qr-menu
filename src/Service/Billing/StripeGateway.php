@@ -14,12 +14,12 @@ class StripeGateway implements StripeGatewayInterface
     {
     }
 
-    public function createCustomer(string $email, string $name, int $restaurantId): string
+    public function createCustomer(string $email, string $name, array $metadata): string
     {
         return $this->stripe->customers->create([
             'email'    => $email,
             'name'     => $name,
-            'metadata' => ['restaurant_id' => (string) $restaurantId],
+            'metadata' => $metadata,
         ])->id;
     }
 

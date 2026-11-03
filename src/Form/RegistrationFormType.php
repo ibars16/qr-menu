@@ -33,7 +33,7 @@ class RegistrationFormType extends AbstractType
                 'label'       => 'Nombre del restaurante',
                 'constraints' => [
                     new NotBlank(message: 'Introduce el nombre del restaurante.'),
-                    new Length(min: 2, max: 100),
+                    new Length(min: 2, max: 100, minMessage: 'El nombre debe tener entre 2 y 100 caracteres.', maxMessage: 'El nombre debe tener entre 2 y 100 caracteres.'),
                 ],
             ])
             ->add('email', EmailType::class, [
@@ -54,6 +54,7 @@ class RegistrationFormType extends AbstractType
                 ],
             ])
             ->add('currency', ChoiceType::class, [
+                'invalid_message' => 'Elige una opción de la lista.',
                 'label'   => 'Moneda principal',
                 'choices' => [
                     'Euro (€)'           => 'EUR',
@@ -65,6 +66,7 @@ class RegistrationFormType extends AbstractType
                 ],
             ])
             ->add('language', ChoiceType::class, [
+                'invalid_message' => 'Elige una opción de la lista.',
                 'label'   => 'Idioma principal del menú',
                 'choices' => [
                     'Español'  => 'es',
@@ -80,6 +82,7 @@ class RegistrationFormType extends AbstractType
                 'help'    => 'Solo afecta a tu panel de gestión, no a la carta de tus clientes.',
                 'choices' => $adminLocaleChoices,
                 'data'    => $options['detected_admin_locale'],
+                'invalid_message' => 'Elige un idioma de la lista.',
             ])
         ;
     }
@@ -88,6 +91,9 @@ class RegistrationFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class'             => null,
+            // Shown above the form (errors of the form itself).
+            'csrf_message'           => 'La página ha caducado. Vuelve a enviar el formulario.',
+            'extra_fields_message'   => 'No se ha podido enviar el formulario. Recarga la página y vuelve a intentarlo.',
             'detected_admin_locale'  => $this->adminLocaleResolver->getDefaultLocale(),
         ]);
         $resolver->setAllowedTypes('detected_admin_locale', 'string');

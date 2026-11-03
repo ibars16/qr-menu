@@ -27,6 +27,9 @@
             padding: 4px 9px; border-radius: 999px; margin-top: 8px;
         }
         .trial-badge i { font-size: 12px; }
+        /* "Contacta con {revendedor}" runs to two lines: no pill. */
+        .trial-badge.reseller-notice { align-items: flex-start; border-radius: 10px; line-height: 1.35; }
+        .trial-badge.reseller-notice i { margin-top: 1px; }
 
         /* Ver carta — destacado arriba */
         .ver-carta-btn {
@@ -169,6 +172,12 @@
             .billing-strip i { font-size: 16px; flex-shrink: 0; }
             .billing-strip-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
             .billing-strip-action { font-weight: 600; white-space: nowrap; }
+            /* "Contacta con {revendedor}": no action, up to two lines so the name isn't cut. */
+            :root:has(body > .billing-strip.reseller-notice) { --billing-strip-h: 52px; }
+            .billing-strip.reseller-notice .billing-strip-text {
+                white-space: normal; line-height: 1.3;
+                display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            }
         }
 
         /* ══ SUBSCRIPTION (Stripe) ══ */
@@ -216,7 +225,20 @@
     {% set daysLeft = app.user.restaurant.daysLeft %}
     {% set billingNotice = ('renewal.' ~ (app.user.restaurant.stripeCancelPending ? 'ends' : 'expires') ~ (daysLeft == 0 ? '_today' : (daysLeft == 1 ? '_singular' : '_plural')))|trans({'%count%': daysLeft}, 'admin_base') %}
 {% endif %}
-{% if billingNotice and is_granted('ROLE_OWNER') %}
+{# A reseller's restaurant: same place and look as "vence pronto", but
+   "contacta con {revendedor}" and no payment link — the reseller renews it. #}
+{% set resellerNotice = false %}
+{% if billingNotice is null and is_granted('ROLE_OWNER') and app.user.restaurant and app.user.restaurant.resellerServiceEndingSoon %}
+    {% set resellerNotice = true %}
+    {% set daysLeft = app.user.restaurant.daysLeft %}
+    {% set billingNotice = ('reseller_notice.' ~ (daysLeft == 0 ? 'today' : (daysLeft == 1 ? 'singular' : 'plural')))|trans({'%count%': daysLeft, '%name%': app.user.restaurant.reseller.name}, 'admin_base') %}
+{% endif %}
+{% if resellerNotice %}
+    <div class="billing-strip is-renewal reseller-notice">
+        <i class="ti ti-alert-circle" aria-hidden="true"></i>
+        <span class="billing-strip-text">{{ billingNotice }}</span>
+    </div>
+{% elseif billingNotice and is_granted('ROLE_OWNER') %}
     {% set trial = app.user.restaurant.trialActive %}
     <a class="billing-strip{{ trial ? '' : ' is-renewal' }}" href="{{ path('admin_billing_index') }}">
         <i class="ti {{ trial ? 'ti-clock' : 'ti-alert-circle' }}" aria-hidden="true"></i>
@@ -239,11 +261,13 @@
                     <button type="button" class="trial-choose" onclick="BillingUI.open()">{{ 'billing.choose_plan'|trans({}, 'admin_base') }}</button>
                 {% endif %}
             {% elseif billingNotice %}
-                <div class="trial-badge renewal-badge">
+                <div class="trial-badge renewal-badge{{ resellerNotice ? ' reseller-notice' }}">
                     <i class="ti ti-clock" aria-hidden="true"></i>
                     {{ billingNotice }}
                 </div>
-                <a class="trial-choose" href="{{ path('admin_billing_index') }}">{{ 'renewal.renew'|trans({}, 'admin_base') }}</a>
+                {% if not resellerNotice %}
+                    <a class="trial-choose" href="{{ path('admin_billing_index') }}">{{ 'renewal.renew'|trans({}, 'admin_base') }}</a>
+                {% endif %}
             {% endif %}
         </div>
 
