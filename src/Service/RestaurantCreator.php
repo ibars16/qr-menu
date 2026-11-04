@@ -54,6 +54,11 @@ class RestaurantCreator
         $restaurant->setAdminLocale($adminLocale);
         $restaurant->setPrimaryColor('#C1440E');
         $restaurant->setReseller($reseller);
+        // No free trial for a reseller's restaurant: off until it's paid
+        // (Restaurant::isAwaitingFirstPayment()). Ours keep their 30 days.
+        if ($reseller !== null) {
+            $restaurant->deactivateNow();
+        }
 
         $this->em->persist($restaurant);
 

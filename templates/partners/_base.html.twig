@@ -23,6 +23,10 @@
             background: var(--bg-nav); position: sticky; top: 0; z-index: 100;
         }
         .partners-title { font-size: var(--fs-lg); font-weight: 600; color: var(--tx-hi); letter-spacing: -0.3px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .partners-company { display: flex; align-items: baseline; gap: var(--sp-2); min-width: 0; }
+        .company-edit { flex: none; background: none; border: 0; padding: 0; font: inherit; font-size: var(--fs-sm); color: var(--tx-label); text-decoration: underline; cursor: pointer; }
+        .company-edit:hover { color: var(--tx-hi); }
+        .field-hint { font-size: var(--fs-sm); color: var(--tx-muted); margin-top: 4px; line-height: 1.4; }
         .partners-body { padding: var(--sp-6); max-width: 1120px; }
 
         .toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-4); }
@@ -72,7 +76,7 @@
         .summary-label { margin-top: var(--sp-1); font-size: var(--fs-sm); color: var(--tx-muted); }
         .status { font-weight: 600; white-space: nowrap; }
         .status-active  { color: #7aad40; }
-        .status-trial   { color: var(--warn-fg); }
+        .status-pending { color: var(--tx-muted); }
         .status-expired { color: var(--err-text); }
         .until { white-space: nowrap; }
         .until-soon, .until-soon .sub { color: var(--warn-fg); }
@@ -162,7 +166,12 @@
     {% set expired = reseller.expired %}
     {% set route = app.request.attributes.get('_route') %}
     <header class="partners-header">
-        <a class="partners-title" href="{{ path('partners_index') }}" style="text-decoration: none">{{ reseller.name }}</a>
+        <div class="partners-company">
+            <a class="partners-title" href="{{ path('partners_index') }}" style="text-decoration: none">{{ reseller.name }}</a>
+            {% if company is defined %}
+                <button type="button" class="company-edit" id="company-edit" onclick="CompanyUI.open()">{{ 'company.edit'|trans({}, 'partners') }}</button>
+            {% endif %}
+        </div>
         <div class="header-actions">
             <a class="btn {{ route starts with 'partners_billing' ? 'active' }}" id="billing-link" href="{{ path('partners_billing_index') }}"><i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.nav'|trans({}, 'partners') }}</a>
             <a class="btn" href="{{ path('admin_logout') }}"><i class="ti ti-logout" aria-hidden="true"></i> {{ 'logout'|trans({}, 'partners') }}</a>

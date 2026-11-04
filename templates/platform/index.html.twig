@@ -372,6 +372,10 @@
 
 {# The payment dialog's opener; route/token prefix tell restaurants and resellers apart. #}
 {% macro payment_button(c, route, token_prefix) %}
+    {# Paying by card: Stripe adds its days, never twice (also refused server-side). #}
+    {% if c.hasLiveSubscription %}
+    <button type="button" class="btn btn-primary" disabled>Paga con tarjeta</button>
+    {% else %}
     <button type="button" class="btn btn-primary" onclick="PaymentUI.open(this)"
             data-name="{{ c.name }}"
             data-action="{{ path(route, {id: c.id}) }}"
@@ -380,6 +384,7 @@
             data-until-yearly="{{ c.paidUntilAfter('yearly')|date('d/m/Y') }}">
         Registrar pago
     </button>
+    {% endif %}
 {% endmacro %}
 
 {% macro deactivate_form(c, route, token_prefix, confirm_text) %}

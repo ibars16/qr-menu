@@ -413,16 +413,19 @@ final class BillingControllerTest extends WebTestCase
         self::assertSelectorNotExists('a[href="/platform?_switch_user=_exit"]');
     }
 
-    public function testSuperAdminAsOwnerSeesExpiredPageWithWayBack(): void
+    public function testSuperAdminAsOwnerOfExpiredRestaurantGetsThePanel(): void
     {
+        // "Como" the owner the super-admin can set things up while it's
+        // expired (SubscriptionGate::preparingAsOwner()); the owner can't.
         $this->expire();
         $this->openPayLinkAsSuperAdmin();
 
-        $crawler = $this->client->followRedirect();
-        self::assertResponseStatusCodeSame(403);
-        self::assertCount(2, $crawler->filter('form[action="/admin/billing/checkout"]'));
+        self::assertResponseRedirects('/admin/menu?billing=choose');
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('.billing-dialog');
         self::assertSelectorNotExists('.impersonation-bar');
-        self::assertSelectorTextSame('a.logout[href="/platform?_switch_user=_exit"]', 'Volver a Plataforma');
+        self::assertSelectorTextSame('.sidebar-footer a.nav-item[href="/platform?_switch_user=_exit"]', 'Volver a Plataforma');
         self::assertSelectorNotExists('a[href="/admin/logout"]');
     }
 

@@ -56,7 +56,8 @@ final class MenuContextBuilder
         $categories = $restaurant->getCategories()
             ->filter(fn (Category $c) => $c->isActive())
             ->toArray();
-        usort($categories, fn (Category $a, Category $b) => $a->getPosition() <=> $b->getPosition());
+        // Same position (a new one gets count() after a delete): oldest first.
+        usort($categories, fn (Category $a, Category $b) => [$a->getPosition(), $a->getId()] <=> [$b->getPosition(), $b->getId()]);
 
         $allProducts = [];
         foreach ($categories as $category) {

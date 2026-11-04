@@ -109,7 +109,8 @@ class MenuSection
     public function getProductsSorted(): array
     {
         $products = $this->products->toArray();
-        usort($products, static fn(Product $a, Product $b) => $a->getPosition() <=> $b->getPosition());
+        // Same position (a new one gets count() after a delete): oldest first.
+        usort($products, static fn(Product $a, Product $b) => [$a->getPosition(), $a->getId()] <=> [$b->getPosition(), $b->getId()]);
 
         return $products;
     }

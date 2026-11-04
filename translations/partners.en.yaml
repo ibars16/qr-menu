@@ -75,7 +75,7 @@ new:
         email_taken: "There's already an account with that email. Use another one for the owner."
 
 flash:
-    created: "%name% created. You can now enter its panel."
+    created: "%name% created. Enter to prepare its menu. It will be activated once it pays."
     archived: "%name% archived: its menu is no longer shown."
     restored: "%name% restored."
     paid: "Payment registered: %name% is active until %date%."
@@ -83,12 +83,13 @@ flash:
 
 summary:
     active: "Active"
-    trial: "On trial"
+    pending: "Awaiting payment"
     expiring_soon: "Expire within 7 days"
     expired: "Expired"
 
 status:
-    trial: "On trial"
+    pending: "Awaiting payment"
+    active: "Active"
     paid: "Paid"
     expired: "Expired"
 
@@ -101,6 +102,7 @@ days:
 
 payment:
     button: "Register payment"
+    by_card: "Pays by card"
     title: "Register payment"
     monthly: "1 month → active until"
     yearly: "1 year → active until"
@@ -153,5 +155,17 @@ connect:
     product_name: "QR digital menu"
 signup_link:
     title: "Your customer signup link"
-    text: "Send it to a restaurant: it signs up on its own, starts with 30 days and appears in your list."
+    text: "Send it to a restaurant: it signs up on its own and appears in your list, awaiting payment."
     copy: "Copy link"
+company:
+    edit: "Edit"
+    title: "Your company details"
+    name: "Company name"
+    email: "Contact email"
+    email_hint: "The one your restaurants see. If left empty, your user's email is used."
+    save: "Save"
+    saved: "Company details saved."
+    error:
+        name: "The name must be between 2 and 100 characters."
+        email: "The contact email is not valid."
+impersonation_left: "You've left “as owner” mode and are back in your panel. If you were doing something here, please do it again."

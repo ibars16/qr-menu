@@ -75,7 +75,7 @@ new:
         email_taken: "Un compte existe déjà avec cet email. Utilisez-en un autre pour le propriétaire."
 
 flash:
-    created: "%name% créé. Vous pouvez maintenant ouvrir son espace."
+    created: "%name% créé. Entrez pour préparer sa carte. Elle sera activée dès le paiement."
     archived: "%name% archivé : sa carte ne s'affiche plus."
     restored: "%name% restauré."
     paid: "Paiement enregistré : %name% est actif jusqu'au %date%."
@@ -83,12 +83,13 @@ flash:
 
 summary:
     active: "Actifs"
-    trial: "En essai"
+    pending: "En attente de paiement"
     expiring_soon: "Expirent sous 7 jours"
     expired: "Expirés"
 
 status:
-    trial: "En essai"
+    pending: "En attente de paiement"
+    active: "Actif"
     paid: "Payé"
     expired: "Expiré"
 
@@ -101,6 +102,7 @@ days:
 
 payment:
     button: "Enregistrer un paiement"
+    by_card: "Paie par carte"
     title: "Enregistrer un paiement"
     monthly: "1 mois → actif jusqu'au"
     yearly: "1 an → actif jusqu'au"
@@ -153,5 +155,17 @@ connect:
     product_name: "Carte numérique QR"
 signup_link:
     title: "Votre lien d'inscription pour vos clients"
-    text: "Envoyez-le à un restaurant : il s'inscrit seul, commence avec 30 jours et apparaît dans votre liste."
+    text: "Envoyez-le à un restaurant : il s'inscrit seul et apparaît dans votre liste, en attente de paiement."
     copy: "Copier le lien"
+company:
+    edit: "Modifier"
+    title: "Coordonnées de votre entreprise"
+    name: "Nom de l'entreprise"
+    email: "E-mail de contact"
+    email_hint: "Celui que voient vos restaurants. S'il est vide, l'e-mail de votre utilisateur est utilisé."
+    save: "Enregistrer"
+    saved: "Coordonnées de l'entreprise enregistrées."
+    error:
+        name: "Le nom doit contenir entre 2 et 100 caractères."
+        email: "L'e-mail de contact n'est pas valide."
+impersonation_left: "Vous avez quitté le mode « en tant que propriétaire » et êtes de retour dans votre espace. Si vous étiez en train de faire quelque chose ici, recommencez."

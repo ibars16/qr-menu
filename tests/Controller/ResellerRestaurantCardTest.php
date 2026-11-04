@@ -64,6 +64,35 @@ final class ResellerRestaurantCardTest extends WebTestCase
         FakeStripeGateway::price('price_card_yearly', 25000, 'year');
     }
 
+    public function testSubscriptionScreenSaysAwaitingPaymentWhenNeverPaid(): void
+    {
+        $this->em->clear();
+        $this->em->find(Restaurant::class, $this->restaurant->getId())->deactivateNow();
+        $this->em->flush();
+
+        $this->client->loginUser($this->owner);
+        $this->client->request('GET', '/admin/billing');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextSame('#billing-status', 'Pendiente de pago');
+    }
+
+    public function testNeverPaidChoosesAmongTheResellersPlans(): void
+    {
+        $this->em->clear();
+        $this->em->find(Restaurant::class, $this->restaurant->getId())->deactivateNow();
+        $this->em->flush();
+
+        $this->client->loginUser($this->owner);
+        $crawler = $this->client->request('GET', '/admin/menu');
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertSame('Elige un plan para activar tu carta', $crawler->filter('#choose-plan')->text());
+        self::assertSame(['monthly', 'yearly'], $crawler->filter('form[action="/admin/billing/checkout"] input[name="plan"]')->each(fn ($n) => $n->attr('value')));
+        self::assertSame('Mensual · 25 €/mes Anual · 250 €/año', $crawler->filter('.plans')->text());
+        self::assertStringNotContainsString('venció', $crawler->filter('body')->text());
+    }
+
     protected function tearDown(): void
     {
         $this->em->clear();

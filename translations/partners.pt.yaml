@@ -75,7 +75,7 @@ new:
         email_taken: "Já existe uma conta com esse email. Use outro para o dono."
 
 flash:
-    created: "%name% criado. Já pode entrar no painel dele."
+    created: "%name% criado. Entre para preparar a carta. Será ativada quando pagar."
     archived: "%name% arquivado: a carta já não se vê."
     restored: "%name% restaurado."
     paid: "Pagamento registado: %name% fica ativo até %date%."
@@ -83,12 +83,13 @@ flash:
 
 summary:
     active: "Ativos"
-    trial: "Em teste"
+    pending: "Pagamento pendente"
     expiring_soon: "Vencem em 7 dias"
     expired: "Vencidos"
 
 status:
-    trial: "Em teste"
+    pending: "Pagamento pendente"
+    active: "Ativo"
     paid: "Pago"
     expired: "Vencido"
 
@@ -101,6 +102,7 @@ days:
 
 payment:
     button: "Registar pagamento"
+    by_card: "Paga com cartão"
     title: "Registar pagamento"
     monthly: "1 mês → ativo até"
     yearly: "1 ano → ativo até"
@@ -153,5 +155,17 @@ connect:
     product_name: "Carta digital QR"
 signup_link:
     title: "O seu link de registo para clientes"
-    text: "Envie-o a um restaurante: regista-se sozinho, começa com 30 dias e aparece na sua lista."
+    text: "Envie-o a um restaurante: regista-se sozinho e aparece na sua lista, com pagamento pendente."
     copy: "Copiar link"
+company:
+    edit: "Editar"
+    title: "Dados da sua empresa"
+    name: "Nome da empresa"
+    email: "Email de contacto"
+    email_hint: "O que os seus restaurantes veem. Se o deixar vazio, usa-se o do seu utilizador."
+    save: "Guardar"
+    saved: "Dados da empresa guardados."
+    error:
+        name: "O nome deve ter entre 2 e 100 caracteres."
+        email: "O email de contacto não é válido."
+impersonation_left: "Saiu do modo «como dono» e voltou ao seu painel. Se estava a fazer algo aqui, repita."

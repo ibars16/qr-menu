@@ -24,6 +24,7 @@ plan:
     yearly: "Yearly · %price%/year"
 
 status:
+    pending: "Awaiting payment"
     trial_days: "Free trial · %count% days left"
     trial_day: "Free trial · 1 day left"
     manual: "Active until %date%"

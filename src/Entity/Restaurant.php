@@ -386,6 +386,17 @@ class Restaurant
     }
 
     /**
+     * A reseller's restaurant that has never been paid: created off (no
+     * free trial, RestaurantCreator) and still waiting for its first
+     * payment — "Pendiente de pago" on /partners, "Elige un plan para
+     * activar tu carta" for its owner, rather than "vencido".
+     */
+    public function isAwaitingFirstPayment(?\DateTimeImmutable $today = null): bool
+    {
+        return $this->reseller !== null && $this->plan === null && $this->lastPaidAt === null && $this->isPeriodExpired($today);
+    }
+
+    /**
      * The owner's "vence pronto" notice for a reseller's restaurant
      * ("contacta con tu revendedor", no payment button): its own paidUntil
      * 7 days or fewer away, still active. Trial or paid alike — the

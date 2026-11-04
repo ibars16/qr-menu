@@ -5,6 +5,7 @@ namespace App\Controller\Platform;
 use App\Entity\Reseller;
 use App\Entity\Restaurant;
 use App\Entity\User;
+use App\Service\Billing\StripeBilling;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,8 +18,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * The platform owner's own panel (ROLE_SUPER_ADMIN only, Spanish only):
  * every restaurant with its Restaurant::$paidUntil, every reseller with its
  * own, and the two manual billing actions for each. A reseller's
- * restaurants aren't billed on their own, so they get neither. Nothing here
- * ever deletes anything — "Desactivar ya" only moves paidUntil to yesterday.
+ * restaurants aren't billed on their own, so they get neither. "Registrar
+ * pago" is refused while Stripe charges a card (a live subscription), so
+ * days are never added twice; a reseller's resumes its restaurants' card
+ * payments at once (StripeBilling::resumeResellerCollectionOrLog()). Nothing
+ * here ever deletes anything — "Desactivar ya" only moves paidUntil to yesterday.
  */
 #[Route('/platform', name: 'platform_')]
 #[IsGranted(User::ROLE_SUPER_ADMIN)]
@@ -108,11 +112,14 @@ class PlatformController extends AbstractController
     }
 
     #[Route('/resellers/{id}/register-payment', name: 'reseller_register_payment', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function registerResellerPayment(int $id, Request $request, EntityManagerInterface $em): Response
+    public function registerResellerPayment(int $id, Request $request, EntityManagerInterface $em, StripeBilling $billing): Response
     {
         $reseller = $em->find(Reseller::class, $id) ?? throw $this->createNotFoundException();
 
-        return $this->registerPaymentFor($reseller, $reseller->getName(), 'platform-reseller-register-payment-' . $reseller->getId(), $request, $em);
+        $response = $this->registerPaymentFor($reseller, $reseller->getName(), 'platform-reseller-register-payment-' . $reseller->getId(), $request, $em);
+        $billing->resumeResellerCollectionOrLog($reseller);
+
+        return $response;
     }
 
     #[Route('/resellers/{id}/deactivate', name: 'reseller_deactivate', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -143,6 +150,9 @@ class PlatformController extends AbstractController
         $plan = $request->request->get('plan');
         if (!isset(Restaurant::PLAN_MONTHS[$plan])) {
             throw new BadRequestHttpException('Plan no válido.');
+        }
+        if ($customer->hasLiveSubscription()) {
+            throw new BadRequestHttpException('Paga con tarjeta: los pagos los registra Stripe.');
         }
 
         $customer->markPaid($plan);

@@ -34,13 +34,24 @@
     {# A reseller's restaurant pays here only once its reseller can charge
        it by card, and never while archived or while the reseller itself is
        expired (then nothing can turn it back on from here). #}
+    {# Never paid (a reseller's restaurant has no free trial): "Elige un
+       plan para activar tu carta" instead of "venció", with the reseller's
+       plans — or, if it can't charge by card, who to contact. #}
     {% set resellerPlans = restaurant.reseller ? restaurant.reseller.restaurantPlans : null %}
-    {% if restaurant.archived or (restaurant.reseller and (not restaurant.ownerPaysByCard or restaurant.reseller.expired)) %}
+    {% set firstPayment = restaurant.awaitingFirstPayment and not restaurant.archived and not restaurant.reseller.expired %}
+    {% if firstPayment and not restaurant.ownerPaysByCard %}
+        <p class="message" id="choose-plan">{{ 'choose_plan'|trans({}, 'admin_base') }}</p>
+        <p class="hint">{{ 'reseller_inactive_hint'|trans({'%name%': restaurant.reseller.name}, 'admin_base') }}</p>
+    {% elseif restaurant.archived or (restaurant.reseller and (not restaurant.ownerPaysByCard or restaurant.reseller.expired)) %}
         {# Nothing to pay here: contact the reseller. #}
         <p class="message">{{ 'reseller_inactive'|trans({}, 'admin_base') }}</p>
         <p class="hint">{{ 'reseller_inactive_hint'|trans({'%name%': restaurant.reseller.name ?? ''}, 'admin_base') }}</p>
     {% else %}
-        <p class="message">{{ 'subscription_expired'|trans({'%date%': restaurant.paidUntil|date('d/m/Y')}, 'admin_base') }}</p>
+        {% if firstPayment %}
+            <p class="message" id="choose-plan">{{ 'choose_plan'|trans({}, 'admin_base') }}</p>
+        {% else %}
+            <p class="message">{{ 'subscription_expired'|trans({'%date%': restaurant.paidUntil|date('d/m/Y')}, 'admin_base') }}</p>
+        {% endif %}
 
         {% if is_granted('ROLE_OWNER') %}
             <div class="plans">

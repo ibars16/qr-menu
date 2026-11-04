@@ -75,7 +75,7 @@ new:
         email_taken: "Mit dieser E-Mail gibt es bereits ein Konto. Verwenden Sie für den Inhaber eine andere."
 
 flash:
-    created: "%name% angelegt. Sie können jetzt seinen Bereich öffnen."
+    created: "%name% angelegt. Öffnen Sie es, um die Speisekarte vorzubereiten. Sie wird aktiviert, sobald bezahlt ist."
     archived: "%name% archiviert: Die Speisekarte wird nicht mehr angezeigt."
     restored: "%name% wiederhergestellt."
     paid: "Zahlung erfasst: %name% ist aktiv bis %date%."
@@ -83,12 +83,13 @@ flash:
 
 summary:
     active: "Aktiv"
-    trial: "Testphase"
+    pending: "Zahlung ausstehend"
     expiring_soon: "Laufen in 7 Tagen ab"
     expired: "Abgelaufen"
 
 status:
-    trial: "Testphase"
+    pending: "Zahlung ausstehend"
+    active: "Aktiv"
     paid: "Bezahlt"
     expired: "Abgelaufen"
 
@@ -101,6 +102,7 @@ days:
 
 payment:
     button: "Zahlung erfassen"
+    by_card: "Zahlt per Karte"
     title: "Zahlung erfassen"
     monthly: "1 Monat → aktiv bis"
     yearly: "1 Jahr → aktiv bis"
@@ -153,5 +155,17 @@ connect:
     product_name: "QR-Speisekarte"
 signup_link:
     title: "Ihr Registrierungslink für Kunden"
-    text: "Senden Sie ihn an ein Restaurant: Es registriert sich selbst, startet mit 30 Tagen und erscheint in Ihrer Liste."
+    text: "Senden Sie ihn an ein Restaurant: Es registriert sich selbst und erscheint in Ihrer Liste, mit ausstehender Zahlung."
     copy: "Link kopieren"
+company:
+    edit: "Bearbeiten"
+    title: "Daten Ihres Unternehmens"
+    name: "Name des Unternehmens"
+    email: "Kontakt-E-Mail"
+    email_hint: "Die E-Mail, die Ihre Restaurants sehen. Leer gelassen wird die E-Mail Ihres Benutzers verwendet."
+    save: "Speichern"
+    saved: "Unternehmensdaten gespeichert."
+    error:
+        name: "Der Name muss zwischen 2 und 100 Zeichen lang sein."
+        email: "Die Kontakt-E-Mail ist ungültig."
+impersonation_left: "Sie haben den Modus „als Inhaber“ verlassen und sind zurück in Ihrem Bereich. Falls Sie hier gerade etwas getan haben, wiederholen Sie es bitte."

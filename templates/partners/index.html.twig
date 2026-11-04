@@ -47,7 +47,7 @@
 
         <div class="summary">
             <div class="summary-card"><div class="summary-value">{{ summary.active }}</div><div class="summary-label">{{ 'summary.active'|trans({}, 'partners') }}</div></div>
-            <div class="summary-card"><div class="summary-value">{{ summary.trial }}</div><div class="summary-label">{{ 'summary.trial'|trans({}, 'partners') }}</div></div>
+            <div class="summary-card"><div class="summary-value">{{ summary.pending }}</div><div class="summary-label">{{ 'summary.pending'|trans({}, 'partners') }}</div></div>
             <div class="summary-card"><div class="summary-value">{{ summary.expiringSoon }}</div><div class="summary-label">{{ 'summary.expiring_soon'|trans({}, 'partners') }}</div></div>
             <div class="summary-card"><div class="summary-value">{{ summary.expired }}</div><div class="summary-label">{{ 'summary.expired'|trans({}, 'partners') }}</div></div>
         </div>
@@ -77,6 +77,10 @@
                             {{ _self.until_cell(restaurant) }}
                             <td>
                                 <div class="actions">
+                                    {% if restaurant.hasLiveSubscription %}
+                                        {# Stripe adds its days: never twice. #}
+                                        <button type="button" class="btn btn-primary register-payment" disabled>{{ 'payment.by_card'|trans({}, 'partners') }}</button>
+                                    {% else %}
                                     <button type="button" class="btn btn-primary register-payment" onclick="PaymentUI.open(this)" {{ expired ? 'disabled' }}
                                             data-name="{{ restaurant.name }}"
                                             data-action="{{ path('partners_restaurant_register_payment', {id: restaurant.id}) }}"
@@ -85,6 +89,7 @@
                                             data-until-yearly="{{ restaurant.paidUntilAfter('yearly')|date('d/m/Y') }}">
                                         {{ 'payment.button'|trans({}, 'partners') }}
                                     </button>
+                                    {% endif %}
                                     {% if reseller.canChargeRestaurants and not restaurant.hasLiveSubscription %}
                                         {% if owner %}
                                             <button type="button" class="btn copy-link" onclick="copyPaymentLink(this)"
@@ -266,6 +271,60 @@
         </script>
     {% endif %}
 
+    {# "Editar" next to the company name (header, partners/_base.html.twig):
+       same modal + bottom sheet pair; reopened with the error on a 422.
+       Also while expired — that's when its restaurants need to reach it. #}
+    {% for panel in [{id: 'company-modal', overlay: 'modal-overlay', box: 'modal'}, {id: 'company-sheet', overlay: 'sheet-overlay', box: 'sheet'}] %}
+        <div class="{{ panel.overlay }}" id="{{ panel.id }}" onclick="if(event.target===this)CompanyUI.close()">
+            <div class="{{ panel.box }}" role="dialog" aria-modal="true" aria-labelledby="{{ panel.id }}-title">
+                {% if panel.box == 'sheet' %}<div class="sheet-handle"></div>{% endif %}
+                <div class="panel-header">
+                    <div class="panel-title" id="{{ panel.id }}-title">{{ 'company.title'|trans({}, 'partners') }}</div>
+                    <button type="button" class="panel-close" onclick="CompanyUI.close()" aria-label="{{ 'new.close'|trans({}, 'partners') }}">
+                        <i class="ti ti-x" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <form method="post" action="{{ path('partners_company') }}" class="company-form" style="display: contents">
+                    <input type="hidden" name="_token" value="{{ csrf_token('partners-company') }}">
+                    <div class="panel-body">
+                        {% if company.error is defined %}
+                            <div class="form-error" role="alert">{{ company.error }}</div>
+                        {% endif %}
+                        <div class="field">
+                            <label for="{{ panel.id }}-name">{{ 'company.name'|trans({}, 'partners') }}</label>
+                            <input type="text" id="{{ panel.id }}-name" name="name" value="{{ company.values.name }}" required minlength="2" maxlength="100">
+                        </div>
+                        <div class="field">
+                            <label for="{{ panel.id }}-email">{{ 'company.email'|trans({}, 'partners') }}</label>
+                            <input type="email" id="{{ panel.id }}-email" name="email" value="{{ company.values.email }}" maxlength="180" placeholder="{{ userEmail }}">
+                            <div class="field-hint">{{ 'company.email_hint'|trans({}, 'partners') }}</div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button type="button" class="btn" onclick="CompanyUI.close()">{{ 'new.cancel'|trans({}, 'partners') }}</button>
+                        <button type="submit" class="btn btn-primary"><i class="ti ti-check" aria-hidden="true"></i> {{ 'company.save'|trans({}, 'partners') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+    <script>
+        const CompanyUI = {
+            panels: ['company-modal', 'company-sheet'].map(id => document.getElementById(id)),
+            open() {
+                // Same breakpoint as admin's window.isMobile().
+                const panel = window.innerWidth < 768 ? this.panels[1] : this.panels[0];
+                panel.classList.add('open');
+                panel.querySelector('input[name="name"]').focus();
+            },
+            close() {
+                this.panels.forEach(panel => panel.classList.remove('open'));
+            },
+        };
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') CompanyUI.close(); });
+        {% if company.error is defined %}CompanyUI.open();{% endif %}
+    </script>
+
     {# "Copiar enlace de pago", as on /platform. navigator.clipboard needs
        a secure context (https / localhost); plain http falls back to execCommand. #}
     <script>
@@ -299,13 +358,16 @@
 {% endblock %}
 
 {# Status by the restaurant's own paid_until (the reseller's own state has
-   the notice at the top): 🟡 trial (never paid), 🟢 paid, 🔴 expired. #}
+   the notice at the top): ⚪ pending (never paid: no free trial), 🔴
+   expired, 🟢 active (an old trial, never paid yet) or paid. #}
 {% macro status_cell(r) %}
     <td data-label="{{ 'list.status'|trans({}, 'partners') }}" class="status-cell">
-        {% if r.ownPeriodExpired %}
+        {% if r.awaitingFirstPayment %}
+            <div class="status status-pending">⚪ {{ 'status.pending'|trans({}, 'partners') }}</div>
+        {% elseif r.ownPeriodExpired %}
             <div class="status status-expired">🔴 {{ 'status.expired'|trans({}, 'partners') }}</div>
         {% elseif r.plan is null %}
-            <div class="status status-trial">🟡 {{ 'status.trial'|trans({}, 'partners') }}</div>
+            <div class="status status-active">🟢 {{ 'status.active'|trans({}, 'partners') }}</div>
         {% else %}
             <div class="status status-active">🟢 {{ 'status.paid'|trans({}, 'partners') }}</div>
         {% endif %}
@@ -318,6 +380,10 @@
 
 {# /platform's "Válida hasta": orange at 7 days or fewer, red once expired. #}
 {% macro until_cell(r) %}
+    {% if r.awaitingFirstPayment %}
+        {# Never active: no date to show. #}
+        <td data-label="{{ 'list.until'|trans({}, 'partners') }}" class="until"><div>—</div></td>
+    {% else %}
     {% set days = r.daysLeft %}
     <td data-label="{{ 'list.until'|trans({}, 'partners') }}" class="until {{ days < 0 ? 'until-expired' : (days <= 7 ? 'until-soon' : '') }}">
         <div>{{ r.paidUntil|date('d/m/Y') }}</div>
@@ -331,6 +397,7 @@
             {%- endif -%}
         </div>
     </td>
+    {% endif %}
 {% endmacro %}
 
 {# "Cobro con tarjeta": the reseller's own Stripe account (PartnersConnectController):

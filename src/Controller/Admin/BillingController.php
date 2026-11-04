@@ -330,14 +330,16 @@ class BillingController extends AbstractController
         ]);
     }
 
-    /** The reseller's user's email (its first one); null for a restaurant without reseller. */
+    /** The reseller's contact email, else its user's (its first one); null for a restaurant without reseller. */
     private function resellerContact(Restaurant $restaurant, EntityManagerInterface $em): ?string
     {
-        if ($restaurant->getReseller() === null) {
+        $reseller = $restaurant->getReseller();
+        if ($reseller === null) {
             return null;
         }
 
-        return $em->getRepository(User::class)->findOneBy(['reseller' => $restaurant->getReseller()], ['id' => 'ASC'])?->getEmail();
+        return $reseller->getContactEmail()
+            ?? $em->getRepository(User::class)->findOneBy(['reseller' => $reseller], ['id' => 'ASC'])?->getEmail();
     }
 
     private function restaurant(): Restaurant

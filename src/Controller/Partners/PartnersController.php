@@ -125,6 +125,10 @@ class PartnersController extends AbstractController
         if (!isset(Restaurant::PLAN_MONTHS[$plan])) {
             throw new BadRequestHttpException('Unknown plan.');
         }
+        // It pays by card: Stripe adds its days (never twice).
+        if ($restaurant->hasLiveSubscription()) {
+            throw new BadRequestHttpException('Paid by card.');
+        }
 
         if (!$this->reseller()->isExpired() && !$restaurant->isArchived()) {
             $restaurant->markPaid($plan);
@@ -154,7 +158,39 @@ class PartnersController extends AbstractController
     }
 
     /** @param array{error?: string, values?: array{name: string, email: string}} $dialog */
-    private function renderPanel(array $dialog = [], int $status = Response::HTTP_OK): Response
+    /**
+     * "Editar" next to the company name: its name and the contact email its
+     * restaurants see (empty = its user's). Allowed while expired — that's
+     * when its restaurants need to reach it. Stripe keeps its own data.
+     */
+    #[Route('/empresa', name: 'company', methods: ['POST'])]
+    public function company(Request $request): Response
+    {
+        $this->checkToken($request, 'partners-company');
+        $reseller = $this->reseller();
+
+        $values = [
+            'name'  => trim((string) $request->request->get('name')),
+            'email' => trim((string) $request->request->get('email')),
+        ];
+        $error = match (true) {
+            mb_strlen($values['name']) < 2 || mb_strlen($values['name']) > 100 => 'company.error.name',
+            $values['email'] !== '' && (!filter_var($values['email'], FILTER_VALIDATE_EMAIL) || mb_strlen($values['email']) > 180) => 'company.error.email',
+            default => null,
+        };
+        if ($error !== null) {
+            return $this->renderPanel(company: ['error' => $this->translator->trans($error, [], 'partners'), 'values' => $values], status: Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $reseller->setName($values['name']);
+        $reseller->setContactEmail($values['email']);
+        $this->em->flush();
+        $this->addFlash('success', $this->translator->trans('company.saved', [], 'partners'));
+
+        return $this->redirectToRoute('partners_index');
+    }
+
+    private function renderPanel(array $dialog = [], int $status = Response::HTTP_OK, array $company = []): Response
     {
         $reseller    = $this->reseller();
         $restaurants = $this->em->getRepository(Restaurant::class)->findBy(['reseller' => $reseller], ['paidUntil' => 'ASC', 'name' => 'ASC']);
@@ -176,13 +212,19 @@ class PartnersController extends AbstractController
         // Summary cards, as /platform's: by each restaurant's own
         // paid_until (the reseller's own state has its own notice).
         // "Expiring soon" overlaps with active/trial on purpose.
-        $summary = ['active' => 0, 'trial' => 0, 'expiringSoon' => 0, 'expired' => 0];
+        // Never paid yet ("Pendiente de pago") counts apart from expired:
+        // a different job for the reseller (get it paid, not renewed).
+        $summary = ['active' => 0, 'pending' => 0, 'expiringSoon' => 0, 'expired' => 0];
         foreach ($active as $restaurant) {
+            if ($restaurant->isAwaitingFirstPayment()) {
+                $summary['pending']++;
+                continue;
+            }
             if ($restaurant->isOwnPeriodExpired()) {
                 $summary['expired']++;
                 continue;
             }
-            $summary[$restaurant->getPlan() === null ? 'trial' : 'active']++;
+            $summary['active']++;
             if ($restaurant->getDaysLeft() <= 7) {
                 $summary['expiringSoon']++;
             }
@@ -197,14 +239,13 @@ class PartnersController extends AbstractController
             'included' => $this->includedRestaurants,
             'extra'    => max(0, count($active) - $this->includedRestaurants),
             'dialog'   => $dialog,
+            'company'  => $company + ['values' => ['name' => $reseller->getName(), 'email' => (string) $reseller->getContactEmail()]],
+            // Shown as the empty field's placeholder: what its restaurants see then.
+            'userEmail' => $this->em->getRepository(User::class)->findOneBy(['reseller' => $reseller], ['id' => 'ASC'])?->getEmail(),
             'currency' => strtolower($this->connectCurrency),
         ], new Response(status: $status));
     }
 
-    /**
-     * The app's change stands even if Stripe fails: logged, and the next
-     * create / archive / restore sets the count again from scratch.
-     */
     private function reseller(): Reseller
     {
         return $this->getUser()?->getReseller() ?? throw $this->createAccessDeniedException();

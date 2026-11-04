@@ -100,7 +100,8 @@ final class ResellerSignupTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSame('Alta con Reseller Signup Test Agency', $crawler->filter('#signup-reseller')->text());
-        self::assertStringNotContainsString('prueba gratuita', $crawler->filter('body')->text());
+        self::assertStringNotContainsString('prueba', $crawler->filter('body')->text());
+        self::assertStringNotContainsString('30 días', $crawler->filter('body')->text());
         self::assertCount(0, $crawler->filter('a[href="/"]'), 'no link to the home page and its prices');
         // Same form as /register, with the currency selector.
         self::assertCount(1, $crawler->filter('select[name="registration_form[currency]"]'));
@@ -112,13 +113,17 @@ final class ResellerSignupTest extends WebTestCase
         $this->submit($this->client->request('GET', $this->path()), 'Reseller Signup Test Bistro', $email);
 
         self::assertResponseRedirects();
+        // Logged in, but no trial: its panel (in the English it chose) asks for a plan first.
         $this->client->request('GET', '/admin/menu');
-        self::assertResponseIsSuccessful();
+        self::assertResponseStatusCodeSame(403);
+        self::assertSelectorTextSame('#choose-plan', 'Choose a plan to activate your menu');
 
         $restaurant = $this->restaurantNamed('Reseller Signup Test Bistro');
         self::assertNotNull($restaurant);
         self::assertSame($this->reseller->getId(), $restaurant->getReseller()?->getId());
-        self::assertSame((new \DateTimeImmutable('today +30 days'))->format('Y-m-d'), $restaurant->getPaidUntil()->format('Y-m-d'));
+        self::assertSame((new \DateTimeImmutable('yesterday'))->format('Y-m-d'), $restaurant->getPaidUntil()->format('Y-m-d'));
+        self::assertNull($restaurant->getPlan());
+        self::assertTrue($restaurant->isAwaitingFirstPayment());
         self::assertSame('GBP', $restaurant->getCurrency());
         self::assertSame('fr', $restaurant->getDefaultLanguage());
         self::assertSame('en', $restaurant->getAdminLocale());

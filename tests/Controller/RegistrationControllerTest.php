@@ -67,6 +67,8 @@ final class RegistrationControllerTest extends WebTestCase
         self::assertNotNull($user, 'registration must have created the user');
         self::assertContains(User::ROLE_OWNER, $user->getRoles());
         self::assertInstanceOf(Restaurant::class, $user->getRestaurant());
+        // Ours keep the free trial (a reseller's restaurant has none).
+        self::assertSame((new \DateTimeImmutable('today +30 days'))->format('Y-m-d'), $user->getRestaurant()->getPaidUntil()->format('Y-m-d'));
     }
 
     public function testTakenEmailShowsErrorAndKeepsWhatWasTyped(): void

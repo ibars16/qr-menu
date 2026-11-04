@@ -66,7 +66,7 @@ class Category
     private Collection $translations;
 
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Product::class, cascade: ['persist', 'remove'])]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     private Collection $products;
 
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: MenuSection::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -277,7 +277,8 @@ class Category
             ->filter(fn(Product $p) => $p->isShownOnMenu())
             ->toArray();
 
-        usort($products, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
+        // Same position (a new one gets count() after a delete): oldest first.
+        usort($products, fn($a, $b) => [$a->getPosition(), $a->getId()] <=> [$b->getPosition(), $b->getId()]);
 
         return $products;
     }

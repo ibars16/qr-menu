@@ -44,6 +44,7 @@ bottom_nav:
 
 subscription_expired: "Your subscription expired on %date%"
 reseller_inactive: "This restaurant isn't active"
+choose_plan: "Choose a plan to activate your menu"
 reseller_inactive_hint: "Contact %name%."
 
 # A reseller's restaurant, its own paid_until 7 days or fewer away (no payment button).

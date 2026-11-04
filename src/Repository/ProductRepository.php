@@ -48,6 +48,7 @@ class ProductRepository extends ServiceEntityRepository
             ->andWhere('p.active = true')
             ->setParameter('category', $categoryId)
             ->orderBy('p.position', 'ASC')
+            ->addOrderBy('p.id', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -96,7 +97,9 @@ class ProductRepository extends ServiceEntityRepository
             ->andWhere('c.active = true')
             ->setParameter('restaurant', $restaurant)
             ->orderBy('c.position', 'ASC')
-            ->addOrderBy('p.position', 'ASC');
+            ->addOrderBy('c.id', 'ASC')
+            ->addOrderBy('p.position', 'ASC')
+            ->addOrderBy('p.id', 'ASC');
 
         if ($excludeIds !== []) {
             $qb->andWhere('p.id NOT IN (:excludeIds)')

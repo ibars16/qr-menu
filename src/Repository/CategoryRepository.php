@@ -64,6 +64,7 @@ class CategoryRepository extends ServiceEntityRepository
             ->andWhere('c.active = true')
             ->setParameter('restaurant', $restaurantId)
             ->orderBy('c.position', 'ASC')
+            ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
     }

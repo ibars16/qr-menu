@@ -2,6 +2,7 @@
 
 namespace App\EventSubscriber;
 
+use App\Entity\Restaurant;
 use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -9,6 +10,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
 
@@ -18,7 +20,10 @@ use Twig\Environment;
  * - A super-admin (platform owner, no restaurant) is sent to /platform,
  *   a reseller (no restaurant either) to its own panel, /partners.
  * - A user whose restaurant is expired (Restaurant::isExpired(), i.e.
- *   paidUntil before today) gets only the "subscription expired" page.
+ *   paidUntil before today) gets only the "subscription expired" page —
+ *   unless it's its reseller or the super-admin "como" the owner
+ *   (switch_user), there to set up the menu while it's unpaid or expired
+ *   (preparingAsOwner()). The public menu and Smart Waiter stay off.
  *
  * Checked per request rather than at login, so an already-open session or a
  * remember-me cookie stops working the moment paidUntil passes or the
@@ -61,12 +66,40 @@ class SubscriptionGate implements EventSubscriberInterface
         }
 
         $restaurant = $user->getRestaurant();
-        if ($restaurant && $restaurant->isExpired()) {
+        if ($restaurant && $restaurant->isExpired() && !$this->preparingAsOwner($restaurant)) {
             $event->setResponse(new Response(
                 $this->twig->render('admin/subscription_expired.html.twig', ['restaurant' => $restaurant]),
                 Response::HTTP_FORBIDDEN,
             ));
         }
+    }
+
+    /**
+     * Its reseller (or the super-admin) acting as the owner may use the
+     * whole panel while only the restaurant's own period is the problem
+     * (awaiting its first payment or expired) — never while archived or
+     * while the reseller itself is expired.
+     */
+    private function preparingAsOwner(Restaurant $restaurant): bool
+    {
+        $token = $this->security->getToken();
+        if (!$token instanceof SwitchUserToken || $restaurant->isArchived() || $restaurant->getReseller()?->isExpired()) {
+            return false;
+        }
+
+        $original = $token->getOriginalToken()->getUser();
+        if (!$original instanceof User) {
+            return false;
+        }
+        if (in_array(User::ROLE_SUPER_ADMIN, $original->getRoles(), true)) {
+            return true;
+        }
+
+        $reseller = $restaurant->getReseller();
+
+        return $reseller !== null
+            && in_array(User::ROLE_RESELLER, $original->getRoles(), true)
+            && $original->getReseller()?->getId() === $reseller->getId();
     }
 
     public static function getSubscribedEvents(): array

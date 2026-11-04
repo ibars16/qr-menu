@@ -210,6 +210,116 @@ class StripeBilling
     }
 
     /**
+     * Its restaurants paying it by card (in its connected account): their
+     * collection paused while the reseller is expired (Stripe voids the
+     * invoices, so the paused time is never billed), resumed once it's up
+     * to date. On resume, a restaurant whose own paidUntil passed meanwhile
+     * (its renewal was voided) starts a new period charged right away
+     * (billing_cycle_anchor now, always_invoice: prorated), applied at once; otherwise
+     * it just carries on. Each subscription is re-read and only changed if
+     * it isn't as it should be, so running it again does nothing twice.
+     * One restaurant failing doesn't stop the others.
+     *
+     * @return array{paused: list<string>, resumed: list<string>, failed: list<string>} restaurant names
+     */
+    public function syncResellerCollection(Reseller $reseller, bool $dryRun = false, ?\DateTimeImmutable $today = null): array
+    {
+        $result = ['paused' => [], 'resumed' => [], 'failed' => []];
+        $account = $reseller->getConnectAccountId();
+        if ($account === null) {
+            return $result;
+        }
+
+        $pause = $reseller->isExpired($today);
+        $restaurants = $this->em->getRepository(Restaurant::class)->findBy(['reseller' => $reseller, 'stripeAccountId' => $account], ['id' => 'ASC']);
+        foreach ($restaurants as $restaurant) {
+            if (!$restaurant->hasLiveSubscription()) {
+                continue;
+            }
+            try {
+                $changed = $pause ? $this->pauseCollection($restaurant, $dryRun) : $this->resumeCollection($restaurant, $dryRun, $today);
+                if ($changed) {
+                    $result[$pause ? 'paused' : 'resumed'][] = $restaurant->getName();
+                }
+            } catch (\Throwable $e) {
+                $result['failed'][] = $restaurant->getName();
+                $this->logger->error('Stripe collection of a reseller restaurant not ' . ($pause ? 'paused' : 'resumed') . '; retried on the next run', [
+                    'reseller' => $reseller->getId(), 'restaurant' => $restaurant->getId(), 'exception' => $e,
+                ]);
+            }
+        }
+
+        return $result;
+    }
+
+    /** syncResellerCollection() right after the reseller is up to date again (it pays); never fails the caller. */
+    public function resumeResellerCollectionOrLog(Reseller $reseller): void
+    {
+        if ($reseller->isExpired()) {
+            return;
+        }
+        try {
+            $this->syncResellerCollection($reseller);
+        } catch (\Throwable $e) {
+            $this->logger->error('Stripe collection of reseller restaurants not resumed; retried by app:resellers:sync-billing', [
+                'reseller' => $reseller->getId(), 'exception' => $e,
+            ]);
+        }
+    }
+
+    /** @return bool whether it was (or, in a dry run, would be) paused now */
+    private function pauseCollection(Restaurant $restaurant, bool $dryRun): bool
+    {
+        $subscription = $this->liveSubscription($restaurant);
+        if (!self::collectable($subscription) || ($subscription['pause_collection']['behavior'] ?? null) === 'void') {
+            return false;
+        }
+        if (!$dryRun) {
+            $this->gatewayFor($restaurant)->updateSubscription($subscription['id'], ['pause_collection' => ['behavior' => 'void']]);
+        }
+
+        return true;
+    }
+
+    /** @return bool whether it was (or, in a dry run, would be) resumed now */
+    private function resumeCollection(Restaurant $restaurant, bool $dryRun, ?\DateTimeImmutable $today): bool
+    {
+        $subscription = $this->liveSubscription($restaurant);
+        if (!self::collectable($subscription) || ($subscription['pause_collection'] ?? null) === null) {
+            return false;
+        }
+        if ($dryRun) {
+            return true;
+        }
+
+        $params = ['pause_collection' => ''];
+        $newPeriod = $restaurant->isOwnPeriodExpired($today);
+        if ($newPeriod) {
+            // Flexible billing mode (our subscriptions'): an anchor reset
+            // only invoices with always_invoice — prorated, so the unused
+            // part of the voided period is credited.
+            $params['billing_cycle_anchor'] = ['type' => 'now'];
+            $params['proration_behavior']   = 'always_invoice';
+        }
+        $updated = $this->gatewayFor($restaurant)->updateSubscription($subscription['id'], $params);
+
+        // The new period's invoice is charged right away: apply it now
+        // instead of waiting for invoice.paid (which does the same again).
+        $invoiceId = $updated['latest_invoice'] ?? null;
+        if ($newPeriod && $invoiceId !== null) {
+            $this->syncInvoice(self::id($invoiceId), self::accountOf($restaurant));
+        }
+
+        return true;
+    }
+
+    /** @param array<string, mixed> $subscription Stripe still bills it (not ended). */
+    private static function collectable(array $subscription): bool
+    {
+        return !in_array($subscription['status'] ?? null, ['canceled', 'incomplete_expired'], true);
+    }
+
+    /**
      * After a restaurant is created, archived or restored: sets the extra
      * line to the count (not +1/-1, so a missed update is fixed by the next
      * one), prorated on the next invoice. Added when it's needed, removed
@@ -629,6 +739,11 @@ class StripeBilling
 
         $restaurant->applyStripePeriod(self::utcDate($periodEnd), $plan, $paidAt);
         $this->em->flush();
+
+        // A reseller paying again: its restaurants' card payments resume now.
+        if ($restaurant instanceof Reseller) {
+            $this->resumeResellerCollectionOrLog($restaurant);
+        }
     }
 
     /**

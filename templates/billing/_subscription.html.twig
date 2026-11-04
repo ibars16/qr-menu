@@ -97,7 +97,9 @@
                     <div class="billing-row">
                         <span class="label">{{ 'label.status'|trans({}, 'admin_billing') }}</span>
                         <span class="value" id="billing-status">
-                            {%- if customer.expired -%}
+                            {%- if customer.awaitingFirstPayment is defined and customer.awaitingFirstPayment -%}
+                                {{ 'status.pending'|trans({}, 'admin_billing') }}
+                            {%- elseif customer.expired -%}
                                 {{ 'status.expired'|trans({}, 'admin_billing') }}
                             {%- elseif customer.trialActive -%}
                                 {% set days = customer.trialDaysRemaining %}

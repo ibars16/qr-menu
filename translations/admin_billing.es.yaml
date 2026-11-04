@@ -24,6 +24,7 @@ plan:
     yearly: "Anual · %price%/año"
 
 status:
+    pending: "Pendiente de pago"
     trial_days: "Prueba gratis · quedan %count% días"
     trial_day: "Prueba gratis · queda 1 día"
     manual: "Activa hasta el %date%"

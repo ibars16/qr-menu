@@ -88,7 +88,12 @@ final class TropicalMenuFixtureTest extends KernelTestCase
             flags: JSON_THROW_ON_ERROR
         );
 
+        // findBy() alone has no ORDER BY: Postgres may return the rows in
+        // any order (e.g. once a row is updated), which made the category
+        // order below flaky. Menu order instead: category, then dish.
         $products = $this->em->getRepository(Product::class)->findBy(['importBatch' => $batch]);
+        usort($products, static fn (Product $a, Product $b) => [$a->getCategory()->getPosition(), $a->getCategory()->getId(), $a->getPosition(), $a->getId()]
+            <=> [$b->getCategory()->getPosition(), $b->getCategory()->getId(), $b->getPosition(), $b->getId()]);
         $resolver = self::getContainer()->get(ProductAllergenResolver::class);
         $allergenEntries = $resolver->resolveForProducts($products);
 

@@ -75,7 +75,7 @@ new:
         email_taken: "Esiste già un account con questa email. Usane un'altra per il titolare."
 
 flash:
-    created: "%name% creato. Ora puoi entrare nel suo pannello."
+    created: "%name% creato. Entra per preparare il suo menù. Si attiverà quando pagherà."
     archived: "%name% archiviato: il menù non si vede più."
     restored: "%name% ripristinato."
     paid: "Pagamento registrato: %name% è attivo fino al %date%."
@@ -83,12 +83,13 @@ flash:
 
 summary:
     active: "Attivi"
-    trial: "In prova"
+    pending: "In attesa di pagamento"
     expiring_soon: "Scadono entro 7 giorni"
     expired: "Scaduti"
 
 status:
-    trial: "In prova"
+    pending: "In attesa di pagamento"
+    active: "Attivo"
     paid: "Pagato"
     expired: "Scaduto"
 
@@ -101,6 +102,7 @@ days:
 
 payment:
     button: "Registra pagamento"
+    by_card: "Paga con carta"
     title: "Registra pagamento"
     monthly: "1 mese → attivo fino al"
     yearly: "1 anno → attivo fino al"
@@ -153,5 +155,17 @@ connect:
     product_name: "Menù digitale QR"
 signup_link:
     title: "Il tuo link di registrazione per i clienti"
-    text: "Invialo a un ristorante: si registra da solo, parte con 30 giorni e compare nella tua lista."
+    text: "Invialo a un ristorante: si registra da solo e compare nella tua lista, in attesa di pagamento."
     copy: "Copia link"
+company:
+    edit: "Modifica"
+    title: "Dati della tua azienda"
+    name: "Nome dell'azienda"
+    email: "Email di contatto"
+    email_hint: "Quella che vedono i tuoi ristoranti. Se la lasci vuota, si usa quella del tuo utente."
+    save: "Salva"
+    saved: "Dati dell'azienda salvati."
+    error:
+        name: "Il nome deve avere tra 2 e 100 caratteri."
+        email: "L'email di contatto non è valida."
+impersonation_left: "Sei uscito dalla modalità «come proprietario» e sei tornato al tuo pannello. Se stavi facendo qualcosa qui, ripetilo."

@@ -398,12 +398,17 @@ final class PartnersControllerTest extends WebTestCase
 
     public function testPanelShowsCardsStatusAndDatesByPaidUntil(): void
     {
-        // Bistro: on its 30-day trial.
+        // Bistro: an old 30-day trial (created before resellers' restaurants
+        // lost theirs), never paid but still on.
         $paid = $this->restaurant('Partners Test Paid', $this->reseller);
         $paid->markPaid(Restaurant::PLAN_MONTHLY);
         $this->paidUntil($paid, 'today +3 days');
         $expired = $this->restaurant('Partners Test Expired', $this->reseller);
+        $expired->markPaid(Restaurant::PLAN_MONTHLY, new \DateTimeImmutable('today -40 days'));
         $this->paidUntil($expired, 'today -2 days');
+        // Never paid and off: how a reseller's restaurant starts now.
+        $pending = $this->restaurant('Partners Test Pending', $this->reseller);
+        $this->paidUntil($pending, 'yesterday');
         $archived = $this->restaurant('Partners Test Archived', $this->reseller);
         $archived->archive();
         $this->paidUntil($archived, 'today -10 days');
@@ -411,17 +416,22 @@ final class PartnersControllerTest extends WebTestCase
 
         $crawler = $this->panel();
 
-        // Activos · En prueba · Vencen en 7 días · Vencidos (archived left out).
-        self::assertSame(['1', '1', '1', '1'], $crawler->filter('.summary-card .summary-value')->each(fn (Crawler $n) => $n->text()));
-        self::assertSame(['Activos', 'En prueba', 'Vencen en 7 días', 'Vencidos'], $crawler->filter('.summary-card .summary-label')->each(fn (Crawler $n) => $n->text()));
+        // Activos · Pendiente de pago · Vencen en 7 días · Vencidos (archived left out).
+        self::assertSame(['2', '1', '1', '1'], $crawler->filter('.summary-card .summary-value')->each(fn (Crawler $n) => $n->text()));
+        self::assertSame(['Activos', 'Pendiente de pago', 'Vencen en 7 días', 'Vencidos'], $crawler->filter('.summary-card .summary-label')->each(fn (Crawler $n) => $n->text()));
+        self::assertStringNotContainsString('prueba', $crawler->filter('body')->text());
 
         // Soonest to expire first; archived below, as before.
-        self::assertSame(['Partners Test Expired', 'Partners Test Paid', 'Partners Test Bistro'], $crawler->filter('.active-list .r-name')->each(fn (Crawler $n) => $n->text()));
+        self::assertSame(['Partners Test Expired', 'Partners Test Pending', 'Partners Test Paid', 'Partners Test Bistro'], $crawler->filter('.active-list .r-name')->each(fn (Crawler $n) => $n->text()));
         self::assertSame(['Partners Test Archived'], $crawler->filter('.archived-list .r-name')->each(fn (Crawler $n) => $n->text()));
+
+        $row = $this->row($crawler, 'Partners Test Pending');
+        self::assertSame('⚪ Pendiente de pago', $row->filter('.status')->text());
+        self::assertSame('Sin cobros', $row->filter('.last-paid')->text());
+        self::assertSame('—', $row->filter('td.until')->text());
 
         $row = $this->row($crawler, 'Partners Test Expired');
         self::assertSame('🔴 Vencido', $row->filter('.status')->text());
-        self::assertSame('Sin cobros', $row->filter('.last-paid')->text());
         self::assertStringContainsString('until-expired', $row->filter('td.until')->attr('class'));
         self::assertSame('venció hace 2 días', $row->filter('td.until .sub')->text());
 
@@ -433,7 +443,7 @@ final class PartnersControllerTest extends WebTestCase
         self::assertSame('quedan 3 días', $row->filter('td.until .sub')->text());
 
         $row = $this->row($crawler, 'Partners Test Bistro');
-        self::assertSame('🟡 En prueba', $row->filter('.status')->text());
+        self::assertSame('🟢 Activo', $row->filter('.status')->text());
         self::assertStringNotContainsString('until-', (string) $row->filter('td.until')->attr('class'));
         self::assertSame('quedan 30 días', $row->filter('td.until .sub')->text());
         self::assertSame('Registrar pago', $row->filter('button.register-payment')->text());
@@ -489,7 +499,8 @@ final class PartnersControllerTest extends WebTestCase
         self::assertFalse($restaurant->isArchived());
 
         $crawler = $this->client->followRedirect();
-        self::assertSame('🔴 Vencido', $this->row($crawler, 'Partners Test Bistro')->filter('.status')->text());
+        // Never paid: pending, not "vencido".
+        self::assertSame('⚪ Pendiente de pago', $this->row($crawler, 'Partners Test Bistro')->filter('.status')->text());
         // Still counted: deactivating isn't archiving.
         self::assertSelectorTextSame('#restaurant-count', 'Restaurantes: 1 de 5 incluidos');
 
@@ -555,14 +566,16 @@ final class PartnersControllerTest extends WebTestCase
         self::assertSame('partners-test-new-place', $restaurant->getSlug());
         self::assertSame($this->reseller->getId(), $restaurant->getReseller()->getId());
         self::assertSame('EUR', $restaurant->getCurrency());
-        // The reseller's 30-day trial: its own paid_until, never paid.
-        self::assertEquals(new \DateTimeImmutable('today +30 days'), $restaurant->getPaidUntil());
+        // No free trial: off (yesterday) until it's paid.
+        self::assertEquals(new \DateTimeImmutable('yesterday'), $restaurant->getPaidUntil());
         self::assertNull($restaurant->getPlan());
-        self::assertFalse($restaurant->isExpired());
+        self::assertNull($restaurant->getLastPaidAt());
+        self::assertTrue($restaurant->isExpired());
+        self::assertTrue($restaurant->isAwaitingFirstPayment());
         self::assertTrue(static::getContainer()->get(UserPasswordHasherInterface::class)->isPasswordValid($owner, 'a-strong-password-1'));
 
         $this->client->followRedirect();
-        self::assertSelectorTextContains('.flash-success', 'Partners Test New Place');
+        self::assertSelectorTextSame('.flash-success', 'Partners Test New Place creado. Entra para preparar su carta. Se activará cuando pague.');
         self::assertSelectorTextSame('#restaurant-count', 'Restaurantes: 2 de 5 incluidos');
     }
 
@@ -722,6 +735,86 @@ final class PartnersControllerTest extends WebTestCase
         $this->client->request('GET', '/admin/menu?_switch_user=' . urlencode($this->resellerUser->getEmail()));
 
         self::assertResponseStatusCodeSame(403);
+    }
+
+    /** The reseller "como" the owner: whole panel to set up an unpaid menu, which stays off for the public. */
+    public function testResellerPreparesAnUnpaidRestaurantAsItsOwner(): void
+    {
+        $restaurant = $this->reloadedRestaurant();
+        $restaurant->deactivateNow();
+        $this->em->flush();
+        self::assertTrue($restaurant->isAwaitingFirstPayment());
+
+        $this->client->loginUser($this->resellerUser);
+        $this->client->request('GET', '/admin/menu?_switch_user=' . urlencode($this->owner->getEmail()));
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('#choose-plan');
+
+        $this->client->request('GET', '/r/' . $restaurant->getSlug() . '?lang=es');
+        self::assertResponseStatusCodeSame(503);
+
+        // The owner on its own still gets "Elige un plan".
+        $this->client->request('GET', '/admin/menu?_switch_user=_exit');
+        $this->client->loginUser($this->owner);
+        $this->client->request('GET', '/admin/menu');
+        self::assertResponseStatusCodeSame(403);
+        self::assertSelectorTextSame('#choose-plan', 'Elige un plan para activar tu carta');
+    }
+
+    public function testResellerAsOwnerAlsoGetsThePanelWhenItsPeriodExpired(): void
+    {
+        $restaurant = $this->reloadedRestaurant();
+        $restaurant->markPaid(Restaurant::PLAN_MONTHLY, new \DateTimeImmutable('today -40 days'));
+        $this->paidUntil($restaurant, 'today -3 days');
+        $this->em->flush();
+
+        $this->client->loginUser($this->resellerUser);
+        $this->client->request('GET', '/admin/menu?_switch_user=' . urlencode($this->owner->getEmail()));
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testNoPanelAsOwnerWhileArchivedOrResellerExpired(): void
+    {
+        $restaurant = $this->reloadedRestaurant();
+        $restaurant->deactivateNow();
+        $restaurant->archive();
+        $this->em->flush();
+
+        $this->client->loginUser($this->resellerUser);
+        $this->client->request('GET', '/admin/menu?_switch_user=' . urlencode($this->owner->getEmail()));
+        if ($this->client->getResponse()->isRedirect()) {
+            $this->client->followRedirect();
+        }
+        self::assertResponseStatusCodeSame(403);
+
+        $restaurant = $this->reloadedRestaurant();
+        $restaurant->unarchive();
+        $this->em->flush();
+        $this->expireReseller();
+
+        $this->client->request('GET', '/admin/menu?_switch_user=_exit');
+        $this->client->loginUser($this->resellerUser);
+        $this->client->request('GET', '/admin/menu?_switch_user=' . urlencode($this->owner->getEmail()));
+        if ($this->client->getResponse()->isRedirect()) {
+            $this->client->followRedirect();
+        }
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testSuperAdminAsOwnerPreparesAnUnpaidRestaurant(): void
+    {
+        $restaurant = $this->reloadedRestaurant();
+        $restaurant->deactivateNow();
+        $this->em->flush();
+        $super = $this->user('partners-test-super', User::ROLE_SUPER_ADMIN);
+        $this->em->flush();
+
+        $this->client->loginUser($super);
+        $this->client->request('GET', '/admin/menu?_switch_user=' . urlencode($this->owner->getEmail()));
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
     }
 
     public function testSuperAdminStillEntersAnyOwnerAndGoesBackToPlatform(): void

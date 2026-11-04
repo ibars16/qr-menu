@@ -350,8 +350,9 @@ class MenuController extends AbstractController
 
         $setMenus = array_values(array_filter($allActiveCategories, fn($c) => $c->isFixedPriceMenu()));
         $normalCategories = array_values(array_filter($allActiveCategories, fn($c) => !$c->isFixedPriceMenu()));
-        usort($setMenus, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
-        usort($normalCategories, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
+        // Same position (a new one gets count() after a delete): oldest first.
+        usort($setMenus, fn($a, $b) => [$a->getPosition(), $a->getId()] <=> [$b->getPosition(), $b->getId()]);
+        usort($normalCategories, fn($a, $b) => [$a->getPosition(), $a->getId()] <=> [$b->getPosition(), $b->getId()]);
         $categories = array_merge($setMenus, $normalCategories);
 
         // Products with converted price

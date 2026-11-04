@@ -64,6 +64,10 @@ class Reseller
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $connectPriceYearlyId = null;
 
+    /** Email its restaurants see to contact it; null = its user's email. Not sent to Stripe. */
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $contactEmail = null;
+
     /** Secret part of its customers' signup link (/alta/{code}); restaurants created there are its own. */
     #[ORM\Column(length: 32)]
     private string $signupCode;
@@ -73,6 +77,16 @@ class Reseller
         $this->name       = $name;
         $this->paidUntil  = new \DateTimeImmutable('yesterday');
         $this->signupCode = bin2hex(random_bytes(16));
+    }
+
+    public function getContactEmail(): ?string
+    {
+        return $this->contactEmail;
+    }
+
+    public function setContactEmail(?string $contactEmail): void
+    {
+        $this->contactEmail = $contactEmail === '' ? null : $contactEmail;
     }
 
     public function getSignupCode(): string

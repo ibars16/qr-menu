@@ -282,6 +282,25 @@ final class PlatformControllerTest extends WebTestCase
         self::assertSame((new \DateTimeImmutable('today'))->format('Y-m-d'), $restaurant->getLastPaidAt()->format('Y-m-d'));
     }
 
+    public function testRegisterPaymentBlockedWhilePayingByCard(): void
+    {
+        $button = $this->row()->selectButton('Registrar pago');
+        $before = $this->restaurant->getPaidUntil()->format('Y-m-d');
+        $restaurant = $this->reloaded();
+        $restaurant->setStripeSubscriptionId('sub_platform_card');
+        $this->em->flush();
+
+        $row = $this->row();
+        self::assertCount(0, $row->selectButton('Registrar pago'));
+        self::assertNotNull($row->selectButton('Paga con tarjeta')->attr('disabled'));
+
+        // Refused server-side too: Stripe adds its days, never twice.
+        $this->client->request('POST', $button->attr('data-action'), ['_token' => $button->attr('data-token'), 'plan' => 'monthly']);
+        self::assertResponseStatusCodeSame(400);
+        self::assertSame($before, $this->reloaded()->getPaidUntil()->format('Y-m-d'));
+        self::assertNull($this->reloaded()->getLastPaidAt());
+    }
+
     public function testRegisterPaymentRejectsUnknownPlan(): void
     {
         $button = $this->row()->selectButton('Registrar pago');
@@ -327,6 +346,60 @@ final class PlatformControllerTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(403);
         self::assertSame($before, $this->reloaded()->getPaidUntil()->format('Y-m-d'));
+    }
+
+    // ── Back on /platform while "como" an owner ──
+
+    private function enterAsOwner(): void
+    {
+        $this->client->request('GET', '/admin/menu?_switch_user=' . urlencode($this->owner->getEmail()));
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+    }
+
+    /** Follows the exit: /platform?_switch_user=_exit, then /platform, with the message. */
+    private function assertLeftToPlatform(): void
+    {
+        self::assertResponseRedirects('/platform?_switch_user=_exit', 303);
+        $this->client->followRedirect();
+        self::assertResponseRedirects();
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSame('/platform', parse_url($this->client->getRequest()->getUri(), PHP_URL_PATH));
+        self::assertSelectorTextContains('.flash-success', 'Has salido del modo «como dueño» y vuelto a tu panel.');
+    }
+
+    public function testActionFromAStalePageLeavesTheOwnerModeWithoutRunningIt(): void
+    {
+        // /platform, then "Entrar" as the owner and back with the arrow.
+        $button = $this->row()->selectButton('Registrar pago');
+        $before = $this->restaurant->getPaidUntil()->format('Y-m-d');
+        $this->enterAsOwner();
+
+        $this->client->request('POST', $button->attr('data-action'), ['_token' => $button->attr('data-token'), 'plan' => 'yearly']);
+
+        $this->assertLeftToPlatform();
+        self::assertSame($before, $this->reloaded()->getPaidUntil()->format('Y-m-d'), 'not run');
+        self::assertNull($this->reloaded()->getPlan());
+    }
+
+    public function testOpeningPlatformAsTheOwnerLeavesTheOwnerMode(): void
+    {
+        $this->row();
+        $this->enterAsOwner();
+
+        $this->client->request('GET', '/platform');
+
+        $this->assertLeftToPlatform();
+        // Itself again: the admin panel sends it back to /platform.
+        $this->client->request('GET', '/admin/menu');
+        self::assertResponseRedirects('/platform');
+    }
+
+    public function testPlatformPagesAreNotKeptByTheBrowser(): void
+    {
+        $this->row();
+        self::assertStringContainsString('no-store', (string) $this->client->getResponse()->headers->get('Cache-Control'));
     }
 
     public function testOwnerCannotPostActions(): void

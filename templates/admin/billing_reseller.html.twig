@@ -20,7 +20,9 @@
                 <div class="billing-row">
                     <span class="label">{{ 'label.status'|trans({}, 'admin_billing') }}</span>
                     <span class="value" id="billing-status">
-                        {%- if restaurant.expired -%}
+                        {%- if restaurant.awaitingFirstPayment -%}
+                            {{ 'status.pending'|trans({}, 'admin_billing') }}
+                        {%- elseif restaurant.expired -%}
                             {{ 'status.expired'|trans({}, 'admin_billing') }}
                         {%- elseif restaurant.plan is null -%}
                             {{ (days <= 1 ? 'status.trial_day' : 'status.trial_days')|trans({'%count%': days}, 'admin_billing') }}

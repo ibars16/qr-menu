@@ -170,6 +170,9 @@ class FakeStripeGateway implements StripeGatewayInterface
         if (array_key_exists('cancel_at', $params)) {
             $subscription['cancel_at'] = $params['cancel_at'] === '' ? null : $params['cancel_at'];
         }
+        if (array_key_exists('pause_collection', $params)) {
+            $subscription['pause_collection'] = $params['pause_collection'] === '' ? null : $params['pause_collection'];
+        }
         if (isset($params['default_payment_method'])) {
             $subscription['default_payment_method'] = self::$objects[$params['default_payment_method']] ?? $params['default_payment_method'];
         }
@@ -334,6 +337,8 @@ class FakeStripeGateway implements StripeGatewayInterface
             'trial_end' => null,
             'schedule' => null,
             'default_payment_method' => null,
+            'pause_collection' => null,
+            'latest_invoice' => null,
         ];
     }
 

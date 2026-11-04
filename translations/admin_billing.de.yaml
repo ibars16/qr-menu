@@ -24,6 +24,7 @@ plan:
     yearly: "Jährlich · %price%/Jahr"
 
 status:
+    pending: "Zahlung ausstehend"
     trial_days: "Kostenlose Testphase · noch %count% Tage"
     trial_day: "Kostenlose Testphase · noch 1 Tag"
     manual: "Aktiv bis %date%"

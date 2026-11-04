@@ -204,6 +204,9 @@ final class ResellerRestaurantTest extends WebTestCase
 
     public function testOwnDateExpiredBlocksPanelAndMenuWhileResellerPays(): void
     {
+        $this->em->clear();
+        $this->em->find(Restaurant::class, $this->restaurant->getId())->markPaid(Restaurant::PLAN_MONTHLY, new \DateTimeImmutable('today -40 days'));
+        $this->em->flush();
         $this->setOwnPaidUntil('yesterday');
 
         $this->client->request('GET', '/r/' . $this->restaurant->getSlug() . '?lang=es');
@@ -216,6 +219,32 @@ final class ResellerRestaurantTest extends WebTestCase
         self::assertSelectorTextSame('.hint', 'Contacta con Reseller Test Agency.');
         self::assertSelectorNotExists('form[action="/admin/billing/checkout"]');
         self::assertSelectorNotExists('form[action="/admin/billing/portal"]');
+    }
+
+    public function testNeverPaidAsksToChooseAPlanAndWhoToContact(): void
+    {
+        // How a reseller's restaurant starts: no trial, never paid. Its
+        // reseller can't charge by card: contact it.
+        $this->setOwnPaidUntil('yesterday');
+
+        $this->client->loginUser($this->owner);
+        $this->client->request('GET', '/admin/menu');
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertSelectorTextSame('#choose-plan', 'Elige un plan para activar tu carta');
+        self::assertSelectorTextSame('.hint', 'Contacta con Reseller Test Agency.');
+        self::assertSelectorNotExists('form[action="/admin/billing/checkout"]');
+        self::assertStringNotContainsString('venció', $this->client->getCrawler()->filter('body')->text());
+    }
+
+    public function testBillingScreenSaysAwaitingPaymentWhenNeverPaid(): void
+    {
+        $this->setOwnPaidUntil('yesterday');
+        $this->client->loginUser($this->owner);
+        $this->client->request('GET', '/admin/billing');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextSame('#billing-status', 'Pendiente de pago');
     }
 
     public function testBillingScreenIsInformationOnly(): void
