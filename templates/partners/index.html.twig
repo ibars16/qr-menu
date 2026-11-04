@@ -18,6 +18,20 @@
             </div>
         {% endif %}
 
+        {{ _self.connect_card(reseller, expired, currency) }}
+
+        {# Its customers' own signup (/alta/{code}, ResellerSignupController):
+           the restaurant lands in this list. Unavailable while expired. #}
+        <section class="connect-card signup-link" id="signup-link">
+            <div class="connect-title"><i class="ti ti-link" aria-hidden="true"></i> {{ 'signup_link.title'|trans({}, 'partners') }}</div>
+            <p class="connect-text">{{ 'signup_link.text'|trans({}, 'partners') }}</p>
+            <div class="signup-link-row">
+                <code class="signup-link-url">{{ url('reseller_signup', {code: reseller.signupCode}) }}</code>
+                <button type="button" class="btn btn-primary" id="signup-link-copy" onclick="copyPaymentLink(this)" {{ expired ? 'disabled' }}
+                        data-url="{{ url('reseller_signup', {code: reseller.signupCode}) }}">{{ 'signup_link.copy'|trans({}, 'partners') }}</button>
+            </div>
+        </section>
+
         <div class="toolbar">
             <div class="count" id="restaurant-count">
                 {%- if extra > 0 -%}
@@ -71,6 +85,14 @@
                                             data-until-yearly="{{ restaurant.paidUntilAfter('yearly')|date('d/m/Y') }}">
                                         {{ 'payment.button'|trans({}, 'partners') }}
                                     </button>
+                                    {% if reseller.canChargeRestaurants and not restaurant.hasLiveSubscription %}
+                                        {% if owner %}
+                                            <button type="button" class="btn copy-link" onclick="copyPaymentLink(this)"
+                                                    data-url="{{ url('admin_billing_pay', {id: restaurant.id}) }}">{{ 'list.copy_link'|trans({}, 'partners') }}</button>
+                                        {% else %}
+                                            <button type="button" class="btn copy-link" disabled>{{ 'list.no_owner'|trans({}, 'partners') }}</button>
+                                        {% endif %}
+                                    {% endif %}
                                     {% if owner and not expired %}
                                         <a class="btn btn-primary enter" href="{{ path('admin_menu', {_switch_user: owner.email}) }}">{{ 'list.enter'|trans({}, 'partners') }}</a>
                                     {% else %}
@@ -244,6 +266,31 @@
         </script>
     {% endif %}
 
+    {# "Copiar enlace de pago", as on /platform. navigator.clipboard needs
+       a secure context (https / localhost); plain http falls back to execCommand. #}
+    <script>
+        function copyPaymentLink(button) {
+            const label = button.dataset.label ??= button.textContent;
+            const done = () => {
+                button.textContent = {{ 'list.copied'|trans({}, 'partners')|json_encode|raw }};
+                clearTimeout(button.copyTimer);
+                button.copyTimer = setTimeout(() => { button.textContent = label; }, 2000);
+            };
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(button.dataset.url).then(done);
+                return;
+            }
+            const area = document.createElement('textarea');
+            area.value = button.dataset.url;
+            area.style.position = 'fixed';
+            area.style.opacity = '0';
+            document.body.appendChild(area);
+            area.select();
+            if (document.execCommand('copy')) done();
+            area.remove();
+        }
+    </script>
+
     {# Expired without a live subscription: the plan dialog (the reseller's
        prices); with one (a failed charge) the subscription screen instead. #}
     {% if expired and not reseller.hasLiveSubscription %}
@@ -263,6 +310,9 @@
             <div class="status status-active">🟢 {{ 'status.paid'|trans({}, 'partners') }}</div>
         {% endif %}
         <div class="sub last-paid">{{ r.lastPaidAt ? 'list.last_paid'|trans({'%date%': r.lastPaidAt|date('d/m/Y')}, 'partners') : 'list.no_payments'|trans({}, 'partners') }}</div>
+        {% if r.hasLiveSubscription %}
+            <div class="sub auto-pay">{{ (r.stripeCancelPending ? 'list.auto_pay_cancelled' : 'list.auto_pay')|trans({}, 'partners') }}</div>
+        {% endif %}
     </td>
 {% endmacro %}
 
@@ -281,4 +331,53 @@
             {%- endif -%}
         </div>
     </td>
+{% endmacro %}
+
+{# "Cobro con tarjeta": the reseller's own Stripe account (PartnersConnectController):
+   not connected → "Conectar Stripe"; onboarding unfinished → "Continuar alta";
+   connected → its price for its restaurants (monthly, yearly optional). #}
+{% macro connect_card(reseller, expired, currency) %}
+    {% set dec = app.request.locale == 'en' ? '.' : ',' %}
+    {% set symbol = currency == 'eur' ? '€' : currency|upper %}
+    <section class="connect-card" id="connect">
+        <div class="connect-head">
+            <div class="connect-title"><i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'connect.title'|trans({}, 'partners') }}</div>
+            {% if reseller.connectReady %}
+                <span class="connect-status connect-ready">✓ {{ 'connect.status.ready'|trans({}, 'partners') }}</span>
+            {% elseif reseller.hasConnectAccount %}
+                <span class="connect-status connect-pending">{{ 'connect.status.pending'|trans({}, 'partners') }}</span>
+            {% endif %}
+        </div>
+
+        {% if not reseller.connectReady %}
+            <p class="connect-text">{{ (reseller.hasConnectAccount ? 'connect.pending_text' : 'connect.intro')|trans({}, 'partners') }}</p>
+            <form method="post" action="{{ path('partners_connect_start') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('partners-connect-start') }}">
+                <button type="submit" class="btn btn-primary" id="connect-start" {{ expired ? 'disabled' }}>
+                    {{ (reseller.hasConnectAccount ? 'connect.continue' : 'connect.start')|trans({}, 'partners') }}
+                </button>
+            </form>
+        {% endif %}
+
+        {% if reseller.hasConnectAccount %}
+            <form method="post" action="{{ path('partners_connect_prices') }}" class="connect-prices" id="connect-prices">
+                <input type="hidden" name="_token" value="{{ csrf_token('partners-connect-prices') }}">
+                <div class="connect-fields">
+                    <div class="field">
+                        <label for="price-monthly">{{ 'connect.price.monthly'|trans({'%currency%': symbol}, 'partners') }}</label>
+                        <input type="text" inputmode="decimal" id="price-monthly" name="monthly" required
+                               value="{{ reseller.restaurantPriceMonthly is not null ? (reseller.restaurantPriceMonthly / 100)|number_format(2, dec, '') }}">
+                    </div>
+                    <div class="field">
+                        <label for="price-yearly">{{ 'connect.price.yearly'|trans({'%currency%': symbol}, 'partners') }}</label>
+                        <input type="text" inputmode="decimal" id="price-yearly" name="yearly"
+                               placeholder="{{ 'connect.price.yearly_placeholder'|trans({}, 'partners') }}"
+                               value="{{ reseller.restaurantPriceYearly is not null ? (reseller.restaurantPriceYearly / 100)|number_format(2, dec, '') }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary" {{ expired ? 'disabled' }}>{{ 'connect.price.save'|trans({}, 'partners') }}</button>
+                </div>
+                <p class="connect-note">{{ 'connect.price.note'|trans({}, 'partners') }}</p>
+            </form>
+        {% endif %}
+    </section>
 {% endmacro %}

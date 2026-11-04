@@ -22,8 +22,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * API), Stripe Checkout to subscribe, and the portal only for the card
  * form. Owner only — staff never pay — except the payment link, which
  * sorts everyone else out itself. Reachable while expired:
- * SubscriptionGate lets /admin/billing through. Not for a reseller's
- * restaurant (Restaurant::isBilledByReseller()): the reseller pays.
+ * SubscriptionGate lets /admin/billing through. A reseller's restaurant
+ * works the same once its reseller can charge it (Restaurant::
+ * ownerPaysByCard(): Stripe connected and a price — StripeBilling does it
+ * in the reseller's account, at its price); until then it only gets the
+ * screen, for information (resellerInfo()), and every action is a 404.
  */
 #[Route('/admin/billing', name: 'admin_billing_')]
 class BillingController extends AbstractController
@@ -37,9 +40,12 @@ class BillingController extends AbstractController
 
     #[IsGranted(User::ROLE_OWNER)]
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(): Response
+    public function index(EntityManagerInterface $em): Response
     {
-        $restaurant = $this->restaurant();
+        $restaurant = $this->getUser()?->getRestaurant() ?? throw $this->createAccessDeniedException();
+        if (!$restaurant->ownerPaysByCard()) {
+            return $this->resellerInfo($restaurant, $em);
+        }
         $overview = null;
         $invoices = null;
         $stripeError = false;
@@ -62,6 +68,7 @@ class BillingController extends AbstractController
 
         return $this->render('admin/billing.html.twig', [
             'restaurant'   => $restaurant,
+            'contact'      => $this->resellerContact($restaurant, $em),
             'overview'     => $overview,
             'invoices'     => $invoices,
             'stripe_error' => $stripeError,
@@ -204,7 +211,7 @@ class BillingController extends AbstractController
         if ($restaurant->hasLiveSubscription()) {
             try {
                 $this->billing->syncCardFromPortal($restaurant);
-                $this->billing->syncSubscription($restaurant->getStripeSubscriptionId());
+                $this->billing->syncSubscription($restaurant->getStripeSubscriptionId(), $restaurant->getStripeAccountId());
             } catch (\Throwable $e) {
                 $this->logger->error('Stripe portal return sync failed', ['exception' => $e]);
             }
@@ -214,8 +221,8 @@ class BillingController extends AbstractController
     }
 
     /**
-     * The link the platform owner copies from /platform ("Copiar enlace de
-     * pago"). A plain GET with nothing secret in it: not logged in → login,
+     * The link the platform owner copies from /platform, or a reseller from
+     * /partners for its restaurants ("Copiar enlace de pago"). A plain GET with nothing secret in it: not logged in → login,
      * then back here (the firewall's saved target path). Only this
      * restaurant's owner gets the plan dialog (or the portal when already
      * paying); anyone else lands where they normally would.
@@ -243,7 +250,7 @@ class BillingController extends AbstractController
             return $this->redirectToRoute('admin_menu');
         }
 
-        if ($restaurant->isBilledByReseller()) {
+        if (!$restaurant->ownerPaysByCard()) {
             return $this->redirectToRoute('admin_menu');
         }
 
@@ -309,10 +316,34 @@ class BillingController extends AbstractController
         return $this->redirectToRoute($route);
     }
 
+    /**
+     * A reseller's restaurant: its subscription for information only — the
+     * status and date its reseller manages from /partners, and who to
+     * contact (the reseller's user's email). No payment actions yet.
+     */
+    private function resellerInfo(Restaurant $restaurant, EntityManagerInterface $em): Response
+    {
+        return $this->render('admin/billing_reseller.html.twig', [
+            'restaurant' => $restaurant,
+            'reseller'   => $restaurant->getReseller(),
+            'contact'    => $this->resellerContact($restaurant, $em),
+        ]);
+    }
+
+    /** The reseller's user's email (its first one); null for a restaurant without reseller. */
+    private function resellerContact(Restaurant $restaurant, EntityManagerInterface $em): ?string
+    {
+        if ($restaurant->getReseller() === null) {
+            return null;
+        }
+
+        return $em->getRepository(User::class)->findOneBy(['reseller' => $restaurant->getReseller()], ['id' => 'ASC'])?->getEmail();
+    }
+
     private function restaurant(): Restaurant
     {
         $restaurant = $this->getUser()?->getRestaurant() ?? throw $this->createAccessDeniedException();
-        if ($restaurant->isBilledByReseller()) {
+        if (!$restaurant->ownerPaysByCard()) {
             throw $this->createNotFoundException();
         }
 

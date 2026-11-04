@@ -54,6 +54,10 @@ list:
     no_payments: "Sem pagamentos"
     deactivate: "Desativar"
     deactivate_confirm: "Desativar %name%? A carta deixará de estar visível até registar um pagamento. Continuará a contar na sua subscrição. Se já não é seu cliente, use Arquivar."
+    copy_link: "Copiar link de pagamento"
+    copied: "Copiado ✓"
+    auto_pay: "💳 Pagamento automático"
+    auto_pay_cancelled: "💳 Cancelada · não será renovada"
 
 new:
     button: "Novo restaurante"
@@ -121,3 +125,33 @@ billing:
         monthly: "Com os seus %total% restaurantes atuais: %amount% €/mês"
         yearly: "Com os seus %total% restaurantes atuais: %amount% €/ano"
     note: "A cobrança é feita ao confirmar, na página segura da Stripe. Pode cancelar quando quiser em «Subscrição»."
+
+# The reseller's own Stripe (Connect): the "Cobro con tarjeta" card on /partners.
+connect:
+    title: "Pagamento com cartão dos seus restaurantes"
+    status:
+        ready: "Stripe ligado"
+        pending: "Registo no Stripe incompleto"
+    intro: "Ligue o seu Stripe para cobrar aos seus restaurantes com cartão. O dinheiro vai diretamente para a sua conta e as faturas, reembolsos e disputas são seus."
+    pending_text: "O seu registo no Stripe está incompleto. Termine-o para poder cobrar com cartão."
+    start: "Ligar Stripe"
+    continue: "Continuar registo no Stripe"
+    price:
+        monthly: "Preço mensal por restaurante (%currency%)"
+        yearly: "Preço anual por restaurante (%currency%, opcional)"
+        yearly_placeholder: "Sem plano anual"
+        save: "Guardar preço"
+        note: "Um preço para todos os seus restaurantes. Se o alterar, só se aplica às novas subscrições; as existentes mantêm o seu preço."
+    flash:
+        connected: "Stripe ligado. Já pode definir o seu preço."
+        pending: "O seu registo no Stripe ainda não está completo. Pode continuá-lo quando quiser."
+        prices_saved: "Preço guardado no seu Stripe."
+    error:
+        price: "Escreva um preço entre %min% e %max%, por exemplo 25 ou 25,50."
+        stripe: "Não foi possível ligar ao Stripe. Tente novamente dentro de alguns minutos."
+    # The product in the reseller's Stripe account (Checkout, invoices).
+    product_name: "Carta digital QR"
+signup_link:
+    title: "O seu link de registo para clientes"
+    text: "Envie-o a um restaurante: regista-se sozinho, começa com 30 dias e aparece na sua lista."
+    copy: "Copiar link"

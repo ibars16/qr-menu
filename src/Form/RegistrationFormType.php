@@ -15,6 +15,11 @@ use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
+/**
+ * The restaurant sign-up (/register and a reseller's /alta/{code}). Labels
+ * and constraint messages are keys in the "register" domain; the template
+ * translates the messages itself.
+ */
 class RegistrationFormType extends AbstractType
 {
     public function __construct(private readonly AdminLocaleResolver $adminLocaleResolver)
@@ -30,44 +35,45 @@ class RegistrationFormType extends AbstractType
 
         $builder
             ->add('restaurantName', TextType::class, [
-                'label'       => 'Nombre del restaurante',
+                'label'       => 'restaurant_name',
                 'constraints' => [
-                    new NotBlank(message: 'Introduce el nombre del restaurante.'),
-                    new Length(min: 2, max: 100, minMessage: 'El nombre debe tener entre 2 y 100 caracteres.', maxMessage: 'El nombre debe tener entre 2 y 100 caracteres.'),
+                    new NotBlank(message: 'error.restaurant_blank'),
+                    new Length(min: 2, max: 100, minMessage: 'error.restaurant_length', maxMessage: 'error.restaurant_length'),
                 ],
             ])
             ->add('email', EmailType::class, [
-                'label'       => 'Email',
+                'label'       => 'email',
                 'constraints' => [
-                    new NotBlank(message: 'Introduce tu email.'),
-                    new Email(message: 'El email no es válido.'),
+                    new NotBlank(message: 'error.email_blank'),
+                    new Email(message: 'error.email_invalid'),
                 ],
             ])
             ->add('password', RepeatedType::class, [
                 'type'            => PasswordType::class,
-                'first_options'   => ['label' => 'Contraseña'],
-                'second_options'  => ['label' => 'Repetir contraseña'],
-                'invalid_message' => 'Las contraseñas no coinciden.',
+                'first_options'   => ['label' => 'password'],
+                'second_options'  => ['label' => 'password_repeat'],
+                'invalid_message' => 'error.password_mismatch',
                 'constraints'     => [
-                    new NotBlank(message: 'Introduce una contraseña.'),
-                    new Length(min: 8, minMessage: 'Mínimo 8 caracteres.'),
+                    new NotBlank(message: 'error.password_blank'),
+                    new Length(min: 8, minMessage: 'error.password_short'),
                 ],
             ])
             ->add('currency', ChoiceType::class, [
-                'invalid_message' => 'Elige una opción de la lista.',
-                'label'   => 'Moneda principal',
+                'invalid_message' => 'error.choice',
+                'label'   => 'currency',
                 'choices' => [
-                    'Euro (€)'           => 'EUR',
-                    'Dólar USD ($)'      => 'USD',
-                    'Dólar NZD ($)'      => 'NZD',
-                    'Dólar AUD ($)'      => 'AUD',
-                    'Libra esterlina (£)' => 'GBP',
-                    'Yen japonés (¥)'    => 'JPY',
+                    'currency_choice.eur' => 'EUR',
+                    'currency_choice.usd' => 'USD',
+                    'currency_choice.nzd' => 'NZD',
+                    'currency_choice.aud' => 'AUD',
+                    'currency_choice.gbp' => 'GBP',
+                    'currency_choice.jpy' => 'JPY',
                 ],
             ])
             ->add('language', ChoiceType::class, [
-                'invalid_message' => 'Elige una opción de la lista.',
-                'label'   => 'Idioma principal del menú',
+                'invalid_message' => 'error.choice',
+                'label'   => 'language',
+                'choice_translation_domain' => false,
                 'choices' => [
                     'Español'  => 'es',
                     'English'  => 'en',
@@ -78,11 +84,12 @@ class RegistrationFormType extends AbstractType
                 ],
             ])
             ->add('adminLocale', ChoiceType::class, [
-                'label'   => 'Idioma del Panel de Administración',
-                'help'    => 'Solo afecta a tu panel de gestión, no a la carta de tus clientes.',
+                'label'   => 'admin_locale',
+                'help'    => 'admin_locale_help',
                 'choices' => $adminLocaleChoices,
+                'choice_translation_domain' => false,
                 'data'    => $options['detected_admin_locale'],
-                'invalid_message' => 'Elige un idioma de la lista.',
+                'invalid_message' => 'error.admin_locale',
             ])
         ;
     }
@@ -91,9 +98,10 @@ class RegistrationFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class'             => null,
+            'translation_domain'     => 'register',
             // Shown above the form (errors of the form itself).
-            'csrf_message'           => 'La página ha caducado. Vuelve a enviar el formulario.',
-            'extra_fields_message'   => 'No se ha podido enviar el formulario. Recarga la página y vuelve a intentarlo.',
+            'csrf_message'           => 'error.expired',
+            'extra_fields_message'   => 'error.general',
             'detected_admin_locale'  => $this->adminLocaleResolver->getDefaultLocale(),
         ]);
         $resolver->setAllowedTypes('detected_admin_locale', 'string');

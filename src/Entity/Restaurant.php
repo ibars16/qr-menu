@@ -127,6 +127,14 @@ class Restaurant
     #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
     private ?Reseller $reseller = null;
 
+    /**
+     * The Stripe account its customer and subscription live in: its
+     * reseller's connected account (Stripe Connect) once it pays by card
+     * through it; null = the platform's own account (or none yet).
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $stripeAccountId = null;
+
     /** Taken out of use by its reseller (never deleted): menu and admin off, not counted for the reseller's extra restaurants. */
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $archivedAt = null;
@@ -381,23 +389,37 @@ class Restaurant
      * The owner's "vence pronto" notice for a reseller's restaurant
      * ("contacta con tu revendedor", no payment button): its own paidUntil
      * 7 days or fewer away, still active. Trial or paid alike — the
-     * reseller renews it by hand from /partners.
+     * reseller renews it by hand from /partners. Not once the owner pays
+     * by card: then it gets the trial / "vence pronto" notices instead.
      */
     public function isResellerServiceEndingSoon(?\DateTimeImmutable $today = null): bool
     {
-        return $this->reseller !== null && !$this->isExpired($today) && $this->getDaysLeft($today) <= 7;
+        return $this->reseller !== null && !$this->ownerPaysByCard() && !$this->isExpired($today) && $this->getDaysLeft($today) <= 7;
     }
 
-    /** Never for a reseller's restaurant: it has no billing of its own. */
+    /**
+     * The owner pays by card through Stripe: always for a restaurant billed
+     * on its own; for a reseller's, once the reseller can charge it (its own
+     * Stripe connected and a price set — Reseller::canChargeRestaurants()),
+     * or while it already has a subscription there. Otherwise the reseller
+     * renews it by hand and the owner's subscription screen is information
+     * only.
+     */
+    public function ownerPaysByCard(): bool
+    {
+        return $this->reseller === null || $this->hasLiveSubscription() || $this->reseller->canChargeRestaurants();
+    }
+
+    /** Only when the owner pays by card (ownerPaysByCard()). */
     public function isTrialActive(?\DateTimeImmutable $today = null): bool
     {
-        return $this->reseller === null && $this->isPeriodTrialActive($today);
+        return $this->ownerPaysByCard() && $this->isPeriodTrialActive($today);
     }
 
-    /** Never for a reseller's restaurant: it has no billing of its own. */
+    /** Only when the owner pays by card (ownerPaysByCard()). */
     public function isEndingSoon(?\DateTimeImmutable $today = null): bool
     {
-        return $this->reseller === null && $this->isPeriodEndingSoon($today);
+        return $this->ownerPaysByCard() && $this->isPeriodEndingSoon($today);
     }
 
     public function getReseller(): ?Reseller
@@ -414,6 +436,16 @@ class Restaurant
     public function isBilledByReseller(): bool
     {
         return $this->reseller !== null;
+    }
+
+    public function getStripeAccountId(): ?string
+    {
+        return $this->stripeAccountId;
+    }
+
+    public function setStripeAccountId(?string $stripeAccountId): void
+    {
+        $this->stripeAccountId = $stripeAccountId;
     }
 
     public function getArchivedAt(): ?\DateTimeImmutable

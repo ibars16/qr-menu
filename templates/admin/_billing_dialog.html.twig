@@ -6,7 +6,9 @@
 
    The reseller's panel passes its own checkout_route, checkout_token_id,
    plan_option_template (each option's content, given `plan`) and
-   plan_note (a line under the options). #}
+   plan_note (a line under the options). A reseller's restaurant passes
+   `plans` (only those its reseller offers) and their plan_labels. #}
+{% set plans = plans|default(['monthly', 'yearly']) %}
 {% set checkout_route = checkout_route|default('admin_billing_checkout') %}
 {% set checkout_token_id = checkout_token_id|default('billing-checkout') %}
 {% set plan_labels = plan_labels|default({
@@ -28,7 +30,7 @@
                     <input type="hidden" name="_token" value="{{ csrf_token(checkout_token_id) }}">
                     <div class="panel-body">
                         <div class="plan-options">
-                            {% for plan in ['monthly', 'yearly'] %}
+                            {% for plan in plans %}
                                 <label class="plan-option">
                                     <input type="radio" name="plan" value="{{ plan }}" {{ loop.first ? 'checked' }}>
                                     {% if plan_option_template is defined %}

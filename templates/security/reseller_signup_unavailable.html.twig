@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{# /alta/{code} with an unknown code or an expired reseller
+   (ResellerSignupController): nothing to sign up to. #}
+
+{% trans_default_domain 'register' %}
+
+{% block title %}{{ 'unavailable.title'|trans }} — QR Menu{% endblock %}
+
+{% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>(function(){try{if(localStorage.getItem('admin-theme')==='light'||localStorage.getItem('site-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
+    {% include 'security/_auth_styles.html.twig' %}
+{% endblock %}
+
+{% block body %}
+    <div class="wrap">
+        <div class="logo">
+            <div class="logo-link">
+                <div class="logo-mark">Q</div>
+                <div class="logo-name">QR Menu</div>
+            </div>
+        </div>
+
+        <div class="card" id="signup-unavailable">
+            <div class="card-title">{{ 'unavailable.heading'|trans }}</div>
+            <div class="card-sub">{{ 'unavailable.text'|trans }}</div>
+        </div>
+    </div>
+{% endblock %}

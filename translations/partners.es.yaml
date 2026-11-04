@@ -54,6 +54,10 @@ list:
     no_payments: "Sin cobros"
     deactivate: "Desactivar"
     deactivate_confirm: "¿Desactivar %name%? Su carta dejará de verse hasta que registres un pago. Seguirá contando en tu suscripción. Si ya no es tu cliente, usa Archivar."
+    copy_link: "Copiar enlace de pago"
+    copied: "Copiado ✓"
+    auto_pay: "💳 Pago automático"
+    auto_pay_cancelled: "💳 Cancelada · no renovará"
 
 new:
     button: "Nuevo restaurante"
@@ -121,3 +125,33 @@ billing:
         monthly: "Con tus %total% restaurantes de ahora: %amount% €/mes"
         yearly: "Con tus %total% restaurantes de ahora: %amount% €/año"
     note: "Se cobra al confirmar, en la página segura de Stripe. Puedes cancelar cuando quieras desde «Suscripción»."
+
+# The reseller's own Stripe (Connect): the "Cobro con tarjeta" card on /partners.
+connect:
+    title: "Cobro con tarjeta a tus restaurantes"
+    status:
+        ready: "Stripe conectado"
+        pending: "Alta en Stripe a medias"
+    intro: "Conecta tu Stripe para cobrar con tarjeta a tus restaurantes. El dinero va directo a tu cuenta y las facturas, devoluciones y reclamaciones son tuyas."
+    pending_text: "Tu alta en Stripe está a medias. Termínala para poder cobrar con tarjeta."
+    start: "Conectar Stripe"
+    continue: "Continuar alta en Stripe"
+    price:
+        monthly: "Precio mensual por restaurante (%currency%)"
+        yearly: "Precio anual por restaurante (%currency%, opcional)"
+        yearly_placeholder: "Sin plan anual"
+        save: "Guardar precio"
+        note: "Un precio para todos tus restaurantes. Si lo cambias, solo se aplica a las suscripciones nuevas; las que ya existen conservan su precio."
+    flash:
+        connected: "Stripe conectado. Ya puedes poner tu precio."
+        pending: "Tu alta en Stripe aún no está completa. Puedes continuarla cuando quieras."
+        prices_saved: "Precio guardado en tu Stripe."
+    error:
+        price: "Escribe un precio entre %min% y %max%, por ejemplo 25 o 25,50."
+        stripe: "No se ha podido conectar con Stripe. Inténtalo de nuevo en unos minutos."
+    # The product in the reseller's Stripe account (Checkout, invoices).
+    product_name: "Carta digital QR"
+signup_link:
+    title: "Tu enlace de alta para clientes"
+    text: "Envíalo a un restaurante: se da de alta solo, empieza con 30 días y aparece en tu lista."
+    copy: "Copiar enlace"

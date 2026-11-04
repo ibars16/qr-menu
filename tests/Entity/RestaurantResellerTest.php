@@ -164,4 +164,37 @@ final class RestaurantResellerTest extends TestCase
         $this->paidUntil($restaurant, 'yesterday');
         self::assertTrue($restaurant->isExpired());
     }
+
+    /** Stripe connected and a monthly price: its restaurants pay by card, with the usual notices. */
+    public function testOwnerPaysByCardOnceResellerCanCharge(): void
+    {
+        $reseller = new Reseller('Agencia');
+        $reseller->markPaid(Reseller::PLAN_MONTHLY);
+        $restaurant = $this->restaurantOf($reseller);
+        self::assertFalse($restaurant->ownerPaysByCard());
+
+        $reseller->setConnectAccountId('acct_x');
+        self::assertFalse($reseller->canChargeRestaurants(), 'onboarding unfinished');
+        $reseller->setConnectChargesEnabled(true);
+        self::assertFalse($reseller->canChargeRestaurants(), 'no price yet');
+        $reseller->setRestaurantPriceMonthly(2500, 'price_m');
+        self::assertTrue($reseller->canChargeRestaurants());
+        self::assertSame(['monthly' => 2500], $reseller->restaurantPlans());
+
+        self::assertTrue($restaurant->ownerPaysByCard());
+        self::assertTrue($restaurant->isTrialActive());
+        self::assertSame(30, $restaurant->getTrialDaysRemaining());
+        $this->paidUntil($restaurant, 'today +3 days');
+        self::assertFalse($restaurant->isResellerServiceEndingSoon(), 'the trial notice instead');
+
+        $restaurant->markPaid(Restaurant::PLAN_MONTHLY);
+        $this->paidUntil($restaurant, 'today +3 days');
+        self::assertTrue($restaurant->isEndingSoon());
+
+        // Already subscribed: still by card even if the reseller loses Stripe.
+        $reseller->setConnectChargesEnabled(false);
+        self::assertFalse($restaurant->ownerPaysByCard());
+        $restaurant->setStripeSubscriptionId('sub_x');
+        self::assertTrue($restaurant->ownerPaysByCard());
+    }
 }

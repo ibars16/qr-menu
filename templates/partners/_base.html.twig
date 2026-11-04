@@ -47,6 +47,24 @@
         .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: default; pointer-events: none; }
         .empty { color: var(--tx-muted); }
 
+        /* "Cobro con tarjeta" card (Stripe Connect). */
+        .connect-card {
+            background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg);
+            padding: var(--sp-4); margin-bottom: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-3);
+        }
+        .connect-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); flex-wrap: wrap; }
+        .connect-title { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-md); font-weight: 600; color: var(--tx-hi); }
+        .connect-status { font-size: var(--fs-sm); font-weight: 600; }
+        .connect-ready { color: #7aad40; }
+        .connect-pending { color: var(--warn-fg); }
+        .connect-text, .connect-note { margin: 0; font-size: var(--fs-sm); color: var(--tx-muted); line-height: 1.5; }
+        .connect-card form { margin: 0; }
+        .signup-link-row { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
+        .signup-link-url { flex: 1 1 260px; min-width: 0; overflow-wrap: anywhere; font-size: var(--fs-sm); color: var(--tx-hi); background: var(--bg-input); padding: var(--sp-2) var(--sp-3); border-radius: var(--r-sm, 6px); }
+        .connect-prices { display: flex; flex-direction: column; gap: var(--sp-2); }
+        .connect-fields { display: flex; align-items: flex-end; gap: var(--sp-3); flex-wrap: wrap; }
+        .connect-fields .field { flex: 1; min-width: 160px; }
+
         /* /platform's summary cards, status and "Activo hasta" colours. */
         .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-3); margin-bottom: var(--sp-5); }
         .summary-card { background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg); padding: var(--sp-4); }

@@ -334,7 +334,8 @@
                     <span class="sidebar-theme-knob"></span>
                 </button>
             </div>
-            {% if is_granted('ROLE_OWNER') and app.user.restaurant and not app.user.restaurant.billedByReseller %}
+            {# A reseller's restaurant too: its screen is information only. #}
+            {% if is_granted('ROLE_OWNER') and app.user.restaurant %}
                 <a href="{{ path('admin_billing_index') }}"
                    class="nav-item {{ app.request.attributes.get('_route') == 'admin_billing_index' ? 'active' : '' }}">
                     <i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.nav'|trans({}, 'admin_base') }}
@@ -357,7 +358,7 @@
             <div class="main-header-top">
                 <div class="main-header-title">{% block page_title %}{% endblock %}</div>
                 <div class="header-icons">
-                    {% if is_granted('ROLE_OWNER') and app.user.restaurant and not app.user.restaurant.billedByReseller %}
+                    {% if is_granted('ROLE_OWNER') and app.user.restaurant %}
                         <a href="{{ path('admin_billing_index') }}" class="theme-toggle-btn" aria-label="{{ 'header.subscription_aria'|trans({}, 'admin_base') }}">
                             <i class="ti ti-credit-card" aria-hidden="true"></i>
                         </a>
@@ -435,8 +436,19 @@
     {% endif %}
 </nav>
 
-{% if is_granted('ROLE_OWNER') and app.user.restaurant and not app.user.restaurant.billedByReseller and not app.user.restaurant.hasLiveSubscription %}
-    {% include 'admin/_billing_dialog.html.twig' %}
+{% if is_granted('ROLE_OWNER') and app.user.restaurant and app.user.restaurant.ownerPaysByCard and not app.user.restaurant.hasLiveSubscription %}
+    {% if app.user.restaurant.reseller %}
+        {# Its reseller's plans and prices (Stripe Connect). #}
+        {% import 'billing/_price.html.twig' as price %}
+        {% set resellerPlans = app.user.restaurant.reseller.restaurantPlans %}
+        {% set resellerLabels = {} %}
+        {% for plan, cents in resellerPlans %}
+            {% set resellerLabels = resellerLabels|merge({(plan): ('billing.plan_' ~ plan)|trans({'%price%': price.amount(cents)}, 'admin_base')}) %}
+        {% endfor %}
+        {% include 'admin/_billing_dialog.html.twig' with {plans: resellerPlans|keys, plan_labels: resellerLabels} %}
+    {% else %}
+        {% include 'admin/_billing_dialog.html.twig' %}
+    {% endif %}
 {% endif %}
 
 <div class="toast" id="global-toast" role="status" aria-live="polite"></div>

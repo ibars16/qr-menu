@@ -28,6 +28,9 @@ final class ResellerRestaurantTest extends WebTestCase
     private User $owner;
     private User $superAdmin;
 
+    /** @var list<int> */
+    private array $extraUsers = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -66,12 +69,30 @@ final class ResellerRestaurantTest extends WebTestCase
         $this->em->clear();
         $this->em->remove($this->em->find(User::class, $this->owner->getId()));
         $this->em->remove($this->em->find(User::class, $this->superAdmin->getId()));
+        foreach ($this->extraUsers as $id) {
+            $this->em->remove($this->em->find(User::class, $id));
+        }
         $this->em->remove($this->em->find(Restaurant::class, $this->restaurant->getId()));
         $this->em->flush();
         $this->em->remove($this->em->find(Reseller::class, $this->reseller->getId()));
         $this->em->flush();
 
         parent::tearDown();
+    }
+
+    /** A user of the reseller (its contact email), removed in tearDown(). */
+    private function resellerUser(string $prefix): User
+    {
+        $user = new User();
+        $user->setEmail($prefix . '-' . uniqid() . '@example.test');
+        $user->setPassword('unused-in-tests');
+        $user->setRoles([User::ROLE_RESELLER]);
+        $user->setReseller($this->reseller);
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->extraUsers[] = $user->getId();
+
+        return $user;
     }
 
     private function resellerReloaded(): Reseller
@@ -101,13 +122,14 @@ final class ResellerRestaurantTest extends WebTestCase
 
     // ── Admin panel ─────────────────────────────────────────────────────────
 
-    public function testOwnerSeesNoBillingInPanel(): void
+    public function testOwnerSeesNoPaymentInPanel(): void
     {
         $this->client->loginUser($this->owner);
         $this->client->request('GET', '/admin/menu');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorNotExists('a[href="/admin/billing"]');
+        // "Suscripción" is there, for information only (see below).
+        self::assertSelectorExists('.sidebar a.nav-item[href="/admin/billing"]');
         self::assertSelectorNotExists('.trial-badge');
         self::assertSelectorNotExists('.billing-strip');
         self::assertSelectorNotExists('.billing-dialog');
@@ -151,7 +173,7 @@ final class ResellerRestaurantTest extends WebTestCase
         // Desktop sidebar badge, without "Renovar".
         self::assertSelectorTextSame('.sidebar-header .renewal-badge', $notice);
         self::assertCount(0, $crawler->filter('.sidebar-header .trial-choose'));
-        self::assertSelectorNotExists('a[href="/admin/billing"]');
+        self::assertSelectorNotExists('a.billing-strip');
         self::assertSelectorNotExists('.billing-dialog');
     }
 
@@ -196,12 +218,45 @@ final class ResellerRestaurantTest extends WebTestCase
         self::assertSelectorNotExists('form[action="/admin/billing/portal"]');
     }
 
-    public function testBillingScreenIsNotFound(): void
+    public function testBillingScreenIsInformationOnly(): void
     {
+        $this->resellerUser('reseller-test-contact');
         $this->client->loginUser($this->owner);
         $this->client->request('GET', '/admin/billing');
 
-        self::assertResponseStatusCodeSame(404);
+        self::assertResponseIsSuccessful();
+        // Its own 30-day trial, managed by the reseller.
+        self::assertSelectorTextSame('#billing-status', 'Prueba gratis · quedan 30 días');
+        self::assertSelectorTextSame('#billing-until', (new \DateTimeImmutable('today +30 days'))->format('d/m/Y'));
+        self::assertSelectorTextContains('#billing-reseller', 'Tu carta la gestiona Reseller Test Agency.');
+        self::assertStringStartsWith('mailto:reseller-test-contact-', $this->client->getCrawler()->filter('#billing-reseller-email')->attr('href'));
+        self::assertSelectorNotExists('.billing-wrap form');
+        self::assertSelectorNotExists('.billing-wrap button');
+        self::assertSelectorNotExists('.billing-dialog');
+    }
+
+    public function testInformationScreenDoesNotRepeatPaidDate(): void
+    {
+        $this->em->clear();
+        $restaurant = $this->em->find(Restaurant::class, $this->restaurant->getId());
+        $restaurant->markPaid(Restaurant::PLAN_MONTHLY);
+        $this->em->flush();
+
+        $this->client->loginUser($this->owner);
+        $this->client->request('GET', '/admin/billing');
+
+        self::assertSelectorTextSame('#billing-status', 'Activa hasta el ' . $restaurant->getPaidUntil()->format('d/m/Y'));
+        self::assertSelectorNotExists('#billing-until');
+    }
+
+    public function testBillingActionsAreRefused(): void
+    {
+        $this->client->loginUser($this->owner);
+        foreach (['/admin/billing/checkout', '/admin/billing/portal', '/admin/billing/cancel', '/admin/billing/card'] as $path) {
+            // Refused (bad token or not its screen), never a Stripe redirect.
+            $this->client->request('POST', $path, ['_token' => 'x', 'plan' => 'monthly']);
+            self::assertContains($this->client->getResponse()->getStatusCode(), [403, 404], $path);
+        }
     }
 
     public function testPayLinkGoesToPanel(): void
@@ -275,8 +330,22 @@ final class ResellerRestaurantTest extends WebTestCase
 
         self::assertStringContainsString('1 en uso', $row->filter('.reseller-count')->text());
         self::assertStringContainsString('Activa · Mensual', $row->text());
+        self::assertSame('Sin Stripe propio', $row->filter('.connect-state')->text());
         self::assertSame('/platform/resellers/' . $this->reseller->getId() . '/register-payment', $row->filter('button.btn-primary')->attr('data-action'));
         self::assertCount(1, $row->filter('form[action="/platform/resellers/' . $this->reseller->getId() . '/deactivate"]'));
+    }
+
+    public function testPlatformShowsResellerStripeState(): void
+    {
+        $reseller = $this->resellerReloaded();
+        $reseller->setConnectAccountId('acct_platform_test_' . uniqid());
+        $this->em->flush();
+        self::assertSame('Stripe: alta a medias', $this->platformRow('Reseller Test Agency')->filter('.connect-state')->text());
+
+        $reseller = $this->resellerReloaded();
+        $reseller->setConnectChargesEnabled(true);
+        $this->em->flush();
+        self::assertSame('💳 Stripe conectado', $this->platformRow('Reseller Test Agency')->filter('.connect-state')->text());
     }
 
     public function testPlatformSummaryLeavesResellerRestaurantOut(): void

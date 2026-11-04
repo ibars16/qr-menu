@@ -1,0 +1,11 @@
+{# A reseller's price for its restaurants (cents) in the plan labels'
+   %price%: "25" or "25,50" ("25.50" in English) — the currency sign is
+   in the label, as with the platform's own prices (app.billing_prices). #}
+{% macro amount(cents) -%}
+    {%- if cents % 100 == 0 -%}
+        {{ cents // 100 }}
+    {%- else -%}
+        {{ (cents / 100)|number_format(2, app.request.locale == 'en' ? '.' : ',', '') }}
+    {%- endif -%}
+{%- endmacro %}
+

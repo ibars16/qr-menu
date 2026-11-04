@@ -31,7 +31,7 @@ class RegistrationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid() && $restaurantCreator->isEmailTaken($form->get('email')->getData())) {
-            $form->get('email')->addError(new FormError('Ya hay una cuenta con ese email.'));
+            $form->get('email')->addError(new FormError('error.email_taken', 'error.email_taken'));
         }
 
         if ($form->isSubmitted() && $form->isValid()) {

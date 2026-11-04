@@ -11,6 +11,23 @@ use App\Service\Billing\StripeGatewayInterface;
  */
 class FakeStripeGateway implements StripeGatewayInterface
 {
+    /** The connected account this copy acts on (forAccount()); null = the platform. */
+    private ?string $account = null;
+
+    public function forAccount(?string $accountId): self
+    {
+        $copy = clone $this;
+        $copy->account = $accountId;
+
+        return $copy;
+    }
+
+    /** Which account each call went to (self::$accountLog). */
+    private function log(string $method): void
+    {
+        self::$accountLog[] = [$method, $this->account];
+    }
+
     /** @var array<string, array<string, mixed>> Objects "stored in Stripe", by id. */
     public static array $objects = [];
 
@@ -35,6 +52,21 @@ class FakeStripeGateway implements StripeGatewayInterface
     /** @var list<array<string, mixed>> What listInvoices() returns, newest first. */
     public static array $invoices = [];
 
+    /** @var array<string, array<string, mixed>> Connected accounts by id: what retrieveConnectedAccount() returns. */
+    public static array $accounts = [];
+
+    /** @var list<array<string, mixed>> Params of every createConnectedAccount(). */
+    public static array $accountParams = [];
+
+    /** @var list<array{0: string, 1: string, 2: string}> Onboarding links: [account, return_url, refresh_url]. */
+    public static array $accountLinks = [];
+
+    /** @var list<array{0: string, 1: string, 2: array<string, mixed>}> Connected-account writes: [method, account, params]. */
+    public static array $connectCalls = [];
+
+    /** @var list<array{0: string, 1: ?string}> Every call: [method, connected account or null for the platform]. */
+    public static array $accountLog = [];
+
     public static bool $fail = false;
 
     public static bool $failInvoices = false;
@@ -49,12 +81,18 @@ class FakeStripeGateway implements StripeGatewayInterface
         self::$portalFlows = [];
         self::$calls = [];
         self::$invoices = [];
+        self::$accounts = [];
+        self::$accountParams = [];
+        self::$accountLinks = [];
+        self::$connectCalls = [];
+        self::$accountLog = [];
         self::$fail = false;
         self::$failInvoices = false;
     }
 
     public function createCustomer(string $email, string $name, array $metadata): string
     {
+        $this->log('createCustomer');
         $this->maybeFail();
         $id = 'cus_fake_' . (count(self::$createdCustomers) + 1) . '_' . implode('_', $metadata);
         self::$createdCustomers[] = $id;
@@ -64,6 +102,7 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public function createCheckoutSession(array $params): string
     {
+        $this->log('createCheckoutSession');
         $this->maybeFail();
         self::$checkoutParams[] = $params;
 
@@ -72,16 +111,19 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public function retrieveCheckoutSession(string $id): array
     {
+        $this->log('retrieveCheckoutSession');
         return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
     }
 
     public function retrieveInvoice(string $id): array
     {
+        $this->log('retrieveInvoice');
         return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
     }
 
     public function retrieveSubscription(string $id, array $expand = []): array
     {
+        $this->log('retrieveSubscription');
         $this->maybeFail();
 
         return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
@@ -94,6 +136,7 @@ class FakeStripeGateway implements StripeGatewayInterface
      */
     public function updateSubscription(string $id, array $params): array
     {
+        $this->log('updateSubscription');
         $this->maybeFail();
         self::$calls[] = ['updateSubscription', $id, $params];
         $subscription = &self::$objects[$id];
@@ -136,6 +179,7 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public function retrieveCustomer(string $id): array
     {
+        $this->log('retrieveCustomer');
         $this->maybeFail();
 
         return self::$objects[$id] ?? ['id' => $id, 'invoice_settings' => ['default_payment_method' => null]];
@@ -143,6 +187,7 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public function retrievePrice(string $id): array
     {
+        $this->log('retrievePrice');
         $this->maybeFail();
 
         return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
@@ -150,6 +195,7 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public function listInvoices(string $customerId, int $limit): array
     {
+        $this->log('listInvoices');
         if (self::$failInvoices) {
             throw new \RuntimeException('Fake Stripe invoices failure');
         }
@@ -159,6 +205,7 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public function retrieveSubscriptionSchedule(string $id): array
     {
+        $this->log('retrieveSubscriptionSchedule');
         $this->maybeFail();
 
         return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
@@ -167,6 +214,7 @@ class FakeStripeGateway implements StripeGatewayInterface
     /** Only from_subscription: one phase, the current period. */
     public function createSubscriptionSchedule(array $params): array
     {
+        $this->log('createSubscriptionSchedule');
         $this->maybeFail();
         self::$calls[] = ['createSubscriptionSchedule', '', $params];
         $subscription = &self::$objects[$params['from_subscription']];
@@ -183,6 +231,7 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public function updateSubscriptionSchedule(string $id, array $params): array
     {
+        $this->log('updateSubscriptionSchedule');
         $this->maybeFail();
         self::$calls[] = ['updateSubscriptionSchedule', $id, $params];
         $phases = $params['phases'];
@@ -197,6 +246,7 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public function releaseSubscriptionSchedule(string $id): void
     {
+        $this->log('releaseSubscriptionSchedule');
         $this->maybeFail();
         self::$calls[] = ['releaseSubscriptionSchedule', $id, []];
         self::$objects[self::$objects[$id]['subscription']]['schedule'] = null;
@@ -204,12 +254,70 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public function createPortalSession(string $customerId, string $returnUrl, ?array $flowData = null): string
     {
+        $this->log('createPortalSession');
         $this->maybeFail();
         self::$portalCustomers[] = $customerId;
         self::$portalReturnUrls[] = $returnUrl;
         self::$portalFlows[] = $flowData;
 
         return 'https://billing.stripe.test/portal/' . $customerId;
+    }
+
+    public function createConnectedAccount(array $params): string
+    {
+        $this->maybeFail();
+        self::$accountParams[] = $params;
+        $id = 'acct_fake_' . count(self::$accountParams);
+        self::connectedAccount($id, false);
+
+        return $id;
+    }
+
+    public function retrieveConnectedAccount(string $accountId): array
+    {
+        $this->maybeFail();
+
+        return self::$accounts[$accountId] ?? throw new \RuntimeException("No fake account $accountId");
+    }
+
+    public function createAccountOnboardingLink(string $accountId, string $returnUrl, string $refreshUrl): string
+    {
+        $this->maybeFail();
+        self::$accountLinks[] = [$accountId, $returnUrl, $refreshUrl];
+
+        return 'https://connect.stripe.test/setup/' . $accountId . '/' . count(self::$accountLinks);
+    }
+
+    public function createConnectedProduct(string $accountId, array $params): string
+    {
+        $this->maybeFail();
+        self::$connectCalls[] = ['createProduct', $accountId, $params];
+
+        return 'prod_fake_' . count(self::$connectCalls);
+    }
+
+    public function createConnectedPrice(string $accountId, array $params): string
+    {
+        $this->maybeFail();
+        self::$connectCalls[] = ['createPrice', $accountId, $params];
+
+        return 'price_fake_' . count(self::$connectCalls);
+    }
+
+    public function deactivateConnectedPrice(string $accountId, string $priceId): void
+    {
+        $this->maybeFail();
+        self::$connectCalls[] = ['deactivatePrice', $accountId, ['price' => $priceId]];
+    }
+
+    /** A v2 connected account, card payments active or still restricted (only the fields ResellerConnect reads). */
+    public static function connectedAccount(string $id, bool $cardPaymentsActive): array
+    {
+        return self::$accounts[$id] = [
+            'id' => $id,
+            'object' => 'v2.core.account',
+            'configuration' => ['merchant' => ['capabilities' => ['card_payments' => ['status' => $cardPaymentsActive ? 'active' : 'restricted']]]],
+        ];
     }
 
     /** A subscription as Stripe would return it (only the fields StripeBilling reads). */

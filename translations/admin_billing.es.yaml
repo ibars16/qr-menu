@@ -70,3 +70,11 @@ invoice_status:
     open: "Pendiente"
     void: "Anulada"
     uncollectible: "Impagada"
+
+# A reseller's restaurant: information only (BillingController::resellerInfo()).
+reseller:
+    section: "Tu revendedor"
+    until: "Activa hasta"
+    managed_by: "Tu carta la gestiona %name%. Para pagar o cambiar tu plan, habla con ellos."
+    contact: "Contacto:"
+    managed_by_short: "Tu carta la gestiona %name%"

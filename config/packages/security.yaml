@@ -50,9 +50,12 @@ security:
     access_control:
         - { path: ^/admin/login, roles: PUBLIC_ACCESS }
         - { path: ^/register,    roles: PUBLIC_ACCESS }
+        - { path: ^/alta/,       roles: PUBLIC_ACCESS }
         - { path: ^/partners/registro, roles: PUBLIC_ACCESS }
         - { path: ^/partners,    roles: ROLE_RESELLER }
         - { path: ^/admin,       roles: ROLE_USER }
         - { path: ^/platform,    roles: ROLE_SUPER_ADMIN }
         - { path: ^/r/,          roles: PUBLIC_ACCESS }
         - { path: ^/stripe/webhook, roles: PUBLIC_ACCESS }
+        - { path: ^/stripe/connect-account-events, roles: PUBLIC_ACCESS }
+        - { path: ^/stripe/connect-webhook, roles: PUBLIC_ACCESS }

@@ -203,6 +203,16 @@
                                 <td>
                                     <div class="r-name">{{ reseller.name }}</div>
                                     <div class="sub">{{ row.user ? row.user.email : 'Sin usuario' }}</div>
+                                    {# Its own Stripe (Connect) for charging its restaurants. #}
+                                    <div class="sub connect-state">
+                                        {%- if reseller.connectReady -%}
+                                            💳 Stripe conectado
+                                        {%- elseif reseller.hasConnectAccount -%}
+                                            Stripe: alta a medias
+                                        {%- else -%}
+                                            Sin Stripe propio
+                                        {%- endif -%}
+                                    </div>
                                 </td>
                                 <td data-label="Restaurantes" class="reseller-count">
                                     <div>{{ row.restaurants.active }} en uso</div>

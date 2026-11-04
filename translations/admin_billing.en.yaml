@@ -70,3 +70,11 @@ invoice_status:
     open: "Open"
     void: "Void"
     uncollectible: "Unpaid"
+
+# A reseller's restaurant: information only (BillingController::resellerInfo()).
+reseller:
+    section: "Your reseller"
+    until: "Active until"
+    managed_by: "Your menu is managed by %name%. To pay or change your plan, talk to them."
+    contact: "Contact:"
+    managed_by_short: "Your menu is managed by %name%"

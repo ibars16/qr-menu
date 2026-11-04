@@ -54,6 +54,10 @@ list:
     no_payments: "Keine Zahlungen"
     deactivate: "Deaktivieren"
     deactivate_confirm: "%name% deaktivieren? Die Speisekarte ist nicht mehr sichtbar, bis Sie eine Zahlung erfassen. Es wird weiterhin in Ihrem Abonnement berechnet. Wenn es nicht mehr Ihr Kunde ist, verwenden Sie Archivieren."
+    copy_link: "Zahlungslink kopieren"
+    copied: "Kopiert ✓"
+    auto_pay: "💳 Automatische Zahlung"
+    auto_pay_cancelled: "💳 Gekündigt · verlängert sich nicht"
 
 new:
     button: "Neues Restaurant"
@@ -121,3 +125,33 @@ billing:
         monthly: "Mit Ihren aktuell %total% Restaurants: %amount% €/Monat"
         yearly: "Mit Ihren aktuell %total% Restaurants: %amount% €/Jahr"
     note: "Die Abbuchung erfolgt bei der Bestätigung auf der sicheren Stripe-Seite. Sie können jederzeit unter „Abonnement“ kündigen."
+
+# The reseller's own Stripe (Connect): the "Cobro con tarjeta" card on /partners.
+connect:
+    title: "Kartenzahlung Ihrer Restaurants"
+    status:
+        ready: "Stripe verbunden"
+        pending: "Stripe-Anmeldung unvollständig"
+    intro: "Verbinden Sie Ihr Stripe, um Ihre Restaurants per Karte abzurechnen. Das Geld geht direkt auf Ihr Konto, und Rechnungen, Erstattungen und Rückbuchungen liegen bei Ihnen."
+    pending_text: "Ihre Stripe-Anmeldung ist unvollständig. Schließen Sie sie ab, um per Karte abzurechnen."
+    start: "Stripe verbinden"
+    continue: "Stripe-Anmeldung fortsetzen"
+    price:
+        monthly: "Monatspreis pro Restaurant (%currency%)"
+        yearly: "Jahrespreis pro Restaurant (%currency%, optional)"
+        yearly_placeholder: "Kein Jahrestarif"
+        save: "Preis speichern"
+        note: "Ein Preis für alle Ihre Restaurants. Eine Änderung gilt nur für neue Abonnements; bestehende behalten ihren Preis."
+    flash:
+        connected: "Stripe verbunden. Sie können jetzt Ihren Preis festlegen."
+        pending: "Ihre Stripe-Anmeldung ist noch nicht abgeschlossen. Sie können sie jederzeit fortsetzen."
+        prices_saved: "Preis in Ihrem Stripe gespeichert."
+    error:
+        price: "Geben Sie einen Preis zwischen %min% und %max% ein, zum Beispiel 25 oder 25,50."
+        stripe: "Stripe ist nicht erreichbar. Bitte versuchen Sie es in ein paar Minuten erneut."
+    # The product in the reseller's Stripe account (Checkout, invoices).
+    product_name: "QR-Speisekarte"
+signup_link:
+    title: "Ihr Registrierungslink für Kunden"
+    text: "Senden Sie ihn an ein Restaurant: Es registriert sich selbst, startet mit 30 Tagen und erscheint in Ihrer Liste."
+    copy: "Link kopieren"

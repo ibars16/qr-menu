@@ -20,4 +20,15 @@
             change_plan: 'admin_billing_change_plan', undo_plan_change: 'admin_billing_undo_plan_change',
         },
     } %}
+    {% if restaurant.reseller %}
+        {# Paid in its reseller's Stripe: who the seller is, in small. #}
+        <p class="billing-managed-by" id="billing-managed-by">
+            {{ 'reseller.managed_by_short'|trans({'%name%': restaurant.reseller.name}, 'admin_billing') }}
+            {%- if contact %} · <a href="mailto:{{ contact }}">{{ contact }}</a>{% endif %}
+        </p>
+        <style>
+            .billing-managed-by { max-width: 640px; margin: var(--sp-4) 0 0; font-size: var(--fs-sm); color: var(--tx-muted); }
+            .billing-managed-by a { color: var(--tx-muted); }
+        </style>
+    {% endif %}
 {% endblock %}

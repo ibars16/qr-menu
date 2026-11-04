@@ -1,0 +1,61 @@
+{% extends 'admin/base.html.twig' %}
+
+{# A reseller's restaurant's subscription screen (BillingController::
+   resellerInfo()): information only — its status and date, which its
+   reseller manages, and who to contact. No Stripe, no payment actions. #}
+
+{% block title %}{{ 'title'|trans({}, 'admin_billing') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_billing') }}{% endblock %}
+
+{% block stylesheets %}
+    {% include 'billing/_subscription_styles.html.twig' %}
+{% endblock %}
+
+{% block body %}
+    {% set days = restaurant.daysLeft %}
+    <div class="billing-wrap">
+        <div class="billing-section">
+            <div class="billing-section-title">{{ 'section.plan'|trans({}, 'admin_billing') }}</div>
+            <div class="billing-section-body">
+                <div class="billing-row">
+                    <span class="label">{{ 'label.status'|trans({}, 'admin_billing') }}</span>
+                    <span class="value" id="billing-status">
+                        {%- if restaurant.expired -%}
+                            {{ 'status.expired'|trans({}, 'admin_billing') }}
+                        {%- elseif restaurant.plan is null -%}
+                            {{ (days <= 1 ? 'status.trial_day' : 'status.trial_days')|trans({'%count%': days}, 'admin_billing') }}
+                        {%- else -%}
+                            {{ 'status.manual'|trans({'%date%': restaurant.paidUntil|date('d/m/Y')}, 'admin_billing') }}
+                        {%- endif -%}
+                    </span>
+                </div>
+                {# On the trial the status gives days, not the date: the date here.
+                   Paid, the status already says "Activa hasta el …". #}
+                {% if not restaurant.expired and restaurant.plan is null %}
+                    <div class="billing-row">
+                        <span class="label">{{ 'reseller.until'|trans({}, 'admin_billing') }}</span>
+                        <span class="value" id="billing-until">{{ restaurant.paidUntil|date('d/m/Y') }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="billing-section" id="billing-reseller">
+            <div class="billing-section-title">{{ 'reseller.section'|trans({}, 'admin_billing') }}</div>
+            <div class="billing-section-body">
+                <p class="billing-reseller-text">{{ 'reseller.managed_by'|trans({'%name%': reseller.name}, 'admin_billing') }}</p>
+                {% if contact %}
+                    <p class="billing-reseller-text">
+                        {{ 'reseller.contact'|trans({}, 'admin_billing') }}
+                        <a href="mailto:{{ contact }}" id="billing-reseller-email">{{ contact }}</a>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <style>
+        .billing-reseller-text { margin: 0; font-size: var(--fs-base); color: var(--tx-1); line-height: 1.5; }
+        .billing-reseller-text + .billing-reseller-text { margin-top: var(--sp-2); }
+        .billing-reseller-text a { color: var(--brand); font-weight: 600; }
+    </style>
+{% endblock %}

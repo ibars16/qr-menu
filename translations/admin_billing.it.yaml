@@ -70,3 +70,11 @@ invoice_status:
     open: "In sospeso"
     void: "Annullata"
     uncollectible: "Non pagata"
+
+# A reseller's restaurant: information only (BillingController::resellerInfo()).
+reseller:
+    section: "Il tuo rivenditore"
+    until: "Attivo fino al"
+    managed_by: "Il tuo menù è gestito da %name%. Per pagare o cambiare piano, rivolgiti a loro."
+    contact: "Contatto:"
+    managed_by_short: "Il tuo menù è gestito da %name%"

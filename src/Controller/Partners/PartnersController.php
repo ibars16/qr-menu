@@ -7,7 +7,6 @@ use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Service\Billing\StripeBilling;
 use App\Service\RestaurantCreator;
-use Psr\Log\LoggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -26,7 +25,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * owner (switch_user, see Security\SwitchUserVoter) and archive / restore
  * — never delete. While the reseller is expired the list still shows but
  * nothing can be changed. Every change in the count (archive / restore /
- * create — not a deactivation) updates the Stripe extra line (syncExtras()).
+ * create — not a deactivation) updates the Stripe extra line (StripeBilling::syncResellerExtrasOrLog()).
  */
 #[Route('/partners', name: 'partners_')]
 #[IsGranted(User::ROLE_RESELLER)]
@@ -36,9 +35,10 @@ class PartnersController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly TranslatorInterface $translator,
         private readonly StripeBilling $billing,
-        private readonly LoggerInterface $logger,
         #[Autowire('%app.reseller_included_restaurants%')]
         private readonly int $includedRestaurants,
+        #[Autowire('%app.connect_currency%')]
+        private readonly string $connectCurrency,
     ) {
     }
 
@@ -78,7 +78,7 @@ class PartnersController extends AbstractController
         // (EUR, as the reseller pays in euros); the owner can change both.
         $language = $reseller->getAdminLocale();
         $restaurantCreator->create($values['name'], $values['email'], $password, 'EUR', $language, $language, $reseller);
-        $this->syncExtras($reseller);
+        $this->billing->syncResellerExtrasOrLog($reseller);
 
         $this->addFlash('success', $this->translator->trans('flash.created', ['%name%' => $values['name']], 'partners'));
 
@@ -93,7 +93,7 @@ class PartnersController extends AbstractController
         if (!$this->reseller()->isExpired()) {
             $restaurant->archive();
             $this->em->flush();
-            $this->syncExtras($this->reseller());
+            $this->billing->syncResellerExtrasOrLog($this->reseller());
             $this->addFlash('success', $this->translator->trans('flash.archived', ['%name%' => $restaurant->getName()], 'partners'));
         }
 
@@ -108,7 +108,7 @@ class PartnersController extends AbstractController
         if (!$this->reseller()->isExpired()) {
             $restaurant->unarchive();
             $this->em->flush();
-            $this->syncExtras($this->reseller());
+            $this->billing->syncResellerExtrasOrLog($this->reseller());
             $this->addFlash('success', $this->translator->trans('flash.restored', ['%name%' => $restaurant->getName()], 'partners'));
         }
 
@@ -197,6 +197,7 @@ class PartnersController extends AbstractController
             'included' => $this->includedRestaurants,
             'extra'    => max(0, count($active) - $this->includedRestaurants),
             'dialog'   => $dialog,
+            'currency' => strtolower($this->connectCurrency),
         ], new Response(status: $status));
     }
 
@@ -204,17 +205,6 @@ class PartnersController extends AbstractController
      * The app's change stands even if Stripe fails: logged, and the next
      * create / archive / restore sets the count again from scratch.
      */
-    private function syncExtras(Reseller $reseller): void
-    {
-        try {
-            $this->billing->syncResellerExtras($reseller);
-        } catch (\Throwable $e) {
-            $this->logger->error('Stripe reseller extra restaurants not updated; retried on the next change', [
-                'reseller' => $reseller->getId(), 'exception' => $e,
-            ]);
-        }
-    }
-
     private function reseller(): Reseller
     {
         return $this->getUser()?->getReseller() ?? throw $this->createAccessDeniedException();

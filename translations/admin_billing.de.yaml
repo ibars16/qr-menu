@@ -70,3 +70,11 @@ invoice_status:
     open: "Offen"
     void: "Storniert"
     uncollectible: "Unbezahlt"
+
+# A reseller's restaurant: information only (BillingController::resellerInfo()).
+reseller:
+    section: "Ihr Wiederverkäufer"
+    until: "Aktiv bis"
+    managed_by: "Ihre Speisekarte wird von %name% verwaltet. Zum Bezahlen oder für einen Tarifwechsel wenden Sie sich an sie."
+    contact: "Kontakt:"
+    managed_by_short: "Ihre Speisekarte wird von %name% verwaltet"

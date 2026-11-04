@@ -54,6 +54,10 @@ list:
     no_payments: "No payments"
     deactivate: "Deactivate"
     deactivate_confirm: "Deactivate %name%? Its menu will stop showing until you register a payment. It will still count in your subscription. If it is no longer your client, use Archive."
+    copy_link: "Copy payment link"
+    copied: "Copied ✓"
+    auto_pay: "💳 Automatic payment"
+    auto_pay_cancelled: "💳 Cancelled · won't renew"
 
 new:
     button: "New restaurant"
@@ -121,3 +125,33 @@ billing:
         monthly: "With your %total% current restaurants: €%amount%/month"
         yearly: "With your %total% current restaurants: €%amount%/year"
     note: "You are charged when you confirm, on Stripe's secure page. You can cancel any time from \"Subscription\"."
+
+# The reseller's own Stripe (Connect): the "Cobro con tarjeta" card on /partners.
+connect:
+    title: "Card payments from your restaurants"
+    status:
+        ready: "Stripe connected"
+        pending: "Stripe sign-up unfinished"
+    intro: "Connect your Stripe to charge your restaurants by card. The money goes straight to your account, and invoices, refunds and disputes are yours."
+    pending_text: "Your Stripe sign-up is unfinished. Complete it to charge by card."
+    start: "Connect Stripe"
+    continue: "Continue Stripe sign-up"
+    price:
+        monthly: "Monthly price per restaurant (%currency%)"
+        yearly: "Yearly price per restaurant (%currency%, optional)"
+        yearly_placeholder: "No yearly plan"
+        save: "Save price"
+        note: "One price for all your restaurants. If you change it, it only applies to new subscriptions; existing ones keep their price."
+    flash:
+        connected: "Stripe connected. You can now set your price."
+        pending: "Your Stripe sign-up isn't complete yet. You can continue it whenever you like."
+        prices_saved: "Price saved in your Stripe."
+    error:
+        price: "Enter a price between %min% and %max%, for example 25 or 25.50."
+        stripe: "Couldn't reach Stripe. Please try again in a few minutes."
+    # The product in the reseller's Stripe account (Checkout, invoices).
+    product_name: "QR digital menu"
+signup_link:
+    title: "Your customer signup link"
+    text: "Send it to a restaurant: it signs up on its own, starts with 30 days and appears in your list."
+    copy: "Copy link"

@@ -54,6 +54,10 @@ list:
     no_payments: "Nessun pagamento"
     deactivate: "Disattiva"
     deactivate_confirm: "Disattivare %name%? Il suo menù non sarà più visibile finché non registri un pagamento. Continuerà a essere conteggiato nel tuo abbonamento. Se non è più tuo cliente, usa Archivia."
+    copy_link: "Copia link di pagamento"
+    copied: "Copiato ✓"
+    auto_pay: "💳 Pagamento automatico"
+    auto_pay_cancelled: "💳 Annullato · non si rinnoverà"
 
 new:
     button: "Nuovo ristorante"
@@ -121,3 +125,33 @@ billing:
         monthly: "Con i tuoi %total% ristoranti attuali: %amount% €/mese"
         yearly: "Con i tuoi %total% ristoranti attuali: %amount% €/anno"
     note: "L'addebito avviene alla conferma, sulla pagina sicura di Stripe. Puoi annullare quando vuoi da «Abbonamento»."
+
+# The reseller's own Stripe (Connect): the "Cobro con tarjeta" card on /partners.
+connect:
+    title: "Pagamento con carta dei tuoi ristoranti"
+    status:
+        ready: "Stripe collegato"
+        pending: "Registrazione Stripe incompleta"
+    intro: "Collega il tuo Stripe per incassare con carta dai tuoi ristoranti. Il denaro arriva direttamente sul tuo conto e fatture, rimborsi e contestazioni sono tuoi."
+    pending_text: "La tua registrazione Stripe è incompleta. Completala per incassare con carta."
+    start: "Collega Stripe"
+    continue: "Continua la registrazione Stripe"
+    price:
+        monthly: "Prezzo mensile per ristorante (%currency%)"
+        yearly: "Prezzo annuale per ristorante (%currency%, facoltativo)"
+        yearly_placeholder: "Nessun piano annuale"
+        save: "Salva prezzo"
+        note: "Un prezzo per tutti i tuoi ristoranti. Se lo cambi, vale solo per i nuovi abbonamenti; quelli esistenti mantengono il loro prezzo."
+    flash:
+        connected: "Stripe collegato. Ora puoi impostare il tuo prezzo."
+        pending: "La tua registrazione Stripe non è ancora completa. Puoi riprenderla quando vuoi."
+        prices_saved: "Prezzo salvato nel tuo Stripe."
+    error:
+        price: "Inserisci un prezzo tra %min% e %max%, per esempio 25 o 25,50."
+        stripe: "Impossibile contattare Stripe. Riprova tra qualche minuto."
+    # The product in the reseller's Stripe account (Checkout, invoices).
+    product_name: "Menù digitale QR"
+signup_link:
+    title: "Il tuo link di registrazione per i clienti"
+    text: "Invialo a un ristorante: si registra da solo, parte con 30 giorni e compare nella tua lista."
+    copy: "Copia link"

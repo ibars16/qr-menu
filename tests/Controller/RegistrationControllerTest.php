@@ -18,7 +18,8 @@ final class RegistrationControllerTest extends WebTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->client = static::createClient();
+        // The page follows the browser's language (no header = the first admin locale).
+        $this->client = static::createClient(server: ['HTTP_ACCEPT_LANGUAGE' => 'es']);
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
     }
 

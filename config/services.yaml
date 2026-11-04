@@ -25,6 +25,12 @@ parameters:
         extra_monthly: 6
         extra_yearly: 60
 
+    # Stripe Connect: the country and currency of the resellers' own Stripe
+    # accounts (Service\Billing\ResellerConnect) and of their restaurants'
+    # prices. Config only, never in code; ES / eur unless set.
+    app.connect_country:  '%env(STRIPE_CONNECT_COUNTRY)%'
+    app.connect_currency: '%env(STRIPE_CONNECT_CURRENCY)%'
+
     # Restaurants a reseller's base plan includes; each one in use over
     # this is an extra (Controller\Partners\PartnersController).
     app.reseller_included_restaurants: 5
@@ -35,6 +41,10 @@ parameters:
     env(STRIPE_WEBHOOK_SECRET): ''
     env(STRIPE_PRICE_MONTHLY): ''
     env(STRIPE_PRICE_YEARLY): ''
+    env(STRIPE_CONNECT_ACCOUNT_EVENTS_SECRET): ''
+    env(STRIPE_CONNECT_WEBHOOK_SECRET): ''
+    env(STRIPE_CONNECT_COUNTRY): 'ES'
+    env(STRIPE_CONNECT_CURRENCY): 'eur'
     env(STRIPE_PRICE_RESELLER_MONTHLY): ''
     env(STRIPE_PRICE_RESELLER_YEARLY): ''
     env(STRIPE_PRICE_RESELLER_EXTRA_MONTHLY): ''
@@ -215,6 +225,14 @@ services:
     App\Controller\StripeWebhookController:
         arguments:
             $webhookSecret: '%env(STRIPE_WEBHOOK_SECRET)%'
+
+    App\Controller\StripeConnectWebhookController:
+        arguments:
+            $webhookSecret: '%env(STRIPE_CONNECT_WEBHOOK_SECRET)%'
+
+    App\Controller\StripeConnectAccountEventsController:
+        arguments:
+            $webhookSecret: '%env(STRIPE_CONNECT_ACCOUNT_EVENTS_SECRET)%'
 
 # Tests never write into the real public/uploads: upload tests use this
 # folder and empty it in their tearDown.

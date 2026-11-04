@@ -10,6 +10,15 @@ namespace App\Service\Billing;
 interface StripeGatewayInterface
 {
     /**
+     * The same calls made on a connected account (Stripe-Account header):
+     * a reseller's account, where its restaurants' customers, Checkout
+     * sessions, subscriptions, invoices and portal live. Null = the
+     * platform's own account. There, createPortalSession() uses a portal
+     * configuration of that account (card and invoices only), created once.
+     */
+    public function forAccount(?string $accountId): self;
+
+    /**
      * @param array<string, string> $metadata restaurant_id or reseller_id
      * @return string The new customer's id (cus_…).
      */
@@ -71,4 +80,40 @@ interface StripeGatewayInterface
      * @return string The Customer Portal URL
      */
     public function createPortalSession(string $customerId, string $returnUrl, ?array $flowData = null): string;
+
+    // ── Stripe Connect (resellers' own accounts) ────────────────────────────
+
+    /**
+     * A connected account (Accounts v2, POST /v2/core/accounts).
+     *
+     * @param array<string, mixed> $params
+     * @return string Its id (acct_…).
+     */
+    public function createConnectedAccount(array $params): string;
+
+    /**
+     * @return array<string, mixed> The v2 account with configuration.merchant
+     *  and requirements included.
+     */
+    public function retrieveConnectedAccount(string $accountId): array;
+
+    /** @return string The single-use Stripe-hosted onboarding URL (v2 account link). */
+    public function createAccountOnboardingLink(string $accountId, string $returnUrl, string $refreshUrl): string;
+
+    /**
+     * A product in the connected account.
+     *
+     * @param array<string, mixed> $params
+     */
+    public function createConnectedProduct(string $accountId, array $params): string;
+
+    /**
+     * A price in the connected account.
+     *
+     * @param array<string, mixed> $params
+     */
+    public function createConnectedPrice(string $accountId, array $params): string;
+
+    /** No longer offered for new subscriptions; existing ones keep it. */
+    public function deactivateConnectedPrice(string $accountId, string $priceId): void;
 }

@@ -1,6 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Crear cuenta — QR Menu{% endblock %}
+{# The restaurant sign-up: /register (RegistrationController) and a
+   reseller's customer link /alta/{code} (ResellerSignupController, with
+   `reseller` set). The reseller's page says "Alta con {empresa}" and shows
+   nothing of ours that has a price: no trial line, no link to the home page. #}
+
+{% trans_default_domain 'register' %}
+
+{% block title %}{{ 'title'|trans }} — QR Menu{% endblock %}
 
 {# See public/base.html.twig's turbo_meta block for why: this page's own
    inline <style> block isn't Turbo-trackable, so a Turbo visit landing here
@@ -18,8 +25,17 @@
     {% include 'security/_auth_styles.html.twig' %}
 {% endblock %}
 
+{% macro errors(field, class = 'errors') %}
+    <ul class="{{ class }}"{{ class != 'errors' ? ' role="alert"' }}>
+        {% for error in field.vars.errors %}
+            <li>{{ error.messageTemplate|trans(error.messageParameters, 'register') }}</li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
 {% block body %}
-    <button type="button" class="theme-toggle-btn" onclick="toggleSiteTheme()" title="Cambiar tema" aria-label="Cambiar entre modo oscuro y claro">
+    {% import _self as m %}
+    <button type="button" class="theme-toggle-btn" onclick="toggleSiteTheme()" title="{{ 'theme_title'|trans }}" aria-label="{{ 'theme_aria'|trans }}">
         <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
         <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
     </button>
@@ -27,118 +43,93 @@
     <div class="wrap">
 
         <div class="logo">
-            <a href="{{ path('app_home') }}" class="logo-link">
-                <div class="logo-mark">Q</div>
-                <div class="logo-name">QR Menu</div>
-            </a>
-            <div class="logo-sub">Menús digitales inteligentes para restaurantes</div>
+            {% if reseller is defined %}
+                <div class="logo-link">
+                    <div class="logo-mark">Q</div>
+                    <div class="logo-name">QR Menu</div>
+                </div>
+            {% else %}
+                <a href="{{ path('app_home') }}" class="logo-link">
+                    <div class="logo-mark">Q</div>
+                    <div class="logo-name">QR Menu</div>
+                </a>
+            {% endif %}
+            <div class="logo-sub">{{ 'tagline'|trans }}</div>
         </div>
 
         <div class="card">
-            <div class="card-title">Crea tu cuenta</div>
-            <div class="card-sub">Empieza tu prueba gratuita de 1 mes. Sin tarjeta de crédito.</div>
+            <div class="card-title">{{ 'heading'|trans }}</div>
+            {% if reseller is defined %}
+                <div class="card-sub" id="signup-reseller">{{ 'with_reseller'|trans({ '%company%': reseller.name }) }}</div>
+            {% else %}
+                <div class="card-sub">{{ 'subtitle'|trans }}</div>
+            {% endif %}
 
             {# Never through Turbo: this page's turbo-visit-control=reload would
                turn the 422 with the errors into a reload of the empty form. #}
             {{ form_start(form, { attr: { novalidate: 'novalidate', 'data-turbo': 'false' } }) }}
 
             {# Errors of the whole form (expired page, unexpected fields). #}
-            {% if form.vars.errors|length > 0 %}
-                <ul class="errors form-errors" role="alert">
-                    {% for error in form.vars.errors %}
-                        <li>{{ error.message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+            {% if form.vars.errors|length > 0 %}{{ m.errors(form, 'errors form-errors') }}{% endif %}
 
             {# ── Restaurante ── #}
-            <div class="section-divider">Tu restaurante</div>
+            <div class="section-divider">{{ 'section_restaurant'|trans }}</div>
 
             <div class="field">
                 {{ form_label(form.restaurantName) }}
-                {{ form_widget(form.restaurantName, { attr: { placeholder: 'Ej: Trattoria Roma' } }) }}
-                <ul class="errors">
-                    {% for error in form.restaurantName.vars.errors %}
-                        <li>{{ error.message }}</li>
-                    {% endfor %}
-                </ul>
+                {{ form_widget(form.restaurantName, { attr: { placeholder: 'restaurant_placeholder'|trans } }) }}
+                {{ m.errors(form.restaurantName) }}
             </div>
 
             <div class="field-row">
                 <div class="field">
                     {{ form_label(form.currency) }}
                     {{ form_widget(form.currency) }}
-                    <ul class="errors">
-                        {% for error in form.currency.vars.errors %}
-                            <li>{{ error.message }}</li>
-                        {% endfor %}
-                    </ul>
+                    {{ m.errors(form.currency) }}
                 </div>
                 <div class="field">
                     {{ form_label(form.language) }}
                     {{ form_widget(form.language) }}
-                    <ul class="errors">
-                        {% for error in form.language.vars.errors %}
-                            <li>{{ error.message }}</li>
-                        {% endfor %}
-                    </ul>
+                    {{ m.errors(form.language) }}
                 </div>
             </div>
 
             <div class="field">
                 {{ form_label(form.adminLocale) }}
                 {{ form_widget(form.adminLocale) }}
-                <ul class="errors">
-                    {% for error in form.adminLocale.vars.errors %}
-                        <li>{{ error.message }}</li>
-                    {% endfor %}
-                </ul>
-                <div class="field-help">{{ form.adminLocale.vars.help }}</div>
+                {{ m.errors(form.adminLocale) }}
+                <div class="field-help">{{ form.adminLocale.vars.help|trans }}</div>
             </div>
 
             {# ── Cuenta ── #}
-            <div class="section-divider">Tu cuenta</div>
+            <div class="section-divider">{{ 'section_account'|trans }}</div>
 
             <div class="field">
                 {{ form_label(form.email) }}
-                {{ form_widget(form.email, { attr: { placeholder: 'tu@restaurante.com' } }) }}
-                <ul class="errors">
-                    {% for error in form.email.vars.errors %}
-                        <li>{{ error.message }}</li>
-                    {% endfor %}
-                </ul>
+                {{ form_widget(form.email, { attr: { placeholder: 'email_placeholder'|trans } }) }}
+                {{ m.errors(form.email) }}
             </div>
 
             <div class="field">
                 {{ form_label(form.password.first) }}
-                {{ form_widget(form.password.first, { attr: { placeholder: 'Mínimo 8 caracteres' } }) }}
-                <ul class="errors">
-                    {% for error in form.password.vars.errors %}
-                        <li>{{ error.message }}</li>
-                    {% endfor %}
-                    {% for error in form.password.first.vars.errors %}
-                        <li>{{ error.message }}</li>
-                    {% endfor %}
-                </ul>
+                {{ form_widget(form.password.first, { attr: { placeholder: 'password_placeholder'|trans } }) }}
+                {{ m.errors(form.password) }}
+                {{ m.errors(form.password.first) }}
             </div>
 
             <div class="field">
                 {{ form_label(form.password.second) }}
-                {{ form_widget(form.password.second, { attr: { placeholder: 'Repite la contraseña' } }) }}
-                <ul class="errors">
-                    {% for error in form.password.second.vars.errors %}
-                        <li>{{ error.message }}</li>
-                    {% endfor %}
-                </ul>
+                {{ form_widget(form.password.second, { attr: { placeholder: 'password_repeat_placeholder'|trans } }) }}
+                {{ m.errors(form.password.second) }}
             </div>
 
-            <button type="submit" class="submit-btn">Crear cuenta y entrar →</button>
+            <button type="submit" class="submit-btn">{{ 'submit'|trans }}</button>
 
             {{ form_end(form) }}
         </div>
 
         <div class="login-link">
-            ¿Ya tienes cuenta? <a href="{{ path('admin_login') }}">Inicia sesión</a>
+            {{ 'have_account'|trans }} <a href="{{ path('admin_login') }}">{{ 'login'|trans }}</a>
         </div>
 
     </div>
