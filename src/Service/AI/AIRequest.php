@@ -14,5 +14,8 @@ final readonly class AIRequest
         public array $messages,
         public int $maxTokens = 600,
         public float $temperature = 0.4,
+        // Total seconds the whole request may take (HttpClient max_duration);
+        // null = only the adapter's usual inactivity timeout.
+        public ?float $maxDuration = null,
     ) {}
 }

@@ -42,6 +42,70 @@ class OwnerTextTranslationRepository extends ServiceEntityRepository
     }
 
     /**
+     * The owner's own text (origin 'human', in any language) each of the
+     * given source hashes is a translation of — the latest one when there
+     * are several. A text with none is not known to be a translation.
+     *
+     * @param  string[] $hashes
+     * @return array<string, array{0: string, 1: string}> source hash => [locale, owner's text]
+     */
+    public function findOwnerOriginals(Restaurant $restaurant, array $hashes): array
+    {
+        if ($hashes === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('t')
+            ->select('t.sourceHash', 't.locale', 't.translatedText')
+            ->where('t.restaurant = :restaurant')
+            ->andWhere('t.origin = :human')
+            ->andWhere('t.sourceHash IN (:hashes)')
+            ->setParameter('restaurant', $restaurant)
+            ->setParameter('human', OwnerTextTranslation::ORIGIN_HUMAN)
+            ->setParameter('hashes', array_values(array_unique($hashes)))
+            ->orderBy('t.id', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $originals = [];
+        foreach ($rows as $row) {
+            $originals[$row['sourceHash']] = [$row['locale'], $row['translatedText']];
+        }
+
+        return $originals;
+    }
+
+    /**
+     * Stores one translation written by a main-language change
+     * (MenuLanguageChanger), replacing a row already there for the same
+     * (restaurant, locale, source text) — an older translation of a text
+     * the AI happened to write the same way again — except that an AI one
+     * ('ai') never replaces the owner's ('human'). INSERT … ON CONFLICT DO
+     * UPDATE … WHERE, so no unique violation either.
+     */
+    public function saveFromConversion(Restaurant $restaurant, string $locale, string $sourceLocale, string $sourceText, string $translatedText, string $origin): void
+    {
+        $this->getEntityManager()->getConnection()->executeStatement(
+            'INSERT INTO owner_text_translation (restaurant_id, locale, source_hash, source_text, translated_text, origin, created_at)
+             VALUES (:restaurant, :locale, :hash, :source, :translated, :origin, :createdAt)
+             ON CONFLICT (restaurant_id, locale, source_hash) DO UPDATE
+                SET source_text = EXCLUDED.source_text, translated_text = EXCLUDED.translated_text,
+                    origin = EXCLUDED.origin, created_at = EXCLUDED.created_at
+              WHERE EXCLUDED.origin = :human OR owner_text_translation.origin <> :human',
+            [
+                'restaurant' => $restaurant->getId(),
+                'locale'     => $locale,
+                'hash'       => OwnerTextTranslation::hash($sourceLocale, $sourceText),
+                'source'     => $sourceText,
+                'translated' => $translatedText,
+                'origin'     => $origin,
+                'createdAt'  => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                'human'      => OwnerTextTranslation::ORIGIN_HUMAN,
+            ],
+        );
+    }
+
+    /**
      * Stores one translation unless the same (restaurant, locale, source
      * text) is already there — INSERT … ON CONFLICT DO NOTHING, so a row
      * written by a concurrent loading screen is skipped by the database

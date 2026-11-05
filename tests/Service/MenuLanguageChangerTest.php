@@ -17,7 +17,10 @@ use App\Entity\ProductTranslation;
 use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Enum\MenuImportBatchStatus;
+use App\Repository\OwnerTextTranslationRepository;
+use App\Service\AiProductTranslator;
 use App\Service\CategoryTranslatorInterface;
+use App\Service\IndependentReviewTranslator;
 use App\Service\MenuLanguageChanger;
 use App\Service\MenuLanguageDetectorInterface;
 use App\Service\ProductTranslationService;
@@ -30,11 +33,14 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 /**
  * Changing the menu's main language (MenuLanguageChanger): a) the texts
  * already are in the new language → relabelled, nothing translated;
- * b) they aren't (or a mix, or unknown) → converted batch by batch, the
- * owner's old rows kept (as translations), an existing AI translation
- * reused; blocked by an import still being read; resumed after a failure;
- * and an edit afterwards regenerates the old-language version. The AI is
- * faked: "[<locale>] <text>".
+ * b) they aren't (or a mix, or unknown) → converted batch by batch. A text
+ * the owner wrote ('human', any language) is never changed — except one
+ * under the new language's label but in another language — and what the
+ * conversion writes is AI ('ai'), redone from the owner's text by the next
+ * one; the free texts come back unchanged on a round trip. Blocked by an
+ * import still being read; resumed after a failure; an edit afterwards
+ * makes the owner's text in the new language the source. The AI is faked:
+ * "[<locale>] <text>".
  */
 final class MenuLanguageChangerTest extends WebTestCase
 {
@@ -85,9 +91,20 @@ final class MenuLanguageChangerTest extends WebTestCase
             }
         };
         // One fake for the three translators; records each call's texts.
-        $this->ai = new class implements ProductTranslatorInterface, CategoryTranslatorInterface, TagTranslatorInterface {
+        $this->ai = new class implements ProductTranslatorInterface, CategoryTranslatorInterface, TagTranslatorInterface, IndependentReviewTranslator {
             public array $calls = [];
             public bool $fail = false;
+            public int $independentReviews = 0;
+            public array $sections = [];
+            /** text => the language it was translated from */
+            public array $from = [];
+
+            public function withIndependentReview(): static
+            {
+                $this->independentReviews++;
+
+                return $this;
+            }
 
             public function translate(array $items, string $targetLocale, array $sourceLocales = []): array
             {
@@ -95,6 +112,14 @@ final class MenuLanguageChangerTest extends WebTestCase
                     throw new \RuntimeException('rate limited');
                 }
                 $this->calls[] = array_values(array_map(static fn ($i) => is_array($i) ? $i['name'] : $i, $items));
+                foreach ($items as $key => $i) {
+                    $this->from[is_array($i) ? $i['name'] : $i] = $sourceLocales[$key] ?? null;
+                }
+                foreach ($items as $i) {
+                    if (is_array($i) && isset($i['section'])) {
+                        $this->sections[$i['name']] = $i['section'];
+                    }
+                }
 
                 return array_map(static fn ($i) => is_array($i)
                     ? ['name' => "[{$targetLocale}] " . $i['name'], 'description' => $i['description'] !== null ? "[{$targetLocale}] " . $i['description'] : null]
@@ -329,12 +354,17 @@ final class MenuLanguageChangerTest extends WebTestCase
         self::assertSame('en', $restaurant->getDefaultLanguage());
         self::assertNull($restaurant->getLanguageChangeTo());
 
-        // The new text is the owner's; the old one stays, as a translation.
-        self::assertSame(['en' => ['[en] Paella', 'human'], 'es' => ['Paella', 'ai']], $this->rows(Product::class, $this->paella->getId()));
+        // Every translation reviewed by another AI; dishes sent with their section.
+        self::assertSame(count($this->ai->calls), $this->ai->independentReviews);
+        self::assertSame('Principales', $this->ai->sections['Paella']);
+        self::assertSame('Principales', $this->ai->sections['Croquetas'], 'the unpublished one too');
+
+        // The new text is the AI's; the owner's stays theirs.
+        self::assertSame(['en' => ['[en] Paella', 'ai'], 'es' => ['Paella', 'human']], $this->rows(Product::class, $this->paella->getId()));
         self::assertSame('[en] Con arroz bomba', $this->em->find(Product::class, $this->paella->getId())->getTranslation('en')->getDescription());
         self::assertNull($this->em->find(Product::class, $this->wine->getId())->getTranslation('en')->getDescription());
-        self::assertSame(['en' => ['[en] Principales', 'human'], 'es' => ['Principales', 'ai']], $this->rows(Category::class, $this->mains->getId()));
-        self::assertSame(['en' => ['[en] Casero', 'human'], 'es' => ['Casero', 'ai']], $this->rows(ProductTag::class, $this->tag->getId()));
+        self::assertSame(['en' => ['[en] Principales', 'ai'], 'es' => ['Principales', 'human']], $this->rows(Category::class, $this->mains->getId()));
+        self::assertSame(['en' => ['[en] Casero', 'ai'], 'es' => ['Casero', 'human']], $this->rows(ProductTag::class, $this->tag->getId()));
         self::assertSame(['en' => ['[en] Azafrán', '-'], 'es' => ['Azafrán', '-']], $this->rows(Ingredient::class, $this->ingredient->getId()));
 
         // The inactive (imported, unpublished) dish too.
@@ -362,17 +392,23 @@ final class MenuLanguageChangerTest extends WebTestCase
         self::assertSame(['Copa', OwnerTextTranslation::hash('en', '[en] Copa'), 'human'], $originals['[en] Copa']);
     }
 
-    public function testCaseBReusesAnExistingTranslation(): void
+    /** An AI translation already there is made again from the owner's text; the owner's own one is kept. */
+    public function testCaseBRedoesAnAiTranslationButKeepsTheOwners(): void
     {
-        $this->translate($this->paella, ProductTranslation::class, ['en' => 'Valencian paella'], 'ai');
+        $this->translate($this->paella, ProductTranslation::class, ['en' => 'Lamb tenderloin'], 'ai');
+        $this->translate($this->wine, ProductTranslation::class, ['en' => 'House red'], 'human');
         $this->em->flush();
 
         $this->changer()->start($this->restaurant, 'en');
         $this->convert();
 
-        self::assertSame(['en' => ['Valencian paella', 'human'], 'es' => ['Paella', 'ai']], $this->rows(Product::class, $this->paella->getId()));
-        self::assertNotContains('Paella', $this->ai->calls[0], 'not translated again');
-        self::assertContains('Vino tinto', $this->ai->calls[0]);
+        self::assertSame(['en' => ['[en] Paella', 'ai'], 'es' => ['Paella', 'human']], $this->rows(Product::class, $this->paella->getId()));
+        self::assertSame(['en' => ['House red', 'human'], 'es' => ['Vino tinto', 'human']], $this->rows(Product::class, $this->wine->getId()));
+        self::assertSame('es', $this->ai->from['Paella']);
+        self::assertSame([['House red']], array_map(array_values(...), $this->detector->checked), 'only the owner\'s text is checked');
+        foreach ($this->ai->calls as $call) {
+            self::assertNotContains('Vino tinto', $call);
+        }
     }
 
     /**
@@ -400,14 +436,14 @@ final class MenuLanguageChangerTest extends WebTestCase
         self::assertCount(1, $this->detector->checked);
         self::assertEqualsCanonicalizing(['Paella antigua', 'Red wine', 'Principales', 'Pizza margarita'], array_values($this->detector->checked[0]));
 
-        // Spanish under "en": translated from the main language's text, replaced.
-        self::assertSame(['en' => ['[en] Paella', 'human'], 'es' => ['Paella', 'ai']], $this->rows(Product::class, $this->paella->getId()));
+        // Spanish under "en": translated from the main language's text, replaced (now AI).
+        self::assertSame(['en' => ['[en] Paella', 'ai'], 'es' => ['Paella', 'human']], $this->rows(Product::class, $this->paella->getId()));
         self::assertSame('[en] Con arroz bomba', $this->em->find(Product::class, $this->paella->getId())->getTranslation('en')->getDescription());
-        self::assertSame(['en' => ['[en] Principales', 'human'], 'es' => ['Principales', 'ai']], $this->rows(Category::class, $this->mains->getId()));
-        self::assertSame(['en' => ['[en] Casero', 'human'], 'es' => ['Casero', 'ai']], $this->rows(ProductTag::class, $this->tag->getId()));
+        self::assertSame(['en' => ['[en] Principales', 'ai'], 'es' => ['Principales', 'human']], $this->rows(Category::class, $this->mains->getId()));
+        self::assertSame(['en' => ['[en] Casero', 'ai'], 'es' => ['Casero', 'human']], $this->rows(ProductTag::class, $this->tag->getId()));
         // Really English, or can't tell: kept.
-        self::assertSame(['en' => ['Red wine', 'human'], 'es' => ['Vino tinto', 'ai']], $this->rows(Product::class, $this->wine->getId()));
-        self::assertSame(['en' => ['Pizza margarita', 'human'], 'es' => ['Pizza margarita', 'ai']], $this->rows(Product::class, $pizza->getId()));
+        self::assertSame(['en' => ['Red wine', 'human'], 'es' => ['Vino tinto', 'human']], $this->rows(Product::class, $this->wine->getId()));
+        self::assertSame(['en' => ['Pizza margarita', 'human'], 'es' => ['Pizza margarita', 'human']], $this->rows(Product::class, $pizza->getId()));
         foreach ($this->ai->calls as $call) {
             self::assertNotContains('Vino tinto', $call);
             self::assertNotContains('Pizza margarita', $call);
@@ -433,8 +469,8 @@ final class MenuLanguageChangerTest extends WebTestCase
         $results = $this->convert();
         self::assertTrue(end($results)['done']);
 
-        self::assertSame(['en' => ['Carpaccio de salmón', 'human'], 'es' => ['', 'ai'], 'fr' => ['Carpaccio de saumon', 'human']], $this->rows(Product::class, $salmon->getId()));
-        self::assertSame(['es' => ['', 'ai'], 'fr' => ['Saumon fumé', 'ai']], $this->rows(Product::class, $empty->getId()));
+        self::assertSame(['en' => ['Carpaccio de salmón', 'human'], 'es' => ['', 'human'], 'fr' => ['Carpaccio de saumon', 'human']], $this->rows(Product::class, $salmon->getId()));
+        self::assertSame(['es' => ['', 'human'], 'fr' => ['Saumon fumé', 'ai']], $this->rows(Product::class, $empty->getId()));
         foreach ($this->detector->checked as $batch) {
             self::assertNotContains('Carpaccio de salmón', $batch, 'not even checked');
         }
@@ -460,7 +496,7 @@ final class MenuLanguageChangerTest extends WebTestCase
         $this->detector->fail = false;
         $results = $this->convert();
         self::assertTrue(end($results)['done']);
-        self::assertSame(['en' => ['[en] Paella', 'human'], 'es' => ['Paella', 'ai']], $this->rows(Product::class, $this->paella->getId()));
+        self::assertSame(['en' => ['[en] Paella', 'ai'], 'es' => ['Paella', 'human']], $this->rows(Product::class, $this->paella->getId()));
     }
 
     public function testMixOrUnknownLanguageIsConverted(): void
@@ -538,14 +574,20 @@ final class MenuLanguageChangerTest extends WebTestCase
         $results = $this->convert();
         self::assertTrue(end($results)['done']);
         self::assertSame('en', $this->reloaded()->getDefaultLanguage());
-        self::assertSame(['en' => ['[en] Paella', 'human'], 'es' => ['Paella', 'ai']], $this->rows(Product::class, $this->paella->getId()));
+        self::assertSame(['en' => ['[en] Paella', 'ai'], 'es' => ['Paella', 'human']], $this->rows(Product::class, $this->paella->getId()));
     }
 
     // ── Editing afterwards ──
 
-    public function testEditAfterTheChangeRegeneratesTheOldLanguageButKeepsHandCorrections(): void
+    /**
+     * es→en, then the owner edits the dish in English: the English text is
+     * theirs and the source of the other languages — French comes from it —
+     * while their Spanish row and hand corrections stay as they are.
+     */
+    public function testEditAfterTheChangeMakesTheNewTextTheSourceAndKeepsTheOwnersRows(): void
     {
-        $this->translate($this->paella, ProductTranslation::class, ['fr' => 'Paëlla maison'], 'human');
+        $this->translate($this->paella, ProductTranslation::class, ['it' => 'Paella (IA)'], 'ai');
+        $this->translate($this->wine, ProductTranslation::class, ['it' => 'Vino della casa'], 'human');
         $this->em->flush();
         $this->changer()->start($this->restaurant, 'en');
         $this->convert();
@@ -553,10 +595,147 @@ final class MenuLanguageChangerTest extends WebTestCase
         // What MenuAdminController::saveProduct() does when the English text changes.
         $product = $this->em->find(Product::class, $this->paella->getId());
         $product->getTranslation('en')->setName('Seafood paella');
+        $product->getTranslation('en')->setSource(ProductTranslation::SOURCE_HUMAN);
         static::getContainer()->get(ProductTranslationService::class)->invalidateStale($product, 'en');
         $this->em->flush();
+        self::assertSame(['en' => ['Seafood paella', 'human'], 'es' => ['Paella', 'human']], $this->rows(Product::class, $this->paella->getId()));
 
-        self::assertSame(['en' => ['Seafood paella', 'human'], 'fr' => ['Paëlla maison', 'human']], $this->rows(Product::class, $this->paella->getId()));
+        // French, asked for afterwards (the menu in French / the loading screen).
+        static::getContainer()->get(AiProductTranslator::class)->translateMissing($this->reloaded(), 'fr');
+
+        self::assertSame(
+            ['en' => ['Seafood paella', 'human'], 'es' => ['Paella', 'human'], 'fr' => ['[fr] Seafood paella', 'ai']],
+            $this->rows(Product::class, $this->paella->getId()),
+        );
+        self::assertSame('en', $this->ai->from['Seafood paella']);
+        // Not edited in English: French from the owner's latest text (Italian here), not from the AI's English; theirs kept.
+        self::assertSame(
+            ['en' => ['[en] Vino tinto', 'ai'], 'es' => ['Vino tinto', 'human'], 'fr' => ['[fr] Vino della casa', 'ai'], 'it' => ['Vino della casa', 'human']],
+            $this->rows(Product::class, $this->wine->getId()),
+        );
+        $croquetas = array_values(array_filter(
+            $this->em->find(Category::class, $this->mains->getId())->getProducts()->toArray(),
+            static fn (Product $p) => !$p->isActive(),
+        ))[0];
+        self::assertSame(['en' => ['[en] Croquetas', 'ai'], 'es' => ['Croquetas', 'human']], $this->rows(Product::class, $croquetas->getId()));
+    }
+
+    /**
+     * es→en→es: the owner's Spanish rows are checked and kept (not
+     * translated back), the free texts come back exactly as the owner
+     * wrote them, with no AI call.
+     */
+    public function testRoundTripBringsBackTheOwnersTexts(): void
+    {
+        $this->changer()->start($this->restaurant, 'en');
+        $this->convert();
+        $calls = count($this->ai->calls);
+        self::assertSame('[en] Cocina de mercado.', $this->reloaded()->getTagline());
+
+        // Nothing the owner wrote in English: no language detection, converted.
+        $this->detector->asked = [];
+        $this->detector->languages = array_fill_keys(['Paella', 'Vino tinto', 'Croquetas', 'Principales', 'Menú del día', 'Casero'], 'es');
+        self::assertSame(MenuLanguageChanger::CONVERTING, $this->changer()->start($this->reloaded(), 'es'));
+        self::assertSame([], $this->detector->asked);
+        $results = $this->convert();
+        self::assertTrue(end($results)['done']);
+
+        $restaurant = $this->reloaded();
+        self::assertSame('es', $restaurant->getDefaultLanguage());
+        self::assertSame($calls, count($this->ai->calls), 'nothing translated');
+        self::assertSame(['en' => ['[en] Paella', 'ai'], 'es' => ['Paella', 'human']], $this->rows(Product::class, $this->paella->getId()));
+        self::assertSame(['en' => ['[en] Casero', 'ai'], 'es' => ['Casero', 'human']], $this->rows(ProductTag::class, $this->tag->getId()));
+
+        self::assertSame('Cocina de mercado.', $restaurant->getTagline());
+        $wine = $this->em->find(Product::class, $this->wine->getId());
+        self::assertSame('Botella', $wine->getBasePriceLabel());
+        self::assertSame('Copa', $wine->getPriceVariants()->first()->getLabel());
+        $setMenu = $this->em->find(Category::class, $this->setMenu->getId());
+        self::assertSame('Pan, bebida y postre', $setMenu->getMenuDescription());
+        self::assertSame('Primeros', $setMenu->getMenuSections()->first()->getLabel());
+
+        // The English version is still shown in English — as the AI's text.
+        $english = $this->em->getRepository(OwnerTextTranslation::class)->findOneBy([
+            'restaurant' => $restaurant, 'locale' => 'en', 'sourceHash' => OwnerTextTranslation::hash('es', 'Cocina de mercado.'),
+        ]);
+        self::assertSame(['[en] Cocina de mercado.', 'ai'], [$english->getTranslatedText(), $english->getOrigin()]);
+    }
+
+    /**
+     * David Test: the AI translated the tagline exactly as in an earlier
+     * change, so a row for that English text was there already (an old AI
+     * translation back into Spanish). The owner's original replaces it —
+     * and comes back exactly on the way back.
+     */
+    public function testRoundTripIsExactEvenWithAnOlderRowForTheSameText(): void
+    {
+        $repository = static::getContainer()->get(OwnerTextTranslationRepository::class);
+        $repository->insertIfMissing($this->restaurant, 'es', 'en', '[en] Cocina de mercado.', 'Cocina del mercado (IA antigua)', OwnerTextTranslation::ORIGIN_AI);
+
+        $this->changer()->start($this->restaurant, 'en');
+        $this->convert();
+        $this->detector->languages = array_fill_keys(['Paella', 'Vino tinto', 'Croquetas', 'Principales', 'Menú del día', 'Casero'], 'es');
+        $this->changer()->start($this->reloaded(), 'es');
+        $results = $this->convert();
+        self::assertTrue(end($results)['done']);
+
+        $restaurant = $this->reloaded();
+        self::assertSame('Cocina de mercado.', $restaurant->getTagline());
+        $row = $this->em->getRepository(OwnerTextTranslation::class)->findOneBy([
+            'restaurant' => $restaurant, 'locale' => 'es', 'sourceHash' => OwnerTextTranslation::hash('en', '[en] Cocina de mercado.'),
+        ]);
+        self::assertSame(['Cocina de mercado.', 'human'], [$row->getTranslatedText(), $row->getOrigin()]);
+        foreach ($this->ai->calls as $call) {
+            self::assertNotContains('[en] Cocina de mercado.', $call, 'not translated back by the AI');
+        }
+    }
+
+    public function testAnAiRowNeverReplacesTheOwners(): void
+    {
+        $repository = static::getContainer()->get(OwnerTextTranslationRepository::class);
+        $restaurant = $this->reloaded();
+        $repository->saveFromConversion($restaurant, 'es', 'en', 'Market cooking.', 'Cocina de mercado.', OwnerTextTranslation::ORIGIN_HUMAN);
+        $repository->saveFromConversion($restaurant, 'es', 'en', 'Market cooking.', 'Cocina del mercado', OwnerTextTranslation::ORIGIN_AI);
+
+        $find = fn () => $this->em->getRepository(OwnerTextTranslation::class)->findOneBy([
+            'restaurant' => $restaurant, 'locale' => 'es', 'sourceHash' => OwnerTextTranslation::hash('en', 'Market cooking.'),
+        ]);
+        self::assertSame(['Cocina de mercado.', 'human'], [$find()->getTranslatedText(), $find()->getOrigin()]);
+
+        // The owner's own one does replace another of theirs, or an AI one.
+        $repository->saveFromConversion($restaurant, 'es', 'en', 'Market cooking.', 'Cocina de mercado, siempre.', OwnerTextTranslation::ORIGIN_HUMAN);
+        $this->em->clear();
+        self::assertSame(['Cocina de mercado, siempre.', 'human'], [$find()->getTranslatedText(), $find()->getOrigin()]);
+    }
+
+    /**
+     * es→en→fr: French is made from the owner's Spanish (dishes and free
+     * texts), not from the AI's English; going back to Spanish then brings
+     * the owner's free texts back too.
+     */
+    public function testNextChangeTranslatesFromTheOwnersTexts(): void
+    {
+        $this->changer()->start($this->restaurant, 'en');
+        $this->convert();
+        $this->ai->from = [];
+
+        self::assertSame(MenuLanguageChanger::CONVERTING, $this->changer()->start($this->reloaded(), 'fr'));
+        $results = $this->convert();
+        self::assertTrue(end($results)['done']);
+
+        $restaurant = $this->reloaded();
+        self::assertSame(['en' => ['[en] Paella', 'ai'], 'es' => ['Paella', 'human'], 'fr' => ['[fr] Paella', 'ai']], $this->rows(Product::class, $this->paella->getId()));
+        self::assertSame('es', $this->ai->from['Paella']);
+        self::assertSame('[fr] Cocina de mercado.', $restaurant->getTagline());
+        self::assertSame('es', $this->ai->from['Cocina de mercado.']);
+        self::assertSame('[fr] Copa', $this->em->find(Product::class, $this->wine->getId())->getPriceVariants()->first()->getLabel());
+
+        $this->detector->languages = array_fill_keys(['Paella', 'Vino tinto', 'Croquetas', 'Principales', 'Menú del día', 'Casero'], 'es');
+        $this->changer()->start($this->reloaded(), 'es');
+        $this->convert();
+        $restaurant = $this->reloaded();
+        self::assertSame('Cocina de mercado.', $restaurant->getTagline());
+        self::assertSame('Copa', $this->em->find(Product::class, $this->wine->getId())->getPriceVariants()->first()->getLabel());
     }
 
     // ── Panel ──

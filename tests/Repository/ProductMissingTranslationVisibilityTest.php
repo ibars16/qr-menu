@@ -114,7 +114,7 @@ final class ProductMissingTranslationVisibilityTest extends KernelTestCase
         $dish = $this->dish(['es' => 'Croquetas']);
 
         self::assertTrue($this->repo->hasAnyMissingTranslation($this->restaurant, 'en'));
-        self::assertSame([[$dish->getId() => ['name' => 'Croquetas', 'description' => null]]], $this->runTranslator());
+        self::assertSame([[$dish->getId() => ['name' => 'Croquetas', 'description' => null, 'section' => 'Entrantes']]], $this->runTranslator());
     }
 
     public function testAZeroPricedDishNeitherCountsNorGetsTranslated(): void
@@ -141,6 +141,6 @@ final class ProductMissingTranslationVisibilityTest extends KernelTestCase
         $this->dish(['es' => 'Gratis'], price: 0);
 
         self::assertTrue($this->repo->hasAnyMissingTranslation($this->restaurant, 'en'));
-        self::assertSame([[$shown->getId() => ['name' => 'Croquetas', 'description' => null]]], $this->runTranslator());
+        self::assertSame([[$shown->getId() => ['name' => 'Croquetas', 'description' => null, 'section' => 'Entrantes']]], $this->runTranslator());
     }
 }

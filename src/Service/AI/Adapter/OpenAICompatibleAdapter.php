@@ -66,7 +66,7 @@ final class OpenAICompatibleAdapter implements AIProviderInterface
                     'temperature' => $request->temperature,
                 ] + $this->extraParams,
                 'timeout' => 20,
-            ]);
+            ] + ($request->maxDuration !== null ? ['max_duration' => $request->maxDuration] : []));
 
             $status = $response->getStatusCode();
             $body = $response->toArray(throw: false);

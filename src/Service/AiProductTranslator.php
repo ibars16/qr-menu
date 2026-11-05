@@ -84,8 +84,9 @@ final class AiProductTranslator
     }
 
     /**
-     * Source text per product — see TranslationSource::pick() (default
-     * language, else one a person wrote, else any), with its real language.
+     * Source text per product — see TranslationSource::pick() (the owner's
+     * in the main language, else the owner's latest in another one, else
+     * the main language's AI one), with its real language.
      *
      * @param  Product[] $products
      * @return array{0: array<int, array{name: string, description: ?string}>, 1: array<int, string>}
@@ -101,6 +102,7 @@ final class AiProductTranslator
                 $map[$product->getId()] = [
                     'name'        => $source->getName(),
                     'description' => $source->getDescription(),
+                    'section'     => TranslationSource::sectionName($product, $source->getLocale(), $defaultLocale),
                 ];
                 $locales[$product->getId()] = $source->getLocale();
             }

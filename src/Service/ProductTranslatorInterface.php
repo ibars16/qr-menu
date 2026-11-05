@@ -14,8 +14,10 @@ interface ProductTranslatorInterface
      * Translates a batch of dish name/description pairs into $targetLocale
      * in one API call.
      *
-     * @param  array<int, array{name: string, description: ?string}> $products
-     *         map of [productId => ['name' => ..., 'description' => ...]]
+     * @param  array<int, array{name: string, description: ?string, section?: ?string}> $products
+     *         map of [productId => ['name' => ..., 'description' => ...]],
+     *         optionally with 'section': the dish's menu section name in the
+     *         same language, as context (see TranslationGuidelines)
      * @param  string $targetLocale  ISO 639-1 language code
      * @param  array<int, string> $sourceLocales  map of [productId => ISO 639-1
      *         code the source text is written in] — never assumed, a batch

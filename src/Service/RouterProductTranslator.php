@@ -3,10 +3,7 @@
 namespace App\Service;
 
 use App\Service\AI\AIModelRouter;
-use App\Service\AI\AIProviderException;
 use App\Service\AI\AIProviderFactory;
-use App\Service\AI\AIRequest;
-use App\Service\AI\ChatMessage;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -35,13 +32,28 @@ use Psr\Log\LoggerInterface;
  * written in ("source_locale") — never assumed to be Spanish, and a batch
  * may mix languages (OwnerTextTranslationService's owner texts + ingredients).
  */
-final class RouterProductTranslator implements ProductTranslatorInterface
+final class RouterProductTranslator implements ProductTranslatorInterface, IndependentReviewTranslator
 {
+    private readonly TranslationAiCaller $caller;
+
+    /** The review pass goes to another AI than the translator (withIndependentReview()). */
+    private bool $independentReview = false;
+
     public function __construct(
-        private readonly AIModelRouter     $router,
-        private readonly AIProviderFactory $providerFactory,
-        private readonly LoggerInterface   $logger,
-    ) {}
+        AIModelRouter     $router,
+        AIProviderFactory $providerFactory,
+        LoggerInterface   $logger,
+    ) {
+        $this->caller = new TranslationAiCaller($router, $providerFactory, $logger);
+    }
+
+    public function withIndependentReview(): static
+    {
+        $copy = clone $this;
+        $copy->independentReview = true;
+
+        return $copy;
+    }
 
     public function translate(array $products, string $targetLocale, array $sourceLocales = []): array
     {
@@ -59,6 +71,9 @@ final class RouterProductTranslator implements ProductTranslatorInterface
             if (isset($sourceLocales[$id])) {
                 $item['source_locale'] = $sourceLocales[$id];
             }
+            if (($p['section'] ?? '') !== '') {
+                $item['menu_section'] = $p['section'];
+            }
             $items[] = $item;
         }
         $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
@@ -67,21 +82,22 @@ final class RouterProductTranslator implements ProductTranslatorInterface
             . "Translate the \"name\" and \"description\" of each dish below into the language with ISO 639-1 code \"{$targetLocale}\". "
             . 'Each dish is written in the language whose ISO 639-1 code is its "source_locale" — translate from that language. '
             . 'Keep dish names natural for a menu (do not translate proper nouns / brand names). '
+            . TranslationGuidelines::DISH . ' '
             . 'If "description" is empty, return it as an empty string. '
             . 'Return ONLY a valid JSON object mapping each "id" to {"name": ..., "description": ...} — no other text, '
             . 'no markdown code fences, no explanations.';
 
-        $content = $this->complete($systemPrompt, "Dishes: {$itemsJson}", 4096);
-        if ($content === null) {
+        $answer = $this->caller->complete($systemPrompt, "Dishes: {$itemsJson}", 4096);
+        if ($answer === null) {
             return [];
         }
 
-        $translated = $this->parse($content);
+        $translated = $this->parse($answer['content']);
         if (empty($translated)) {
             return [];
         }
 
-        return $this->verifyAndFix($translated, $products, $targetLocale, $sourceLocales);
+        return $this->verifyAndFix($translated, $products, $targetLocale, $sourceLocales, $answer['provider']);
     }
 
     /**
@@ -105,7 +121,7 @@ final class RouterProductTranslator implements ProductTranslatorInterface
      * @param array<int, string> $sourceLocales
      * @return array<int, array{name: string, description: ?string}>
      */
-    private function verifyAndFix(array $translated, array $sourceProducts, string $targetLocale, array $sourceLocales): array
+    private function verifyAndFix(array $translated, array $sourceProducts, string $targetLocale, array $sourceLocales, string $translatedBy): array
     {
         $items = [];
         foreach ($translated as $id => $pair) {
@@ -118,6 +134,9 @@ final class RouterProductTranslator implements ProductTranslatorInterface
             if (isset($sourceLocales[$id])) {
                 $item['source_locale'] = $sourceLocales[$id];
             }
+            if (($sourceProducts[$id]['section'] ?? '') !== '') {
+                $item['menu_section'] = $sourceProducts[$id]['section'];
+            }
             $items[] = $item;
         }
         $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
@@ -125,10 +144,13 @@ final class RouterProductTranslator implements ProductTranslatorInterface
         $systemPrompt = 'You are a translation quality checker for a restaurant menu. '
             . "You'll see, for each dish, its original name (written in the language whose ISO 639-1 code is its \"source_locale\") and a candidate translation into the language with ISO 639-1 code \"{$targetLocale}\". "
             . 'For each one, check the candidate translation carefully: is "translated_name" and "translated_description" made of real, correctly-spelled words that actually exist in that language — not a fabricated string, and not two real words merged together with no space between them? Is it a fluent, natural, faithful translation of the original? '
+            . TranslationGuidelines::DISH_REVIEW . ' '
             . 'If a candidate is already correct, return it completely unchanged. If it has a problem, replace it with a corrected translation. '
             . 'Return ONLY a valid JSON object mapping each "id" to {"name": ..., "description": ...} — no other text, no markdown code fences, no explanations.';
 
-        $content = $this->complete($systemPrompt, "Dishes: {$itemsJson}", 4096);
+        $content = $this->independentReview
+            ? $this->caller->completeElsewhere($systemPrompt, "Dishes: {$itemsJson}", 4096, $translatedBy)
+            : $this->caller->complete($systemPrompt, "Dishes: {$itemsJson}", 4096)['content'] ?? null;
         if ($content === null) {
             return $translated;
         }
@@ -145,37 +167,6 @@ final class RouterProductTranslator implements ProductTranslatorInterface
         }
 
         return $merged;
-    }
-
-    /**
-     * Tries the free groq-llama provider first, falling back to
-     * AIModelRouter's normal chain — shared by both the translate and
-     * verify passes. Returns null only once every option has failed.
-     */
-    private function complete(string $systemPrompt, string $userContent, int $maxTokens): ?string
-    {
-        $request = new AIRequest(
-            systemPrompt: $systemPrompt,
-            messages: [new ChatMessage('user', $userContent)],
-            maxTokens: $maxTokens,
-            temperature: 0.1,
-        );
-
-        $freeProvider = $this->providerFactory->getProviderById('groq-llama');
-        if ($freeProvider !== null) {
-            try {
-                return $freeProvider->complete($request)->content;
-            } catch (AIProviderException $e) {
-                $this->logger->warning('groq-llama call failed, falling back to AIModelRouter', [
-                    'reason'  => $e->reason->value,
-                    'message' => $e->getMessage(),
-                ]);
-            }
-        }
-
-        $result = $this->router->route($request, 'complex');
-
-        return $result->isSuccess() ? $result->response->content : null;
     }
 
     /** @return array<int, array{name: string, description: ?string}> */

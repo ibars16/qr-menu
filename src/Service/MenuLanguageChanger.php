@@ -20,35 +20,35 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Changes the menu's main language (Restaurant::$defaultLanguage) without
- * ever deleting a text the owner wrote — only AI rows go, or rows are
- * relabelled.
+ * Changes the menu's main language (Restaurant::$defaultLanguage). A text the
+ * owner wrote (source 'human'), in any language, is never changed by it —
+ * only rows the AI made are (re)written, or rows are relabelled.
  *
  * start() asks the AI once which language the owner's texts are in:
  *  a) already the new one (only the label was wrong): the owner's rows are
  *     relabelled to the new locale at once, nothing translated;
- *  b) another one, a mix, or the AI can't tell: languageChangeTo is set and
- *     the "Convirtiendo tu carta…" screen calls step() until it's done —
- *     each call ONE batch (one AI call at most), so a closed window or an
- *     AI limit just leaves the change half done, resumed by languageChangeTo.
+ *  b) another one, a mix, or the AI can't tell (or the owner wrote none in
+ *     the main language): languageChangeTo is set and the "Convirtiendo tu
+ *     carta…" screen calls step() until it's done — each call ONE batch (one
+ *     AI call at most), so a closed window or an AI limit just leaves the
+ *     change half done, resumed by languageChangeTo.
  *
  * In b every dish (any state — imported unpublished ones too), category,
- * tag and private ingredient gets the owner's text in the new language
- * (a text already stored for it is kept and becomes the owner's; else
- * translated), stored as the owner's own. A text already stored for the new
- * language is first checked by the AI (detectEach(), a batch per step):
- * old data may hold another language under that label (a menu written in
- * Spanish while the label said English). One in another language is
- * translated from the main language's text and replaced; one the AI can't
- * tell ("Pizza margarita") stays. The answers are kept in the app cache
- * meanwhile (lost = checked again, nothing else). The free texts (tagline, set-menu
+ * tag and private ingredient gets its text in the new language, translated
+ * from the owner's text (TranslationSource::pick()) and stored as an AI
+ * translation ('ai') — the owner's until they edit it by hand. An AI row
+ * already in the new language is translated again; one the owner wrote is
+ * kept. The exception: old data may hold another language under the new
+ * language's label (a menu written in Spanish while the label said
+ * English), so the owner's rows there are first checked by the AI
+ * (detectEach(), a batch per step) — one in another language is replaced
+ * by the translation (then 'ai'); one the AI can't tell ("Pizza margarita")
+ * stays. The answers, and which rows this conversion already wrote, are kept
+ * in the app cache meanwhile (lost = done again, nothing else). The owner's
+ * rows in the old language stay theirs. The free texts (tagline, set-menu
  * descriptions and section labels, price labels) are replaced by their
- * translation, the original kept as their translation into the old
- * language. Finally the old-language rows the owner wrote become
- * translations ('ai'): still shown in the old language, regenerated as
- * soon as the owner edits the text in the new one
- * (ProductTranslationService::invalidateStale() and friends). Hand
- * corrections in other languages stay the owner's.
+ * translation from the owner's original, which is kept (OwnerTextTranslation,
+ * origin 'human') — a round trip brings it back unchanged.
  */
 final class MenuLanguageChanger
 {
@@ -65,7 +65,13 @@ final class MenuLanguageChanger
     /** Owner names sent to the language detection. */
     private const SAMPLE_SIZE = 20;
 
-    /** @var array<string, bool> during step(): "p:12" / "c:3" / "t:7" => its new-language text is in it (false: replace it) */
+    /**
+     * During step(): "p:12" / "c:3" / "t:7" => its new-language row stays
+     * (checked to be in the new language, or written by this conversion);
+     * false: replace it. Not there: an AI row is replaced, any other stays.
+     *
+     * @var array<string, bool>
+     */
     private array $checked = [];
 
     public function __construct(
@@ -116,9 +122,18 @@ final class MenuLanguageChanger
 
         $sample = $this->sample($restaurant, $from);
         if ($sample === []) {
-            $this->finish($restaurant, $to);
+            if (!$this->hasContent($restaurant)) {
+                $this->finish($restaurant, $to);
 
-            return self::DONE;
+                return self::DONE;
+            }
+            // Nothing the owner wrote in the main language (it's all AI, from
+            // an earlier change): nothing to relabel — converted.
+            $this->cache->deleteItem($this->checkKey($restaurant, $to));
+            $restaurant->setLanguageChangeTo($to);
+            $this->em->flush();
+
+            return self::CONVERTING;
         }
 
         $detected = $this->detector->detect($sample);
@@ -166,7 +181,7 @@ final class MenuLanguageChanger
         $checkItem = $this->cache->getItem($this->checkKey($restaurant, $to));
         $this->checked = $checkItem->isHit() ? (array) $checkItem->get() : [];
 
-        // First: is each text already stored for the new language in it?
+        // First: is each text the owner already wrote for the new language in it?
         $unchecked = $this->unchecked($products, $categories, $tags, $from, $to);
         if ($unchecked !== []) {
             $error = !$this->check($restaurant, array_slice($unchecked, 0, self::CHECK_BATCH, true), $to);
@@ -174,10 +189,6 @@ final class MenuLanguageChanger
 
             return ['done' => false, 'remaining' => max(1, count($unchecked) - ($error ? 0 : self::CHECK_BATCH)), 'error' => $error];
         }
-
-        // One in it (an AI translation, say): it simply becomes the owner's
-        // text. No AI call.
-        $promoted = $this->promote($products, $categories, $tags, $to);
 
         $pendingProducts    = $this->pendingRows($products, $from, $to);
         $pendingCategories  = $this->pendingRows($categories, $from, $to);
@@ -199,13 +210,12 @@ final class MenuLanguageChanger
 
                 return ['done' => false, 'remaining' => 1, 'error' => true];
             }
-            $this->demoteOldRows($products, $categories, $tags, $from);
             $this->finish($restaurant, $to);
 
             return ['done' => true, 'remaining' => 0, 'error' => false];
         }
 
-        if ($stored > 0 || $promoted) {
+        if ($stored > 0) {
             $restaurant->bumpMenuContentVersion();
         }
         $this->em->flush();
@@ -264,27 +274,10 @@ final class MenuLanguageChanger
 
     // ── Case b ──
 
-    /** @param array<int, Product|Category|ProductTag> ...$groups */
-    private function promote(array $products, array $categories, array $tags, string $to): bool
-    {
-        $promoted = false;
-        foreach ([$products, $categories, $tags] as $group) {
-            foreach ($group as $entity) {
-                $new = $entity->getTranslation($to);
-                if ($new !== null && $new->getSource() === ProductTranslation::SOURCE_AI && ($this->checked[$this->key($entity)] ?? true)) {
-                    $new->setSource(ProductTranslation::SOURCE_HUMAN);
-                    $promoted = true;
-                }
-            }
-        }
-
-        return $promoted;
-    }
-
     /**
-     * The entities with no row in the new language (or one in another
-     * language, see check()), keyed by id, with the row their translation
-     * is made from.
+     * The entities with no row in the new language, an AI one not written
+     * by this conversion yet, or one in another language (see check()),
+     * keyed by id, with the row their translation is made from.
      *
      * @param  array<int, Product|Category|ProductTag> $entities
      * @return array<int, ProductTranslation|CategoryTranslation|ProductTagTranslation>
@@ -293,7 +286,8 @@ final class MenuLanguageChanger
     {
         $pending = [];
         foreach ($entities as $entity) {
-            if ($entity->getTranslation($to) !== null && ($this->checked[$this->key($entity)] ?? true)) {
+            $row = $entity->getTranslation($to);
+            if ($row !== null && ($this->checked[$this->key($entity)] ?? !$this->isAi($row))) {
                 continue;
             }
             if ($this->blankMainText($entity, $from)) {
@@ -330,10 +324,15 @@ final class MenuLanguageChanger
     {
         $input = $locales = [];
         foreach ($sources as $id => $source) {
-            $input[$id]   = ['name' => $source->getName(), 'description' => $source->getDescription()];
+            $product      = $source->getProduct();
+            $input[$id]   = [
+                'name'        => $source->getName(),
+                'description' => $source->getDescription(),
+                'section'     => TranslationSource::sectionName($product, $source->getLocale(), $product->getCategory()->getRestaurant()->getDefaultLanguage()),
+            ];
             $locales[$id] = $source->getLocale();
         }
-        $result = $this->call(fn () => $this->productTranslator->translate($input, $to, $locales), 'dishes');
+        $result = $this->call(fn () => $this->reviewed($this->productTranslator)->translate($input, $to, $locales), 'dishes');
 
         $stored = 0;
         foreach ($sources as $id => $source) {
@@ -346,7 +345,7 @@ final class MenuLanguageChanger
             $translation = $product->getTranslation($to) ?? $this->added($product, new ProductTranslation(), $to);
             $translation->setName($name);
             $translation->setDescription($description !== '' && $source->getDescription() !== null ? $description : null);
-            $translation->setSource(ProductTranslation::SOURCE_HUMAN);
+            $translation->setSource(ProductTranslation::SOURCE_AI);
             $this->checked[$this->key($product)] = true;
             $stored++;
         }
@@ -357,7 +356,7 @@ final class MenuLanguageChanger
     /** @param array<int, CategoryTranslation> $sources */
     private function translateCategories(array $sources, string $to): int
     {
-        $result = $this->call(fn () => $this->categoryTranslator->translate(
+        $result = $this->call(fn () => $this->reviewed($this->categoryTranslator)->translate(
             array_map(static fn (CategoryTranslation $s) => $s->getName(), $sources),
             $to,
             array_map(static fn (CategoryTranslation $s) => $s->getLocale(), $sources),
@@ -372,7 +371,7 @@ final class MenuLanguageChanger
             $category = $source->getCategory();
             $translation = $category->getTranslation($to) ?? $this->added($category, new CategoryTranslation(), $to);
             $translation->setName($name);
-            $translation->setSource(CategoryTranslation::SOURCE_HUMAN);
+            $translation->setSource(CategoryTranslation::SOURCE_AI);
             $this->checked[$this->key($category)] = true;
             $stored++;
         }
@@ -383,7 +382,7 @@ final class MenuLanguageChanger
     /** @param array<int, ProductTagTranslation> $sources */
     private function translateTags(array $sources, string $to): int
     {
-        $result = $this->call(fn () => $this->tagTranslator->translate(
+        $result = $this->call(fn () => $this->reviewed($this->tagTranslator)->translate(
             array_map(static fn (ProductTagTranslation $s) => $s->getName(), $sources),
             $to,
             array_map(static fn (ProductTagTranslation $s) => $s->getLocale(), $sources),
@@ -398,7 +397,7 @@ final class MenuLanguageChanger
             $tag = $source->getTag();
             $translation = $tag->getTranslation($to) ?? $this->added($tag, new ProductTagTranslation(), $to);
             $translation->setName($name);
-            $translation->setSource(ProductTagTranslation::SOURCE_HUMAN);
+            $translation->setSource(ProductTagTranslation::SOURCE_AI);
             $this->checked[$this->key($tag)] = true;
             $stored++;
         }
@@ -435,9 +434,13 @@ final class MenuLanguageChanger
     /**
      * The tagline, set-menu descriptions and section labels and price
      * labels, in every dish and category (any state): replaced by their
-     * translation, the original stored as their translation into the old
-     * language. All or nothing — a half-converted set would be translated
-     * twice on the retry.
+     * translation. Made from the owner's original when the text there is
+     * an AI translation of it (an earlier change) — and it's the original
+     * itself when that is in the new language. Every text is then stored as
+     * its translation into the old language, and the owner's original kept
+     * as its translation into its own (origin 'human') — replacing an older
+     * row for the same text (saveFromConversion()). All or nothing — a
+     * half-converted set would be translated twice on the retry.
      */
     private function convertOwnerTexts(Restaurant $restaurant, string $from, string $to): bool
     {
@@ -468,11 +471,31 @@ final class MenuLanguageChanger
             return true;
         }
 
-        $translated = $this->translateTexts($restaurant, array_map(static fn (string $t) => [$from, $t], $texts), $to, 'owner texts');
-        if (count($translated) !== count($texts)) {
+        // text => [locale, owner's text] when the text is an AI translation of it.
+        $originals = [];
+        $found = $this->ownerTexts->findOwnerOriginals($restaurant, array_map(static fn (string $t) => OwnerTextTranslation::hash($from, $t), $texts));
+        foreach ($texts as $text) {
+            if (isset($found[OwnerTextTranslation::hash($from, $text)])) {
+                $originals[$text] = $found[OwnerTextTranslation::hash($from, $text)];
+            }
+        }
+
+        $map = $sources = [];
+        foreach ($texts as $i => $text) {
+            [$locale, $original] = $originals[$text] ?? [$from, $text];
+            if ($locale === $to) {
+                $map[$text] = $original;
+            } else {
+                $sources[$i] = [$locale, $original];
+            }
+        }
+        $translated = $this->translateWithAi($sources, $to, 'owner texts');
+        if (count($translated) !== count($sources)) {
             return false;
         }
-        $map = array_combine($texts, array_map(static fn (int $i) => $translated[$i], array_keys($texts)));
+        foreach ($translated as $i => $translation) {
+            $map[$texts[$i]] = $translation;
+        }
 
         foreach ($fields as [$get, $set]) {
             $text = trim((string) $get());
@@ -480,9 +503,18 @@ final class MenuLanguageChanger
                 $set($map[$text]);
             }
         }
-        foreach ($map as $original => $translation) {
-            if ($original !== $translation) {
-                $this->ownerTexts->insertIfMissing($restaurant, $from, $to, $translation, $original, OwnerTextTranslation::ORIGIN_HUMAN);
+        foreach ($map as $text => $translation) {
+            if ($text === $translation) {
+                continue;
+            }
+            if (!isset($originals[$text])) {
+                $this->ownerTexts->saveFromConversion($restaurant, $from, $to, $translation, $text, OwnerTextTranslation::ORIGIN_HUMAN);
+                continue;
+            }
+            [$locale, $original] = $originals[$text];
+            $this->ownerTexts->saveFromConversion($restaurant, $from, $to, $translation, $text, OwnerTextTranslation::ORIGIN_AI);
+            if ($locale !== $to) {
+                $this->ownerTexts->saveFromConversion($restaurant, $locale, $to, $translation, $original, OwnerTextTranslation::ORIGIN_HUMAN);
             }
         }
 
@@ -491,8 +523,7 @@ final class MenuLanguageChanger
 
     /**
      * Texts into $to: the menu's own translation of each one when it has
-     * it already (OwnerTextTranslation), else the AI's (dish translator,
-     * name only).
+     * it already (OwnerTextTranslation), else the AI's.
      *
      * @param  array<int, array{0: string, 1: string}> $sources  key => [sourceLocale, text]
      * @return array<int, string> key => translation (the ones it got)
@@ -504,47 +535,50 @@ final class MenuLanguageChanger
             $sources,
         ));
 
-        $result = $missing = $locales = [];
+        $result = $missing = [];
         foreach ($sources as $key => [$locale, $text]) {
             $hit = trim((string) ($known[OwnerTextTranslation::hash($locale, $text)] ?? ''));
             if ($hit !== '') {
                 $result[$key] = $hit;
             } else {
-                $missing[$key] = ['name' => $text, 'description' => null];
-                $locales[$key] = $locale;
+                $missing[$key] = [$locale, $text];
             }
         }
 
-        if ($missing !== []) {
-            $answer = $this->call(fn () => $this->productTranslator->translate($missing, $to, $locales), $what);
-            foreach (array_keys($missing) as $key) {
-                $name = trim((string) ($answer[$key]['name'] ?? ''));
-                if ($name !== '') {
-                    $result[$key] = $name;
-                }
+        return $result + $this->translateWithAi($missing, $to, $what);
+    }
+
+    /**
+     * Texts into $to by the AI (dish translator, name only).
+     *
+     * @param  array<int, array{0: string, 1: string}> $sources  key => [sourceLocale, text]
+     * @return array<int, string> key => translation (the ones it got)
+     */
+    private function translateWithAi(array $sources, string $to, string $what): array
+    {
+        if ($sources === []) {
+            return [];
+        }
+        $items = array_map(static fn (array $s) => ['name' => $s[1], 'description' => null], $sources);
+        $locales = array_map(static fn (array $s) => $s[0], $sources);
+        $answer = $this->call(fn () => $this->reviewed($this->productTranslator)->translate($items, $to, $locales), $what);
+
+        $result = [];
+        foreach (array_keys($sources) as $key) {
+            $name = trim((string) ($answer[$key]['name'] ?? ''));
+            if ($name !== '') {
+                $result[$key] = $name;
             }
         }
 
         return $result;
     }
 
-    /** The owner's old-language rows become translations of the new text (see the class docblock). */
-    private function demoteOldRows(array $products, array $categories, array $tags, string $from): void
-    {
-        foreach ([$products, $categories, $tags] as $group) {
-            foreach ($group as $entity) {
-                $old = $entity->getTranslation($from);
-                if ($old !== null && $old->getSource() === ProductTranslation::SOURCE_HUMAN) {
-                    $old->setSource(ProductTranslation::SOURCE_AI);
-                }
-            }
-        }
-    }
-
     /**
-     * The new-language texts not checked yet (see check()), "p:12" => name.
-     * Nothing to translate it from (or a blank main-language text): kept,
-     * unchecked. Blank itself: replaced.
+     * The new-language texts the owner wrote, not checked yet (see check()),
+     * "p:12" => name. AI ones aren't checked: they're translated again
+     * anyway (pendingRows()). Nothing to translate it from (or a blank
+     * main-language text): kept, unchecked. Blank itself: replaced.
      *
      * @return array<string, string>
      */
@@ -555,7 +589,7 @@ final class MenuLanguageChanger
             foreach ($group as $entity) {
                 $row = $entity->getTranslation($to);
                 $key = $this->key($entity);
-                if ($row === null || isset($this->checked[$key])) {
+                if ($row === null || isset($this->checked[$key]) || $row->getSource() !== ProductTranslation::SOURCE_HUMAN) {
                     continue;
                 }
                 if ($this->blankMainText($entity, $from) || TranslationSource::pick($entity->getTranslations(), $from, $to) === null) {
@@ -619,6 +653,11 @@ final class MenuLanguageChanger
         return $main !== null && trim($main->getName()) === '';
     }
 
+    private function isAi(ProductTranslation|CategoryTranslation|ProductTagTranslation $row): bool
+    {
+        return $row->getSource() === ProductTranslation::SOURCE_AI;
+    }
+
     private function key(Product|Category|ProductTag $entity): string
     {
         return match (true) {
@@ -672,6 +711,14 @@ final class MenuLanguageChanger
             ->getResult();
     }
 
+    /** Any dish, category or tag (the free texts and ingredients alone don't make a menu to convert). */
+    private function hasContent(Restaurant $restaurant): bool
+    {
+        return $this->products($restaurant) !== []
+            || $this->em->getRepository(Category::class)->count(['restaurant' => $restaurant]) > 0
+            || $this->em->getRepository(ProductTag::class)->count(['restaurant' => $restaurant]) > 0;
+    }
+
     /** @return list<string> up to SAMPLE_SIZE names the owner wrote in $from (dishes first, then categories) */
     private function sample(Restaurant $restaurant, string $from): array
     {
@@ -684,11 +731,29 @@ final class MenuLanguageChanger
             }
         }
         $names = array_values(array_unique($names));
-        if (count($names) < self::SAMPLE_SIZE && trim((string) $restaurant->getTagline()) !== '') {
-            $names[] = trim($restaurant->getTagline());
+        $tagline = trim((string) $restaurant->getTagline());
+        // The tagline, unless it's an AI translation of the owner's (an earlier change).
+        if (count($names) < self::SAMPLE_SIZE && $tagline !== ''
+            && $this->ownerTexts->findOwnerOriginals($restaurant, [OwnerTextTranslation::hash($from, $tagline)]) === []
+        ) {
+            $names[] = $tagline;
         }
 
         return array_slice($names, 0, self::SAMPLE_SIZE);
+    }
+
+    /**
+     * The translation here becomes the menu's main text: its review pass
+     * goes to another AI than the one that translated, when the translator
+     * can (IndependentReviewTranslator).
+     *
+     * @template T of object
+     * @param  T $translator
+     * @return T
+     */
+    private function reviewed(object $translator): object
+    {
+        return $translator instanceof IndependentReviewTranslator ? $translator->withIndependentReview() : $translator;
     }
 
     /** The translator's answer, or [] when it threw (logged). */

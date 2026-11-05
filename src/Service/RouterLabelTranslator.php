@@ -35,13 +35,16 @@ final class RouterLabelTranslator
     /** @var callable(int): void */
     private $sleeper;
 
+    private readonly TranslationAiCaller $caller;
+
     public function __construct(
-        private readonly AIModelRouter     $router,
+        AIModelRouter                      $router,
         private readonly AIProviderFactory $providerFactory,
-        private readonly LoggerInterface   $logger,
+        LoggerInterface                    $logger,
         ?callable                          $sleeper = null,
     ) {
         $this->sleeper = $sleeper ?? static fn (int $seconds) => sleep($seconds);
+        $this->caller  = new TranslationAiCaller($router, $providerFactory, $logger);
     }
 
     /**
@@ -54,10 +57,12 @@ final class RouterLabelTranslator
      * @param  array<int, string> $sourceLocales    id → ISO 639-1 code the name is written in,
      *                                              sent as each item's "source_locale"
      * @param  bool               $freeProviderOnly groq-llama only, both passes or nothing (see class docblock)
+     * @param  bool               $independentReview the check pass by another AI than the translator
+     *                                              (see IndependentReviewTranslator); ignored with $freeProviderOnly
      * @return array<int, string>                id → translated name
      * @throws AIProviderException               only with $freeProviderOnly
      */
-    public function translate(array $names, string $translatePrompt, string $verifyPrompt, string $payloadLabel, int $maxTokens = 1024, array $sourceLocales = [], bool $freeProviderOnly = false): array
+    public function translate(array $names, string $translatePrompt, string $verifyPrompt, string $payloadLabel, int $maxTokens = 1024, array $sourceLocales = [], bool $freeProviderOnly = false, bool $independentReview = false): array
     {
         if (empty($names)) {
             return [];
@@ -73,19 +78,21 @@ final class RouterLabelTranslator
         }
         $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
 
-        $content = $freeProviderOnly
-            ? $this->completeWithFreeProviderOnly($translatePrompt, "{$payloadLabel}: {$itemsJson}", $maxTokens)
-            : $this->complete($translatePrompt, "{$payloadLabel}: {$itemsJson}", $maxTokens);
-        if ($content === null) {
+        $answer = $freeProviderOnly
+            ? ['content' => $this->completeWithFreeProviderOnly($translatePrompt, "{$payloadLabel}: {$itemsJson}", $maxTokens), 'provider' => self::FREE_PROVIDER_ID]
+            : $this->caller->complete($translatePrompt, "{$payloadLabel}: {$itemsJson}", $maxTokens);
+        if ($answer === null) {
             return [];
         }
 
-        $translated = $this->parse($content);
+        $translated = $this->parse($answer['content']);
         if (empty($translated)) {
             return [];
         }
 
-        return $this->verifyAndFix($translated, $names, $verifyPrompt, $payloadLabel, $maxTokens, $sourceLocales, $freeProviderOnly);
+        $reviewBy = $independentReview && !$freeProviderOnly ? $answer['provider'] : null;
+
+        return $this->verifyAndFix($translated, $names, $verifyPrompt, $payloadLabel, $maxTokens, $sourceLocales, $freeProviderOnly, $reviewBy);
     }
 
     /**
@@ -103,7 +110,7 @@ final class RouterLabelTranslator
      * @param array<int, string> $sourceLocales
      * @return array<int, string>
      */
-    private function verifyAndFix(array $translated, array $sourceNames, string $verifyPrompt, string $payloadLabel, int $maxTokens, array $sourceLocales, bool $freeProviderOnly): array
+    private function verifyAndFix(array $translated, array $sourceNames, string $verifyPrompt, string $payloadLabel, int $maxTokens, array $sourceLocales, bool $freeProviderOnly, ?string $notProvider): array
     {
         $items = [];
         foreach ($translated as $id => $name) {
@@ -119,9 +126,11 @@ final class RouterLabelTranslator
         }
         $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
 
-        $content = $freeProviderOnly
-            ? $this->completeWithFreeProviderOnly($verifyPrompt, "{$payloadLabel}: {$itemsJson}", $maxTokens)
-            : $this->complete($verifyPrompt, "{$payloadLabel}: {$itemsJson}", $maxTokens);
+        $content = match (true) {
+            $freeProviderOnly     => $this->completeWithFreeProviderOnly($verifyPrompt, "{$payloadLabel}: {$itemsJson}", $maxTokens),
+            $notProvider !== null => $this->caller->completeElsewhere($verifyPrompt, "{$payloadLabel}: {$itemsJson}", $maxTokens, $notProvider),
+            default               => $this->caller->complete($verifyPrompt, "{$payloadLabel}: {$itemsJson}", $maxTokens)['content'] ?? null,
+        };
         if ($content === null) {
             return $translated;
         }
@@ -136,37 +145,6 @@ final class RouterLabelTranslator
         }
 
         return $merged;
-    }
-
-    /**
-     * Tries the free groq-llama provider first, falling back to
-     * AIModelRouter's normal chain — shared by both the translate and
-     * verify passes. Returns null only once every option has failed.
-     */
-    private function complete(string $systemPrompt, string $userContent, int $maxTokens): ?string
-    {
-        $request = new AIRequest(
-            systemPrompt: $systemPrompt,
-            messages: [new ChatMessage('user', $userContent)],
-            maxTokens: $maxTokens,
-            temperature: 0.1,
-        );
-
-        $freeProvider = $this->providerFactory->getProviderById('groq-llama');
-        if ($freeProvider !== null) {
-            try {
-                return $freeProvider->complete($request)->content;
-            } catch (AIProviderException $e) {
-                $this->logger->warning('groq-llama call failed, falling back to AIModelRouter', [
-                    'reason'  => $e->reason->value,
-                    'message' => $e->getMessage(),
-                ]);
-            }
-        }
-
-        $result = $this->router->route($request, 'complex');
-
-        return $result->isSuccess() ? $result->response->content : null;
     }
 
     /** Tokens groq-llama reported for $freeProviderOnly calls so far (both passes). */

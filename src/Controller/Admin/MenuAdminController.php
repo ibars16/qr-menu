@@ -520,12 +520,16 @@ class MenuAdminController extends AbstractController
         }
 
         $description = trim($data['description'] ?? '');
+        $description = $description !== '' ? $description : null;
 
-        $translation->setName($name);
-        $translation->setDescription($description !== '' ? $description : null);
-        $translation->setSource(ProductTranslation::SOURCE_HUMAN);
-        $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
-        $em->flush();
+        // Saved as it was: an AI text doesn't become the owner's.
+        if ($translation->getId() === null || $translation->getName() !== $name || $translation->getDescription() !== $description) {
+            $translation->setName($name);
+            $translation->setDescription($description);
+            $translation->setSource(ProductTranslation::SOURCE_HUMAN);
+            $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
+            $em->flush();
+        }
 
         return $this->json([
             'locale'      => $locale,
@@ -980,9 +984,11 @@ class MenuAdminController extends AbstractController
                 $product->addTranslation($translation);
                 $em->persist($translation);
                 $sourceChanged = $sourceChanged || $locale === $defaultLocale;
-            } elseif ($locale === $defaultLocale
-                && ($translation->getName() !== $newName || $translation->getDescription() !== $newDescription)
-            ) {
+            } elseif ($translation->getName() === $newName && $translation->getDescription() === $newDescription) {
+                // Text not changed (only the price, say): it stays as it was —
+                // an AI text doesn't become the owner's, nothing is redone.
+                continue;
+            } elseif ($locale === $defaultLocale) {
                 $sourceChanged = true;
             }
 
