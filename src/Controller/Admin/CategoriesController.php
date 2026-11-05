@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Category;
 use App\Entity\CategoryTranslation;
+use App\Service\MenuImportReview;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -88,7 +89,7 @@ class CategoriesController extends AbstractController
 
     /** Deletes every ordinary (non-fixed-price) category — cascades to their Products, translations, etc. Fixed-price menus are untouched; see MenusController for their own delete-all. */
     #[Route('/categories/delete-all', name: 'categories_delete_all', methods: ['POST'])]
-    public function deleteAll(EntityManagerInterface $em): JsonResponse
+    public function deleteAll(EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $restaurant = $this->restaurant();
 
@@ -99,6 +100,7 @@ class CategoriesController extends AbstractController
         }
         $restaurant->bumpMenuContentVersion();
         $em->flush();
+        $importReview->closeFinished($restaurant);
 
         return $this->json(['ok' => true]);
     }

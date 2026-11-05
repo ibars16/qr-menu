@@ -22,6 +22,7 @@ use App\Repository\AllergenRepository;
 use App\Service\AllergenBackfill\AllergenReviewQueue;
 use App\Service\AllergenBackfill\IngredientAllergenBackfill;
 use App\Service\CategoryTranslationService;
+use App\Service\MenuImportReview;
 use App\Service\ProductAllergenResolver;
 use App\Service\ProductTranslationService;
 use App\Service\Upload\ClipTranscoder;
@@ -224,7 +225,7 @@ class MenuAdminController extends AbstractController
     }
 
     #[Route('/categories/{id}/edit', name: 'category_edit', methods: ['POST'])]
-    public function editCategory(Category $category, Request $request, EntityManagerInterface $em): JsonResponse
+    public function editCategory(Category $category, Request $request, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $this->assertOwner($category->getRestaurant());
 
@@ -255,29 +256,37 @@ class MenuAdminController extends AbstractController
             $this->categoryTranslationService->invalidateStale($category, $locale);
         }
 
+        $importReview->confirm($category);
         $category->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
+        $importReview->closeFinished($category->getRestaurant());
 
         return $this->json(['id' => $category->getId(), 'name' => $name]);
     }
 
     #[Route('/categories/{id}/toggle', name: 'category_toggle', methods: ['POST'])]
-    public function toggleCategory(Category $category, EntityManagerInterface $em): JsonResponse
+    public function toggleCategory(Category $category, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $this->assertOwner($category->getRestaurant());
         $category->setActive(!$category->isActive());
+        if ($category->isActive()) {
+            $importReview->confirm($category);
+        }
         $category->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
+        $importReview->closeFinished($category->getRestaurant());
         return $this->json(['active' => $category->isActive()]);
     }
 
     #[Route('/categories/{id}/delete', name: 'category_delete', methods: ['POST'])]
-    public function deleteCategory(Category $category, EntityManagerInterface $em): JsonResponse
+    public function deleteCategory(Category $category, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $this->assertOwner($category->getRestaurant());
-        $category->getRestaurant()->bumpMenuContentVersion();
+        $restaurant = $category->getRestaurant();
+        $restaurant->bumpMenuContentVersion();
         $em->remove($category);
         $em->flush();
+        $importReview->closeFinished($restaurant);
         return $this->json(['ok' => true]);
     }
 
@@ -783,7 +792,7 @@ class MenuAdminController extends AbstractController
     }
 
     #[Route('/products/save', name: 'product_save', methods: ['POST'])]
-    public function saveProduct(Request $request, EntityManagerInterface $em): JsonResponse
+    public function saveProduct(Request $request, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $restaurant = $this->restaurant();
         $data       = json_decode($request->getContent(), true);
@@ -1188,8 +1197,10 @@ class MenuAdminController extends AbstractController
         }
 
         $em->persist($product);
+        $importReview->confirm($product);
         $restaurant->bumpMenuContentVersion();
         $em->flush();
+        $importReview->closeFinished($restaurant);
 
         $locale      = $restaurant->getDefaultLanguage();
         $translation = $product->getTranslation($locale);
@@ -1202,22 +1213,28 @@ class MenuAdminController extends AbstractController
     }
 
     #[Route('/products/{id}/toggle', name: 'product_toggle', methods: ['POST'])]
-    public function toggleProduct(Product $product, EntityManagerInterface $em): JsonResponse
+    public function toggleProduct(Product $product, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
         $product->setActive(!$product->isActive());
+        if ($product->isActive()) {
+            $importReview->confirm($product);
+        }
         $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
+        $importReview->closeFinished($product->getCategory()->getRestaurant());
         return $this->json(['active' => $product->isActive()]);
     }
 
     #[Route('/products/{id}/delete', name: 'product_delete', methods: ['POST'])]
-    public function deleteProduct(Product $product, EntityManagerInterface $em): JsonResponse
+    public function deleteProduct(Product $product, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
-        $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
+        $restaurant = $product->getCategory()->getRestaurant();
+        $restaurant->bumpMenuContentVersion();
         $em->remove($product);
         $em->flush();
+        $importReview->closeFinished($restaurant);
         return $this->json(['ok' => true]);
     }
 
