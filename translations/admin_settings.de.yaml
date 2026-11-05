@@ -120,3 +120,14 @@ error:
     hours_invalid: "Ungültige Uhrzeit."
     hours_overlap: "Die beiden Zeiträume überschneiden sich."
     hours_same_time: "Öffnungs- und Schließzeit dürfen nicht gleich sein."
+
+language_change:
+    title: "Ihre Speisekarte wird umgestellt…"
+    text: "Wir übertragen die Texte Ihrer Speisekarte ins %language%. Sie können dieses Fenster schließen: Die Umstellung lässt sich in den Einstellungen fortsetzen."
+    remaining: "Noch %count% umzustellen…"
+    error: "Die Umstellung war gerade nicht möglich. Versuchen Sie es in ein paar Minuten erneut."
+    retry: "Erneut versuchen"
+    done: "Ihre Speisekarte ist jetzt auf %language%. Bitte prüfen Sie die Texte."
+    blocked_import: "Schließen Sie den Import ab, bevor Sie die Sprache ändern"
+    pending: "Die Umstellung Ihrer Speisekarte auf %language% ist nur halb fertig."
+    resume: "Fortsetzen"

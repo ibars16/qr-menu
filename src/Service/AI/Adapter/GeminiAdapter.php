@@ -98,6 +98,11 @@ final class GeminiAdapter implements AIProviderInterface
             latencyMs: $latencyMs,
             promptTokens: isset($usage['promptTokenCount']) ? (int) $usage['promptTokenCount'] : null,
             completionTokens: isset($usage['candidatesTokenCount']) ? (int) $usage['candidatesTokenCount'] : null,
+            finishReason: match ($body['candidates'][0]['finishReason'] ?? null) {
+                null        => null,
+                'MAX_TOKENS' => 'length',
+                default     => strtolower((string) $body['candidates'][0]['finishReason']),
+            },
         );
     }
 }

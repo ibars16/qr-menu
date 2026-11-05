@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Service\AdminLocaleResolver;
 use App\Service\ContactDetailsNormalizer;
+use App\Service\MenuLanguageChanger;
 use App\Service\Upload\UploadProfile;
 use App\Service\Upload\UploadQualityWarning;
 use App\Service\Upload\UploadValidationError;
@@ -33,6 +34,7 @@ class SettingsController extends AbstractController
         AdminLocaleResolver $adminLocaleResolver,
         TranslatorInterface $translator,
         ContactDetailsNormalizer $contactNormalizer,
+        MenuLanguageChanger $languageChanger,
     ): Response {
         $restaurant = $this->getUser()->getRestaurant();
         if (!$restaurant) {
@@ -116,6 +118,7 @@ class SettingsController extends AbstractController
                     'languages'             => $languages,
                     'currencies'            => $currencies,
                     'adminLocales'          => $adminLocaleResolver->getLocales(),
+            'languageChangeName'    => $restaurant->getLanguageChangeTo() !== null ? LanguageChangeController::languageName($restaurant->getLanguageChangeTo(), $restaurant->getAdminLocale()) : null,
                     'heroImageMinDimension' => UploadValidator::minDimension(UploadProfile::HeroImage),
                     'heroImageRecommendedWidth' => UploadValidator::recommendedWidth(UploadProfile::HeroImage),
                     'heroImageMaxDimension' => UploadValidator::maxDimension(UploadProfile::HeroImage),
@@ -150,10 +153,16 @@ class SettingsController extends AbstractController
             if ($saves('hours')) {
                 $restaurant->setOpeningHours($openingHours);
             }
+            // A new main language for the menu isn't just stored: its texts
+            // are converted (MenuLanguageChanger), after the flush below.
+            // While a change is half done the field is locked.
+            $languageChange = null;
             if ($saves('language')) {
                 $restaurant->setCurrency($currency);
-                $restaurant->setDefaultLanguage($language);
                 $restaurant->setAdminLocale($adminLocaleResolver->resolve($adminLocale));
+                if ($restaurant->getLanguageChangeTo() === null && $language !== $restaurant->getDefaultLanguage() && isset($languages[$language])) {
+                    $languageChange = $language;
+                }
             }
 
             // Logo and hero image. Both are validated before either file
@@ -276,7 +285,19 @@ class SettingsController extends AbstractController
                     unlink($path);
                 }
             }
-            $this->addFlash('success', $translator->trans($section ? 'flash.section_saved' : 'flash.saved', domain: 'admin_settings'));
+
+            $languageResult = $languageChange !== null ? $languageChanger->start($restaurant, $languageChange) : null;
+            if ($languageResult === MenuLanguageChanger::CONVERTING) {
+                return $this->redirectToRoute('admin_language_change_screen');
+            }
+            if ($languageResult === MenuLanguageChanger::DONE) {
+                $this->addFlash('success', LanguageChangeController::doneMessage($translator, $languageChange, $restaurant->getAdminLocale()));
+            } else {
+                $this->addFlash('success', $translator->trans($section ? 'flash.section_saved' : 'flash.saved', domain: 'admin_settings'));
+            }
+            if ($languageResult === MenuLanguageChanger::BLOCKED_IMPORT) {
+                $this->addFlash('error', $translator->trans('language_change.blocked_import', domain: 'admin_settings'));
+            }
 
             // Another section's own button: a logo / hero image picked
             // meanwhile was ignored — say so in Apariencia, and land there
@@ -296,6 +317,7 @@ class SettingsController extends AbstractController
             'languages'             => $languages,
             'currencies'            => $currencies,
             'adminLocales'          => $adminLocaleResolver->getLocales(),
+            'languageChangeName'    => $restaurant->getLanguageChangeTo() !== null ? LanguageChangeController::languageName($restaurant->getLanguageChangeTo(), $restaurant->getAdminLocale()) : null,
             'heroImageMinDimension' => UploadValidator::minDimension(UploadProfile::HeroImage),
             'heroImageRecommendedWidth' => UploadValidator::recommendedWidth(UploadProfile::HeroImage),
             'heroImageMaxDimension' => UploadValidator::maxDimension(UploadProfile::HeroImage),

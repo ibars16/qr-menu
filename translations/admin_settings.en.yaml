@@ -120,3 +120,14 @@ error:
     hours_invalid: "Invalid time."
     hours_overlap: "The two shifts overlap."
     hours_same_time: "Opening and closing time cannot be the same."
+
+language_change:
+    title: "Converting your menu…"
+    text: "We're putting your menu's texts into %language%. You can close this window: the change can be resumed from Settings."
+    remaining: "%count% left to convert…"
+    error: "It couldn't be converted right now. Try again in a few minutes."
+    retry: "Try again"
+    done: "Your menu is now in %language%. Please review the texts."
+    blocked_import: "Finish the import before changing the language"
+    pending: "The change of your menu to %language% is half done."
+    resume: "Continue"

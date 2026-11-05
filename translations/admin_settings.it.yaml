@@ -120,3 +120,14 @@ error:
     hours_invalid: "Orario non valido."
     hours_overlap: "I due turni si sovrappongono."
     hours_same_time: "Apertura e chiusura non possono coincidere."
+
+language_change:
+    title: "Conversione del tuo menu…"
+    text: "Stiamo portando i testi del tuo menu in %language%. Puoi chiudere questa finestra: il cambio si riprende da Impostazioni."
+    remaining: "Ne mancano %count% da convertire…"
+    error: "Non è stato possibile convertire ora. Riprova tra qualche minuto."
+    retry: "Riprova"
+    done: "Il tuo menu ora è in %language%. Controlla i testi."
+    blocked_import: "Termina l'importazione prima di cambiare la lingua"
+    pending: "Il passaggio del tuo menu in %language% è a metà."
+    resume: "Continua"

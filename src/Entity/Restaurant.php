@@ -89,6 +89,14 @@ class Restaurant
     #[ORM\Column(length: 5)]
     private string $defaultLanguage = 'en';
 
+    /**
+     * The language the menu is being converted to (MenuLanguageChanger):
+     * set while a change of defaultLanguage is half done — defaultLanguage
+     * keeps the old one until every text is converted. Null = none.
+     */
+    #[ORM\Column(length: 5, nullable: true)]
+    private ?string $languageChangeTo = null;
+
     /** Language of the Admin Panel UI for this restaurant's staff. Independent from defaultLanguage (public menu). */
     #[ORM\Column(length: 5)]
     private string $adminLocale = 'es';
@@ -307,6 +315,16 @@ class Restaurant
     public function setDefaultLanguage(string $defaultLanguage): void
     {
         $this->defaultLanguage = $defaultLanguage;
+    }
+
+    public function getLanguageChangeTo(): ?string
+    {
+        return $this->languageChangeTo;
+    }
+
+    public function setLanguageChangeTo(?string $languageChangeTo): void
+    {
+        $this->languageChangeTo = $languageChangeTo;
     }
 
     public function getAdminLocale(): string

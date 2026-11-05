@@ -1,0 +1,85 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ 'language_change.title'|trans({}, 'admin_settings') }}{% endblock %}
+{% block page_title %}{{ 'language_change.title'|trans({}, 'admin_settings') }}{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .language-change {
+            max-width: 480px; margin: var(--sp-6) auto; padding: var(--sp-6) var(--sp-5);
+            background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg);
+            box-shadow: var(--shadow-sm); text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: var(--sp-4);
+        }
+        .language-change-spinner {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 3px solid var(--bd-1); border-top-color: var(--brand);
+            animation: language-change-spin 0.8s linear infinite;
+        }
+        .language-change[data-state="error"] .language-change-spinner { display: none; }
+        .language-change-text { font-size: var(--fs-md); }
+        .language-change-remaining { font-size: var(--fs-sm); color: var(--tx-muted); min-height: 1.4em; }
+        .language-change-error { color: var(--err-text); font-size: var(--fs-sm); }
+        @keyframes language-change-spin { to { transform: rotate(360deg); } }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="language-change" id="language-change" data-state="working">
+        <div class="language-change-spinner" aria-hidden="true"></div>
+        <p class="language-change-text">{{ 'language_change.text'|trans({'%language%': language}, 'admin_settings') }}</p>
+        <p class="language-change-remaining" id="language-change-remaining" aria-live="polite"></p>
+        <p class="language-change-error" id="language-change-error" hidden>{{ 'language_change.error'|trans({}, 'admin_settings') }}</p>
+        <button type="button" class="btn btn-primary" id="language-change-retry" hidden>{{ 'language_change.retry'|trans({}, 'admin_settings') }}</button>
+    </div>
+
+    <script>
+        // One batch per request, until done (see LanguageChangeController).
+        // An AI limit or a network failure stops the loop and offers to
+        // retry; the half-done change is kept server side meanwhile.
+        (() => {
+            const stepUrl   = {{ path('admin_language_change_step')|json_encode|raw }};
+            const token     = {{ csrf_token('admin_language_change')|json_encode|raw }};
+            const remaining = {{ 'language_change.remaining'|trans({}, 'admin_settings')|json_encode|raw }};
+            const box       = document.getElementById('language-change');
+            const counter   = document.getElementById('language-change-remaining');
+            const error     = document.getElementById('language-change-error');
+            const retry     = document.getElementById('language-change-retry');
+
+            const fail = () => {
+                box.dataset.state = 'error';
+                error.hidden = false;
+                retry.hidden = false;
+            };
+
+            const step = async () => {
+                box.dataset.state = 'working';
+                error.hidden = true;
+                retry.hidden = true;
+                let result;
+                try {
+                    const response = await fetch(stepUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ _token: token }),
+                    });
+                    result = await response.json();
+                } catch (e) {
+                    return fail();
+                }
+                if (result.done) {
+                    window.location.replace(result.next);
+                    return;
+                }
+                if (result.error) {
+                    return fail();
+                }
+                counter.textContent = remaining.replace('%count%', result.remaining);
+                step();
+            };
+
+            retry.addEventListener('click', step);
+            step();
+        })();
+    </script>
+{% endblock %}

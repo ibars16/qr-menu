@@ -100,6 +100,7 @@ final class OpenAICompatibleAdapter implements AIProviderInterface
             latencyMs: $latencyMs,
             promptTokens: isset($usage['prompt_tokens']) ? (int) $usage['prompt_tokens'] : null,
             completionTokens: isset($usage['completion_tokens']) ? (int) $usage['completion_tokens'] : null,
+            finishReason: is_string($body['choices'][0]['finish_reason'] ?? null) ? strtolower($body['choices'][0]['finish_reason']) : null,
         );
     }
 }

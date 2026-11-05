@@ -502,7 +502,13 @@
 
                     <div class="field">
                         <label for="defaultLanguage">{{ 'field.menu_language'|trans({}, 'admin_settings') }}</label>
-                        <select id="defaultLanguage" name="defaultLanguage">
+                        {% if restaurant.languageChangeTo %}
+                            <div class="flash flash-warning" id="language-change-pending">
+                                {{ 'language_change.pending'|trans({'%language%': languageChangeName}, 'admin_settings') }}
+                                <a href="{{ path('admin_language_change_screen') }}" class="btn btn-primary">{{ 'language_change.resume'|trans({}, 'admin_settings') }}</a>
+                            </div>
+                        {% endif %}
+                        <select id="defaultLanguage" name="defaultLanguage"{{ restaurant.languageChangeTo ? ' disabled' : '' }}>
                             {% for code, lang in languages %}
                                 <option value="{{ code }}"
                                     {{ (old ? old.defaultLanguage : restaurant.defaultLanguage) == code ? 'selected' : '' }}>

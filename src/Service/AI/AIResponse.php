@@ -16,5 +16,10 @@ final readonly class AIResponse
         public int $latencyMs,
         public ?int $promptTokens = null,
         public ?int $completionTokens = null,
+        // Why the model stopped: 'stop', 'length' (cut off at maxTokens —
+        // reasoning models count their thinking too), or the provider's
+        // own value lowercased; null when not reported. Informative only:
+        // each caller decides whether a cut-off answer is usable.
+        public ?string $finishReason = null,
     ) {}
 }

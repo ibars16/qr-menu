@@ -120,3 +120,14 @@ error:
     hours_invalid: "Hora inválida."
     hours_overlap: "Os dois turnos sobrepõem-se."
     hours_same_time: "A abertura e o fecho não podem ser iguais."
+
+language_change:
+    title: "A converter o seu cardápio…"
+    text: "Estamos a passar os textos do seu cardápio para %language%. Pode fechar esta janela: a mudança retoma-se em Configurações."
+    remaining: "Faltam %count% por converter…"
+    error: "Não foi possível converter agora. Tente novamente dentro de alguns minutos."
+    retry: "Tentar novamente"
+    done: "O seu cardápio está agora em %language%. Reveja os textos."
+    blocked_import: "Termine a importação antes de mudar o idioma"
+    pending: "A mudança do seu cardápio para %language% ficou a meio."
+    resume: "Continuar"

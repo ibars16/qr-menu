@@ -120,3 +120,14 @@ error:
     hours_invalid: "Hora no válida."
     hours_overlap: "Los dos turnos se solapan."
     hours_same_time: "La apertura y el cierre no pueden ser iguales."
+
+language_change:
+    title: "Convirtiendo tu carta…"
+    text: "Estamos pasando los textos de tu carta al %language%. Puedes cerrar esta ventana: el cambio se retoma desde Configuración."
+    remaining: "Quedan %count% por convertir…"
+    error: "Ahora no se ha podido convertir. Vuelve a intentarlo en unos minutos."
+    retry: "Reintentar"
+    done: "Tu carta ahora está en %language%. Revisa los textos."
+    blocked_import: "Termina la importación antes de cambiar el idioma"
+    pending: "El cambio de tu carta al %language% está a medias."
+    resume: "Continuar"

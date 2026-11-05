@@ -120,3 +120,14 @@ error:
     hours_invalid: "Heure non valide."
     hours_overlap: "Les deux services se chevauchent."
     hours_same_time: "L'ouverture et la fermeture ne peuvent pas être identiques."
+
+language_change:
+    title: "Conversion de votre carte…"
+    text: "Nous passons les textes de votre carte en %language%. Vous pouvez fermer cette fenêtre : le changement se reprend depuis Paramètres."
+    remaining: "Encore %count% à convertir…"
+    error: "La conversion n'a pas pu se faire pour l'instant. Réessayez dans quelques minutes."
+    retry: "Réessayer"
+    done: "Votre carte est maintenant en %language%. Vérifiez les textes."
+    blocked_import: "Terminez l'importation avant de changer la langue"
+    pending: "Le passage de votre carte en %language% est à moitié fait."
+    resume: "Continuer"
