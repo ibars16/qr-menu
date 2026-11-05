@@ -36,7 +36,8 @@ security:
 
             # "Entrar" as a restaurant's owner: the platform owner anywhere
             # (BillingController::pay()), a reseller only into its own
-            # restaurants — see App\Security\SwitchUserVoter.
+            # restaurants; the platform owner also as a reseller (/platform's
+            # reseller table) — see App\Security\SwitchUserVoter.
             # ?_switch_user=_exit to leave.
             switch_user:
                 role: CAN_SWITCH_USER

@@ -134,6 +134,33 @@ final class PlatformControllerTest extends WebTestCase
         self::assertStringContainsString('Sin dueño', $this->row()->filter('.sub')->first()->text());
     }
 
+    public function testEnterGoesToAdminAsTheOwnerAndBackToPlatform(): void
+    {
+        $enter = $this->row()->filter('a.enter');
+        self::assertSame('/admin/menu?_switch_user=' . $this->owner->getEmail(), $enter->attr('href'));
+
+        $this->client->request('GET', $enter->attr('href'));
+        self::assertResponseRedirects('http://localhost/admin/menu');
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextSame('.sidebar-footer a.nav-item[href="/platform?_switch_user=_exit"]', 'Volver a Plataforma');
+
+        $this->client->request('GET', '/platform?_switch_user=_exit');
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextSame('.platform-title', 'Plataforma');
+    }
+
+    public function testEnterDisabledWithoutOwner(): void
+    {
+        $this->owner->setRestaurant(null);
+        $this->em->flush();
+
+        $row = $this->row();
+        self::assertCount(0, $row->filter('a.enter'));
+        self::assertCount(1, $row->filter('button.enter[disabled]'));
+    }
+
     public function testPaidRowShowsPlanAndLastPayment(): void
     {
         $this->restaurant->markPaid(Restaurant::PLAN_YEARLY);

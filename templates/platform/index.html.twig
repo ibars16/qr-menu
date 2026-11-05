@@ -156,12 +156,17 @@
                                     <div class="sub reseller-of">Revendedor · {{ restaurant.reseller.name }}</div>
                                 </td>
                                 <td data-label="Válida hasta" class="until"><div class="sub">Lo paga el revendedor</div></td>
-                                <td></td>
+                                <td>
+                                    <div class="actions">
+                                        {{ _self.enter_button(row.owner) }}
+                                    </div>
+                                </td>
                             {% else %}
                                 {{ _self.status_cell(restaurant, 'Prueba gratis') }}
                                 {{ _self.until_cell(restaurant) }}
                                 <td>
                                     <div class="actions">
+                                        {{ _self.enter_button(row.owner) }}
                                         {{ _self.payment_button(restaurant, 'platform_register_payment', 'platform-register-payment-') }}
                                         {% if not restaurant.hasLiveSubscription %}
                                             {% if row.owner %}
@@ -222,6 +227,12 @@
                                 {{ _self.until_cell(reseller, true) }}
                                 <td>
                                     <div class="actions">
+                                        {# Its /partners "como" it (switch_user); "Volver a Plataforma" there to come back. #}
+                                        {% if row.user %}
+                                            <a class="btn enter" href="{{ path('partners_index', {_switch_user: row.user.email}) }}">Entrar</a>
+                                        {% else %}
+                                            <button type="button" class="btn enter" disabled>Entrar</button>
+                                        {% endif %}
                                         {{ _self.payment_button(reseller, 'platform_reseller_register_payment', 'platform-reseller-register-payment-') }}
                                         {{ _self.deactivate_form(reseller, 'platform_reseller_deactivate', 'platform-reseller-deactivate-', '¿Desactivar ' ~ reseller.name ~ '? Se apagarán todos sus restaurantes.') }}
                                     </div>
@@ -367,6 +378,16 @@
             {%- endif -%}
         </div>
     </td>
+    {% endif %}
+{% endmacro %}
+
+{# "Entrar" as the restaurant's owner (switch_user) — its /admin, with
+   "Volver a Plataforma" there; disabled without an owner user. #}
+{% macro enter_button(owner) %}
+    {% if owner %}
+        <a class="btn enter" href="{{ path('admin_menu', {_switch_user: owner.email}) }}">Entrar</a>
+    {% else %}
+        <button type="button" class="btn enter" disabled>Entrar</button>
     {% endif %}
 {% endmacro %}
 

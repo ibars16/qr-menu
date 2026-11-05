@@ -21,7 +21,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * browser's back arrow onto its own panel, then an action there — would
  * get access_control's bare 403 (the owner has neither role). Instead: out
  * of the owner's session and back to its own panel, with a message saying
- * so (the action isn't run).
+ * so (the action isn't run). The super-admin "como" a reseller is in that
+ * reseller's own /partners, so a 403 there is a real one (left alone: the
+ * super-admin lacks ROLE_RESELLER); reaching /platform takes it back.
  *
  * And those panels' pages aren't kept by the browser (no-store), so the
  * back arrow asks for them again rather than showing a stale copy whose

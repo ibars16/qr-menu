@@ -174,7 +174,13 @@
         </div>
         <div class="header-actions">
             <a class="btn {{ route starts with 'partners_billing' ? 'active' }}" id="billing-link" href="{{ path('partners_billing_index') }}"><i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'billing.nav'|trans({}, 'partners') }}</a>
-            <a class="btn" href="{{ path('admin_logout') }}"><i class="ti ti-logout" aria-hidden="true"></i> {{ 'logout'|trans({}, 'partners') }}</a>
+            {# The super-admin "como" this reseller (switch_user, from /platform):
+               back to /platform as itself instead of logging out. #}
+            {% if is_granted('IS_IMPERSONATOR') %}
+                <a class="btn" href="{{ impersonation_exit_path(path('platform_index')) }}"><i class="ti ti-logout" aria-hidden="true"></i> Volver a Plataforma</a>
+            {% else %}
+                <a class="btn" href="{{ path('admin_logout') }}"><i class="ti ti-logout" aria-hidden="true"></i> {{ 'logout'|trans({}, 'partners') }}</a>
+            {% endif %}
         </div>
     </header>
 

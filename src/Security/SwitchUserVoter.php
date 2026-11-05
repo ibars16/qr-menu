@@ -9,8 +9,16 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
  * Who may switch_user (security.yaml's switch_user.role) into whom:
- * the super-admin into anyone; a reseller that is up to date only into the
- * owner of one of its own restaurants. Everyone else, never.
+ * nobody into a super-admin (not even another super-admin); the
+ * super-admin into anyone else — an owner, or a reseller ("Entrar" in
+ * /platform's reseller table, to its /partners); a reseller that is up to
+ * date only into the owner of one of its own restaurants (never another
+ * reseller nor the super-admin). Everyone else, never.
+ *
+ * The super-admin "como" a reseller that hits "Entrar" on one of its
+ * restaurants: switch_user can't chain, so Symfony exits back to the
+ * super-admin first and decides as it — it lands as that owner, and
+ * "Volver" goes to /platform.
  *
  * @extends Voter<string, User>
  */
@@ -27,6 +35,11 @@ final class SwitchUserVoter extends Voter
     {
         $user = $token->getUser();
         if (!$user instanceof User) {
+            return false;
+        }
+
+        // Nobody, not even another super-admin, as a super-admin.
+        if (in_array(User::ROLE_SUPER_ADMIN, $subject->getRoles(), true)) {
             return false;
         }
 

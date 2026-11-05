@@ -830,4 +830,127 @@ final class PartnersControllerTest extends WebTestCase
         self::assertSelectorTextSame('.sidebar-footer a.nav-item[href="/platform?_switch_user=_exit"]', 'Volver a Plataforma');
         self::assertSelectorExists('.header-icons a[href="/platform?_switch_user=_exit"][aria-label="Volver a Plataforma"]');
     }
+
+    // ── The super-admin "como" a reseller ───────────────────────────────────
+
+    public function testPlatformListsEnterForTheReseller(): void
+    {
+        $super = $this->user('partners-test-super', User::ROLE_SUPER_ADMIN);
+        $this->em->flush();
+
+        $this->client->loginUser($super);
+        $crawler = $this->client->request('GET', '/platform');
+        self::assertResponseIsSuccessful();
+        $href = '/partners?_switch_user=' . $this->resellerUser->getEmail();
+        self::assertCount(1, $crawler->filter('#resellers a.enter')->reduce(fn (Crawler $a) => $a->attr('href') === $href));
+    }
+
+    public function testSuperAdminEntersResellerPanelAndGoesBackToPlatform(): void
+    {
+        $super = $this->user('partners-test-super', User::ROLE_SUPER_ADMIN);
+        $this->em->flush();
+
+        $this->client->loginUser($super);
+        $this->client->request('GET', '/partners?_switch_user=' . urlencode($this->resellerUser->getEmail()));
+        self::assertResponseRedirects('http://localhost/partners');
+
+        $crawler = $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextSame('.partners-title', 'Partners Test Agency');
+        self::assertSelectorTextSame('.header-actions a[href="/platform?_switch_user=_exit"]', 'Volver a Plataforma');
+        self::assertCount(0, $crawler->filter('a[href="/admin/logout"]'));
+
+        // A second request still works as the reseller, not sent away.
+        $this->client->request('GET', '/partners');
+        self::assertResponseIsSuccessful();
+
+        $this->client->request('GET', '/platform?_switch_user=_exit');
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextSame('.platform-title', 'Plataforma');
+    }
+
+    /** No chaining: "Entrar" from the reseller's panel lands as the owner, and "Volver" goes to /platform. */
+    public function testSuperAdminAsResellerEntersOwnerDirectly(): void
+    {
+        $super = $this->user('partners-test-super', User::ROLE_SUPER_ADMIN);
+        $this->em->flush();
+
+        $this->client->loginUser($super);
+        $this->client->request('GET', '/partners?_switch_user=' . urlencode($this->resellerUser->getEmail()));
+        $crawler = $this->client->followRedirect();
+        $enter = $this->row($crawler, 'Partners Test Bistro')->filter('a.enter')->attr('href');
+
+        $this->client->request('GET', $enter);
+        self::assertResponseRedirects('http://localhost/admin/menu');
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextSame('.sidebar-footer a.nav-item[href="/platform?_switch_user=_exit"]', 'Volver a Plataforma');
+        self::assertSelectorExists('.header-icons a[href="/platform?_switch_user=_exit"][aria-label="Volver a Plataforma"]');
+
+        $this->client->request('GET', '/platform?_switch_user=_exit');
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextSame('.platform-title', 'Plataforma');
+    }
+
+    public function testResellerCannotEnterAsSuperAdminOrAnotherReseller(): void
+    {
+        $super = $this->user('partners-test-super', User::ROLE_SUPER_ADMIN);
+        $other = new Reseller('Partners Test Other');
+        $other->markPaid(Reseller::PLAN_MONTHLY);
+        $this->em->persist($other);
+        $otherUser = $this->user('partners-test-other-reseller', User::ROLE_RESELLER);
+        $otherUser->setReseller($other);
+        $this->em->flush();
+
+        $this->client->loginUser($this->resellerUser);
+        foreach ([$super, $otherUser] as $target) {
+            foreach (['/partners', '/admin/menu'] as $path) {
+                $this->client->request('GET', $path . '?_switch_user=' . urlencode($target->getEmail()));
+                self::assertResponseStatusCodeSame(403, $path . ' ' . $target->getEmail());
+            }
+        }
+    }
+
+    public function testPlatformEntersAResellersRestaurantAsItsOwner(): void
+    {
+        $super = $this->user('partners-test-super', User::ROLE_SUPER_ADMIN);
+        $this->em->flush();
+
+        $this->client->loginUser($super);
+        $crawler = $this->client->request('GET', '/platform');
+        $row = $crawler->filter('tbody tr')->reduce(fn (Crawler $tr) => $tr->filter('.r-name')->count() && $tr->filter('.r-name')->text() === 'Partners Test Bistro');
+        self::assertCount(1, $row);
+        self::assertSame('/admin/menu?_switch_user=' . $this->owner->getEmail(), $row->filter('a.enter')->attr('href'));
+
+        $this->client->request('GET', $row->filter('a.enter')->attr('href'));
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextSame('.sidebar-footer a.nav-item[href="/platform?_switch_user=_exit"]', 'Volver a Plataforma');
+    }
+
+    /** Nobody as a super-admin: not another super-admin, a reseller nor an owner. */
+    public function testNobodyCanEnterAsASuperAdmin(): void
+    {
+        $super = $this->user('partners-test-super', User::ROLE_SUPER_ADMIN);
+        $otherSuper = $this->user('partners-test-super-other', User::ROLE_SUPER_ADMIN);
+        $this->em->flush();
+
+        foreach ([$otherSuper, $this->resellerUser, $this->owner] as $actor) {
+            $this->client->loginUser($actor);
+            foreach (['/admin/menu', '/platform', '/partners'] as $path) {
+                $this->client->request('GET', $path . '?_switch_user=' . urlencode($super->getEmail()));
+                self::assertResponseStatusCodeSame(403, $actor->getEmail() . ' ' . $path);
+            }
+        }
+
+        // Nor the super-admin already "como" a reseller (Symfony exits first, then decides as the super-admin).
+        $this->client->loginUser($otherSuper);
+        $this->client->request('GET', '/partners?_switch_user=' . urlencode($this->resellerUser->getEmail()));
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        $this->client->request('GET', '/partners?_switch_user=' . urlencode($super->getEmail()));
+        self::assertResponseStatusCodeSame(403);
+    }
 }
