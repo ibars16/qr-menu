@@ -655,15 +655,17 @@
     .hero-name { font-size: calc(43px * var(--font-scale)); font-weight: 500; letter-spacing: -0.01em; margin: 8px 0 12px; text-shadow: none; }
     /* Tagline — only painted when restaurant.tagline has a value (see the
        twig guard); admins fill it in via Ajustes > Información del
-       restaurante, it's never inferred or defaulted here. Color is --fg, not
-       the --fg-2 used elsewhere for secondary text: on the solid --surface-2
-       hero panel, --fg-2 measures 4.37:1 (fails the 4.5:1 AA floor for
-       normal-size text by a hair) while --fg clears it at 12.69:1.
+       restaurante, it's never inferred or defaulted here (colour: see below).
        margin 2026-09-07: was 0 (inherits the shared *{margin:0} reset), which
        let .tagline sit flush against both .hero-name above and .cta-explore
        below (0px gap, confirmed in devtools). Added 6px/14px so the tagline
        block breathes without needing a change to either of those neighbors. */
-    .tagline { font-size: calc(14.5px * var(--font-scale)); font-weight: 400; color: var(--hero-fg); line-height: 1.5; max-width: 82%; margin: 6px 0 14px; }
+    /* 2026-11-07: same face, italic and colour as >=1024 (Fraunces italic,
+       --hero-fg-2) at every width; only the size stays smaller here (21px
+       is too big for a phone column). --hero-fg-2 on --hero-band: maison
+       4.78, noir 6.55, classic-dark 7.15, forest 7.30, ocean 8.60, glass
+       ~9.1-9.6:1 (over its near-black --bg). */
+    .tagline { font-family: var(--font-display); font-style: italic; font-size: calc(16px * var(--font-scale)); font-weight: 400; color: var(--hero-fg-2); line-height: 1.5; max-width: 82%; margin: 6px 0 14px; }
 
     /* Chef's-recommendation banner — carta-premium-completa.html's .banner,
        adapted to this app's tokens (--accent for its --wine, --surface for

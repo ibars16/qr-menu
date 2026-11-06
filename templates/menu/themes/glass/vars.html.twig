@@ -149,4 +149,15 @@
     /* ── Spicy ── */
     --dot-on: #B48EF0; --dot-off: rgba(236,232,255,0.14); --spicy-t: #BAB5D8;
 }
+/* Phones/tablets (<1024): the hero's white glow sits right under the
+   tagline there (on this translucent band, without a hero photo), so it
+   is dimmed to 36% (peak 0.5→0.18, 0.16→0.06). --hero-fg-2 (#BAB5D8) on
+   the tagline then measures ≥4.99:1 with a one-line name (its closest
+   spot to the glow) and ≥5.99:1 with two lines, over the band's lightest
+   lavender. >=1024 the glow is centred away from the text: unchanged. */
+@media (max-width: 1023.98px) {
+    :root {
+        --hero-glow: radial-gradient(ellipse at center, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 42%, transparent 72%);
+    }
+}
 </style>
