@@ -936,6 +936,19 @@
            Same gap; a no-photo .dish-row still spans the whole row. */
         .cards-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
+        /* Photo card, desktop only: a bit more air in the text strip
+           (padding 18px → 24px; title → price row 14px → at least 18px:
+           gap 8px → 18px, .dish-bottom's own 6px margin-top replaced by
+           auto). The card becomes a flex column and .front-info grows to
+           fill it, so margin-top:auto pins the price + "Ver más" row to
+           the card's bottom — cards in one grid row (stretched to the
+           tallest) keep their price rows aligned when a title wraps to 2
+           lines. Symmetric padding, so RTL needs nothing extra. Font,
+           button and photo sizes untouched; .dish-row excluded. */
+        .dish-card:not(.dish-row) { display: flex; flex-direction: column; }
+        .dish-card:not(.dish-row) .front-info { flex: 1 1 auto; padding: 24px; gap: 18px; }
+        .dish-card:not(.dish-row) .dish-bottom { margin-top: auto; }
+
         /* Hero typography: a bigger, tighter Fraunces title; a thin brass
            rule under it (pseudo-element, so decorative by construction);
            the tagline in Fraunces italic, balanced, ~36ch; more air between
