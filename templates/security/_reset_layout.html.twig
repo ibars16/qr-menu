@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+{# Shell of the logged-out "forgot password" screens (ResetPasswordController):
+   the sign-up pages' look (_auth_styles), with the few tokens those pages
+   use below WCAG AA raised here — text #a1a1aa on #141414 (7:1) dark,
+   #52525b on #fafafa (7:1) light; button text #fff on solid #C1440E (5:1)
+   instead of the gradient, whose light end is only 3.4:1. #}
+{% trans_default_domain 'reset_password' %}
+
+{% block title %}{{ block('heading') }} — QR Menu{% endblock %}
+
+{% block turbo_meta %}
+    <meta name="turbo-visit-control" content="reload">
+    <meta name="referrer" content="no-referrer">
+{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>(function(){try{if(localStorage.getItem('admin-theme')==='light'||localStorage.getItem('site-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
+    {% include 'security/_auth_styles.html.twig' %}
+    <style>
+        :root           { --tx-sub: #a1a1aa; --tx-muted: #a1a1aa; }
+        html.light      { --tx-sub: #52525b; --tx-muted: #52525b; --tx-label: #52525b; }
+        .wrap           { max-width: 380px; }
+        .submit-btn     { background: var(--brand); }
+        .notice {
+            border-radius: 10px; padding: 10px 14px; margin-bottom: 18px;
+            font-size: 13px; line-height: 1.5;
+            display: flex; gap: 8px; align-items: flex-start;
+        }
+        .notice i       { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+        .notice-ok      { background: var(--bg-input); border: 1px solid var(--bd-input); color: var(--tx-hi); }
+        .notice-error   { background: rgba(193,68,14,0.12); border: 1px solid rgba(193,68,14,0.3); color: var(--accent-text); }
+    </style>
+{% endblock %}
+
+{% macro errors(field) %}
+    {% if field.vars.errors|length > 0 %}
+        <ul class="errors" role="alert">
+            {% for error in field.vars.errors %}
+                <li>{{ error.messageTemplate|trans(error.messageParameters, 'reset_password') }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}
+
+{% block body %}
+    <button type="button" class="theme-toggle-btn" onclick="toggleSiteTheme()" title="{{ 'theme_title'|trans }}" aria-label="{{ 'theme_aria'|trans }}">
+        <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
+        <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
+    </button>
+
+    <div class="wrap">
+        <div class="logo">
+            <a href="{{ path('app_home') }}" class="logo-link">
+                <div class="logo-mark">Q</div>
+                <div class="logo-name">QR Menu</div>
+            </a>
+        </div>
+
+        <div class="card">
+            <h1 class="card-title">{% block heading %}{% endblock %}</h1>
+            <div class="card-sub">{% block sub %}{% endblock %}</div>
+
+            {% for message in app.flashes('reset_sent') %}
+                <div class="notice notice-ok" role="status"><i class="ti ti-mail" aria-hidden="true"></i><span>{{ message }}</span></div>
+            {% endfor %}
+            {% for message in app.flashes('reset_error') %}
+                <div class="notice notice-error" role="alert"><i class="ti ti-alert-circle" aria-hidden="true"></i><span>{{ message }}</span></div>
+            {% endfor %}
+
+            {% block form %}{% endblock %}
+        </div>
+
+        <div class="login-link">
+            <a href="{{ path('admin_login') }}">{{ 'back_to_login'|trans }}</a>
+        </div>
+    </div>
+
+    <script>
+        window.toggleSiteTheme = function () {
+            var isLight = document.documentElement.classList.toggle('light');
+            var value = isLight ? 'light' : 'dark';
+            try {
+                localStorage.setItem('admin-theme', value);
+                localStorage.setItem('site-theme', value);
+            } catch (e) {}
+        };
+    </script>
+{% endblock %}

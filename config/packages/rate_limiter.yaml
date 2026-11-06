@@ -1,0 +1,13 @@
+framework:
+    rate_limiter:
+        # "Forgot password" requests (ResetPasswordController): 3 per email
+        # and 10 per IP, per hour. Past either, the page answers exactly as
+        # usual and simply sends nothing.
+        reset_password_email:
+            policy: sliding_window
+            limit: 3
+            interval: '1 hour'
+        reset_password_ip:
+            policy: sliding_window
+            limit: 10
+            interval: '1 hour'

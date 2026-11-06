@@ -242,6 +242,9 @@ services:
 when@test:
     parameters:
         app.uploads_dir: '%kernel.project_dir%/var/test-uploads'
+        # A sender, so account emails (AccountMailer) are actually built in
+        # tests — MAILER_DSN is null://null there, nothing leaves.
+        mailer_from_email: 'no-reply@example.test'
 
     # Tests never call Stripe.
     services:

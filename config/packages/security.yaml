@@ -34,6 +34,11 @@ security:
                 secret: '%kernel.secret%'
                 lifetime: 604800
 
+            # Defaults: 5 failed logins per minute per email+IP (and more per
+            # IP alone). Its message is translated by Symfony's own
+            # "security" domain.
+            login_throttling: null
+
             # "Entrar" as a restaurant's owner: the platform owner anywhere
             # (BillingController::pay()), a reseller only into its own
             # restaurants; the platform owner also as a reseller (/platform's

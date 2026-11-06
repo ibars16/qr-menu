@@ -6,6 +6,7 @@ use App\Entity\Reseller;
 use App\Form\RegistrationFormType;
 use App\Service\AdminLocaleResolver;
 use App\Service\Billing\StripeBilling;
+use App\Service\AccountMailer;
 use App\Service\RestaurantCreator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,6 +34,7 @@ class ResellerSignupController extends AbstractController
         RestaurantCreator $restaurantCreator,
         AdminLocaleResolver $adminLocaleResolver,
         StripeBilling $billing,
+        AccountMailer $accountMailer,
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_menu');
@@ -65,6 +67,7 @@ class ResellerSignupController extends AbstractController
                 $reseller,
             );
             $billing->syncResellerExtrasOrLog($reseller);
+            $accountMailer->sendWelcome($user);
 
             return $security->login($user, 'form_login', 'main');
         }

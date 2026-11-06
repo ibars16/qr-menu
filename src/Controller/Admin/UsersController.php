@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Restaurant;
 use App\Entity\User;
+use App\Repository\ResetPasswordRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -123,6 +124,7 @@ class UsersController extends AbstractController
         EntityManagerInterface $em,
         UserPasswordHasherInterface $hasher,
         TranslatorInterface $translator,
+        ResetPasswordRequestRepository $resetRequests,
     ): JsonResponse {
         if ($user->getRestaurant() !== $this->restaurant()) {
             return $this->json(['error' => 'Forbidden'], 403);
@@ -149,6 +151,7 @@ class UsersController extends AbstractController
         $user->setRoles([$role]);
         if ($password !== '') {
             $user->setPassword($hasher->hashPassword($user, $password));
+            $resetRequests->removeRequests($user); // a "forgot password" link sent before no longer works
         }
 
         $em->flush();

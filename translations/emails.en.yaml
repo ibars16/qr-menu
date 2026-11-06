@@ -1,0 +1,13 @@
+welcome:
+    subject: "Welcome to %app%"
+    hello: "Hello!"
+    ready: "Your account is ready."
+    button: "Go to your dashboard"
+    login_with: "You sign in with this email: %email%"
+    forgot: "If you forget your password, use “Forgot your password?” on the sign-in screen."
+reset:
+    subject: "Change your password"
+    intro: "We received a request to change the password for your account."
+    button: "Change password"
+    expiry: "The link expires in 1 hour and can only be used once."
+    ignore: "If you didn't request this, ignore this email: your password won't change."

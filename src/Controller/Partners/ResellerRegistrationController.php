@@ -6,6 +6,7 @@ use App\Entity\Reseller;
 use App\Entity\User;
 use App\Form\ResellerRegistrationFormType;
 use App\Service\AdminLocaleResolver;
+use App\Service\AccountMailer;
 use App\Service\RestaurantCreator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,6 +32,7 @@ class ResellerRegistrationController extends AbstractController
         Security $security,
         RestaurantCreator $restaurantCreator,
         AdminLocaleResolver $adminLocaleResolver,
+        AccountMailer $accountMailer,
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_menu');
@@ -59,6 +61,7 @@ class ResellerRegistrationController extends AbstractController
                 $user->setReseller($reseller);
                 $em->persist($user);
                 $em->flush();
+                $accountMailer->sendWelcome($user);
 
                 $security->login($user, 'form_login', 'main');
 

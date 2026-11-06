@@ -13,8 +13,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * Applies each restaurant's Admin Panel language preference to admin
  * requests, and the reseller's own to its panel (/partners; the sign-ups,
- * logged out — /partners/registro, /register, /alta/{code} — follow the
- * browser). Scoped to /admin, /partners and those sign-ups only —
+ * logged out — /partners/registro, /register, /alta/{code} and
+ * /admin/login/recuperar — follow the browser). Scoped to /admin,
+ * /partners and those sign-ups only —
  * the public menu keeps resolving its own language independently
  * (Restaurant::$defaultLanguage).
  */
@@ -35,7 +36,8 @@ class AdminLocaleSubscriber implements EventSubscriberInterface
 
         $request = $event->getRequest();
         $path    = $request->getPathInfo();
-        $signup   = $path === '/register' || str_starts_with($path, '/alta/');
+        // "Forgot your password?" (ResetPasswordController) is logged out too.
+        $signup   = $path === '/register' || str_starts_with($path, '/alta/') || str_starts_with($path, '/admin/login/recuperar');
         $partners = str_starts_with($path, '/partners');
         if (!str_starts_with($path, '/admin') && !$partners && !$signup) {
             return;

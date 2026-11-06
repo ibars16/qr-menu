@@ -1,0 +1,13 @@
+welcome:
+    subject: "Benvenuto su %app%"
+    hello: "Ciao!"
+    ready: "Il tuo account è pronto."
+    button: "Accedi al tuo pannello"
+    login_with: "Accedi con questa email: %email%"
+    forgot: "Se dimentichi la password, usa «Password dimenticata?» nella schermata di accesso."
+reset:
+    subject: "Cambia la tua password"
+    intro: "Abbiamo ricevuto una richiesta per cambiare la password del tuo account."
+    button: "Cambia password"
+    expiry: "Il link scade tra 1 ora e si può usare una sola volta."
+    ignore: "Se non l'hai richiesto tu, ignora questa email: la tua password non cambia."

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Form\RegistrationFormType;
+use App\Service\AccountMailer;
 use App\Service\AdminLocaleResolver;
 use App\Service\RestaurantCreator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,6 +21,7 @@ class RegistrationController extends AbstractController
         Security $security,
         RestaurantCreator $restaurantCreator,
         AdminLocaleResolver $adminLocaleResolver,
+        AccountMailer $accountMailer,
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_menu');
@@ -45,6 +47,7 @@ class RegistrationController extends AbstractController
                 $data['language'],
                 $adminLocaleResolver->resolve($data['adminLocale']),
             );
+            $accountMailer->sendWelcome($user);
 
             // Log in automatically
             return $security->login($user, 'form_login', 'main');

@@ -1,0 +1,9 @@
+{% extends 'emails/_layout.html.twig' %}
+{% block title %}{{ 'welcome.subject'|trans({'%app%': app}, 'emails', locale) }}{% endblock %}
+{% block content %}
+    <p style="margin:0 0 12px;font-size:17px;font-weight:600;">{{ 'welcome.hello'|trans({}, 'emails', locale) }}</p>
+    <p style="margin:0;">{{ 'welcome.ready'|trans({}, 'emails', locale) }}</p>
+    {% include 'emails/_button.html.twig' with { url: loginUrl, label: 'welcome.button'|trans({}, 'emails', locale) } only %}
+    <p style="margin:0 0 12px;">{{ 'welcome.login_with'|trans({'%email%': accountEmail}, 'emails', locale) }}</p>
+    <p style="margin:0;color:#595959;font-size:14px;">{{ 'welcome.forgot'|trans({}, 'emails', locale) }}</p>
+{% endblock %}
