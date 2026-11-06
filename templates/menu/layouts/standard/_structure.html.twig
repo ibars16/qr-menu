@@ -1213,10 +1213,12 @@
     /* The big full-width button ("Ver resultados" in the filters sheet,
        "Cerrar" at the foot of the dish sheet): --btn-strong-* — a solid
        --fg block on light themes, a quiet surface with a border on dark
-       ones (a bright block would dominate the screen there). */
+       ones (a bright block would dominate the screen there). The dark
+       themes' 1px edge is an inset ring (--btn-strong-ring), not a border,
+       so it takes no space and the button is the same size on every theme. */
     .filters-apply-btn {
-        background: var(--btn-strong-bg); color: var(--btn-strong-fg); border: var(--btn-strong-border); border-radius: var(--radius);
-        font-weight: 500; letter-spacing: 0.05em; box-shadow: none;
+        background: var(--btn-strong-bg); color: var(--btn-strong-fg); border: none; border-radius: var(--radius);
+        font-weight: 500; letter-spacing: 0.05em; box-shadow: var(--btn-strong-ring, none);
     }
     .filters-apply-btn:hover { opacity: 0.92; }
     /* Filled wine, white text — visible without competing with
