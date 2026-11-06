@@ -21,6 +21,7 @@ final class MenuImportPipeline
     public function __construct(
         private readonly MenuImportExtractionService $extractionService,
         private readonly MenuImportAssembler $assembler,
+        private readonly MenuImportLanguageNotice $languageNotice,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
     ) {}
@@ -63,6 +64,16 @@ final class MenuImportPipeline
             $batch->setStatus(MenuImportBatchStatus::FAILED);
             $batch->setErrorMessage('Unexpected error during assembly: ' . $e->getMessage());
             $this->em->flush();
+
+            return;
+        }
+
+        // Is the import in another language than the menu's main one? (the
+        // notice on Carta) — never stops the import: no notice instead.
+        try {
+            $this->languageNotice->check($batch);
+        } catch (\Throwable $e) {
+            $this->logger->error('Unexpected error checking the language of menu import batch', ['batchId' => $batch->getId(), 'exception' => $e]);
         }
     }
 }

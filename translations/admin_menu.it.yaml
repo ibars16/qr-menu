@@ -128,6 +128,20 @@ modal:
         new_title: Nuovo piatto
     close_aria: Chiudi
 
+language_notice:
+    text: 'Questo menu sembra essere in %language% e il tuo menu è in %main%.'
+    text_singular: 'Questo menu sembra essere in %language% e il tuo menu è in %main%: %count% piatto.'
+    text_plural: 'Questo menu sembra essere in %language% e il tuo menu è in %main%: %count% piatti.'
+    translate: 'Traduci in %main%'
+    continue: 'Continua la traduzione'
+    show_dishes_singular: 'Mostra il piatto'
+    show_dishes_plural: 'Mostra i %count% piatti'
+    dismiss: 'Lascialo così'
+    working: 'Traduzione in %language%… ne mancano %count%.'
+    half_done: 'Traduzione a metà: ne mancano %count%.'
+    error: 'Non è stato possibile tradurre ora. Riprova tra qualche minuto.'
+    done: 'I piatti e le categorie importati sono stati tradotti in %language%.'
+
 notice:
     missing_photos_singular: '%count% piatto senza foto nel tuo menu'
     missing_photos_plural: '%count% piatti senza foto nel tuo menu'

@@ -128,6 +128,20 @@ modal:
         new_title: Novo prato
     close_aria: Fechar
 
+language_notice:
+    text: 'Este cardápio parece estar em %language% e o seu cardápio está em %main%.'
+    text_singular: 'Este cardápio parece estar em %language% e o seu cardápio está em %main%: %count% prato.'
+    text_plural: 'Este cardápio parece estar em %language% e o seu cardápio está em %main%: %count% pratos.'
+    translate: 'Traduzir para %main%'
+    continue: 'Continuar a tradução'
+    show_dishes_singular: 'Ver o prato'
+    show_dishes_plural: 'Ver os %count% pratos'
+    dismiss: 'Deixar assim'
+    working: 'Traduzindo para %language%… faltam %count%.'
+    half_done: 'Tradução pela metade: faltam %count%.'
+    error: 'Não foi possível traduzir agora. Tente novamente em alguns minutos.'
+    done: 'Os pratos e categorias importados foram traduzidos para %language%.'
+
 notice:
     missing_photos_singular: '%count% prato sem foto no seu cardápio'
     missing_photos_plural: '%count% pratos sem foto no seu cardápio'

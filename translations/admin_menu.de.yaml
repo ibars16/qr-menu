@@ -128,6 +128,20 @@ modal:
         new_title: Neues Gericht
     close_aria: Schließen
 
+language_notice:
+    text: 'Diese Speisekarte scheint auf %language% zu sein, deine Speisekarte ist auf %main%.'
+    text_singular: 'Diese Speisekarte scheint auf %language% zu sein, deine Speisekarte ist auf %main%: %count% Gericht.'
+    text_plural: 'Diese Speisekarte scheint auf %language% zu sein, deine Speisekarte ist auf %main%: %count% Gerichte.'
+    translate: 'Auf %main% übersetzen'
+    continue: 'Übersetzung fortsetzen'
+    show_dishes_singular: 'Gericht zeigen'
+    show_dishes_plural: 'Die %count% Gerichte zeigen'
+    dismiss: 'So lassen'
+    working: 'Wird auf %language% übersetzt … noch %count%.'
+    half_done: 'Halb übersetzt: noch %count%.'
+    error: 'Die Übersetzung hat gerade nicht geklappt. Versuche es in ein paar Minuten erneut.'
+    done: 'Die importierten Gerichte und Kategorien wurden auf %language% übersetzt.'
+
 notice:
     missing_photos_singular: '%count% Gericht ohne Foto in deiner Speisekarte'
     missing_photos_plural: '%count% Gerichte ohne Foto in deiner Speisekarte'

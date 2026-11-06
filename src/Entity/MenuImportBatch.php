@@ -21,6 +21,15 @@ class MenuImportBatch
 {
     use TimestampableTrait;
 
+    /** languageNotice: shown on Carta — "this import seems to be in another language" (MenuImportLanguageNotice). */
+    public const NOTICE_PENDING     = 'pending';
+    /** languageNotice: the owner chose to translate it; a step may still be left (resumable). */
+    public const NOTICE_TRANSLATING = 'translating';
+    /** languageNotice: "Dejarla así" — never shown again. */
+    public const NOTICE_DISMISSED   = 'dismissed';
+    /** languageNotice: translated, nothing left. */
+    public const NOTICE_TRANSLATED  = 'translated';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -35,6 +44,14 @@ class MenuImportBatch
 
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $errorMessage = null;
+
+    /** ISO 639-1 code the import's dishes were found to be in, once checked; null: not checked, or the AI couldn't tell. */
+    #[ORM\Column(length: 8, nullable: true)]
+    private ?string $detectedLanguage = null;
+
+    /** null (no notice) or one of the NOTICE_* constants. */
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $languageNotice = null;
 
     #[ORM\OneToMany(mappedBy: 'batch', targetEntity: MenuImportPage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => 'ASC'])]
@@ -87,5 +104,25 @@ class MenuImportBatch
         if (!$this->pages->contains($page)) {
             $this->pages->add($page);
         }
+    }
+
+    public function getDetectedLanguage(): ?string
+    {
+        return $this->detectedLanguage;
+    }
+
+    public function setDetectedLanguage(?string $detectedLanguage): void
+    {
+        $this->detectedLanguage = $detectedLanguage;
+    }
+
+    public function getLanguageNotice(): ?string
+    {
+        return $this->languageNotice;
+    }
+
+    public function setLanguageNotice(?string $languageNotice): void
+    {
+        $this->languageNotice = $languageNotice;
     }
 }

@@ -22,6 +22,7 @@ use App\Repository\AllergenRepository;
 use App\Service\AllergenBackfill\AllergenReviewQueue;
 use App\Service\AllergenBackfill\IngredientAllergenBackfill;
 use App\Service\CategoryTranslationService;
+use App\Service\MenuImportLanguageNotice;
 use App\Service\MenuImportReview;
 use App\Service\ProductAllergenResolver;
 use App\Service\ProductTranslationService;
@@ -136,7 +137,7 @@ class MenuAdminController extends AbstractController
     // ── Main view ────────────────────────────────────────────────────────────
 
     #[Route('/menu', name: 'menu')]
-    public function menu(): Response
+    public function menu(MenuImportLanguageNotice $importLanguageNotice): Response
     {
         $restaurant = $this->restaurant();
         $languages  = require $this->getParameter('kernel.project_dir') . '/config/languages.php';
@@ -189,6 +190,14 @@ class MenuAdminController extends AbstractController
             'totalProducts'      => $totalProducts,
             'missingPhotoCount'  => $missingPhotoCount,
             'notOnMenuCount'     => $notOnMenuCount,
+            // "Esta carta parece estar en {idioma}…": one per import (MenuImportLanguageNotice).
+            'importLanguageNotices' => array_map(static fn (array $n) => [
+                'batch'     => $n['batch'],
+                'remaining' => $n['remaining'],
+                'productIds' => $n['productIds'],
+                'language'  => LanguageChangeController::languageName($n['batch']->getDetectedLanguage(), $restaurant->getAdminLocale()),
+                'main'      => LanguageChangeController::languageName($restaurant->getDefaultLanguage(), $restaurant->getAdminLocale()),
+            ], $importLanguageNotice->noticesFor($restaurant)),
         ]);
     }
 

@@ -31,6 +31,25 @@
         ══════════════════════════════ */
         .menu-wrap { max-width: 860px; }
 
+        /* "Esta carta parece estar en {idioma}…" — one per import
+           (MenuImportLanguageNotice). Amber heads-up on the opaque amber
+           fill: --warn-fg on --warn-bg-solid 8.70:1 dark / 5.55:1 light;
+           its buttons are the standard .btn (10.8:1 / 11.0:1) and
+           .btn-primary (white on --brand 5.12:1). */
+        .import-lang-notice {
+            background:var(--warn-bg-solid); border:1px solid rgba(193,150,14,0.3); border-radius:var(--r-md);
+            padding:var(--sp-3) var(--sp-4); margin-bottom:var(--sp-5);
+            font-size:var(--fs-base); line-height:var(--lh-body); color:var(--warn-fg);
+        }
+        .import-lang-notice-text { display:flex; align-items:flex-start; gap:var(--sp-2); }
+        .import-lang-notice-text i { font-size:16px; flex-shrink:0; margin-top:2px; }
+        .import-lang-notice-message { flex:1; }
+        .import-lang-notice-actions { display:flex; flex-wrap:wrap; gap:var(--sp-2); margin-top:var(--sp-3); }
+        .import-lang-notice-actions form { margin:0; }
+        .import-lang-notice[data-state="working"] .import-lang-notice-actions { display:none; }
+        .import-lang-notice-progress { display:none; margin-top:var(--sp-2); }
+        .import-lang-notice[data-state="working"] .import-lang-notice-progress { display:block; }
+
         /* Summary notices above the list (missing photo, not on the public
            menu) — same visual language as the static .info-banner in
            tags.html.twig/users.html.twig, but these are real <button>s (not
@@ -189,6 +208,53 @@
 
 {% block body %}
     <div class="menu-wrap">
+
+        {# Above everything: an import in another language than the menu's (see MenuImportLanguageNotice). #}
+        {% for notice in importLanguageNotices %}
+            {% set batchId = notice.batch.id %}
+            <div class="import-lang-notice" role="status"
+                 data-step-url="{{ path('admin_menu_import_language_translate', {id: batchId}) }}"
+                 data-token="{{ csrf_token('import_language_' ~ batchId) }}"
+                 data-main="{{ notice.main }}"
+                 data-state="{{ notice.batch.languageNotice == 'translating' ? 'stopped' : 'idle' }}">
+                {# Says how many dishes; "Ver los N platos" marks them (highlightRows(), like the other notices) —
+                   exactly the dishes "Traducir" would translate. Only the categories left: nothing to mark. #}
+                {% set dishCount = notice.productIds|length %}
+                <div class="import-lang-notice-text">
+                    <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+                    <span class="import-lang-notice-message">
+                        {% if dishCount > 0 %}
+                            {{ (dishCount == 1 ? 'language_notice.text_singular' : 'language_notice.text_plural')|trans({'%language%': notice.language, '%main%': notice.main, '%count%': dishCount}, 'admin_menu') }}
+                        {% else %}
+                            {{ 'language_notice.text'|trans({'%language%': notice.language, '%main%': notice.main}, 'admin_menu') }}
+                        {% endif %}
+                        {% if notice.batch.languageNotice == 'translating' %}
+                            <span class="import-lang-notice-half">{{ 'language_notice.half_done'|trans({'%count%': notice.remaining}, 'admin_menu') }}</span>
+                        {% endif %}
+                        <span class="import-lang-notice-error" hidden>{{ 'language_notice.error'|trans({}, 'admin_menu') }}</span>
+                    </span>
+                </div>
+                <div class="import-lang-notice-progress" aria-live="polite">
+                    {{ 'language_notice.working'|trans({'%language%': notice.main, '%count%': notice.remaining}, 'admin_menu') }}
+                </div>
+                <div class="import-lang-notice-actions">
+                    {% if dishCount > 0 %}
+                        <button type="button" class="btn" data-product-ids="{{ notice.productIds|join(',') }}" onclick="highlightImportLanguage(this)">
+                            <i class="ti ti-eye" aria-hidden="true"></i>
+                            {{ (dishCount == 1 ? 'language_notice.show_dishes_singular' : 'language_notice.show_dishes_plural')|trans({'%count%': dishCount}, 'admin_menu') }}
+                        </button>
+                    {% endif %}
+                    <button type="button" class="btn btn-primary import-lang-notice-translate">
+                        <i class="ti ti-language" aria-hidden="true"></i>
+                        {{ (notice.batch.languageNotice == 'translating' ? 'language_notice.continue' : 'language_notice.translate')|trans({'%main%': notice.main}, 'admin_menu') }}
+                    </button>
+                    <form method="post" action="{{ path('admin_menu_import_language_dismiss', {id: batchId}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('import_language_' ~ batchId) }}">
+                        <button type="submit" class="btn">{{ 'language_notice.dismiss'|trans({}, 'admin_menu') }}</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
 
         {# Above the photo banner: dishes customers can't see at all matter more than dishes without a picture. #}
         {% if notOnMenuCount > 0 %}
@@ -518,9 +584,74 @@
         // banner's count. A row the owner has since toggled off (.inactive,
         // no reload) keeps its now-hidden notice in the DOM but reads
         // "Oculto" honestly, so it is skipped, matching the notice's own CSS.
+        // Import-language notice (see .import-lang-notice above) — the rows
+        // are exactly the dishes the server listed for it (the ones
+        // "Traducir" would translate), by id.
+        function highlightImportLanguage(button) {
+            const ids = button.dataset.productIds.split(',');
+            highlightRows(Array.from(document.querySelectorAll('.product-row'))
+                .filter(row => ids.includes(row.dataset.id)));
+        }
+
         function highlightNotOnMenu() {
             highlightRows(Array.from(document.querySelectorAll('.product-row'))
                 .filter(row => !row.classList.contains('inactive') && row.querySelector('.menu-notice')));
         }
+    </script>
+    <script>
+        // "Traducir al {idioma}" on an import's language notice: one batch
+        // per request until done (MenuImportController::translateLanguage),
+        // like the main-language change. A failed batch is retried once,
+        // then the notice offers "Continuar"; what's done is kept server side.
+        (() => {
+            const working = {{ 'language_notice.working'|trans({'%language%': '__LANG__', '%count%': '__COUNT__'}, 'admin_menu')|json_encode|raw }};
+            document.querySelectorAll('.import-lang-notice').forEach(box => {
+                const button   = box.querySelector('.import-lang-notice-translate');
+                const progress = box.querySelector('.import-lang-notice-progress');
+                const error    = box.querySelector('.import-lang-notice-error');
+                const half     = box.querySelector('.import-lang-notice-half');
+                let retried = false;
+
+                const fail = () => {
+                    box.dataset.state = 'stopped';
+                    if (half) half.hidden = true;
+                    error.hidden = false;
+                };
+
+                const step = async () => {
+                    box.dataset.state = 'working';
+                    error.hidden = true;
+                    let result;
+                    try {
+                        const response = await fetch(box.dataset.stepUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({ _token: box.dataset.token }),
+                        });
+                        result = await response.json();
+                    } catch (e) {
+                        result = { error: true };
+                    }
+                    if (result.done) {
+                        window.location.reload();
+                        return;
+                    }
+                    if (result.error) {
+                        if (retried) {
+                            retried = false;
+                            return fail();
+                        }
+                        retried = true;
+                        setTimeout(step, 3000);
+                        return;
+                    }
+                    retried = false;
+                    progress.textContent = working.replace('__LANG__', box.dataset.main).replace('__COUNT__', result.remaining);
+                    step();
+                };
+
+                button.addEventListener('click', step);
+            });
+        })();
     </script>
 {% endblock %}

@@ -78,7 +78,7 @@ final class MenuLanguageChanger
         private readonly EntityManagerInterface         $em,
         private readonly MenuLanguageDetectorInterface  $detector,
         private readonly ProductTranslatorInterface     $productTranslator,
-        private readonly CategoryTranslatorInterface    $categoryTranslator,
+        private readonly MenuTextTranslator             $textTranslator,
         private readonly TagTranslatorInterface         $tagTranslator,
         private readonly OwnerTextTranslationRepository $ownerTexts,
         private readonly LoggerInterface                $logger,
@@ -322,61 +322,23 @@ final class MenuLanguageChanger
     /** @param array<int, ProductTranslation> $sources */
     private function translateProducts(array $sources, string $to): int
     {
-        $input = $locales = [];
-        foreach ($sources as $id => $source) {
-            $product      = $source->getProduct();
-            $input[$id]   = [
-                'name'        => $source->getName(),
-                'description' => $source->getDescription(),
-                'section'     => TranslationSource::sectionName($product, $source->getLocale(), $product->getCategory()->getRestaurant()->getDefaultLanguage()),
-            ];
-            $locales[$id] = $source->getLocale();
-        }
-        $result = $this->call(fn () => $this->reviewed($this->productTranslator)->translate($input, $to, $locales), 'dishes');
-
-        $stored = 0;
-        foreach ($sources as $id => $source) {
-            $name = trim((string) ($result[$id]['name'] ?? ''));
-            if ($name === '') {
-                continue;
-            }
-            $description = trim((string) ($result[$id]['description'] ?? ''));
-            $product = $source->getProduct();
-            $translation = $product->getTranslation($to) ?? $this->added($product, new ProductTranslation(), $to);
-            $translation->setName($name);
-            $translation->setDescription($description !== '' && $source->getDescription() !== null ? $description : null);
-            $translation->setSource(ProductTranslation::SOURCE_AI);
-            $this->checked[$this->key($product)] = true;
-            $stored++;
-        }
-
-        return $stored;
+        return $this->markWritten($this->textTranslator->translateProducts($sources, $to));
     }
 
     /** @param array<int, CategoryTranslation> $sources */
     private function translateCategories(array $sources, string $to): int
     {
-        $result = $this->call(fn () => $this->reviewed($this->categoryTranslator)->translate(
-            array_map(static fn (CategoryTranslation $s) => $s->getName(), $sources),
-            $to,
-            array_map(static fn (CategoryTranslation $s) => $s->getLocale(), $sources),
-        ), 'categories');
+        return $this->markWritten($this->textTranslator->translateCategories($sources, $to));
+    }
 
-        $stored = 0;
-        foreach ($sources as $id => $source) {
-            $name = trim((string) ($result[$id] ?? ''));
-            if ($name === '') {
-                continue;
-            }
-            $category = $source->getCategory();
-            $translation = $category->getTranslation($to) ?? $this->added($category, new CategoryTranslation(), $to);
-            $translation->setName($name);
-            $translation->setSource(CategoryTranslation::SOURCE_AI);
-            $this->checked[$this->key($category)] = true;
-            $stored++;
+    /** What this conversion wrote stays (see $checked). */
+    private function markWritten(array $entities): int
+    {
+        foreach ($entities as $entity) {
+            $this->checked[$this->key($entity)] = true;
         }
 
-        return $stored;
+        return count($entities);
     }
 
     /** @param array<int, ProductTagTranslation> $sources */
@@ -753,7 +715,7 @@ final class MenuLanguageChanger
      */
     private function reviewed(object $translator): object
     {
-        return $translator instanceof IndependentReviewTranslator ? $translator->withIndependentReview() : $translator;
+        return MenuTextTranslator::reviewed($translator);
     }
 
     /** The translator's answer, or [] when it threw (logged). */

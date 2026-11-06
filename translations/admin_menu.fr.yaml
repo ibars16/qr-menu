@@ -128,6 +128,20 @@ modal:
         new_title: Nouveau plat
     close_aria: Fermer
 
+language_notice:
+    text: 'Cette carte semble être en %language% et votre carte est en %main%.'
+    text_singular: 'Cette carte semble être en %language% et votre carte est en %main% : %count% plat.'
+    text_plural: 'Cette carte semble être en %language% et votre carte est en %main% : %count% plats.'
+    translate: 'Traduire en %main%'
+    continue: 'Continuer la traduction'
+    show_dishes_singular: 'Voir le plat'
+    show_dishes_plural: 'Voir les %count% plats'
+    dismiss: 'La laisser ainsi'
+    working: 'Traduction en %language%… il en reste %count%.'
+    half_done: 'Traduction à moitié faite : il en reste %count%.'
+    error: 'La traduction n''a pas pu être faite pour l''instant. Réessayez dans quelques minutes.'
+    done: 'Les plats et catégories importés ont été traduits en %language%.'
+
 notice:
     missing_photos_singular: '%count% plat sans photo dans votre carte'
     missing_photos_plural: '%count% plats sans photo dans votre carte'

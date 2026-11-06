@@ -7,6 +7,7 @@ use App\Entity\MenuImportPage;
 use App\Entity\Restaurant;
 use App\Enum\MenuImportBatchStatus;
 use App\Service\BatchProcessingTriggerInterface;
+use App\Service\MenuImportLanguageNotice;
 use App\Service\Upload\UploadProfile;
 use App\Service\Upload\UploadValidationError;
 use App\Service\Upload\UploadValidator;
@@ -180,6 +181,41 @@ class MenuImportController extends AbstractController
             'failedPageCount' => count($failedPages),
             'totalPageCount' => $batch->getPages()->count(),
         ]);
+    }
+
+    /**
+     * "Traducir al {idioma principal}" on Carta's notice (see
+     * MenuImportLanguageNotice): one batch per request, the browser calls
+     * it again until done — like the main-language change.
+     */
+    #[Route('/{id}/language/translate', name: 'language_translate', methods: ['POST'])]
+    public function translateLanguage(MenuImportBatch $batch, Request $request, MenuImportLanguageNotice $notice): JsonResponse
+    {
+        $this->assertOwner($batch);
+        if (!$this->isCsrfTokenValid('import_language_' . $batch->getId(), (string) $request->request->get('_token'))) {
+            return $this->json(['error' => true], Response::HTTP_FORBIDDEN);
+        }
+
+        $result = $notice->step($batch);
+        if ($result['done'] && $batch->getLanguageNotice() === MenuImportBatch::NOTICE_TRANSLATED) {
+            $this->addFlash('success', $this->translator->trans('language_notice.done', [
+                '%language%' => LanguageChangeController::languageName($batch->getRestaurant()->getDefaultLanguage(), $batch->getRestaurant()->getAdminLocale()),
+            ], 'admin_menu'));
+        }
+
+        return $this->json($result);
+    }
+
+    /** "Dejarla así": nothing changes, the notice is gone for this import. */
+    #[Route('/{id}/language/dismiss', name: 'language_dismiss', methods: ['POST'])]
+    public function dismissLanguage(MenuImportBatch $batch, Request $request, MenuImportLanguageNotice $notice): Response
+    {
+        $this->assertOwner($batch);
+        if ($this->isCsrfTokenValid('import_language_' . $batch->getId(), (string) $request->request->get('_token'))) {
+            $notice->dismiss($batch);
+        }
+
+        return $this->redirectToRoute('admin_menu');
     }
 
     private function assertOwner(MenuImportBatch $batch): void

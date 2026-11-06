@@ -128,6 +128,20 @@ modal:
         new_title: New dish
     close_aria: Close
 
+language_notice:
+    text: 'This menu seems to be in %language% and your menu is in %main%.'
+    text_singular: 'This menu seems to be in %language% and your menu is in %main%: %count% dish.'
+    text_plural: 'This menu seems to be in %language% and your menu is in %main%: %count% dishes.'
+    translate: 'Translate into %main%'
+    continue: 'Continue translating'
+    show_dishes_singular: 'Show the dish'
+    show_dishes_plural: 'Show the %count% dishes'
+    dismiss: 'Leave it as is'
+    working: 'Translating into %language%… %count% left.'
+    half_done: 'Half translated: %count% left.'
+    error: 'It couldn''t be translated right now. Try again in a few minutes.'
+    done: 'The imported dishes and categories have been translated into %language%.'
+
 notice:
     missing_photos_singular: '%count% dish without a photo in your menu'
     missing_photos_plural: '%count% dishes without a photo in your menu'
