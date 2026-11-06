@@ -65,7 +65,7 @@ final class WelcomeEmailTest extends WebTestCase
 
     private function signUpRestaurant(string $path, string $email, string $adminLocale): void
     {
-        $form = $this->client->request('GET', $path)->filter('form')->form();
+        $form = $this->client->request('GET', $path)->filter('form:not(.lang-form)')->form();
         $form['registration_form[restaurantName]'] = 'Welcome Test ' . uniqid();
         $form['registration_form[email]'] = $email;
         $form['registration_form[password][first]'] = 'a-strong-password-1';

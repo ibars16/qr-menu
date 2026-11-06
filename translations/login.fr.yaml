@@ -1,0 +1,17 @@
+# /admin/login (SecurityController). Logged out: in the browser's language
+# (AdminLocaleSubscriber), like the sign-ups.
+title: "Connexion"
+theme_title: "Changer de thème"
+theme_aria: "Basculer entre mode sombre et clair"
+logo_sub: "Panneau d'administration"
+heading: "Bienvenue"
+sub: "Connectez-vous avec votre compte restaurant"
+email: "E-mail"
+email_placeholder: "vous@restaurant.com"
+password: "Mot de passe"
+remember: "Rester connecté"
+submit: "Se connecter"
+forgot: "Mot de passe oublié ?"
+no_account: "Pas encore de compte ?"
+register: "Inscrivez-vous gratuitement"
+language: "Langue"

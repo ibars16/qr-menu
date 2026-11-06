@@ -279,7 +279,7 @@ final class BillingControllerTest extends WebTestCase
         $this->em->flush();
 
         $crawler = $this->client->followRedirect();
-        $form = $crawler->filter('form')->form(['email' => $this->owner->getEmail(), 'password' => 'secret-pass']);
+        $form = $crawler->filter('form.login-form')->form(['email' => $this->owner->getEmail(), 'password' => 'secret-pass']);
         $this->client->submit($form);
 
         self::assertResponseRedirects('http://localhost' . $this->payPath());

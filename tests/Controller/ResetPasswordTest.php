@@ -81,7 +81,7 @@ final class ResetPasswordTest extends WebTestCase
     private function ask(string $email): array
     {
         $crawler = $this->client->request('GET', '/admin/login/recuperar');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('form:not(.lang-form)')->form();
         $form['form[email]'] = $email;
         $this->client->submit($form);
         self::assertResponseRedirects('/admin/login/recuperar');
@@ -114,7 +114,7 @@ final class ResetPasswordTest extends WebTestCase
         $this->client->request('GET', $link);
         self::assertResponseRedirects('/admin/login/recuperar/nueva', message: 'the token leaves the URL straight away');
         $crawler = $this->client->followRedirect();
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('form:not(.lang-form)')->form();
         $form['form[password][first]'] = $password;
         $form['form[password][second]'] = $password;
         $this->client->submit($form);
@@ -212,7 +212,7 @@ final class ResetPasswordTest extends WebTestCase
         self::assertResponseIsUnprocessable();
         self::assertSelectorTextContains('.errors li', 'Mínimo 8 caracteres.');
 
-        $form = $this->client->getCrawler()->filter('form')->form();
+        $form = $this->client->getCrawler()->filter('form:not(.lang-form)')->form();
         $form['form[password][first]'] = 'a-brand-new-password';
         $form['form[password][second]'] = 'something-else-entirely';
         $this->client->submit($form);
@@ -254,7 +254,7 @@ final class ResetPasswordTest extends WebTestCase
         $this->client->setServerParameter('HTTP_ACCEPT_LANGUAGE', 'en');
         $crawler = $this->client->request('GET', '/admin/login/recuperar');
         self::assertSame('Forgot your password?', $crawler->filter('h1')->text(), 'the screen follows the browser');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('form:not(.lang-form)')->form();
         $form['form[email]'] = $platformOwner->getEmail();
         $this->client->submit($form);
         self::assertSame('Cambia tu contraseña', self::sent()[0]->getSubject(), '/platform is Spanish only');

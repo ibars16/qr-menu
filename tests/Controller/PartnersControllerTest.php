@@ -326,7 +326,7 @@ final class PartnersControllerTest extends WebTestCase
         $this->em->flush();
 
         $crawler = $this->client->request('GET', '/admin/login');
-        $form = $crawler->filter('form')->form(['email' => $user->getEmail(), 'password' => 'a-strong-password-1']);
+        $form = $crawler->filter('form.login-form')->form(['email' => $user->getEmail(), 'password' => 'a-strong-password-1']);
         $this->client->submit($form);
 
         self::assertSame('/partners', $this->finalPath());

@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
+{% trans_default_domain 'login' %}
 
-{% block title %}Acceder — QR Menu{% endblock %}
+{% block title %}{{ 'title'|trans }} — QR Menu{% endblock %}
 
 {# See public/base.html.twig's turbo_meta block for why: this page's own
    inline <style> block isn't Turbo-trackable, so a Turbo visit landing here
@@ -15,6 +16,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>(function(){try{if(localStorage.getItem('admin-theme')==='light'||localStorage.getItem('site-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
+    {# Grey text tokens at WCAG AA, the same values as the "forgot password"
+       screens (_reset_layout): #a1a1aa on #141414 (7:1) dark, #52525b on
+       #fafafa (7:1) light; #888 on #141414 is 5.3:1. Button text #fff on
+       solid #C1440E (5:1) instead of the gradient (light end only 3.4:1). #}
+    {% include 'security/_top_actions_styles.html.twig' %}
     <style>
         :root {
             --brand:          #C1440E;
@@ -27,8 +33,8 @@
             --bd-input:       #2a2a2a;
             --tx-hi:          #fff;
             --tx-label:       #888;
-            --tx-sub:         #555;
-            --tx-muted:       #666;
+            --tx-sub:         #a1a1aa;
+            --tx-muted:       #a1a1aa;
             --tx-placeholder: #444;
             --accent-text:    #F0997B;
         }
@@ -39,9 +45,9 @@
             --bd-card:        #d4d4d8;
             --bd-input:       #d4d4d8;
             --tx-hi:          #111;
-            --tx-label:       #777;
-            --tx-sub:         #777;
-            --tx-muted:       #666;
+            --tx-label:       #52525b;
+            --tx-sub:         #52525b;
+            --tx-muted:       #52525b;
             --tx-placeholder: #999;
             --accent-text:    #C1440E;
         }
@@ -70,7 +76,6 @@
         }
 
         .theme-toggle-btn {
-            position: fixed; top: 20px; right: 20px; z-index: 2;
             width: 34px; height: 34px; border-radius: 8px;
             border: 1px solid var(--bd-card); background: var(--bg-card);
             display: flex; align-items: center; justify-content: center;
@@ -159,7 +164,7 @@
 
         .login-btn {
             width: 100%; padding: 13px;
-            background: var(--brand-grad); color: #fff;
+            background: var(--brand); color: #fff;
             border: none; border-radius: 10px;
             font-size: 15px; font-weight: 600;
             cursor: pointer; letter-spacing: -0.2px;
@@ -198,10 +203,7 @@
 {% endblock %}
 
 {% block body %}
-    <button type="button" class="theme-toggle-btn" onclick="toggleSiteTheme()" title="Cambiar tema" aria-label="Cambiar entre modo oscuro y claro">
-        <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
-        <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
-    </button>
+    {% include 'security/_top_actions.html.twig' %}
 
     <div class="login-wrap">
 
@@ -210,12 +212,12 @@
                 <div class="login-logo-mark">Q</div>
                 <div class="login-logo-name">QR Menu</div>
             </a>
-            <div class="login-logo-sub">Panel de administración</div>
+            <div class="login-logo-sub">{{ 'logo_sub'|trans }}</div>
         </div>
 
         <div class="login-card">
-            <div class="login-title">Bienvenido</div>
-            <div class="login-sub">Accede con tu cuenta de restaurante</div>
+            <div class="login-title">{{ 'heading'|trans }}</div>
+            <div class="login-sub">{{ 'sub'|trans }}</div>
 
             {% for message in app.flashes('login_success') %}
                 <div class="success-msg" role="status">
@@ -231,22 +233,22 @@
                 </div>
             {% endif %}
 
-            <form method="post">
+            <form method="post" class="login-form">
 
                 <div class="field">
-                    <label for="email">Email</label>
+                    <label for="email">{{ 'email'|trans }}</label>
                     <input type="email"
                            id="email"
                            name="email"
                            value="{{ last_username }}"
-                           placeholder="tu@restaurante.com"
+                           placeholder="{{ 'email_placeholder'|trans }}"
                            autocomplete="email"
                            autofocus
                            required>
                 </div>
 
                 <div class="field">
-                    <label for="password">Contraseña</label>
+                    <label for="password">{{ 'password'|trans }}</label>
                     <input type="password"
                            id="password"
                            name="password"
@@ -257,19 +259,19 @@
 
                 <div class="remember-row">
                     <input type="checkbox" id="remember" name="_remember_me">
-                    <label for="remember">Mantener sesión iniciada</label>
+                    <label for="remember">{{ 'remember'|trans }}</label>
                 </div>
 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-                <button type="submit" class="login-btn">Entrar</button>
+                <button type="submit" class="login-btn">{{ 'submit'|trans }}</button>
 
             </form>
-            <a href="{{ path('admin_forgot_password') }}" class="forgot-link">¿Has olvidado tu contraseña?</a>
+            <a href="{{ path('admin_forgot_password') }}" class="forgot-link">{{ 'forgot'|trans }}</a>
             <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--tx-sub)">
-                ¿No tienes cuenta?
+                {{ 'no_account'|trans }}
                 <a href="{{ path('app_register') }}" style="color:var(--tx-label);text-decoration:none">
-                    Regístrate gratis
+                    {{ 'register'|trans }}
                 </a>
             </div>
         </div>

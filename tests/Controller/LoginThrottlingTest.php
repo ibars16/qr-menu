@@ -14,11 +14,11 @@ final class LoginThrottlingTest extends WebTestCase
 {
     public function testTheSixthAttemptInAMinuteIsRefused(): void
     {
-        $client = static::createClient();
+        $client = static::createClient(server: ['HTTP_ACCEPT_LANGUAGE' => 'es']);
         $email = 'throttle-test-' . uniqid() . '@example.test'; // fresh key every run
 
         for ($i = 1; $i <= 6; ++$i) {
-            $form = $client->request('GET', '/admin/login')->filter('form')->form();
+            $form = $client->request('GET', '/admin/login')->filter('form.login-form')->form();
             $form['email'] = $email;
             $form['password'] = 'wrong-password';
             $client->submit($form);
@@ -30,7 +30,7 @@ final class LoginThrottlingTest extends WebTestCase
 
     public function testTheLoginLinksToForgotPassword(): void
     {
-        $client = static::createClient();
+        $client = static::createClient(server: ['HTTP_ACCEPT_LANGUAGE' => 'es']);
         $page = $client->request('GET', '/admin/login');
 
         self::assertSame('/admin/login/recuperar', $page->filter('a.forgot-link')->attr('href'));

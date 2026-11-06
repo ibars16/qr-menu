@@ -61,7 +61,7 @@ final class ResellerSignupTest extends WebTestCase
 
     private function submit(Crawler $crawler, string $name, string $email): Crawler
     {
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('form:not(.lang-form)')->form();
         $form['registration_form[restaurantName]'] = $name;
         $form['registration_form[email]'] = $email;
         $form['registration_form[password][first]'] = 'a-strong-password-1';
@@ -187,7 +187,7 @@ final class ResellerSignupTest extends WebTestCase
     public function testExpiredResellerIsUnavailableAndCreatesNothing(): void
     {
         $crawler = $this->client->request('GET', $this->path());
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('form:not(.lang-form)')->form();
         $this->expire();
 
         $crawler = $this->client->request('GET', $this->path());
@@ -236,7 +236,7 @@ final class ResellerSignupTest extends WebTestCase
         self::assertStringContainsString('essai gratuit', $crawler->filter('.card-sub')->text());
         self::assertSame('Livre sterling (£)', $crawler->filter('select[name="registration_form[currency]"] option[value="GBP"]')->text());
 
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('form:not(.lang-form)')->form();
         $form['registration_form[restaurantName]'] = 'Reseller Signup Test Short';
         $form['registration_form[email]'] = 'reseller-signup-test-short@example.test';
         $form['registration_form[password][first]'] = 'short';

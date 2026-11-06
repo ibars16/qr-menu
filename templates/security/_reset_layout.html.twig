@@ -20,6 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>(function(){try{if(localStorage.getItem('admin-theme')==='light'||localStorage.getItem('site-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
     {% include 'security/_auth_styles.html.twig' %}
+    {% include 'security/_top_actions_styles.html.twig' %}
     <style>
         :root           { --tx-sub: #a1a1aa; --tx-muted: #a1a1aa; }
         html.light      { --tx-sub: #52525b; --tx-muted: #52525b; --tx-label: #52525b; }
@@ -47,10 +48,7 @@
 {% endmacro %}
 
 {% block body %}
-    <button type="button" class="theme-toggle-btn" onclick="toggleSiteTheme()" title="{{ 'theme_title'|trans }}" aria-label="{{ 'theme_aria'|trans }}">
-        <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
-        <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
-    </button>
+    {% include 'security/_top_actions.html.twig' %}
 
     <div class="wrap">
         <div class="logo">

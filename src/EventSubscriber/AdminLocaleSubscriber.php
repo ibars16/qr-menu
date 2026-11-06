@@ -13,14 +13,21 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * Applies each restaurant's Admin Panel language preference to admin
  * requests, and the reseller's own to its panel (/partners; the sign-ups,
- * logged out — /partners/registro, /register, /alta/{code} and
- * /admin/login/recuperar — follow the browser). Scoped to /admin,
+ * logged out — /partners/registro, /register, /alta/{code}, /admin/login
+ * and /admin/login/recuperar — follow the browser). Scoped to /admin,
  * /partners and those sign-ups only —
  * the public menu keeps resolving its own language independently
  * (Restaurant::$defaultLanguage).
  */
 class AdminLocaleSubscriber implements EventSubscriberInterface
 {
+    /**
+     * Language picked in /admin/login's selector (SecurityController::locale).
+     * Wins over the browser's on the login, both "forgot password" screens
+     * and the sign-up (/register, /alta/{code}) — never once logged in.
+     */
+    public const SESSION_LOCALE = 'login_locale';
+
     public function __construct(
         private readonly Security $security,
         private readonly AdminLocaleResolver $localeResolver,
@@ -36,8 +43,9 @@ class AdminLocaleSubscriber implements EventSubscriberInterface
 
         $request = $event->getRequest();
         $path    = $request->getPathInfo();
-        // "Forgot your password?" (ResetPasswordController) is logged out too.
-        $signup   = $path === '/register' || str_starts_with($path, '/alta/') || str_starts_with($path, '/admin/login/recuperar');
+        // The login and its "Forgot your password?" (ResetPasswordController)
+        // are logged out too.
+        $signup   = $path === '/register' || str_starts_with($path, '/alta/') || $path === '/admin/login' || str_starts_with($path, '/admin/login/');
         $partners = str_starts_with($path, '/partners');
         if (!str_starts_with($path, '/admin') && !$partners && !$signup) {
             return;
@@ -51,7 +59,7 @@ class AdminLocaleSubscriber implements EventSubscriberInterface
         } elseif ($user instanceof User && ($reseller = $user->getReseller())) {
             $locale = $this->localeResolver->resolve($reseller->getAdminLocale());
         } elseif (($partners || $signup) && !$user instanceof User) {
-            $locale = $this->localeResolver->resolveFromRequest($request);
+            $locale = $this->pickedLocale($request, $path) ?? $this->localeResolver->resolveFromRequest($request);
         }
 
         $request->setLocale($locale);
@@ -62,6 +70,17 @@ class AdminLocaleSubscriber implements EventSubscriberInterface
         if ($this->translator instanceof \Symfony\Contracts\Translation\LocaleAwareInterface) {
             $this->translator->setLocale($locale);
         }
+    }
+
+    private function pickedLocale(\Symfony\Component\HttpFoundation\Request $request, string $path): ?string
+    {
+        $remembered = $path === '/register' || str_starts_with($path, '/alta/') || $path === '/admin/login' || str_starts_with($path, '/admin/login/');
+        if (!$remembered || !$request->hasPreviousSession()) {
+            return null;
+        }
+        $locale = $request->getSession()->get(self::SESSION_LOCALE);
+
+        return is_string($locale) && $this->localeResolver->isSupported($locale) ? $locale : null;
     }
 
     public static function getSubscribedEvents(): array

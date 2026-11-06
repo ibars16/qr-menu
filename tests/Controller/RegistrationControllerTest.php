@@ -49,7 +49,7 @@ final class RegistrationControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/register');
         self::assertResponseIsSuccessful();
 
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('form:not(.lang-form)')->form();
         $form['registration_form[restaurantName]'] = 'Registration Test Restaurant';
         $form['registration_form[email]'] = $email;
         $form['registration_form[password][first]'] = 'a-strong-password-1';
@@ -80,7 +80,7 @@ final class RegistrationControllerTest extends WebTestCase
         $this->em->flush();
 
         $crawler = $this->client->request('GET', '/register');
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('form:not(.lang-form)')->form();
         $form['registration_form[restaurantName]'] = 'Registration Taken Restaurant';
         $form['registration_form[email]'] = $existing->getEmail();
         $form['registration_form[password][first]'] = 'a-strong-password-1';
@@ -108,9 +108,9 @@ final class RegistrationControllerTest extends WebTestCase
     {
         $crawler = $this->client->request('GET', '/register');
         // Turbo would reload this page (turbo-visit-control) and drop the errors.
-        self::assertSame('false', $crawler->filter('form')->attr('data-turbo'));
+        self::assertSame('false', $crawler->filter('form:not(.lang-form)')->attr('data-turbo'));
 
-        $form = $crawler->filter('form')->form();
+        $form = $crawler->filter('form:not(.lang-form)')->form();
         $form['registration_form[restaurantName]'] = 'Registration Short Restaurant';
         $form['registration_form[email]'] = 'registration-short@example.test';
         $form['registration_form[password][first]'] = 'short';
@@ -129,7 +129,7 @@ final class RegistrationControllerTest extends WebTestCase
 
     public function testExpiredPageShowsGeneralError(): void
     {
-        $form = $this->client->request('GET', '/register')->filter('form')->form();
+        $form = $this->client->request('GET', '/register')->filter('form:not(.lang-form)')->form();
         $form['registration_form[_token]'] = 'expired';
         $form['registration_form[restaurantName]'] = 'Registration Expired Restaurant';
         $form['registration_form[email]'] = 'registration-expired@example.test';

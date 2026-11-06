@@ -1,0 +1,17 @@
+# /admin/login (SecurityController). Logged out: in the browser's language
+# (AdminLocaleSubscriber), like the sign-ups.
+title: "Entrar"
+theme_title: "Mudar tema"
+theme_aria: "Alternar entre modo escuro e claro"
+logo_sub: "Painel de administração"
+heading: "Bem-vindo"
+sub: "Entre com a conta do seu restaurante"
+email: "Email"
+email_placeholder: "voce@restaurante.pt"
+password: "Palavra-passe"
+remember: "Manter sessão iniciada"
+submit: "Entrar"
+forgot: "Esqueceu-se da palavra-passe?"
+no_account: "Não tem conta?"
+register: "Registe-se grátis"
+language: "Idioma"

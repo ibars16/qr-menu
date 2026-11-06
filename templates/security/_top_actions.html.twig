@@ -1,0 +1,35 @@
+{# Language picker + theme button, top right, on the logged-out screens
+   (styles: _top_actions_styles.html.twig). Each language is a button that
+   POSTs it to SecurityController::locale, which remembers it in the session
+   and comes back to this same page. The page provides toggleSiteTheme(). #}
+{% set current = app.request.locale %}
+{% set locales = login_locales() %}
+<div class="top-actions">
+    <details class="lang-dropdown">
+        <summary class="lang-current" aria-label="{{ 'language'|trans({}, 'login') }}">
+            <span aria-hidden="true">{{ locales[current].flag }}</span> {{ current|upper }}
+            <i class="ti ti-chevron-down" aria-hidden="true"></i>
+        </summary>
+        <form method="post" action="{{ path('admin_login_locale') }}" class="lang-menu lang-form" data-turbo="false">
+            <input type="hidden" name="back" value="{{ app.request.pathInfo }}">
+            {% for code, meta in locales %}
+                <button type="submit" name="locale" value="{{ code }}" lang="{{ code }}" class="lang-item{{ code == current ? ' active' : '' }}"{% if code == current %} aria-current="true"{% endif %}>
+                    <span aria-hidden="true">{{ meta.flag }}</span> {{ meta.name }}
+                    {% if code == current %}<i class="ti ti-check" aria-hidden="true"></i>{% endif %}
+                </button>
+            {% endfor %}
+        </form>
+    </details>
+    <button type="button" class="theme-toggle-btn" onclick="toggleSiteTheme()" title="{{ 'theme_title'|trans({}, 'login') }}" aria-label="{{ 'theme_aria'|trans({}, 'login') }}">
+        <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
+        <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
+    </button>
+</div>
+<script>
+    // Close the language menu on a click outside it, like the home's.
+    document.addEventListener('click', function (e) {
+        document.querySelectorAll('.lang-dropdown[open]').forEach(function (el) {
+            if (!el.contains(e.target)) el.removeAttribute('open');
+        });
+    });
+</script>
