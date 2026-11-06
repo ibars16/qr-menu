@@ -490,6 +490,12 @@
         grid-column: 1 / -1; background: none; border: none; border-radius: 0; box-shadow: none;
         margin: 0; padding: 17px 0; border-top: 1px solid var(--line-soft); cursor: pointer;
     }
+    /* Hairlines over the visible dishes (classes set by updateRowSeparators()
+       in _search_js.html.twig): no line between the category title and a
+       no-photo row that opens it; the same line below a no-photo row that
+       sits right above a photo card, mirroring the one a row gets below a card. */
+    .dish-row.is-first-visible { border-top: none; padding-top: 0; }
+    .dish-row.is-before-card { border-bottom: 1px solid var(--line-soft); }
     .dish-row:hover { box-shadow: none; border-color: var(--line-soft); transform: none; }
     .dish-row:active { transform: none; }
     /* align-items: flex-start, not baseline (2026-09-19, owner

@@ -330,7 +330,27 @@ function applyFilters() {
         if (secVisible) anyVisible = true;
     });
     if (noResults) noResults.style.display = anyVisible ? 'none' : 'block';
+    updateRowSeparators();
 }
+
+// Hairlines between dishes, counted over the VISIBLE dishes only (search and
+// filters hide with style.display, which CSS sibling selectors can't see):
+// .is-first-visible drops a no-photo row's top line when it opens its
+// category, .is-before-card adds a bottom line when a no-photo row sits right
+// above a photo card. Rules in _structure.html.twig (.dish-row).
+function updateRowSeparators() {
+    document.querySelectorAll('.cards-grid').forEach(grid => {
+        const visible = [...grid.children].filter(el => el.classList.contains('dish-card') && el.style.display !== 'none');
+        grid.querySelectorAll(':scope > .dish-row').forEach(el => el.classList.remove('is-first-visible', 'is-before-card'));
+        visible.forEach((el, i) => {
+            if (!el.classList.contains('dish-row')) return;
+            if (i === 0) el.classList.add('is-first-visible');
+            const next = visible[i + 1];
+            if (next && !next.classList.contains('dish-row')) el.classList.add('is-before-card');
+        });
+    });
+}
+updateRowSeparators();
 
 // How many dishes would be visible if "Ver resultados" were applied right
 // now — same scope/predicate as applyFilters() above, just counting instead
