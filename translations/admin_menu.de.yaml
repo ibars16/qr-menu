@@ -137,6 +137,7 @@ language_notice:
     show_dishes_singular: 'Gericht zeigen'
     show_dishes_plural: 'Die %count% Gerichte zeigen'
     dismiss: 'So lassen'
+    toggle_aria: 'Optionen des Hinweises ein- oder ausblenden'
     working: 'Wird auf %language% übersetzt … noch %count%.'
     half_done: 'Halb übersetzt: noch %count%.'
     error: 'Die Übersetzung hat gerade nicht geklappt. Versuche es in ein paar Minuten erneut.'
@@ -230,5 +231,16 @@ error:
     clip_duration_too_long: 'Das Video ist zu lang (max. 60 s).'
     clip_upload_failed: Das Video konnte nicht hochgeladen werden. Bitte versuche es erneut.
     unexpected: Etwas ist schiefgelaufen. Bitte versuche es erneut.
+    reorder_stale: 'Die Speisekarte hat sich beim Sortieren geändert. Lade die Seite neu und versuche es noch einmal.'
     nutrition_value_invalid: 'Der Wert muss eine Zahl zwischen 0 und 9999.9 mit höchstens einer Dezimalstelle sein.'
     price_variants_invalid: 'Bezeichnung und Preis für jede Variante ausfüllen (mindestens 2 Preise).'
+
+sort:
+    open: 'Sortieren'
+    title: 'Speisekarte sortieren'
+    hint: 'Ziehe eine Kategorie oder ein Gericht, um die Reihenfolge zu ändern (am Handy gedrückt halten und ziehen). Gespeichert wird beim Loslassen.'
+    done: 'Fertig'
+    saved: 'Reihenfolge gespeichert'
+    drag_category: 'Ziehen, um die Kategorie %name% zu verschieben'
+    drag_product: 'Ziehen, um das Gericht %name% zu verschieben'
+    empty_category: 'Diese Kategorie hat keine Gerichte.'

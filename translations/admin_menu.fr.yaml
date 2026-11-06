@@ -137,6 +137,7 @@ language_notice:
     show_dishes_singular: 'Voir le plat'
     show_dishes_plural: 'Voir les %count% plats'
     dismiss: 'La laisser ainsi'
+    toggle_aria: 'Afficher ou masquer les options de l''avis'
     working: 'Traduction en %language%… il en reste %count%.'
     half_done: 'Traduction à moitié faite : il en reste %count%.'
     error: 'La traduction n''a pas pu être faite pour l''instant. Réessayez dans quelques minutes.'
@@ -230,5 +231,16 @@ error:
     clip_duration_too_long: 'La vidéo est trop longue (max. 60 s).'
     clip_upload_failed: Impossible d'envoyer la vidéo. Veuillez réessayer.
     unexpected: Une erreur est survenue. Veuillez réessayer.
+    reorder_stale: 'La carte a changé pendant la réorganisation. Rechargez la page et réessayez.'
     nutrition_value_invalid: 'La valeur doit être un nombre entre 0 et 9999.9, avec au maximum une décimale.'
     price_variants_invalid: 'Renseignez l''étiquette et le prix de chaque variante (2 prix minimum).'
+
+sort:
+    open: 'Réorganiser'
+    title: 'Réorganiser la carte'
+    hint: 'Faites glisser une catégorie ou un plat pour changer l''ordre (sur mobile, maintenez appuyé puis faites glisser). L''enregistrement se fait au relâchement.'
+    done: 'Terminé'
+    saved: 'Ordre enregistré'
+    drag_category: 'Faites glisser pour déplacer la catégorie %name%'
+    drag_product: 'Faites glisser pour déplacer le plat %name%'
+    empty_category: 'Cette catégorie n''a aucun plat.'

@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Category;
 use App\Entity\CategoryTranslation;
+use App\Service\CartaReorder;
 use App\Service\MenuImportReview;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin', name: 'admin_')]
 #[IsGranted('ROLE_STAFF')]
@@ -105,17 +107,15 @@ class CategoriesController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
+    // Same whole-list rule as the Carta's own reorder (see CartaReorder).
     #[Route('/categories/reorder', name: 'categories_reorder', methods: ['POST'])]
-    public function reorder(Request $request, EntityManagerInterface $em): JsonResponse
+    public function reorder(Request $request, EntityManagerInterface $em, CartaReorder $reorder, TranslatorInterface $translator): JsonResponse
     {
         $restaurant = $this->restaurant();
-        $ids        = json_decode($request->getContent(), true)['ids'] ?? [];
+        $payload    = json_decode($request->getContent(), true);
 
-        foreach ($ids as $position => $id) {
-            $cat = $em->getRepository(Category::class)->find($id);
-            if ($cat && $cat->getRestaurant() === $restaurant && !$cat->isFixedPriceMenu()) {
-                $cat->setPosition($position);
-            }
+        if (!$reorder->reorderCategories($restaurant, is_array($payload) ? ($payload['ids'] ?? null) : null)) {
+            return $this->json(['error' => $translator->trans('error.reorder_stale', domain: 'admin_menu')], 400);
         }
         $restaurant->bumpMenuContentVersion();
         $em->flush();

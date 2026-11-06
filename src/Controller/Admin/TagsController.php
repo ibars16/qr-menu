@@ -61,7 +61,8 @@ class TagsController extends AbstractController
 
         $restaurant = $this->restaurant();
         $tags       = $restaurant->getProductTags()->toArray();
-        usort($tags, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
+        // Same position (a new one gets count() after a delete): oldest first.
+        usort($tags, fn($a, $b) => [$a->getPosition(), $a->getId()] <=> [$b->getPosition(), $b->getId()]);
 
         $customTagsCount = count(array_filter($tags, fn($t) => !$t->isSystem()));
 

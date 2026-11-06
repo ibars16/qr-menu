@@ -446,7 +446,8 @@ class MenuController extends AbstractController
             }
         }
         $tags = $restaurant->getProductTags()->toArray();
-        usort($tags, fn($a, $b) => $a->getPosition() <=> $b->getPosition());
+        // Same position (a new one gets count() after a delete): oldest first.
+        usort($tags, fn($a, $b) => [$a->getPosition(), $a->getId()] <=> [$b->getPosition(), $b->getId()]);
         $tags = array_values(array_filter($tags, fn($tag) => isset($availableTagIds[$tag->getId()])));
         $tagNames = $tagTranslationService->resolveForMenu($restaurant, $locale, $cacheKeyPrefix);
 

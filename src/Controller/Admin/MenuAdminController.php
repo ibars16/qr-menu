@@ -21,6 +21,7 @@ use App\Enum\CategoryType;
 use App\Repository\AllergenRepository;
 use App\Service\AllergenBackfill\AllergenReviewQueue;
 use App\Service\AllergenBackfill\IngredientAllergenBackfill;
+use App\Service\CartaReorder;
 use App\Service\CategoryTranslationService;
 use App\Service\MenuImportLanguageNotice;
 use App\Service\MenuImportReview;
@@ -1398,22 +1399,20 @@ class MenuAdminController extends AbstractController
 
     // ── Reorder ───────────────────────────────────────────────────────────────
 
+    // Both take the WHOLE list (see CartaReorder): the Carta's "Ordenar"
+    // mode sends every normal category, or every dish of one category
+    // (hidden and pending ones too), and a stale/mixed/foreign list is
+    // refused without writing anything. Ordering never marks anything as
+    // reviewed, so no MenuImportReview here.
+
     #[Route('/reorder/categories', name: 'reorder_categories', methods: ['POST'])]
-    public function reorderCategories(Request $request, EntityManagerInterface $em): JsonResponse
+    public function reorderCategories(Request $request, EntityManagerInterface $em, CartaReorder $reorder): JsonResponse
     {
         $restaurant = $this->restaurant();
-        $ids        = json_decode($request->getContent(), true)['ids'] ?? [];
+        $payload    = json_decode($request->getContent(), true);
 
-        // The Carta screen only ever lists normal categories (see menu()
-        // above), so this should never receive a menu category's id — the
-        // guard is defense in depth, keeping menus' positions untouched by
-        // this endpoint regardless. See Admin\MenusController for their own
-        // independent reorder.
-        foreach ($ids as $position => $id) {
-            $cat = $em->getRepository(Category::class)->find($id);
-            if ($cat && $cat->getRestaurant() === $restaurant && !$cat->isFixedPriceMenu()) {
-                $cat->setPosition($position);
-            }
+        if (!$reorder->reorderCategories($restaurant, is_array($payload) ? ($payload['ids'] ?? null) : null)) {
+            return $this->json(['error' => $this->translator->trans('error.reorder_stale', domain: 'admin_menu')], 400);
         }
         $restaurant->bumpMenuContentVersion();
         $em->flush();
@@ -1421,16 +1420,15 @@ class MenuAdminController extends AbstractController
     }
 
     #[Route('/reorder/products', name: 'reorder_products', methods: ['POST'])]
-    public function reorderProducts(Request $request, EntityManagerInterface $em): JsonResponse
+    public function reorderProducts(Request $request, EntityManagerInterface $em, CartaReorder $reorder): JsonResponse
     {
         $restaurant = $this->restaurant();
-        $ids        = json_decode($request->getContent(), true)['ids'] ?? [];
+        $payload    = json_decode($request->getContent(), true);
+        $categoryId = is_array($payload) ? ($payload['categoryId'] ?? null) : null;
+        $category   = is_int($categoryId) ? $em->getRepository(Category::class)->find($categoryId) : null;
 
-        foreach ($ids as $position => $id) {
-            $product = $em->getRepository(Product::class)->find($id);
-            if ($product && $product->getCategory()->getRestaurant() === $restaurant) {
-                $product->setPosition($position);
-            }
+        if (!$reorder->reorderProducts($restaurant, $category, is_array($payload) ? ($payload['ids'] ?? null) : null)) {
+            return $this->json(['error' => $this->translator->trans('error.reorder_stale', domain: 'admin_menu')], 400);
         }
         $restaurant->bumpMenuContentVersion();
         $em->flush();

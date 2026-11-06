@@ -162,6 +162,9 @@ class Restaurant
         cascade: ['persist', 'remove'],
         orphanRemoval: true
     )]
+    // Same position (a new one gets count() after a delete): oldest first —
+    // also the order the dish editor lists them in (_product_fields.html.twig).
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     private Collection $productTags;
 
     public function __construct()

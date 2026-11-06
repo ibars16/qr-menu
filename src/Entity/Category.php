@@ -70,7 +70,7 @@ class Category
     private Collection $products;
 
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: MenuSection::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     private Collection $menuSections;
 
     /**
@@ -314,7 +314,8 @@ class Category
     public function getSectionsWithProducts(): array
     {
         $sections = $this->menuSections->toArray();
-        usort($sections, static fn(MenuSection $a, MenuSection $b) => $a->getPosition() <=> $b->getPosition());
+        // Same position (a new one gets count() after a delete): oldest first.
+        usort($sections, static fn(MenuSection $a, MenuSection $b) => [$a->getPosition(), $a->getId()] <=> [$b->getPosition(), $b->getId()]);
 
         return array_map(
             static fn(MenuSection $section) => ['section' => $section, 'products' => $section->getProductsSorted()],

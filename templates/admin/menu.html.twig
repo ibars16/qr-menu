@@ -11,7 +11,14 @@
             <span class="hide-mobile">{{ 'action.delete_all_products'|trans({}, 'admin_menu') }}</span>
         </button>
     {% endif %}
-    <button class="btn" onclick="UI.openAiImport()">
+    {% if categories|length > 0 %}
+        <button class="btn" id="sort-btn" onclick="SortMode.open()">
+            <i class="ti ti-arrows-sort" aria-hidden="true"></i>
+            {{ 'sort.open'|trans({}, 'admin_menu') }}
+        </button>
+    {% endif %}
+    {# Same AI purple as the empty state's import button (.btn-ai, _styles_controls): #a09aee on #2a2060 5.67:1, hover #c0baff on #342870 6.96:1. #}
+    <button class="btn btn-ai" onclick="UI.openAiImport()">
         <i class="ti ti-sparkles" aria-hidden="true"></i>
         {{ 'action.import_ai'|trans({}, 'admin_menu') }}
     </button>
@@ -49,6 +56,28 @@
         .import-lang-notice[data-state="working"] .import-lang-notice-actions { display:none; }
         .import-lang-notice-progress { display:none; margin-top:var(--sp-2); }
         .import-lang-notice[data-state="working"] .import-lang-notice-progress { display:block; }
+        /* Mobile: folded by default to its first two lines, no buttons;
+           tapping the text (or the chevron, the accessible control) opens
+           it. Desktop: always open, no chevron. A failed translation opens
+           it (see fail() below) so the error is read in full. Chevron is
+           --warn-fg on --warn-bg-solid, same 8.70:1 / 5.55:1 as the text. */
+        .import-lang-notice-toggle { display:none; }
+        @media (max-width: 767px) {
+            .import-lang-notice { padding:var(--sp-2) var(--sp-3); margin-bottom:var(--sp-3); }
+            .import-lang-notice-text { cursor:pointer; }
+            .import-lang-notice-toggle {
+                display:flex; align-items:center; justify-content:center; flex-shrink:0;
+                width:36px; height:36px; margin:-6px -8px -6px 0; padding:0;
+                background:none; border:none; border-radius:var(--r-sm); color:inherit; font-size:18px; cursor:pointer;
+            }
+            .import-lang-notice-toggle:focus-visible { outline:2px solid var(--warn-fg); outline-offset:-2px; }
+            .import-lang-notice-toggle i { transition:transform 0.15s; margin:0; }
+            .import-lang-notice.is-open .import-lang-notice-toggle i { transform:rotate(180deg); }
+            .import-lang-notice:not(.is-open) .import-lang-notice-actions { display:none; }
+            .import-lang-notice:not(.is-open) .import-lang-notice-message {
+                display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden;
+            }
+        }
 
         /* Summary notices above the list (missing photo, not on the public
            menu) — same visual language as the static .info-banner in
@@ -202,6 +231,63 @@
             .add-product-btn { min-height:48px; font-size:var(--fs-base); }
         }
 
+        /* ── "Ordenar" mode (SortMode below) ─────────────────────────────
+           Replaces the whole Carta body (and the header buttons) with
+           #sort-view until "Listo" reloads the page. Contrast, from the
+           tokens: names --tx-1 on --bg-card/--bg-nav ≥11.5:1; counts, hint
+           and the handles (≡ categories, ⋮⋮ dishes) --tx-muted on
+           --bg-card/--bg-nav 4.54:1 dark / 4.74:1 light (a control: ≥3:1).
+           No hover background on rows (it would drop --tx-muted to 4.04:1
+           in light), and hidden rows keep full opacity. */
+        body.is-sorting .main-header-actions { display:none; }
+        .menu-wrap.is-sorting > :not(#sort-view) { display:none !important; }
+        .sort-bar {
+            display:flex; align-items:center; gap:var(--sp-3); margin-bottom:var(--sp-4);
+            position:sticky; top:0; z-index:5; background:var(--bg-page); padding:var(--sp-2) 0;
+        }
+        .sort-bar-text { flex:1; min-width:0; }
+        .sort-title { font-size:var(--fs-lg); font-weight:600; color:var(--tx-hi); }
+        .sort-hint  { font-size:var(--fs-sm); color:var(--tx-muted); line-height:var(--lh-body); }
+        .sort-cat {
+            border:1px solid var(--bd-1); border-radius:var(--r-lg); box-shadow:var(--shadow-sm);
+            margin-bottom:var(--sp-2); overflow:hidden; background:var(--bg-card);
+        }
+        .sort-cat-head { display:flex; align-items:center; }
+        .sort-handle {
+            display:flex; align-items:center; justify-content:center; flex-shrink:0;
+            width:40px; height:44px; color:var(--tx-muted); font-size:20px;
+        }
+        /* The whole row drags, not only its handle (the handle is just the
+           visual cue). No touch-action:none: on touch a drag starts after a
+           short press (delayOnTouchOnly below), so a swipe still scrolls. */
+        .sort-cat-head, .sort-prod { cursor:grab; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+        .sort-cat-head:active, .sort-prod:active { cursor:grabbing; }
+        .sort-cat-toggle {
+            flex:1; min-width:0; display:flex; align-items:center; gap:var(--sp-2);
+            min-height:44px; padding:var(--sp-2) var(--sp-3) var(--sp-2) 0;
+            background:none; border:none; text-align:left; font-family:inherit; cursor:pointer;
+            color:var(--tx-1);
+        }
+        .sort-cat-toggle:focus-visible { outline:2px solid var(--brand); outline-offset:-2px; }
+        .sort-cat-name { font-size:var(--fs-md); font-weight:500; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .sort-count { font-size:var(--fs-xs); font-weight:600; color:var(--tx-muted); flex-shrink:0; }
+        .sort-chevron { margin-left:auto; color:var(--tx-muted); font-size:16px; flex-shrink:0; transition:transform 0.15s; }
+        .sort-cat-toggle[aria-expanded="true"] .sort-chevron { transform:rotate(90deg); }
+        .sort-prods { border-top:1px solid var(--bd-1); background:var(--bg-nav); padding:var(--sp-1) 0; }
+        .sort-prod  { display:flex; align-items:center; gap:var(--sp-1); padding-right:var(--sp-3); background:var(--bg-nav); }
+        .sort-prod + .sort-prod { border-top:1px solid var(--bd-1); }
+        .sort-prod .sort-handle { width:44px; }
+        .sort-prod-name { font-size:var(--fs-base); color:var(--tx-1); flex:1; min-width:0; line-height:1.3; padding:var(--sp-2) 0; }
+        .sort-empty { font-size:var(--fs-sm); color:var(--tx-muted); padding:var(--sp-3) var(--sp-4); }
+        .sort-ghost { opacity:0.35; }
+        .sort-cat.sort-chosen, .sort-prod.sort-chosen { box-shadow:inset 0 0 0 2px var(--brand); }
+
+        @media (max-width: 767px) {
+            .sort-handle, .sort-prod .sort-handle { width:48px; height:48px; }
+            .sort-cat-toggle { min-height:48px; }
+            .sort-prod-name { font-size:var(--fs-md); }
+        }
+
         {% include 'admin/_product_modal_css.html.twig' %}
     </style>
 {% endblock %}
@@ -233,6 +319,10 @@
                         {% endif %}
                         <span class="import-lang-notice-error" hidden>{{ 'language_notice.error'|trans({}, 'admin_menu') }}</span>
                     </span>
+                    <button type="button" class="import-lang-notice-toggle" aria-expanded="false"
+                            aria-label="{{ 'language_notice.toggle_aria'|trans({}, 'admin_menu') }}">
+                        <i class="ti ti-chevron-down" aria-hidden="true"></i>
+                    </button>
                 </div>
                 <div class="import-lang-notice-progress" aria-live="polite">
                     {{ 'language_notice.working'|trans({'%language%': notice.main, '%count%': notice.remaining}, 'admin_menu') }}
@@ -365,6 +455,61 @@
             </div>
         {% endif %}
 
+        {# "Ordenar" mode (SortMode below). Every category and dish is here,
+           hidden and pending-review ones too (no badge, by owner decision):
+           the server only accepts the whole list (CartaReorder), so a hidden
+           dish keeps its place and reappears there once published. #}
+        {% if categories|length > 0 %}
+            <section id="sort-view" hidden aria-labelledby="sort-title">
+                <div class="sort-bar">
+                    <div class="sort-bar-text">
+                        <div class="sort-title" id="sort-title">{{ 'sort.title'|trans({}, 'admin_menu') }}</div>
+                        <div class="sort-hint">{{ 'sort.hint'|trans({}, 'admin_menu') }}</div>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="SortMode.close()">
+                        <i class="ti ti-check" aria-hidden="true"></i> {{ 'sort.done'|trans({}, 'admin_menu') }}
+                    </button>
+                </div>
+                <div id="sort-cats">
+                    {% for category in categories %}
+                        {% set catT = category.getDisplayTranslation(locale) %}
+                        {% set catName = catT ? catT.name : 'common.unnamed'|trans({}, 'admin_menu') %}
+                        <div class="sort-cat" data-id="{{ category.id }}">
+                            <div class="sort-cat-head">
+                                <span class="sort-handle sort-cat-handle" title="{{ 'sort.drag_category'|trans({'%name%': catName}, 'admin_menu') }}">
+                                    <i class="ti ti-menu-2" aria-hidden="true"></i>
+                                </span>
+                                <button type="button" class="sort-cat-toggle" aria-expanded="false" aria-controls="sort-prods-{{ category.id }}"
+                                        onclick="SortMode.toggle(this)">
+                                    <span class="sort-cat-name">{{ catName }}</span>
+                                    <span class="sort-count">{{ category.products|length }}</span>
+                                    <i class="ti ti-chevron-right sort-chevron" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div class="sort-prods" id="sort-prods-{{ category.id }}" hidden>
+                                {% if category.products|length > 0 %}
+                                    <div class="sort-prod-list" data-category-id="{{ category.id }}">
+                                        {% for product in category.products %}
+                                            {% set pT = product.getDisplayTranslation(locale) %}
+                                            {% set pName = pT ? pT.name : 'common.unnamed'|trans({}, 'admin_menu') %}
+                                            <div class="sort-prod" data-id="{{ product.id }}">
+                                                <span class="sort-handle sort-prod-handle" title="{{ 'sort.drag_product'|trans({'%name%': pName}, 'admin_menu') }}">
+                                                    <i class="ti ti-grip-vertical" aria-hidden="true"></i>
+                                                </span>
+                                                <span class="sort-prod-name">{{ pName }}</span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="sort-empty">{{ 'sort.empty_category'|trans({}, 'admin_menu') }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
     </div>
 
     {# ════════════════════════════
@@ -457,6 +602,88 @@
     </script>
     {% include 'admin/_admin_js_utils.html.twig' %}
     {% include 'admin/_product_js.html.twig' %}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        // ── "Ordenar" mode ────────────────────────────────────────────────
+        // Drag from anywhere on the row (see _sortable).
+        // Categories among themselves, dishes within their own category
+        // (one Sortable per list, no shared group: a dish can never land in
+        // another category). Saved on drop with the WHOLE list; on any
+        // error the item goes back where it was (apiFetch() toasts it).
+        // "Listo" reloads so the normal Carta shows the new order.
+        const MSG_SORT_SAVED = "{{ 'sort.saved'|trans({}, 'admin_menu')|e('js') }}";
+        const SortMode = {
+            _ready: false,
+            open() {
+                document.querySelector('.menu-wrap').classList.add('is-sorting');
+                document.body.classList.add('is-sorting');
+                document.getElementById('sort-view').hidden = false;
+                window.scrollTo(0, 0);
+                if (!this._ready) { this._init(); this._ready = true; }
+            },
+            close() { location.reload(); },
+            toggle(button) {
+                const open = button.getAttribute('aria-expanded') !== 'true';
+                button.setAttribute('aria-expanded', open ? 'true' : 'false');
+                document.getElementById(button.getAttribute('aria-controls')).hidden = !open;
+            },
+            _init() {
+                const cats = document.getElementById('sort-cats');
+                this._sortable(cats, '.sort-cat-head', () => ({
+                    url: '/admin/reorder/categories',
+                    body: { ids: [...cats.children].map(el => parseInt(el.dataset.id, 10)) },
+                }));
+                document.querySelectorAll('.sort-prod-list').forEach(list => {
+                    this._sortable(list, null, () => ({
+                        url: '/admin/reorder/products',
+                        body: {
+                            categoryId: parseInt(list.dataset.categoryId, 10),
+                            ids: [...list.children].map(el => parseInt(el.dataset.id, 10)),
+                        },
+                    }));
+                });
+            },
+            _sortable(list, handle, request) {
+                // handle: a category drags from its whole header (its dish list
+                // has its own Sortable); a dish from its whole row (null).
+                // forceFallback: Sortable's own drag, not the browser's native
+                // HTML5 one — native drag won't start from the header's
+                // <button> in some browsers. supportPointer:false: touch events,
+                // so once a row is picked up its touchmove can stop the page
+                // from scrolling (with pointer events the browser's pan cancels
+                // the drag). Touch: hold ~0.2 s to pick up, so a plain swipe
+                // still scrolls; mouse: 4px of movement before it's a drag, so
+                // a click on a category header still opens/closes it.
+                const sortable = Sortable.create(list, {
+                    ...(handle ? { handle } : {}),
+                    forceFallback: true,
+                    fallbackOnBody: true,
+                    fallbackTolerance: 4,
+                    supportPointer: false,
+                    delay: 200,
+                    delayOnTouchOnly: true,
+                    touchStartThreshold: 5,
+                    animation: 150,
+                    ghostClass: 'sort-ghost',
+                    chosenClass: 'sort-chosen',
+                    onEnd: async (evt) => {
+                        if (evt.oldIndex === evt.newIndex) return;
+                        sortable.option('disabled', true);
+                        const { url, body } = request();
+                        const data = await apiFetch(url, body);
+                        if (data.ok) {
+                            showToast(MSG_SORT_SAVED, 'success');
+                        } else {
+                            // Put it back: before the item that now sits at its old index.
+                            list.removeChild(evt.item);
+                            list.insertBefore(evt.item, list.children[evt.oldIndex] ?? null);
+                        }
+                        sortable.option('disabled', false);
+                    },
+                });
+            },
+        };
+    </script>
     <script>
         // ── UI controller (category only — dish editing is ProductUI, see
         // _product_js.html.twig) ─────────────────────────────────────────────
@@ -610,9 +837,22 @@
                 const progress = box.querySelector('.import-lang-notice-progress');
                 const error    = box.querySelector('.import-lang-notice-error');
                 const half     = box.querySelector('.import-lang-notice-half');
+                const textRow  = box.querySelector('.import-lang-notice-text');
+                const toggle   = box.querySelector('.import-lang-notice-toggle');
                 let retried = false;
 
+                // Mobile fold (see .import-lang-notice-toggle CSS): the whole
+                // text row toggles; on desktop the box is always open.
+                const setOpen = (open) => {
+                    box.classList.toggle('is-open', open);
+                    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                };
+                textRow.addEventListener('click', () => {
+                    if (isMobile()) setOpen(!box.classList.contains('is-open'));
+                });
+
                 const fail = () => {
+                    setOpen(true);
                     box.dataset.state = 'stopped';
                     if (half) half.hidden = true;
                     error.hidden = false;

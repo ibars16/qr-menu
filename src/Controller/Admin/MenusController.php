@@ -62,7 +62,8 @@ class MenusController extends AbstractController
             $restaurant->getCategories()->toArray(),
             static fn(Category $c) => $c->isFixedPriceMenu()
         ));
-        usort($menus, static fn($a, $b) => $a->getPosition() <=> $b->getPosition());
+        // Same position (a new one gets count() after a delete): oldest first.
+        usort($menus, static fn($a, $b) => [$a->getPosition(), $a->getId()] <=> [$b->getPosition(), $b->getId()]);
 
         return $menus;
     }

@@ -137,6 +137,7 @@ language_notice:
     show_dishes_singular: 'Show the dish'
     show_dishes_plural: 'Show the %count% dishes'
     dismiss: 'Leave it as is'
+    toggle_aria: 'Show or hide the notice options'
     working: 'Translating into %language%… %count% left.'
     half_done: 'Half translated: %count% left.'
     error: 'It couldn''t be translated right now. Try again in a few minutes.'
@@ -230,5 +231,16 @@ error:
     clip_duration_too_long: 'The video is too long (max 60s).'
     clip_upload_failed: The video could not be uploaded. Please try again.
     unexpected: Something went wrong. Please try again.
+    reorder_stale: 'The menu changed while you were reordering. Reload the page and try again.'
     nutrition_value_invalid: 'The value must be a number between 0 and 9999.9, with at most one decimal.'
     price_variants_invalid: 'Fill in the label and price for every variant (minimum 2 prices).'
+
+sort:
+    open: 'Reorder'
+    title: 'Reorder the menu'
+    hint: 'Drag a category or a dish to change the order (on a phone, press and hold, then drag). It saves when you drop.'
+    done: 'Done'
+    saved: 'Order saved'
+    drag_category: 'Drag to move the category %name%'
+    drag_product: 'Drag to move the dish %name%'
+    empty_category: 'This category has no dishes.'

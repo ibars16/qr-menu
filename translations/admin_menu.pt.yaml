@@ -137,6 +137,7 @@ language_notice:
     show_dishes_singular: 'Ver o prato'
     show_dishes_plural: 'Ver os %count% pratos'
     dismiss: 'Deixar assim'
+    toggle_aria: 'Mostrar ou ocultar as opções do aviso'
     working: 'Traduzindo para %language%… faltam %count%.'
     half_done: 'Tradução pela metade: faltam %count%.'
     error: 'Não foi possível traduzir agora. Tente novamente em alguns minutos.'
@@ -230,5 +231,16 @@ error:
     clip_duration_too_long: 'O vídeo é demasiado longo (máx. 60 s).'
     clip_upload_failed: Não foi possível enviar o vídeo. Tenta novamente.
     unexpected: Ocorreu um erro. Tente novamente.
+    reorder_stale: 'O menu mudou enquanto ordenava. Recarregue a página e tente de novo.'
     nutrition_value_invalid: 'O valor deve ser um número entre 0 e 9999.9, com no máximo uma casa decimal.'
     price_variants_invalid: 'Preenche o rótulo e o preço de cada variante (mínimo 2 preços).'
+
+sort:
+    open: 'Ordenar'
+    title: 'Ordenar o menu'
+    hint: 'Arraste uma categoria ou um prato para mudar a ordem (no telemóvel, mantenha premido e arraste). Guarda-se ao largar.'
+    done: 'Concluído'
+    saved: 'Ordem guardada'
+    drag_category: 'Arraste para mover a categoria %name%'
+    drag_product: 'Arraste para mover o prato %name%'
+    empty_category: 'Esta categoria não tem pratos.'
