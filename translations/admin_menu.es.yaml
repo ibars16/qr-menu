@@ -244,3 +244,9 @@ sort:
     drag_category: 'Arrastra para mover la categoría %name%'
     drag_product: 'Arrastra para mover el plato %name%'
     empty_category: 'Esta categoría no tiene platos.'
+
+search:
+    placeholder: 'Buscar platos…'
+    aria: 'Buscar platos y categorías'
+    clear: 'Borrar la búsqueda'
+    no_results: 'No hay platos que coincidan'

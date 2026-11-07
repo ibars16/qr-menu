@@ -244,3 +244,9 @@ sort:
     drag_category: 'Drag to move the category %name%'
     drag_product: 'Drag to move the dish %name%'
     empty_category: 'This category has no dishes.'
+
+search:
+    placeholder: 'Search dishes…'
+    aria: 'Search dishes and categories'
+    clear: 'Clear search'
+    no_results: 'No matching dishes'

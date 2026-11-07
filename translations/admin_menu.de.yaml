@@ -244,3 +244,9 @@ sort:
     drag_category: 'Ziehen, um die Kategorie %name% zu verschieben'
     drag_product: 'Ziehen, um das Gericht %name% zu verschieben'
     empty_category: 'Diese Kategorie hat keine Gerichte.'
+
+search:
+    placeholder: 'Gerichte suchen…'
+    aria: 'Gerichte und Kategorien suchen'
+    clear: 'Suche löschen'
+    no_results: 'Keine passenden Gerichte'

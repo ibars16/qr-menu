@@ -244,3 +244,9 @@ sort:
     drag_category: 'Faites glisser pour déplacer la catégorie %name%'
     drag_product: 'Faites glisser pour déplacer le plat %name%'
     empty_category: 'Cette catégorie n''a aucun plat.'
+
+search:
+    placeholder: 'Rechercher des plats…'
+    aria: 'Rechercher des plats et des catégories'
+    clear: 'Effacer la recherche'
+    no_results: 'Aucun plat ne correspond'

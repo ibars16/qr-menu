@@ -244,3 +244,9 @@ sort:
     drag_category: 'Trascina per spostare la categoria %name%'
     drag_product: 'Trascina per spostare il piatto %name%'
     empty_category: 'Questa categoria non ha piatti.'
+
+search:
+    placeholder: 'Cerca piatti…'
+    aria: 'Cerca piatti e categorie'
+    clear: 'Cancella la ricerca'
+    no_results: 'Nessun piatto corrispondente'

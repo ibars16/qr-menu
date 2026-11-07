@@ -121,6 +121,58 @@
         }
         .product-row.highlight-missing-photo + .product-row.highlight-missing-photo { margin-top:var(--sp-1); }
 
+        /* ── Dish/category search (MenuSearch below) ──────────────────────
+           Filters the rendered list in the browser, no request. Field on
+           --bg-nav: typed text --tx-1 11.76:1 dark / 12.63:1 light,
+           placeholder and icons --tx-muted 4.65:1 / 4.95:1. At rest it
+           looks like the .info-banner cards next to it (--bd-1 border,
+           --r-md, --shadow-sm); lupa + placeholder say it's a field. On
+           focus the border goes --tx-muted (on --bg-page 4.88:1 / 4.43:1)
+           plus the --brand ring (3.87:1 / 4.58:1), both ≥3:1. :focus, not
+           :focus-visible, so a tap/click shows it too. "No hay platos…" --tx-2 on
+           --bg-page. 16px text on mobile so iOS doesn't zoom on focus. */
+        .menu-search { position:relative; margin-bottom:var(--sp-5); }
+        .menu-search-icon {
+            position:absolute; left:var(--sp-3); top:50%; transform:translateY(-50%);
+            font-size:16px; color:var(--tx-muted); pointer-events:none;
+        }
+        .menu-search-input {
+            width:100%; height:40px; padding:0 44px 0 38px; box-sizing:border-box;
+            background:var(--bg-nav); border:1px solid var(--bd-1); border-radius:var(--r-md);
+            box-shadow:var(--shadow-sm);
+            color:var(--tx-1); font-family:inherit; font-size:var(--fs-md);
+            appearance:none; -webkit-appearance:none; transition:border-color 0.15s;
+        }
+        .menu-search-input::placeholder { color:var(--tx-muted); opacity:1; }
+        .menu-search-input::-webkit-search-cancel-button,
+        .menu-search-input::-webkit-search-decoration { -webkit-appearance:none; appearance:none; }
+        .menu-search-input:focus { border-color:var(--tx-muted); outline:2px solid var(--brand); outline-offset:1px; }
+        .menu-search-clear {
+            position:absolute; right:2px; top:50%; transform:translateY(-50%);
+            width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+            background:none; border:none; border-radius:var(--r-sm); padding:0;
+            color:var(--tx-muted); font-size:16px; cursor:pointer;
+        }
+        .menu-search-clear[hidden] { display:none; }
+        .menu-search-clear:hover { color:var(--tx-1); }
+        .menu-search-clear:focus-visible { outline:2px solid var(--brand); outline-offset:-2px; }
+        .menu-search-empty {
+            text-align:center; padding:var(--sp-8) var(--sp-4);
+            font-size:var(--fs-md); color:var(--tx-2); line-height:var(--lh-body);
+        }
+        .menu-search-empty[hidden] { display:none; }
+        /* While there is text: notices and "Añadir plato a …" step aside,
+           and whatever doesn't match is taken out of the list. */
+        .menu-wrap.is-searching .import-lang-notice,
+        .menu-wrap.is-searching .info-banner,
+        .menu-wrap.is-searching .add-row,
+        .menu-wrap.is-searching .search-miss { display:none !important; }
+        @media (max-width: 767px) {
+            .menu-search { margin-bottom:var(--sp-3); }
+            .menu-search-input { height:48px; font-size:16px; }
+            .menu-search-clear { width:44px; height:44px; }
+        }
+
         .empty-state  { text-align:center; padding:80px var(--sp-6); }
         .empty-icon   { font-size:52px; display:block; margin-bottom:var(--sp-4); opacity:0.2; }
         .empty-title  { font-size:var(--fs-xl); font-weight:600; color:var(--tx-hi); margin-bottom:var(--sp-2); letter-spacing:-0.3px; }
@@ -295,6 +347,23 @@
 {% block body %}
     <div class="menu-wrap">
 
+        {# Dish/category search (MenuSearch below): under the header buttons,
+           above the notices. A direct child of .menu-wrap, so "Ordenar"
+           mode hides it with the rest of the Carta. #}
+        {% if categories|length > 0 %}
+            <div class="menu-search" role="search">
+                <i class="ti ti-search menu-search-icon" aria-hidden="true"></i>
+                <input type="search" id="menu-search-input" class="menu-search-input"
+                       placeholder="{{ 'search.placeholder'|trans({}, 'admin_menu') }}"
+                       aria-label="{{ 'search.aria'|trans({}, 'admin_menu') }}"
+                       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+                <button type="button" class="menu-search-clear" id="menu-search-clear" hidden
+                        aria-label="{{ 'search.clear'|trans({}, 'admin_menu') }}">
+                    <i class="ti ti-x" aria-hidden="true"></i>
+                </button>
+            </div>
+        {% endif %}
+
         {# Above everything: an import in another language than the menu's (see MenuImportLanguageNotice). #}
         {% for notice in importLanguageNotices %}
             {% set batchId = notice.batch.id %}
@@ -453,6 +522,7 @@
                     </div>
                 {% endfor %}
             </div>
+            <div class="menu-search-empty" id="menu-search-empty" role="status" hidden>{{ 'search.no_results'|trans({}, 'admin_menu') }}</div>
         {% endif %}
 
         {# "Ordenar" mode (SortMode below). Every category and dish is here,
@@ -824,6 +894,62 @@
             highlightRows(Array.from(document.querySelectorAll('.product-row'))
                 .filter(row => !row.classList.contains('inactive') && row.querySelector('.menu-notice')));
         }
+
+        // ── Dish/category search ──────────────────────────────────────────
+        // Purely in the browser, on every keystroke: the whole Carta is
+        // already in the page (main language, as the list shows it), so
+        // nothing is requested. Case- and accent-insensitive ("jamon" =
+        // "jamón"). A matching category shows with all its dishes; otherwise
+        // a category shows with only its matching dishes. Hidden (.inactive)
+        // and pending-review dishes are rows like any other, so they're
+        // searched too and keep their own label. Names are read from the
+        // DOM on each run, so a rename/delete without reload is honoured.
+        // Clearing removes every class it added: the list is back exactly
+        // as it was.
+        (() => {
+            const input = document.getElementById('menu-search-input');
+            if (!input) return;
+            const clear = document.getElementById('menu-search-clear');
+            const empty = document.getElementById('menu-search-empty');
+            const wrap  = document.querySelector('.menu-wrap');
+            const norm  = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+            const run = () => {
+                const q = norm(input.value);
+                clear.hidden = input.value === '';
+                document.querySelectorAll('.search-miss').forEach(el => el.classList.remove('search-miss'));
+                if (q === '') {
+                    wrap.classList.remove('is-searching');
+                    empty.hidden = true;
+                    return;
+                }
+                wrap.classList.add('is-searching');
+                let shown = 0;
+                document.querySelectorAll('#cats-list .cat-block').forEach(block => {
+                    const nameEl = block.querySelector('.cat-name-text');
+                    if (nameEl && norm(nameEl.textContent).includes(q)) { shown++; return; }
+                    let hits = 0;
+                    block.querySelectorAll('.product-row').forEach(row => {
+                        const n = row.querySelector('.product-name');
+                        if (n && norm(n.textContent).includes(q)) hits++;
+                        else row.classList.add('search-miss');
+                    });
+                    if (hits === 0) block.classList.add('search-miss');
+                    else shown++;
+                });
+                empty.hidden = shown > 0;
+            };
+
+            input.addEventListener('input', run);
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && input.value !== '') { e.preventDefault(); input.value = ''; run(); }
+                if (e.key === 'Enter') { e.preventDefault(); input.blur(); } // mobile: close the keyboard
+            });
+            clear.addEventListener('click', () => { input.value = ''; run(); input.focus(); });
+            // Back/forward cache or autofill can restore a value without an input event.
+            window.addEventListener('pageshow', run);
+            run();
+        })();
     </script>
     <script>
         // "Traducir al {idioma}" on an import's language notice: one batch

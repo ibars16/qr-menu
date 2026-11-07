@@ -244,3 +244,9 @@ sort:
     drag_category: 'Arraste para mover a categoria %name%'
     drag_product: 'Arraste para mover o prato %name%'
     empty_category: 'Esta categoria não tem pratos.'
+
+search:
+    placeholder: 'Pesquisar pratos…'
+    aria: 'Pesquisar pratos e categorias'
+    clear: 'Limpar a pesquisa'
+    no_results: 'Não há pratos correspondentes'
