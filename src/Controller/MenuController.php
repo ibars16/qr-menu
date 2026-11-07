@@ -16,8 +16,10 @@ use App\Service\OwnerTextTranslationService;
 use App\Service\ProductAllergenResolver;
 use App\Service\ProductTranslationService;
 use App\Service\TagTranslationService;
+use App\Service\TranslationDeadline;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Clock\ClockInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -71,7 +73,6 @@ class MenuController extends AbstractController
         EntityManagerInterface $em,
         Request $request,
         TagTranslationService $tagTranslationService,
-        ProductTranslationService $productTranslationService,
         CategoryTranslationService $categoryTranslationService,
         ProductRepository $productRepo,
         ProductViewRepository $productViewRepo,
@@ -95,7 +96,7 @@ class MenuController extends AbstractController
             ], new Response(status: Response::HTTP_SERVICE_UNAVAILABLE));
         }
 
-        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $productTranslationService, $categoryTranslationService, $productRepo, $productViewRepo, $menuPreferencesResolver, $allergenResolver, $categoryTypeFilterResolver, $translator, $ownerTextTranslationService);
+        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $categoryTranslationService, $productRepo, $productViewRepo, $menuPreferencesResolver, $allergenResolver, $categoryTypeFilterResolver, $translator, $ownerTextTranslationService);
     }
 
     // Backwards-compat redirect for QR codes already printed with the old table URL.
@@ -111,7 +112,13 @@ class MenuController extends AbstractController
      * AI call never blocks the page load — it animates a spinner instead.
      * Synchronous itself (mirrors ProductTranslationService's reasoning:
      * each dish+locale pair is translated once, ever), it just runs from a
-     * background fetch instead of from the page request.
+     * background fetch instead of from the page request. The ONLY place the
+     * public menu translates anything — the menu render never calls the AI.
+     *
+     * Batch by batch (dishes, categories, tags, then owner texts and
+     * ingredient names), each stored as soon as it works; no batch starts
+     * after TranslationDeadline::WARM_SECONDS, since the loading screen
+     * stops waiting at 25 s — the rest is left for the next visit.
      */
     #[Route('/r/{slug}/warm-translations', name: 'menu_warm_translations', methods: ['POST'])]
     public function warmTranslations(
@@ -124,7 +131,9 @@ class MenuController extends AbstractController
         MenuPreferencesResolver $menuPreferencesResolver,
         OwnerTextTranslationService $ownerTextTranslationService,
         TagTranslationService $tagTranslationService,
+        ClockInterface $clock,
     ): JsonResponse {
+        $deadline   = TranslationDeadline::in($clock, TranslationDeadline::WARM_SECONDS);
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
             return $this->json(['ok' => false], 404);
@@ -141,24 +150,25 @@ class MenuController extends AbstractController
         $productTranslationService->resolveForMenu(
             $restaurant,
             array_values(array_filter($productRepo->findActiveForRestaurant($restaurant), static fn ($p) => $p->isShownOnMenu())),
-            $locale
+            $locale,
+            $deadline,
         );
 
         $categoryTranslationService->resolveForMenu(
             $restaurant,
             $restaurant->getCategories()->filter(fn($c) => $c->isActive())->toArray(),
-            $locale
+            $locale,
+            deadline: $deadline,
         );
 
-        // Tags: one AI call for every tag still missing in $locale (bumps the
-        // menu content version when it translated something — tag names are
-        // read through the menu-content cache).
-        $tagTranslationService->translateMissing($restaurant, $locale);
+        // Tags: every tag still missing in $locale, batch by batch.
+        $tagTranslationService->translateMissing($restaurant, $locale, $deadline);
 
-        // Last: one batch for every owner text and ingredient name still
-        // missing in $locale (bumps the menu content version when it stored
-        // something).
-        $ownerTextTranslationService->translateMissing($restaurant, $locale);
+        // Last: every owner text and ingredient name still missing in $locale.
+        $ownerTextTranslationService->translateMissing($restaurant, $locale, $deadline);
+
+        // Every batch above that stored something bumped the menu content
+        // version, so the menu this screen reloads into reads it fresh.
 
         return $this->json(['ok' => true]);
     }
@@ -252,7 +262,6 @@ class MenuController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         TagTranslationService $tagTranslationService,
-        ProductTranslationService $productTranslationService,
         CategoryTranslationService $categoryTranslationService,
         ProductRepository $productRepo,
         ProductViewRepository $productViewRepo,
@@ -293,7 +302,8 @@ class MenuController extends AbstractController
         // the background and redirects back here when it's done (?mtw=1
         // marks that this page already took that detour, so a slow/failed
         // attempt can only ever cause one extra hop, never a redirect loop —
-        // the retried load below just renders with whatever's cached).
+        // the retried load below just renders with whatever's stored, the
+        // default language standing in for anything still missing).
         // Owner texts sit outside the default-language check: an ingredient
         // with only an English name is translated into the default language
         // too (see OwnerTextTranslationService).
@@ -373,9 +383,9 @@ class MenuController extends AbstractController
             $cacheKeyPrefix
         );
 
-        // Collected alongside the loop below so ProductTranslationService
-        // can check every dish actually shown on this menu for a missing
-        // translation, without a second pass over categories/sections.
+        // Every dish actually shown on this menu, collected alongside the
+        // loop below (tags and allergens use it) without a second pass over
+        // categories/sections.
         $allProducts = [];
 
         foreach ($categories as $category) {
@@ -424,11 +434,12 @@ class MenuController extends AbstractController
             }
         }
 
-        // Dish/category translations — safety net only: the loading screen
-        // above already warms these before this point is normally reached,
-        // so this is a fast no-op unless that detour was skipped or failed.
-        $productTranslationService->resolveForMenu($restaurant, $allProducts, $locale);
-        $categoryTranslationService->resolveForMenu($restaurant, $allActiveCategories, $locale, $cacheKeyPrefix);
+        // Dish/category translations: only read here, never translated — the
+        // loading screen (warmTranslations()) is the one place that calls
+        // the AI. Dishes' translations were already loaded with
+        // warmMenuCollections(); a name still missing shows in the default
+        // language until the next visit's loading screen translates it.
+        $categoryTranslationService->warmForMenu($allActiveCategories, $cacheKeyPrefix);
 
         // Tags — sorted + resolved names (default-language fallback for missing locales),
         // then pruned to the ones actually carried by a product on this menu — offering a

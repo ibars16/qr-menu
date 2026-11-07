@@ -17,9 +17,10 @@ use Symfony\Contracts\Service\ResetInterface;
  * descriptions and set-menu section labels. Never the restaurant's name or
  * address — those are data, not copy.
  *
- * - translateMissing(): ONE batch per locale with every text still missing,
- *   through the dish translator (ProductTranslatorInterface — same model
- *   chain and verifyAndFix() second pass). Only ever called from
+ * - translateMissing(): every text still missing, in batches (TEXT_BATCH
+ *   owner texts, then NAME_BATCH ingredient names per AI call), through the
+ *   dish translator (ProductTranslatorInterface — same model chain and
+ *   verifyAndFix() second pass). Only ever called from
  *   MenuController::warmTranslations(), i.e. behind the loading screen —
  *   never from a menu render, never through the queue.
  * - primeForMenu() + text(): the render side. One query loads every
@@ -39,6 +40,11 @@ use Symfony\Contracts\Service\ResetInterface;
  */
 final class OwnerTextTranslationService implements ResetInterface
 {
+    /** Owner texts per AI call (a set-menu description can be long) — like dishes. */
+    public const TEXT_BATCH = 25;
+    /** Ingredient names per AI call — like category and tag names. */
+    public const NAME_BATCH = 60;
+
     /** @var array<string, string> source hash => translation, for the menu being rendered */
     private array $primed = [];
 
@@ -117,21 +123,56 @@ final class OwnerTextTranslationService implements ResetInterface
     }
 
     /**
-     * Translates every missing text into $locale in one batch, stores it and
-     * bumps the menu content version if anything was stored. A failed or
-     * partial AI answer just leaves those texts missing — the menu shows the
-     * original meanwhile, and the next loading screen tries again.
+     * Translates every missing text into $locale batch by batch — the owner
+     * texts first (TEXT_BATCH per call), then the ingredient names
+     * (NAME_BATCH) — storing each batch that works and bumping the menu
+     * content version after it. A failed, cut-off or partial AI answer just
+     * leaves those texts missing, and no batch starts once $deadline has
+     * passed — the menu shows the original meanwhile, and the next loading
+     * screen tries again for what's still missing.
      */
-    public function translateMissing(Restaurant $restaurant, string $locale): void
+    public function translateMissing(Restaurant $restaurant, string $locale, ?TranslationDeadline $deadline = null): void
     {
         $missing = $this->missingSources($restaurant, $locale);
         if ($missing === []) {
             return;
         }
 
+        // Owner texts and ingredient names — the same [sourceLocale, text]
+        // pair can't be both: allSources() lists it once, as an owner text.
+        $ownerTextHashes = [];
+        if ($locale !== $restaurant->getDefaultLanguage()) {
+            foreach ($this->collectTexts($restaurant) as $text) {
+                $ownerTextHashes[OwnerTextTranslation::hash($restaurant->getDefaultLanguage(), $text)] = true;
+            }
+        }
+        $texts = $names = [];
+        foreach ($missing as [$sourceLocale, $text]) {
+            if (isset($ownerTextHashes[OwnerTextTranslation::hash($sourceLocale, $text)])) {
+                $texts[] = [$sourceLocale, $text];
+            } else {
+                $names[] = [$sourceLocale, $text];
+            }
+        }
+
+        foreach ([...array_chunk($texts, self::TEXT_BATCH), ...array_chunk($names, self::NAME_BATCH)] as $batch) {
+            if ($deadline?->isPassed()) {
+                $this->logger->info('Owner text translation: out of time, the rest is left for the next visit.', [
+                    'restaurantId' => $restaurant->getId(),
+                    'locale'       => $locale,
+                ]);
+                break;
+            }
+            $this->translateBatch($restaurant, $locale, $batch);
+        }
+    }
+
+    /** @param list<array{0: string, 1: string}> $batch [sourceLocale, text] pairs */
+    private function translateBatch(Restaurant $restaurant, string $locale, array $batch): void
+    {
         $source        = [];
         $sourceLocales = [];
-        foreach ($missing as $i => [$sourceLocale, $text]) {
+        foreach ($batch as $i => [$sourceLocale, $text]) {
             $source[$i]        = ['name' => $text, 'description' => null];
             $sourceLocales[$i] = $sourceLocale;
         }
@@ -139,7 +180,7 @@ final class OwnerTextTranslationService implements ResetInterface
         try {
             $translated = $this->translator->translate($source, $locale, $sourceLocales);
         } catch (\Throwable $e) {
-            $this->logger->warning('Owner text translation failed; originals are shown meanwhile.', [
+            $this->logger->warning('Owner text translation batch failed; originals are shown meanwhile.', [
                 'restaurantId' => $restaurant->getId(),
                 'locale'       => $locale,
                 'exception'    => $e,
@@ -151,7 +192,7 @@ final class OwnerTextTranslationService implements ResetInterface
         // ON CONFLICT DO NOTHING (see the repository): a row a concurrent
         // loading screen already stored for the same text is just skipped.
         $stored = false;
-        foreach ($missing as $i => [$sourceLocale, $text]) {
+        foreach ($batch as $i => [$sourceLocale, $text]) {
             $result = trim((string) ($translated[$i]['name'] ?? ''));
             if ($result !== '') {
                 $stored = $this->repository->insertIfMissing($restaurant, $locale, $sourceLocale, $text, $result) || $stored;

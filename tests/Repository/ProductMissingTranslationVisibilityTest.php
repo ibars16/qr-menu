@@ -10,7 +10,9 @@ use App\Entity\Restaurant;
 use App\Repository\ProductRepository;
 use App\Service\AiProductTranslator;
 use App\Service\ProductTranslatorInterface;
+use App\Repository\ProductTranslationRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
@@ -61,7 +63,11 @@ final class ProductMissingTranslationVisibilityTest extends KernelTestCase
 
     protected function tearDown(): void
     {
-        foreach ($this->restaurantsToRemove as $restaurant) {
+        // AiProductTranslator stores its rows straight in the DB (insert if
+        // missing), not through the in-memory products: start from the DB.
+        $ids = array_map(static fn (Restaurant $r) => $r->getId(), $this->restaurantsToRemove);
+        $this->em->clear();
+        foreach (array_filter(array_map(fn (int $id) => $this->em->find(Restaurant::class, $id), $ids)) as $restaurant) {
             foreach ($this->em->getRepository(Category::class)->findBy(['restaurant' => $restaurant]) as $category) {
                 foreach ($this->em->getRepository(Product::class)->findBy(['category' => $category]) as $product) {
                     $this->em->remove($product);
@@ -104,7 +110,7 @@ final class ProductMissingTranslationVisibilityTest extends KernelTestCase
             return array_map(static fn (array $p) => ['name' => $p['name'] . ' EN', 'description' => null], $products);
         });
 
-        (new AiProductTranslator($translator, $this->em, $this->repo))->translateMissing($this->restaurant, 'en');
+        (new AiProductTranslator($translator, $this->em, $this->repo, static::getContainer()->get(ProductTranslationRepository::class), new NullLogger()))->translateMissing($this->restaurant, 'en');
 
         return $calls;
     }

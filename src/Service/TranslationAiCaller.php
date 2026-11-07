@@ -6,6 +6,7 @@ use App\Service\AI\AIModelRouter;
 use App\Service\AI\AIProviderException;
 use App\Service\AI\AIProviderFactory;
 use App\Service\AI\AIRequest;
+use App\Service\AI\AIResponse;
 use App\Service\AI\ChatMessage;
 use Psr\Log\LoggerInterface;
 
@@ -15,7 +16,11 @@ use Psr\Log\LoggerInterface;
  *
  * - complete(): the free groq-llama provider first, then AIModelRouter's
  *   'complex' chain (capable tier, then fast — Gemini) — what a Groq out of
- *   tokens falls back to. Returns the text and which provider wrote it.
+ *   tokens falls back to. Returns the text and which provider wrote it, or
+ *   null — also for an answer the provider cut off at maxTokens
+ *   (finish_reason "length"): never used, even when what came back happens
+ *   to parse, and not sent again elsewhere (it would most likely be cut
+ *   off again, and cost twice).
  * - completeElsewhere(): the same request to any available provider BUT the
  *   given one, capable tier first — the review pass when it must be done by
  *   a different AI than the one that translated (the menu's main-language
@@ -47,7 +52,7 @@ final class TranslationAiCaller
             try {
                 $response = $freeProvider->complete($request);
 
-                return ['content' => $response->content, 'provider' => $response->providerId];
+                return $this->unlessCutOff($response);
             } catch (AIProviderException $e) {
                 $this->logger->warning('groq-llama call failed, falling back to AIModelRouter', [
                     'reason'  => $e->reason->value,
@@ -58,7 +63,21 @@ final class TranslationAiCaller
 
         $result = $this->router->route($request, 'complex');
 
-        return $result->isSuccess() ? ['content' => $result->response->content, 'provider' => $result->response->providerId] : null;
+        return $result->isSuccess() ? $this->unlessCutOff($result->response) : null;
+    }
+
+    /** @return array{content: string, provider: string}|null null when the answer was cut off at maxTokens */
+    private function unlessCutOff(AIResponse $response): ?array
+    {
+        if ($response->finishReason === 'length') {
+            $this->logger->warning('Translation answer cut off at max tokens; not used.', [
+                'provider' => $response->providerId,
+            ]);
+
+            return null;
+        }
+
+        return ['content' => $response->content, 'provider' => $response->providerId];
     }
 
     public function completeElsewhere(string $systemPrompt, string $userContent, int $maxTokens, string $notProvider): ?string

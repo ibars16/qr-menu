@@ -602,6 +602,7 @@ final class MenuLanguageChangerTest extends WebTestCase
 
         // French, asked for afterwards (the menu in French / the loading screen).
         static::getContainer()->get(AiProductTranslator::class)->translateMissing($this->reloaded(), 'fr');
+        $this->reloaded(); // its rows go straight to the DB (insert if missing): read them from there
 
         self::assertSame(
             ['en' => ['Seafood paella', 'human'], 'es' => ['Paella', 'human'], 'fr' => ['[fr] Seafood paella', 'ai']],

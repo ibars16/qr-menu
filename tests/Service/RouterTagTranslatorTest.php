@@ -139,6 +139,7 @@ final class RouterTagTranslatorTest extends KernelTestCase
             $this->translator([json_encode($firstPass), json_encode($firstPass)]),
             $this->em,
             static::getContainer()->get(ProductTagTranslationRepository::class),
+            new NullLogger(),
         );
 
         $aiTranslator->translateMissing($restaurant, 'it');

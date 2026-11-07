@@ -6,7 +6,6 @@ use App\Entity\ProductTag;
 use App\Entity\ProductTagTranslation;
 use App\Entity\Restaurant;
 use App\Repository\ProductTagRepository;
-use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Tag display names for the customer-facing menu, and their translation.
@@ -17,14 +16,13 @@ use Doctrine\ORM\EntityManagerInterface;
  * - hasAnyMissing() / translateMissing(): the loading-screen path, same as
  *   dishes and owner texts — MenuController shows the loading screen when
  *   something is missing, and its warm-translations request translates
- *   every missing tag in one AI call per locale (AiTagTranslator).
+ *   every missing tag, batch by batch (AiTagTranslator).
  */
 final class TagTranslationService
 {
     public function __construct(
         private readonly ProductTagRepository $productTagRepository,
         private readonly AiTagTranslator      $aiTranslator,
-        private readonly EntityManagerInterface $em,
     ) {}
 
     /**
@@ -51,21 +49,19 @@ final class TagTranslationService
     }
 
     /**
-     * Translates every missing tag into $locale (one AI call) and, if there
-     * was anything to translate, bumps the menu content version: tag names
-     * are read through the menu-content cache (see warmTranslations()), so
-     * without the bump the new names wouldn't show until some unrelated
-     * admin edit.
+     * Translates every missing tag into $locale, batch by batch, no batch
+     * starting once $deadline has passed. AiTagTranslator bumps the menu
+     * content version for every batch it stored: tag names are read through
+     * the menu-content cache (see warmTranslations()), so without the bump
+     * the new names wouldn't show until some unrelated admin edit.
      */
-    public function translateMissing(Restaurant $restaurant, string $locale): void
+    public function translateMissing(Restaurant $restaurant, string $locale, ?TranslationDeadline $deadline = null): void
     {
         if (!$this->hasAnyMissing($restaurant, $locale)) {
             return;
         }
 
-        $this->aiTranslator->translateMissing($restaurant, $locale);
-        $restaurant->bumpMenuContentVersion();
-        $this->em->flush();
+        $this->aiTranslator->translateMissing($restaurant, $locale, $deadline);
     }
 
     /**

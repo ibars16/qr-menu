@@ -30,4 +30,24 @@ class CategoryTranslationRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    /**
+     * Stores an AI translation of a category name into $locale unless it
+     * already has one (ON CONFLICT DO NOTHING on unique_category_locale) —
+     * same reasoning as ProductTranslationRepository::insertAiIfMissing().
+     */
+    public function insertAiIfMissing(int $categoryId, string $locale, string $name): bool
+    {
+        return $this->getEntityManager()->getConnection()->executeStatement(
+            "INSERT INTO category_translation (category_id, locale, name, source)
+             VALUES (:category, :locale, :name, :source)
+             ON CONFLICT (category_id, locale) DO NOTHING",
+            [
+                'category' => $categoryId,
+                'locale'   => $locale,
+                'name'     => $name,
+                'source'   => CategoryTranslation::SOURCE_AI,
+            ],
+        ) > 0;
+    }
 }

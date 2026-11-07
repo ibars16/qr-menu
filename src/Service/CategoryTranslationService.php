@@ -10,9 +10,9 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Category-name twin of ProductTranslationService — same reasoning applies
- * in full (see that class's docblock): synchronous, once-ever, permanently
- * cached AI translation, invalidated only by an explicit admin edit of the
- * source-locale name.
+ * in full (see that class's docblock): synchronous, behind the loading
+ * screen only, once-ever, permanently cached AI translation, invalidated
+ * only by an explicit admin edit of the source-locale name.
  */
 final class CategoryTranslationService
 {
@@ -56,19 +56,33 @@ final class CategoryTranslationService
     }
 
     /**
-     * Translates every given category missing a $locale translation, in one
-     * AI call, before returning — a no-op if none are missing.
+     * The menu render's side: loads every given category's translations in
+     * one query (through the menu-content cache when $cacheKeyPrefix is
+     * given). Never calls the AI — a missing name shows in the default
+     * language until the next loading screen translates it.
      *
      * @param Category[] $categories
      */
-    public function resolveForMenu(Restaurant $restaurant, array $categories, string $locale, ?string $cacheKeyPrefix = null): void
+    public function warmForMenu(array $categories, ?string $cacheKeyPrefix = null): void
+    {
+        $this->categoryRepository->warmTranslations($categories, $cacheKeyPrefix);
+    }
+
+    /**
+     * Translates every given category missing a $locale translation, batch
+     * by batch (AiCategoryTranslator), before returning — a no-op if none
+     * are missing. No batch starts once $deadline has passed.
+     *
+     * @param Category[] $categories
+     */
+    public function resolveForMenu(Restaurant $restaurant, array $categories, string $locale, ?string $cacheKeyPrefix = null, ?TranslationDeadline $deadline = null): void
     {
         if (!$this->hasAnyMissing($restaurant, $categories, $locale, $cacheKeyPrefix)) {
             return;
         }
 
         try {
-            $this->aiTranslator->translateMissing($restaurant, $locale);
+            $this->aiTranslator->translateMissing($restaurant, $locale, $deadline);
         } catch (\Throwable $e) {
             $this->logger->warning('Category translation failed; falling back to default language for this request.', [
                 'restaurantId' => $restaurant->getId(),

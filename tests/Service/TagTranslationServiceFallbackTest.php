@@ -8,7 +8,6 @@ use App\Entity\Restaurant;
 use App\Repository\ProductTagRepository;
 use App\Service\AiTagTranslator;
 use App\Service\TagTranslationService;
-use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -34,7 +33,6 @@ final class TagTranslationServiceFallbackTest extends TestCase
         return new TagTranslationService(
             $this->createStub(ProductTagRepository::class),
             (new \ReflectionClass(AiTagTranslator::class))->newInstanceWithoutConstructor(),
-            $this->createStub(EntityManagerInterface::class),
         );
     }
 

@@ -3,9 +3,10 @@
 namespace App\Service;
 
 use App\Entity\Category;
-use App\Entity\CategoryTranslation;
 use App\Entity\Restaurant;
+use App\Repository\CategoryTranslationRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Coordinates the find-missing → translate → persist cycle for category-name
@@ -16,51 +17,69 @@ use Doctrine\ORM\EntityManagerInterface;
  * A restaurant's category list is small (a handful to a few dozen rows), so
  * — like AiTagTranslator — this walks Restaurant::getCategories() in memory
  * rather than issuing a dedicated repository query.
+ *
+ * Batches, deadline, "insert if missing" and the menu content version bump:
+ * same as AiProductTranslator, with BATCH names per call.
  */
 final class AiCategoryTranslator
 {
+    /** Names per AI call — same as MenuLanguageChanger. */
+    public const BATCH = 60;
+
     public function __construct(
-        private readonly CategoryTranslatorInterface $translator,
-        private readonly EntityManagerInterface       $em,
+        private readonly CategoryTranslatorInterface   $translator,
+        private readonly EntityManagerInterface        $em,
+        private readonly CategoryTranslationRepository $translationRepo,
+        private readonly LoggerInterface               $logger,
     ) {}
 
-    public function translateMissing(Restaurant $restaurant, string $locale): void
+    /** @return int how many translations it stored */
+    public function translateMissing(Restaurant $restaurant, string $locale, ?TranslationDeadline $deadline = null): int
     {
         $missing = $this->findCategoriesMissingTranslation($restaurant, $locale);
-
         if (empty($missing)) {
-            return;
+            return 0;
         }
 
         [$names, $sourceLocales] = $this->buildNameMap($missing, $restaurant->getDefaultLanguage(), $locale);
 
-        if (empty($names)) {
-            return;
-        }
+        $stored = 0;
+        foreach (array_chunk($names, self::BATCH, true) as $batch) {
+            if ($deadline?->isPassed()) {
+                $this->logger->info('Category translation: out of time, the rest is left for the next visit.', [
+                    'restaurantId' => $restaurant->getId(),
+                    'locale'       => $locale,
+                ]);
+                break;
+            }
 
-        $translated = $this->translator->translate($names, $locale, $sourceLocales);
-
-        foreach ($missing as $category) {
-            $result = $translated[$category->getId()] ?? null;
-
-            if ($result === null || trim($result) === '') {
+            try {
+                $translated = $this->translator->translate($batch, $locale, array_intersect_key($sourceLocales, $batch));
+            } catch (\Throwable $e) {
+                $this->logger->warning('Category translation batch failed; it stays missing.', [
+                    'restaurantId' => $restaurant->getId(),
+                    'locale'       => $locale,
+                    'exception'    => $e,
+                ]);
                 continue;
             }
 
-            // Guard against a duplicate written by a concurrent request.
-            if ($category->getTranslation($locale) !== null) {
-                continue;
+            $storedNow = 0;
+            foreach (array_keys($batch) as $categoryId) {
+                $result = trim((string) ($translated[$categoryId] ?? ''));
+                if ($result !== '' && $this->translationRepo->insertAiIfMissing($categoryId, $locale, $result)) {
+                    $storedNow++;
+                }
             }
 
-            $t = new CategoryTranslation();
-            $t->setCategory($category);
-            $t->setLocale($locale);
-            $t->setName(trim($result));
-            $t->setSource(CategoryTranslation::SOURCE_AI);
-            $this->em->persist($t);
+            if ($storedNow > 0) {
+                $restaurant->bumpMenuContentVersion();
+                $this->em->flush();
+                $stored += $storedNow;
+            }
         }
 
-        $this->em->flush();
+        return $stored;
     }
 
     /** @return Category[] */
@@ -72,6 +91,7 @@ final class AiCategoryTranslator
                 $missing[] = $category;
             }
         }
+
         return $missing;
     }
 
@@ -93,6 +113,7 @@ final class AiCategoryTranslator
                 $locales[$category->getId()] = $source->getLocale();
             }
         }
+
         return [$map, $locales];
     }
 }

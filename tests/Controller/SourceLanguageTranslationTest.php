@@ -330,8 +330,9 @@ final class SourceLanguageTranslationTest extends WebTestCase
 
         self::assertSame([
             ['texts' => ['Soupe gratinée'], 'sources' => ['fr']],
-            ['texts' => ['Cuisine du marché.', 'Oignon'], 'sources' => ['fr', 'fr']],
-        ], $this->sortedBatches($this->dishAi), 'dishes, then owner texts + ingredients');
+            ['texts' => ['Cuisine du marché.'], 'sources' => ['fr']],
+            ['texts' => ['Oignon'], 'sources' => ['fr']],
+        ], $this->sortedBatches($this->dishAi), 'dishes, then owner texts, then ingredient names (own batches)');
         self::assertSame([['texts' => ['Entrées'], 'sources' => ['fr']]], $this->categoryAi->batches);
         self::assertSame([['texts' => ['Fait maison'], 'sources' => ['fr']]], $this->tagAi->batches);
 
@@ -509,7 +510,7 @@ final class SourceLanguageTranslationTest extends WebTestCase
 
         $this->warm('de');
 
-        self::assertSame([['Tarta de queso'], ['Cocina casera.', 'Huevo', 'Nata']], array_column($this->sortedBatches($this->dishAi), 'texts'));
+        self::assertSame([['Tarta de queso'], ['Cocina casera.'], ['Huevo', 'Nata']], array_column($this->sortedBatches($this->dishAi), 'texts'));
         self::assertSame([['Postres']], array_column($this->categoryAi->batches, 'texts'));
         self::assertSame([['Casero']], array_column($this->tagAi->batches, 'texts'));
         $html = $this->render('de', mtw: false);
@@ -520,7 +521,7 @@ final class SourceLanguageTranslationTest extends WebTestCase
         self::assertSame(['name' => '[de] Tarta de queso', 'ingredients' => ['[de] Nata', '[de] Huevo'], 'category' => '[de] Postres'], $this->chatDish('de'));
 
         $this->warm('de');
-        self::assertCount(2, $this->dishAi->batches, 'nothing left to translate');
+        self::assertCount(3, $this->dishAi->batches, 'nothing left to translate');
         self::assertCount(1, $this->categoryAi->batches);
         self::assertCount(1, $this->tagAi->batches);
     }
@@ -531,7 +532,7 @@ final class SourceLanguageTranslationTest extends WebTestCase
 
         $this->warm('de');
 
-        self::assertSame([['es'], ['es', 'es', 'es']], array_column($this->sortedBatches($this->dishAi), 'sources'));
+        self::assertSame([['es'], ['es'], ['es', 'es']], array_column($this->sortedBatches($this->dishAi), 'sources'));
         self::assertSame([['es']], array_column($this->categoryAi->batches, 'sources'));
         self::assertSame([['es']], array_column($this->tagAi->batches, 'sources'));
     }

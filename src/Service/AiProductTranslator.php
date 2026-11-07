@@ -3,10 +3,11 @@
 namespace App\Service;
 
 use App\Entity\Product;
-use App\Entity\ProductTranslation;
 use App\Entity\Restaurant;
 use App\Repository\ProductRepository;
+use App\Repository\ProductTranslationRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Coordinates the find-missing → translate → persist cycle for dish
@@ -17,57 +18,83 @@ use Doctrine\ORM\EntityManagerInterface;
  * Every row this writes is tagged ProductTranslation::SOURCE_AI so it can be
  * told apart from admin-entered text and safely wiped when the source-locale
  * translation changes — see ProductTranslationService::invalidateStale().
+ *
+ * In batches of BATCH dishes, one AI call (plus its check pass) each: a
+ * batch that works is stored at once, one that fails or comes back cut off
+ * stores nothing and the next one still runs. No batch is started once
+ * $deadline has passed — what's left is still missing, so the next loading
+ * screen asks only for that. Each row goes in with "insert if missing"
+ * (ProductTranslationRepository::insertAiIfMissing()): a row another visit
+ * stored meanwhile is kept. Every batch that stored something bumps the
+ * menu content version, so the public menu's cache stops serving the copy
+ * read before it (see MenuController::menuCacheKeyPrefix()).
  */
 final class AiProductTranslator
 {
+    /** Dishes per AI call (name + description each) — same as MenuLanguageChanger. */
+    public const BATCH = 25;
+
     public function __construct(
-        private readonly ProductTranslatorInterface $translator,
-        private readonly EntityManagerInterface     $em,
-        private readonly ProductRepository          $productRepo,
+        private readonly ProductTranslatorInterface   $translator,
+        private readonly EntityManagerInterface       $em,
+        private readonly ProductRepository            $productRepo,
+        private readonly ProductTranslationRepository $translationRepo,
+        private readonly LoggerInterface              $logger,
     ) {}
 
-    public function translateMissing(Restaurant $restaurant, string $locale): void
+    /** @return int how many translations it stored */
+    public function translateMissing(Restaurant $restaurant, string $locale, ?TranslationDeadline $deadline = null): int
     {
         $missing = $this->findProductsMissingTranslation($restaurant, $locale);
-
         if (empty($missing)) {
-            return;
+            return 0;
         }
 
         [$source, $sourceLocales] = $this->buildSourceMap($missing, $restaurant->getDefaultLanguage(), $locale);
 
-        if (empty($source)) {
-            return;
-        }
+        $stored = 0;
+        foreach (array_chunk($source, self::BATCH, true) as $batch) {
+            if ($deadline?->isPassed()) {
+                $this->logger->info('Dish translation: out of time, the rest is left for the next visit.', [
+                    'restaurantId' => $restaurant->getId(),
+                    'locale'       => $locale,
+                ]);
+                break;
+            }
 
-        $translated = $this->translator->translate($source, $locale, $sourceLocales);
-
-        foreach ($missing as $product) {
-            $result = $translated[$product->getId()] ?? null;
-
-            if ($result === null || trim($result['name'] ?? '') === '') {
+            try {
+                $translated = $this->translator->translate($batch, $locale, array_intersect_key($sourceLocales, $batch));
+            } catch (\Throwable $e) {
+                $this->logger->warning('Dish translation batch failed; it stays missing.', [
+                    'restaurantId' => $restaurant->getId(),
+                    'locale'       => $locale,
+                    'exception'    => $e,
+                ]);
                 continue;
             }
 
-            // Guard against a duplicate inserted by a concurrent worker.
-            if ($product->getTranslation($locale) !== null) {
-                continue;
-            }
-
-            $t = new ProductTranslation();
-            $t->setLocale($locale);
-            $t->setName(trim($result['name']));
-            $t->setDescription(
-                isset($result['description']) && trim((string) $result['description']) !== ''
+            $storedNow = 0;
+            foreach (array_keys($batch) as $productId) {
+                $result = $translated[$productId] ?? null;
+                if ($result === null || trim($result['name'] ?? '') === '') {
+                    continue;
+                }
+                $description = isset($result['description']) && trim((string) $result['description']) !== ''
                     ? trim($result['description'])
-                    : null
-            );
-            $t->setSource(ProductTranslation::SOURCE_AI);
-            $product->addTranslation($t);
-            $this->em->persist($t);
+                    : null;
+                if ($this->translationRepo->insertAiIfMissing($productId, $locale, trim($result['name']), $description)) {
+                    $storedNow++;
+                }
+            }
+
+            if ($storedNow > 0) {
+                $restaurant->bumpMenuContentVersion();
+                $this->em->flush();
+                $stored += $storedNow;
+            }
         }
 
-        $this->em->flush();
+        return $stored;
     }
 
     /** @return Product[] */
@@ -80,6 +107,7 @@ final class AiProductTranslator
                 $missing[] = $product;
             }
         }
+
         return $missing;
     }
 
@@ -107,6 +135,7 @@ final class AiProductTranslator
                 $locales[$product->getId()] = $source->getLocale();
             }
         }
+
         return [$map, $locales];
     }
 }

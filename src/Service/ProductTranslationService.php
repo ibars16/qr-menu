@@ -11,15 +11,17 @@ use Psr\Log\LoggerInterface;
  * Keeps AI-generated dish translations (ProductTranslation::SOURCE_AI) in
  * sync with the admin-entered source text.
  *
- * Missing translations are filled synchronously, inline in the menu request:
- * each dish+locale pair is only ever translated once in its lifetime (the
- * result is cached forever — see the class docblock on ProductTranslation),
- * so paying for one extra AI call on the rare first visit to a given locale
- * is cheaper than running a permanent background worker for something that
- * fires this rarely. If the AI call fails or times out, translateMissing()
- * catches it and the page still renders via the default-language fallback
- * already built into the templates (see standard/show.html.twig) — a failed attempt
- * just gets retried on the next visit in that locale.
+ * Missing translations are filled synchronously, but only behind the
+ * loading screen (MenuController::warmTranslations()) — the menu render
+ * itself never calls the AI. Each dish+locale pair is only ever translated
+ * once in its lifetime (the result is cached forever — see the class
+ * docblock on ProductTranslation), so paying for one extra AI call on the
+ * rare first visit to a given locale is cheaper than running a permanent
+ * background worker for something that fires this rarely. A batch that
+ * fails, comes back cut off or isn't reached in time (AiProductTranslator)
+ * stays missing: the page renders via the default-language fallback
+ * already built into the templates (see standard/show.html.twig), and the
+ * next visit in that locale goes through the loading screen again.
  *
  * Once written, an AI translation is never regenerated on its own — it would
  * defeat the point of caching it. It's only ever invalidated explicitly, by
@@ -35,12 +37,13 @@ final class ProductTranslationService
     ) {}
 
     /**
-     * Translates every given product missing a $locale translation, in one
-     * AI call, before returning — a no-op if none are missing.
+     * Translates every given product missing a $locale translation, batch
+     * by batch (AiProductTranslator), before returning — a no-op if none
+     * are missing. No batch starts once $deadline has passed.
      *
      * @param Product[] $products
      */
-    public function resolveForMenu(Restaurant $restaurant, array $products, string $locale): void
+    public function resolveForMenu(Restaurant $restaurant, array $products, string $locale, ?TranslationDeadline $deadline = null): void
     {
         if ($locale === $restaurant->getDefaultLanguage()) {
             return;
@@ -59,7 +62,7 @@ final class ProductTranslationService
         }
 
         try {
-            $this->aiTranslator->translateMissing($restaurant, $locale);
+            $this->aiTranslator->translateMissing($restaurant, $locale, $deadline);
         } catch (\Throwable $e) {
             $this->logger->warning('Dish translation failed; falling back to default language for this request.', [
                 'restaurantId' => $restaurant->getId(),
