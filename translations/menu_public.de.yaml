@@ -1,12 +1,12 @@
 dialog:
-    title: "Wähle deine Sprache und Währung"
+    title: "Wählen Sie Ihre Sprache und Währung"
     language_label: "Sprache"
     currency_label: "Währung"
     confirm: "Weiter"
 loading:
     title: "Ihr Menü wird vorbereitet…"
 hero:
-    subtitle: "Entdecke unsere Karte"
+    subtitle: "Entdecken Sie unsere Karte"
 search:
     placeholder: "Gerichte suchen…"
 tabs:
@@ -16,7 +16,7 @@ type:
     drink: "Getränke"
 filters:
     cta_label: "Allergien oder Diäten?"
-    title: "Was brauchst du?"
+    title: "Was brauchen Sie?"
     clear_all: "Alles löschen"
     type_title: "Typ"
     diet_title: "Diäten"
@@ -26,7 +26,7 @@ filters:
     no_results: "Keine Ergebnisse"
 allergen:
     avoid_panel_title: "Gerichte ausblenden, die … enthalten"
-    disclaimer: "Die Angaben zu Allergenen dienen nur zur Orientierung. Bitte frage vor der Bestellung das Personal, falls du Allergien hast."
+    disclaimer: "Die Angaben zu Allergenen dienen nur zur Orientierung. Bitte fragen Sie vor der Bestellung das Personal, falls Sie Allergien haben."
     more_info: "Weitere Informationen"
     free_from: "Ohne"
     traces: "Spuren"
@@ -67,7 +67,7 @@ common:
 chat:
     bubble: "Frage zur Speisekarte"
     title: "Menü-Assistent"
-    greeting: "Hallo! Frag mich alles zur Speisekarte — Empfehlungen, Zutaten, Allergien oder etwas anderes."
+    greeting: "Hallo! Fragen Sie mich alles zur Speisekarte — Empfehlungen, Zutaten, Allergien oder etwas anderes."
     placeholder: "Frage eingeben…"
     send: "Senden"
     disclaimer: "KI-generierte Antworten. Bei schweren Allergien bitte beim Personal nachfragen."
