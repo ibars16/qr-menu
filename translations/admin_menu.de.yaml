@@ -148,6 +148,7 @@ notice:
     missing_photos_plural: '%count% Gerichte ohne Foto in deiner Speisekarte'
     not_on_menu_singular: '%count% Gericht wird in deiner Speisekarte nicht angezeigt'
     not_on_menu_plural: '%count% Gerichte werden in deiner Speisekarte nicht angezeigt'
+    unmark: 'Markierung entfernen'
 
 product:
     add_to_category: 'Gericht zu %category% hinzufügen'

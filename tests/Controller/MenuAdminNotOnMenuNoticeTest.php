@@ -224,7 +224,8 @@ final class MenuAdminNotOnMenuNoticeTest extends WebTestCase
 
     private function bannerText(Crawler $page): ?string
     {
-        $banner = $page->filter('#not-on-menu-banner');
+        // Only the notice's own text: the button also holds the screen-reader-only "Quitar marca" of its active state.
+        $banner = $page->filter('#not-on-menu-banner .info-banner-text');
 
         return $banner->count() === 0 ? null : trim(preg_replace('/\s+/', ' ', $banner->text()));
     }

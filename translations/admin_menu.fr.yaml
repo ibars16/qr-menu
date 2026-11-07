@@ -148,6 +148,7 @@ notice:
     missing_photos_plural: '%count% plats sans photo dans votre carte'
     not_on_menu_singular: '%count% plat n''est pas affiché dans votre carte'
     not_on_menu_plural: '%count% plats ne sont pas affichés dans votre carte'
+    unmark: 'Retirer le marquage'
 
 product:
     add_to_category: 'Ajouter un plat à %category%'
