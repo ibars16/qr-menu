@@ -47,6 +47,7 @@ class ResellerSignupController extends AbstractController
 
         $form = $this->createForm(RegistrationFormType::class, options: [
             'detected_admin_locale' => $adminLocaleResolver->resolveFromRequest($request),
+            'display_locale'        => $request->getLocale(),
         ]);
         $form->handleRequest($request);
 

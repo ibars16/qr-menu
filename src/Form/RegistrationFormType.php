@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Service\AdminLocaleResolver;
+use App\Service\MenuPreferencesResolver;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -22,8 +23,13 @@ use Symfony\Component\Validator\Constraints\NotBlank;
  */
 class RegistrationFormType extends AbstractType
 {
-    public function __construct(private readonly AdminLocaleResolver $adminLocaleResolver)
-    {
+    /** The menu language preselected when the form's own language isn't a public-menu one. */
+    public const DEFAULT_MENU_LANGUAGE = 'es';
+
+    public function __construct(
+        private readonly AdminLocaleResolver $adminLocaleResolver,
+        private readonly MenuPreferencesResolver $menuPreferences,
+    ) {
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -31,6 +37,14 @@ class RegistrationFormType extends AbstractType
         $adminLocaleChoices = [];
         foreach ($this->adminLocaleResolver->getLocales() as $code => $meta) {
             $adminLocaleChoices[$meta['flag'] . ' ' . $meta['name']] = $code;
+        }
+
+        // The menu's main language: every public-menu language
+        // (config/languages.php), shown like Configuración's own select
+        // (flag + native name) — the same list the owner can switch to later.
+        $menuLanguageChoices = [];
+        foreach ($this->menuPreferences->getLanguages() as $code => $meta) {
+            $menuLanguageChoices[$meta['flag'] . ' ' . $meta['name']] = $code;
         }
 
         $builder
@@ -74,14 +88,13 @@ class RegistrationFormType extends AbstractType
                 'invalid_message' => 'error.choice',
                 'label'   => 'language',
                 'choice_translation_domain' => false,
-                'choices' => [
-                    'Español'  => 'es',
-                    'English'  => 'en',
-                    'Français' => 'fr',
-                    'Deutsch'  => 'de',
-                    '中文'      => 'zh',
-                    '日本語'    => 'ja',
-                ],
+                'choices' => $menuLanguageChoices,
+                // Preselected: the language the form itself is shown in
+                // (the login's selector / the browser's) — Spanish if that
+                // isn't a public-menu language.
+                'data'    => in_array($options['display_locale'], $menuLanguageChoices, true)
+                    ? $options['display_locale']
+                    : self::DEFAULT_MENU_LANGUAGE,
             ])
             ->add('adminLocale', ChoiceType::class, [
                 'label'   => 'admin_locale',
@@ -103,7 +116,10 @@ class RegistrationFormType extends AbstractType
             'csrf_message'           => 'error.expired',
             'extra_fields_message'   => 'error.general',
             'detected_admin_locale'  => $this->adminLocaleResolver->getDefaultLocale(),
+            // The language the page is shown in (Request::getLocale(), set by AdminLocaleSubscriber).
+            'display_locale'         => self::DEFAULT_MENU_LANGUAGE,
         ]);
         $resolver->setAllowedTypes('detected_admin_locale', 'string');
+        $resolver->setAllowedTypes('display_locale', 'string');
     }
 }

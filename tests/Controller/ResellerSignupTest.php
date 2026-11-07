@@ -175,6 +175,38 @@ final class ResellerSignupTest extends WebTestCase
         self::assertNotNull($this->restaurantNamed('Reseller Signup Test Failing'));
     }
 
+    /** Same menu-language list as /register: every public-menu language; the chosen one (Italian) is stored. */
+    public function testTheMenuLanguageOffersEveryPublicMenuLanguageAndStoresTheChosenOne(): void
+    {
+        $crawler = $this->client->request('GET', $this->path());
+        $languages = require static::getContainer()->getParameter('kernel.project_dir') . '/config/languages.php';
+        self::assertSame(
+            array_keys($languages),
+            $crawler->filter('select[name="registration_form[language]"] option')->each(static fn ($o) => $o->attr('value')),
+        );
+
+        $form = $crawler->filter('form:not(.lang-form)')->form();
+        $form['registration_form[restaurantName]'] = 'Reseller Signup Test Trattoria';
+        $form['registration_form[email]'] = 'reseller-signup-test-it-' . uniqid() . '@example.test';
+        $form['registration_form[password][first]'] = 'a-strong-password-1';
+        $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[currency]'] = 'EUR';
+        $form['registration_form[language]'] = 'it';
+        $form['registration_form[adminLocale]'] = 'es';
+        $this->client->submit($form);
+        self::assertResponseRedirects();
+
+        self::assertSame('it', $this->restaurantNamed('Reseller Signup Test Trattoria')?->getDefaultLanguage());
+    }
+
+    /** A German browser: /alta is in German and preselects German as the menu language. */
+    public function testTheMenuLanguagePreselectedIsTheFormsLanguage(): void
+    {
+        $crawler = $this->client->request('GET', $this->path(), server: ['HTTP_ACCEPT_LANGUAGE' => 'de']);
+        self::assertResponseIsSuccessful();
+        self::assertSame('de', $crawler->filter('select[name="registration_form[language]"] option[selected]')->attr('value'));
+    }
+
     public function testUnknownCodeIsUnavailable(): void
     {
         $crawler = $this->client->request('GET', '/alta/0000000000000000000000000000dead');

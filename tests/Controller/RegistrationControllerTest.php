@@ -71,6 +71,100 @@ final class RegistrationControllerTest extends WebTestCase
         self::assertSame((new \DateTimeImmutable('today +30 days'))->format('Y-m-d'), $user->getRestaurant()->getPaidUntil()->format('Y-m-d'));
     }
 
+    /**
+     * The menu's main language offers every public-menu language
+     * (config/languages.php), shown like Configuración's (flag + name),
+     * the form's own language preselected (Spanish here).
+     */
+    public function testTheMenuLanguageOffersEveryPublicMenuLanguage(): void
+    {
+        $crawler = $this->client->request('GET', '/register');
+        self::assertResponseIsSuccessful();
+
+        $languages = require static::getContainer()->getParameter('kernel.project_dir') . '/config/languages.php';
+        $options = $crawler->filter('select[name="registration_form[language]"] option');
+        self::assertSame(array_keys($languages), $options->each(static fn ($o) => $o->attr('value')));
+        self::assertCount(20, $options);
+        self::assertSame(
+            array_values(array_map(static fn (array $l) => $l['flag'] . ' ' . $l['name'], $languages)),
+            $options->each(static fn ($o) => trim($o->text())),
+        );
+        self::assertSame('es', $crawler->filter('select[name="registration_form[language]"] option[selected]')->attr('value'));
+    }
+
+    private function preselectedMenuLanguage(): ?string
+    {
+        $selected = $this->client->getCrawler()->filter('select[name="registration_form[language]"] option[selected]');
+
+        return $selected->count() > 0 ? $selected->attr('value') : null;
+    }
+
+    /** A German browser: the form is in German, and so is the menu language preselected. */
+    public function testTheMenuLanguagePreselectedIsTheFormsLanguage(): void
+    {
+        $this->client->request('GET', '/register', server: ['HTTP_ACCEPT_LANGUAGE' => 'de-DE,de;q=0.9']);
+        self::assertResponseIsSuccessful();
+        self::assertSame('de', $this->client->getRequest()->getLocale());
+        self::assertSame('de', $this->preselectedMenuLanguage());
+    }
+
+    /** Picked on the login's language selector (Italian, on a Spanish browser): that one. */
+    public function testTheMenuLanguageFollowsTheLanguagePickedOnTheSelector(): void
+    {
+        $this->client->request('GET', '/register');
+        $this->client->request('POST', '/admin/login/idioma', ['locale' => 'it', 'back' => '/register']);
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSame('it', $this->preselectedMenuLanguage());
+    }
+
+    /** A form language that isn't a public-menu one (none of the 6 today): Spanish. */
+    public function testAFormLanguageThatIsNoMenuLanguageFallsBackToSpanish(): void
+    {
+        $form = static::getContainer()->get('form.factory')->create(\App\Form\RegistrationFormType::class, options: ['display_locale' => 'xx']);
+        self::assertSame('es', $form->get('language')->getData());
+
+        $form = static::getContainer()->get('form.factory')->create(\App\Form\RegistrationFormType::class, options: ['display_locale' => 'fr']);
+        self::assertSame('fr', $form->get('language')->getData());
+    }
+
+    /** A language outside the old fixed six (Italian) is stored as the menu's main language. */
+    public function testTheChosenMenuLanguageIsStored(): void
+    {
+        $email = 'registration-test-' . uniqid() . '@example.test';
+        $this->createdEmail = $email;
+
+        $form = $this->client->request('GET', '/register')->filter('form:not(.lang-form)')->form();
+        $form['registration_form[restaurantName]'] = 'Registration Test Trattoria';
+        $form['registration_form[email]'] = $email;
+        $form['registration_form[password][first]'] = 'a-strong-password-1';
+        $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[currency]'] = 'EUR';
+        $form['registration_form[language]'] = 'it';
+        $form['registration_form[adminLocale]'] = 'es';
+        $this->client->submit($form);
+        self::assertResponseRedirects();
+
+        $this->em->clear();
+        $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
+        self::assertSame('it', $user->getRestaurant()->getDefaultLanguage());
+    }
+
+    public function testAnUnknownMenuLanguageIsRejected(): void
+    {
+        $crawler = $this->client->request('GET', '/register');
+        $token = $crawler->filter('input[name="registration_form[_token]"]')->attr('value');
+        $email = 'registration-test-' . uniqid() . '@example.test';
+        $this->client->request('POST', '/register', ['registration_form' => [
+            'restaurantName' => 'Registration Test Unknown', 'email' => $email,
+            'password' => ['first' => 'a-strong-password-1', 'second' => 'a-strong-password-1'],
+            'currency' => 'EUR', 'language' => 'xx', 'adminLocale' => 'es', '_token' => $token,
+        ]]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertNull($this->em->getRepository(User::class)->findOneBy(['email' => $email]));
+    }
+
     public function testTakenEmailShowsErrorAndKeepsWhatWasTyped(): void
     {
         $existing = new User();
