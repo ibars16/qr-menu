@@ -259,10 +259,12 @@ class MenuAdminController extends AbstractController
             $em->persist($translation);
         }
 
-        $translation->setName($name);
-        $translation->setSource(CategoryTranslation::SOURCE_HUMAN);
-
+        // Only a real rename makes the name the owner's and redoes its AI
+        // translations; saving the same name (only the type changed, say)
+        // leaves it as it was — an AI name stays 'ai' — like a dish's text.
         if ($nameChanged) {
+            $translation->setName($name);
+            $translation->setSource(CategoryTranslation::SOURCE_HUMAN);
             $this->categoryTranslationService->invalidateStale($category, $locale);
         }
 
