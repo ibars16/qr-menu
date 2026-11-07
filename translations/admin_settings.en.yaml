@@ -98,6 +98,10 @@ hours:
     open_aria: "%day%, shift %n%, opening"
     close_aria: "%day%, shift %n%, closing"
     copy_monday: "Copy Monday to every day"
+    empty: "You haven't set your opening hours yet. Add them so your customers know when you're open."
+    create: "Create opening hours"
+    clear: "Clear opening hours"
+    clear_confirm: "Clear the opening hours? The menu will no longer show when you're open."
 
 day:
     mon: "Monday"

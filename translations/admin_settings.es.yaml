@@ -98,6 +98,10 @@ hours:
     open_aria: "%day%, turno %n%, apertura"
     close_aria: "%day%, turno %n%, cierre"
     copy_monday: "Copiar el lunes a todos los días"
+    empty: "Aún no has indicado tu horario. Créalo para que tus clientes sepan cuándo abres."
+    create: "Crear horario"
+    clear: "Borrar horario"
+    clear_confirm: "¿Borrar el horario? La carta dejará de mostrar cuándo abres."
 
 day:
     mon: "Lunes"

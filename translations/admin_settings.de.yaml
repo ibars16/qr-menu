@@ -98,6 +98,10 @@ hours:
     open_aria: "%day%, Zeitraum %n%, Öffnung"
     close_aria: "%day%, Zeitraum %n%, Schließung"
     copy_monday: "Montag auf alle Tage übertragen"
+    empty: "Du hast deine Öffnungszeiten noch nicht angegeben. Trage sie ein, damit deine Gäste wissen, wann du geöffnet hast."
+    create: "Öffnungszeiten anlegen"
+    clear: "Öffnungszeiten löschen"
+    clear_confirm: "Öffnungszeiten löschen? Die Speisekarte zeigt dann nicht mehr, wann du geöffnet hast."
 
 day:
     mon: "Montag"

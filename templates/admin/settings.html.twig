@@ -108,6 +108,21 @@
         .hours-add-text { display: none; }
         .hours-icon-btn:hover, .hours-add:hover { color: var(--tx-hi); background: var(--bg-hover); }
         .hours-icon-btn:focus-visible, .hours-add:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+        /* Never configured: an invitation instead of seven empty days */
+        .hours-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--sp-3); padding: var(--sp-4) 0; }
+        .hours-empty-icon { font-size: 32px; color: var(--tx-3); }
+        .hours-empty-text { font-size: var(--fs-base); color: var(--tx-3); line-height: var(--lh-body); max-width: 26rem; margin: 0; }
+        .hours-empty[hidden], .hours-editor[hidden], #section-hours .section-save[hidden] { display: none; }
+        .hours-editor { display: flex; flex-direction: column; gap: var(--sp-4); }
+        #section-hours .section-save { justify-content: space-between; gap: var(--sp-3); }
+        .hours-clear-btn {
+            display: inline-flex; align-items: center; gap: var(--sp-2);
+            padding: var(--sp-2) var(--sp-3); border-radius: var(--r-md);
+            font-size: var(--fs-base); cursor: pointer;
+            border: 1px solid transparent; background: transparent; color: var(--err-text);
+        }
+        .hours-clear-btn:hover { background: var(--bg-hover); }
+        .hours-clear-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
         @media (max-width: 600px) {
             .hours-toolbar { flex-direction: column; }
@@ -339,6 +354,18 @@
             {% set socialValues = old ? old.social : (restaurant.socialLinks ?? {}) %}
             {% set hoursValues = old ? old.hours : null %}
             {% set storedHours = restaurant.openingHours ?? {} %}
+            {# Never configured (nothing stored, nothing typed on a re-render):
+               show "Crear horario" instead of seven empty days. #}
+            {% set hoursTyped = false %}
+            {% for dayIn in (hoursValues ?? {}) %}
+                {% if dayIn is iterable %}
+                    {% if dayIn.closed ?? false %}{% set hoursTyped = true %}{% endif %}
+                    {% for shift in dayIn %}
+                        {% if shift is iterable and ((shift.open ?? '') != '' or (shift.close ?? '') != '') %}{% set hoursTyped = true %}{% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+            {% set hoursEmpty = restaurant.openingHours is null and not hoursTyped %}
             <div class="settings-section" id="section-contact">
                 <div class="settings-section-title">{{ 'section.contact'|trans({}, 'admin_settings') }}</div>
                 <div class="settings-body">
@@ -365,6 +392,70 @@
                 </div>
                 <div class="section-save">
                     <button type="submit" name="section" value="contact" class="section-save-btn">
+                        <i class="ti ti-device-floppy" aria-hidden="true"></i> {{ 'action.save_section'|trans({}, 'admin_settings') }}
+                    </button>
+                </div>
+            </div>
+
+            {# ── Idioma y moneda ── #}
+            <div class="settings-section" id="section-language">
+                <div class="settings-section-title">{{ 'section.language_currency'|trans({}, 'admin_settings') }}</div>
+                <div class="settings-body">
+
+                    <div class="field">
+                        <label for="defaultLanguage">{{ 'field.menu_language'|trans({}, 'admin_settings') }}</label>
+                        {% if restaurant.languageChangeTo %}
+                            <div class="flash flash-warning" id="language-change-pending">
+                                {{ 'language_change.pending'|trans({'%language%': languageChangeName}, 'admin_settings') }}
+                                <a href="{{ path('admin_language_change_screen') }}" class="btn btn-primary">{{ 'language_change.resume'|trans({}, 'admin_settings') }}</a>
+                            </div>
+                        {% endif %}
+                        <select id="defaultLanguage" name="defaultLanguage"{{ restaurant.languageChangeTo ? ' disabled' : '' }}>
+                            {% for code, lang in languages %}
+                                <option value="{{ code }}"
+                                    {{ (old ? old.defaultLanguage : restaurant.defaultLanguage) == code ? 'selected' : '' }}>
+                                    {{ lang.flag }} {{ lang.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <span class="field-hint">
+                    {{ 'hint.menu_language'|trans({}, 'admin_settings') }}
+                </span>
+                    </div>
+
+                    <div class="field">
+                        <label for="adminLocale">{{ 'field.admin_language'|trans({}, 'admin_settings') }}</label>
+                        <select id="adminLocale" name="adminLocale">
+                            {% for code, lang in adminLocales %}
+                                <option value="{{ code }}"
+                                    {{ (old ? old.adminLocale : restaurant.adminLocale) == code ? 'selected' : '' }}>
+                                    {{ lang.flag }} {{ lang.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <span class="field-hint">
+                    {{ 'hint.admin_language'|trans({}, 'admin_settings') }}
+                </span>
+                    </div>
+
+                    <div class="field">
+                        <label for="currency">{{ 'field.currency'|trans({}, 'admin_settings') }}</label>
+                        <select id="currency" name="currency">
+                            {% for code, curr in currencies %}
+                                <option value="{{ code }}"
+                                    {{ (old ? old.currency : restaurant.currency) == code ? 'selected' : '' }}>
+                                    {{ curr.symbol }} {{ code }} — {{ curr.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <span class="field-hint">
+                    {{ 'hint.currency'|trans({}, 'admin_settings') }}
+                </span>
+                    </div>
+
+                </div>
+                <div class="section-save">
+                    <button type="submit" name="section" value="language" class="section-save-btn">
                         <i class="ti ti-device-floppy" aria-hidden="true"></i> {{ 'action.save_section'|trans({}, 'admin_settings') }}
                     </button>
                 </div>
@@ -495,70 +586,6 @@
                 </div>
             </div>
 
-            {# ── Idioma y moneda ── #}
-            <div class="settings-section" id="section-language">
-                <div class="settings-section-title">{{ 'section.language_currency'|trans({}, 'admin_settings') }}</div>
-                <div class="settings-body">
-
-                    <div class="field">
-                        <label for="defaultLanguage">{{ 'field.menu_language'|trans({}, 'admin_settings') }}</label>
-                        {% if restaurant.languageChangeTo %}
-                            <div class="flash flash-warning" id="language-change-pending">
-                                {{ 'language_change.pending'|trans({'%language%': languageChangeName}, 'admin_settings') }}
-                                <a href="{{ path('admin_language_change_screen') }}" class="btn btn-primary">{{ 'language_change.resume'|trans({}, 'admin_settings') }}</a>
-                            </div>
-                        {% endif %}
-                        <select id="defaultLanguage" name="defaultLanguage"{{ restaurant.languageChangeTo ? ' disabled' : '' }}>
-                            {% for code, lang in languages %}
-                                <option value="{{ code }}"
-                                    {{ (old ? old.defaultLanguage : restaurant.defaultLanguage) == code ? 'selected' : '' }}>
-                                    {{ lang.flag }} {{ lang.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                        <span class="field-hint">
-                    {{ 'hint.menu_language'|trans({}, 'admin_settings') }}
-                </span>
-                    </div>
-
-                    <div class="field">
-                        <label for="adminLocale">{{ 'field.admin_language'|trans({}, 'admin_settings') }}</label>
-                        <select id="adminLocale" name="adminLocale">
-                            {% for code, lang in adminLocales %}
-                                <option value="{{ code }}"
-                                    {{ (old ? old.adminLocale : restaurant.adminLocale) == code ? 'selected' : '' }}>
-                                    {{ lang.flag }} {{ lang.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                        <span class="field-hint">
-                    {{ 'hint.admin_language'|trans({}, 'admin_settings') }}
-                </span>
-                    </div>
-
-                    <div class="field">
-                        <label for="currency">{{ 'field.currency'|trans({}, 'admin_settings') }}</label>
-                        <select id="currency" name="currency">
-                            {% for code, curr in currencies %}
-                                <option value="{{ code }}"
-                                    {{ (old ? old.currency : restaurant.currency) == code ? 'selected' : '' }}>
-                                    {{ curr.symbol }} {{ code }} — {{ curr.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                        <span class="field-hint">
-                    {{ 'hint.currency'|trans({}, 'admin_settings') }}
-                </span>
-                    </div>
-
-                </div>
-                <div class="section-save">
-                    <button type="submit" name="section" value="language" class="section-save-btn">
-                        <i class="ti ti-device-floppy" aria-hidden="true"></i> {{ 'action.save_section'|trans({}, 'admin_settings') }}
-                    </button>
-                </div>
-            </div>
-
             {# ── Redes y reseñas ── #}
             <div class="settings-section" id="section-social">
                 <div class="settings-section-title">{{ 'section.social'|trans({}, 'admin_settings') }}</div>
@@ -590,6 +617,15 @@
                 <div class="settings-section-title" id="hours-title">{{ 'section.hours'|trans({}, 'admin_settings') }}</div>
                 <div class="settings-body">
 
+                    <div class="hours-empty" id="hours-empty"{% if not hoursEmpty %} hidden{% endif %}>
+                        <i class="ti ti-clock-hour-4 hours-empty-icon" aria-hidden="true"></i>
+                        <p class="hours-empty-text">{{ 'hours.empty'|trans({}, 'admin_settings') }}</p>
+                        <button type="button" class="section-save-btn" id="hours-create">
+                            <i class="ti ti-plus" aria-hidden="true"></i> {{ 'hours.create'|trans({}, 'admin_settings') }}
+                        </button>
+                    </div>
+
+                    <div class="hours-editor" id="hours-editor"{% if hoursEmpty %} hidden{% endif %}>
                     <div class="hours-toolbar">
                         <span class="field-hint">{{ 'hint.hours'|trans({}, 'admin_settings') }}</span>
                         <button type="button" class="copy-btn hours-copy" id="hours-copy-mon">
@@ -656,10 +692,18 @@
                             </div>
                         {% endfor %}
                     </div>
+                    </div>
 
                 </div>
-                <div class="section-save">
-                    <button type="submit" name="section" value="hours" class="section-save-btn">
+                <div class="section-save" id="hours-save"{% if hoursEmpty %} hidden{% endif %}>
+                    {% if restaurant.openingHours is not null %}
+                        <button type="button" class="hours-clear-btn" id="hours-clear">
+                            <i class="ti ti-trash" aria-hidden="true"></i> {{ 'hours.clear'|trans({}, 'admin_settings') }}
+                        </button>
+                    {% else %}
+                        <span></span>
+                    {% endif %}
+                    <button type="submit" name="section" value="hours" class="section-save-btn" id="hours-save-btn">
                         <i class="ti ti-device-floppy" aria-hidden="true"></i> {{ 'action.save_section'|trans({}, 'admin_settings') }}
                     </button>
                 </div>
@@ -718,8 +762,31 @@
                     setClosed(dayEl, monClosed);
                 });
             });
+
+            // "Crear horario": reveal the (empty) editor.
+            document.getElementById('hours-create')?.addEventListener('click', () => {
+                document.getElementById('hours-empty').hidden = true;
+                document.getElementById('hours-editor').hidden = false;
+                document.getElementById('hours-save').hidden = false;
+                days[0].querySelector('input[type="time"]')?.focus();
+            });
+
+            // "Borrar horario": empty every day and save only this section —
+            // an all-empty week is stored as "no hours" (normalizeOpeningHours).
+            document.getElementById('hours-clear')?.addEventListener('click', () => {
+                if (!confirm(MSG_HOURS_CLEAR_CONFIRM)) return;
+                days.forEach(dayEl => {
+                    parts(dayEl).box.checked = false;
+                    setClosed(dayEl, false);
+                    setShift2(dayEl, false);
+                    dayEl.querySelectorAll('input[type="time"]').forEach(i => { i.value = ''; });
+                });
+                const btn = document.getElementById('hours-save-btn');
+                btn.form.requestSubmit(btn);
+            });
         })();
 
+        const MSG_HOURS_CLEAR_CONFIRM = "{{ 'hours.clear_confirm'|trans({}, 'admin_settings')|e('js') }}";
         const MSG_LOGO_REMOVED       = "{{ 'toast.logo_removed'|trans({}, 'admin_settings')|e('js') }}";
         const MSG_HERO_IMAGE_REMOVED = "{{ 'toast.hero_image_removed'|trans({}, 'admin_settings')|e('js') }}";
         const MSG_URL_COPIED         = "{{ 'toast.url_copied'|trans({}, 'admin_settings')|e('js') }}";

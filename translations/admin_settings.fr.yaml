@@ -98,6 +98,10 @@ hours:
     open_aria: "%day%, service %n%, ouverture"
     close_aria: "%day%, service %n%, fermeture"
     copy_monday: "Copier le lundi sur tous les jours"
+    empty: "Vous n'avez pas encore indiqué vos horaires. Ajoutez-les pour que vos clients sachent quand vous êtes ouvert."
+    create: "Créer les horaires"
+    clear: "Effacer les horaires"
+    clear_confirm: "Effacer les horaires ? La carte n'indiquera plus quand vous êtes ouvert."
 
 day:
     mon: "Lundi"
