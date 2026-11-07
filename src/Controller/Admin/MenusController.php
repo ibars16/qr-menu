@@ -8,6 +8,7 @@ use App\Entity\MenuSection;
 use App\Enum\CategoryType;
 use App\Repository\AllergenRepository;
 use App\Service\CategoryMenuPriceResolver;
+use App\Service\CategoryTranslationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -152,7 +153,7 @@ class MenusController extends AbstractController
     }
 
     #[Route('/menus/{id}/edit', name: 'menus_update', methods: ['POST'])]
-    public function update(Category $menu, Request $request, EntityManagerInterface $em): JsonResponse
+    public function update(Category $menu, Request $request, EntityManagerInterface $em, CategoryTranslationService $categoryTranslationService): JsonResponse
     {
         $this->assertOwner($menu->getRestaurant());
         if (!$menu->isFixedPriceMenu()) {
@@ -175,6 +176,15 @@ class MenusController extends AbstractController
         $menu->setMenuPrice($priceResult['menuPrice']);
         $menu->setMenuDescription($priceResult['menuDescription']);
 
+        // The menu's name: its main-language CategoryTranslation, like a
+        // Carta category's. A real rename makes it the owner's ('human') and
+        // drops every AI translation of the old name (the owner's own rows
+        // stay), so each language's next loading screen redoes it from this
+        // one — same as MenuAdminController::updateCategory(). Saving the
+        // same name (only the price or description changed) leaves it as it
+        // was: an AI name stays 'ai', nothing is redone. The description and
+        // section labels are plain columns, not translation rows: their
+        // translations follow the text itself (OwnerTextTranslation's hash).
         $locale      = $menu->getRestaurant()->getDefaultLanguage();
         $translation = $menu->getTranslation($locale);
         if (!$translation) {
@@ -183,7 +193,11 @@ class MenusController extends AbstractController
             $translation->setLocale($locale);
             $em->persist($translation);
         }
-        $translation->setName($name);
+        if ($translation->getId() === null || $translation->getName() !== $name) {
+            $translation->setName($name);
+            $translation->setSource(CategoryTranslation::SOURCE_HUMAN);
+            $categoryTranslationService->invalidateStale($menu, $locale);
+        }
 
         $menu->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
