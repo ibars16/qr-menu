@@ -311,10 +311,6 @@
                class="nav-item {{ app.request.attributes.get('_route') == 'admin_users' ? 'active' : '' }}">
                 <i class="ti ti-users" aria-hidden="true"></i> {{ 'nav.item.users'|trans({}, 'admin_base') }}
             </a>
-            <a href="{{ path('admin_settings') }}"
-               class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
-                <i class="ti ti-settings" aria-hidden="true"></i> {{ 'nav.item.settings'|trans({}, 'admin_base') }}
-            </a>
         {% endif %}
 
         <div class="sidebar-footer">
@@ -334,6 +330,12 @@
                     <span class="sidebar-theme-knob"></span>
                 </button>
             </div>
+            {% if is_granted('ROLE_OWNER') %}
+                <a href="{{ path('admin_settings') }}"
+                   class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
+                    <i class="ti ti-settings" aria-hidden="true"></i> {{ 'nav.item.settings'|trans({}, 'admin_base') }}
+                </a>
+            {% endif %}
             {# A reseller's restaurant too: its screen is information only. #}
             {% if is_granted('ROLE_OWNER') and app.user.restaurant %}
                 <a href="{{ path('admin_billing_index') }}"
