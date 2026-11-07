@@ -187,7 +187,9 @@ final class RouterLabelTranslator
 
         $this->freeProviderTokens += ($response->promptTokens ?? 0) + ($response->completionTokens ?? 0);
 
-        return $response->content;
+        // Cut off or stopped (AIResponse::endedNormally()): never used — an
+        // empty answer parses to nothing, so that batch stores nothing.
+        return $response->endedNormally() ? $response->content : '';
     }
 
     /** @return array<int, string> */

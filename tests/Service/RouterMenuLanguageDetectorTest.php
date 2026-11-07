@@ -5,6 +5,7 @@ namespace App\Tests\Service;
 use App\Service\AI\AIModelRouter;
 use App\Service\AI\AIProviderFactory;
 use App\Service\RouterMenuLanguageDetector;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\AbstractLogger;
 use Psr\Log\NullLogger;
@@ -59,7 +60,7 @@ final class RouterMenuLanguageDetectorTest extends TestCase
 
     /**
      * @param list<array{0: string, 1: string}> $groq    [content, finish_reason] per Groq request
-     * @param list<string>                      $gemini  content per Gemini request
+     * @param list<string|array{0: string, 1: string}> $gemini  content per Gemini request, or [content, finishReason]
      */
     private function detector(array $groq, array $gemini = []): RouterMenuLanguageDetector
     {
@@ -73,7 +74,10 @@ final class RouterMenuLanguageDetectorTest extends TestCase
                 return new MockResponse(json_encode(['choices' => [['message' => ['content' => $content], 'finish_reason' => $finish]], 'usage' => ['completion_tokens' => 30]]));
             }
             if ($host === 'generativelanguage.googleapis.com' && $gemini !== []) {
-                return new MockResponse(json_encode(['candidates' => [['content' => ['parts' => [['text' => array_shift($gemini)]]], 'finishReason' => 'STOP']]]));
+                $reply = array_shift($gemini);
+                [$content, $finish] = is_array($reply) ? $reply : [$reply, 'STOP'];
+
+                return new MockResponse(json_encode(['candidates' => [['content' => ['parts' => [['text' => $content]]], 'finishReason' => $finish]]]));
             }
 
             return new MockResponse('{"error":{"message":"not scripted"}}', ['http_code' => 500]);
@@ -113,6 +117,52 @@ final class RouterMenuLanguageDetectorTest extends TestCase
         self::assertCount(1, $warnings);
         self::assertSame(['call' => 'detect', 'provider' => 'groq-llama', 'reason' => 'cut off (finish_reason=length)', 'completionTokens' => 30], $warnings[0]);
         self::assertStringNotContainsString('Carpaccio', json_encode($this->logger->records, JSON_UNESCAPED_UNICODE), 'no texts in the log');
+    }
+
+    /** How an OpenAI-compatible provider marks an interrupted answer, other than "length". */
+    public static function otherStops(): iterable
+    {
+        foreach (['content_filter', 'error', 'model_length', 'insufficient_system_resource'] as $reason) {
+            yield $reason => [$reason];
+        }
+    }
+
+    /** Valid JSON on purpose: the mark alone makes it a failure, and Gemini is asked. */
+    #[DataProvider('otherStops')]
+    public function testAnyStopOtherThanStopFallsBackToGemini(string $reason): void
+    {
+        $detector = $this->detector([['{"language": "fr"}', $reason]], ['{"language": "es"}']);
+
+        self::assertSame('es', $detector->detect(['Carpaccio de gamba roja con foie', 'Asados y guisos']));
+        self::assertSame("cut off (finish_reason={$reason})", $this->unusable()[0]['reason']);
+    }
+
+    #[DataProvider('otherStops')]
+    public function testAnyStopOtherThanStopInTheCheckFallsBackToGemini(string $reason): void
+    {
+        $texts = ['p:5872' => 'Carpaccio de gamba roja con foie', 'c:635' => 'Carpaccios'];
+        $detector = $this->detector([['{"p:5872": "fr", "c:635": "fr"}', $reason]], ['{"p:5872": "es", "c:635": "unsure"}']);
+
+        self::assertSame(['p:5872' => 'es', 'c:635' => null], $detector->detectEach($texts));
+    }
+
+    /** Gemini's own marks (after Groq failed): a failure too — no answer rather than a doubtful one. */
+    public function testAGeminiAnswerThatDidNotEndNormallyIsNotUsed(): void
+    {
+        foreach (['MAX_TOKENS', 'SAFETY', 'RECITATION', 'OTHER'] as $reason) {
+            $this->requests = [];
+            $detector = $this->detector([['{"language": "', 'length']], [['{"language": "fr"}', $reason]]);
+
+            self::assertNull($detector->detect(['Carpaccio de gamba roja con foie', 'Asados y guisos']), $reason);
+        }
+    }
+
+    public function testAnAnswerThatEndedNormallyIsUsedWithoutGemini(): void
+    {
+        $detector = $this->detector([['{"language": "fr"}', 'stop']], ['{"language": "es"}']);
+
+        self::assertSame('fr', $detector->detect(['Soupe gratinée', 'Entrées']));
+        self::assertSame(['api.groq.com'], $this->hosts());
     }
 
     public function testCutOffCheckFallsBackToGemini(): void

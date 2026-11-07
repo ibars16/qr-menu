@@ -17,15 +17,18 @@ use Psr\Log\LoggerInterface;
  * - complete(): the free groq-llama provider first, then AIModelRouter's
  *   'complex' chain (capable tier, then fast — Gemini) — what a Groq out of
  *   tokens falls back to. Returns the text and which provider wrote it, or
- *   null — also for an answer the provider cut off at maxTokens
- *   (finish_reason "length"): never used, even when what came back happens
- *   to parse, and not sent again elsewhere (it would most likely be cut
- *   off again, and cost twice).
+ *   null — also for an answer that didn't end normally
+ *   (AIResponse::endedNormally(): cut off at maxTokens or stopped for any
+ *   other reason, whichever provider and however it says so): never used,
+ *   even when what came back happens to parse, and not sent again
+ *   elsewhere (it would most likely be cut off again, and cost twice).
  * - completeElsewhere(): the same request to any available provider BUT the
  *   given one, capable tier first — the review pass when it must be done by
  *   a different AI than the one that translated (the menu's main-language
- *   change, see IndependentReviewTranslator). A failure, or an answer cut
- *   off at maxTokens, moves on to the next one; none left = null. It all
+ *   change, see IndependentReviewTranslator). A failure, or an answer that
+ *   didn't end normally (AIResponse::endedNormally(): cut off at maxTokens
+ *   or stopped for any other reason), moves on to the next one; none left
+ *   = null. It all
  *   waits at most ELSEWHERE_MAX_SECONDS: slower = null (the translation
  *   stays and the conversion goes on).
  */
@@ -66,12 +69,13 @@ final class TranslationAiCaller
         return $result->isSuccess() ? $this->unlessCutOff($result->response) : null;
     }
 
-    /** @return array{content: string, provider: string}|null null when the answer was cut off at maxTokens */
+    /** @return array{content: string, provider: string}|null null when the answer didn't end normally */
     private function unlessCutOff(AIResponse $response): ?array
     {
-        if ($response->finishReason === 'length') {
-            $this->logger->warning('Translation answer cut off at max tokens; not used.', [
-                'provider' => $response->providerId,
+        if (!$response->endedNormally()) {
+            $this->logger->warning('Translation answer did not end normally (cut off or stopped); not used.', [
+                'provider'     => $response->providerId,
+                'finishReason' => $response->finishReason,
             ]);
 
             return null;
@@ -114,10 +118,10 @@ final class TranslationAiCaller
                 ]);
                 continue;
             }
-            if ($response->finishReason === 'length') {
+            if (!$response->endedNormally()) {
                 $this->logger->warning('Independent translation review: answer cut off, trying the next one.', [
                     'provider' => $provider->getId(),
-                    'reason'   => 'cut off (finish_reason=length)',
+                    'reason'   => sprintf('cut off (finish_reason=%s)', $response->finishReason),
                 ]);
                 continue;
             }

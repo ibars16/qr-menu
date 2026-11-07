@@ -22,4 +22,18 @@ final readonly class AIResponse
         // each caller decides whether a cut-off answer is usable.
         public ?string $finishReason = null,
     ) {}
+
+    /**
+     * True only when the model ended its answer itself: 'stop' (every
+     * OpenAI-compatible provider — Groq, OpenAI, Mistral, DeepSeek,
+     * OpenRouter — and Gemini's STOP), or no reason reported at all.
+     * Anything else means the text may be incomplete: 'length' (cut off at
+     * max tokens; Gemini's MAX_TOKENS), Mistral's 'model_length', DeepSeek's
+     * 'insufficient_system_resource', OpenRouter's 'error', a
+     * 'content_filter', Gemini's SAFETY / RECITATION / OTHER…
+     */
+    public function endedNormally(): bool
+    {
+        return $this->finishReason === null || $this->finishReason === 'stop';
+    }
 }

@@ -84,7 +84,14 @@ final class GeminiAdapter implements AIProviderInterface
             throw new AIProviderException($this->id, AIFailureReason::HTTP_ERROR, 'Gemini error: ' . $msg);
         }
 
-        $text = $body['candidates'][0]['content']['parts'][0]['text'] ?? null;
+        // Every text part, in order (a long answer can come split in
+        // several); a "thought" part (only sent when asked for) isn't answer.
+        $text = null;
+        foreach ($body['candidates'][0]['content']['parts'] ?? [] as $part) {
+            if (is_array($part) && is_string($part['text'] ?? null) && empty($part['thought'])) {
+                $text = ($text ?? '') . $part['text'];
+            }
+        }
         if (!is_string($text) || trim($text) === '') {
             throw new AIProviderException($this->id, AIFailureReason::INVALID_RESPONSE, 'Gemini returned no usable text');
         }

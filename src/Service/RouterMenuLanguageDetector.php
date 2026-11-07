@@ -90,8 +90,9 @@ final class RouterMenuLanguageDetector implements MenuLanguageDetectorInterface
 
     /**
      * Free groq-llama first, then AIModelRouter's 'complex' chain. An answer
-     * cut off at maxTokens (finish_reason=length) or that isn't the JSON
-     * asked for counts as a failure: logged (reason only, never the texts)
+     * that didn't end normally (AIResponse::endedNormally(): cut off at
+     * maxTokens, or stopped for any other reason, however the provider
+     * says so) or that isn't the JSON asked for counts as a failure: logged (reason only, never the texts)
      * and the next option is tried.
      *
      * @param  callable(array): ?array $read  the decoded JSON → the answer, or null when it isn't one
@@ -134,8 +135,8 @@ final class RouterMenuLanguageDetector implements MenuLanguageDetectorInterface
     private function usable(AIResponse $response, callable $read, string $call): ?array
     {
         $reason = null;
-        if ($response->finishReason === 'length') {
-            $reason = 'cut off (finish_reason=length)';
+        if (!$response->endedNormally()) {
+            $reason = sprintf('cut off (finish_reason=%s)', $response->finishReason);
         } else {
             $decoded = $this->decode($response->content);
             $answer  = $decoded !== null ? $read($decoded) : null;

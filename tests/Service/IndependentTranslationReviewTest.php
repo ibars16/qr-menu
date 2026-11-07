@@ -7,6 +7,7 @@ use App\Service\AI\AIProviderFactory;
 use App\Service\RouterCategoryTranslator;
 use App\Service\RouterLabelTranslator;
 use App\Service\RouterProductTranslator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use App\Service\TranslationAiCaller;
@@ -55,8 +56,9 @@ final class IndependentTranslationReviewTest extends TestCase
     }
 
     /**
-     * @param list<string|int> $groq    replies per Groq request: content, or an HTTP error code
-     * @param list<string|int> $gemini  same, per Gemini request
+     * @param list<string|int|array{0: string, 1: string}> $groq    replies per Groq request: content, an HTTP
+     *                                                              error code, or [content, finish reason as Groq writes it]
+     * @param list<string|int|array{0: string, 1: string}> $gemini  same, per Gemini request (its finishReason spelling)
      */
     private function factory(array $groq, array $gemini): AIProviderFactory
     {
@@ -80,10 +82,11 @@ final class IndependentTranslationReviewTest extends TestCase
             if ($reply === null || is_int($reply)) {
                 return new MockResponse('{"error":{"message":"scripted failure"}}', ['http_code' => $reply ?? 500]);
             }
+            [$reply, $finish] = is_array($reply) ? $reply : [$reply, $host === 'api.groq.com' ? 'stop' : 'STOP'];
 
             return $host === 'api.groq.com'
-                ? new MockResponse(json_encode(['choices' => [['message' => ['content' => $reply], 'finish_reason' => 'stop']]]))
-                : new MockResponse(json_encode(['candidates' => [['content' => ['parts' => [['text' => $reply]]], 'finishReason' => 'STOP']]]));
+                ? new MockResponse(json_encode(['choices' => [['message' => ['content' => $reply], 'finish_reason' => $finish]]]))
+                : new MockResponse(json_encode(['candidates' => [['content' => ['parts' => [['text' => $reply]]], 'finishReason' => $finish]]]));
         });
 
         return new AIProviderFactory($http, dirname(__DIR__, 2));
@@ -201,6 +204,46 @@ final class IndependentTranslationReviewTest extends TestCase
 
         $translator->translate(self::DISHES, 'en', [5885 => 'es']);
         self::assertSame(['api.groq.com', 'api.groq.com'], $this->hosts());
+    }
+
+    /** How Gemini marks a review that didn't end normally — each one discarded, the translation kept. */
+    public static function geminiStops(): iterable
+    {
+        foreach (['MAX_TOKENS', 'SAFETY', 'RECITATION', 'OTHER'] as $reason) {
+            yield $reason => [$reason];
+        }
+    }
+
+    #[DataProvider('geminiStops')]
+    public function testAReviewThatDidNotEndNormallyIsDiscardedAndTheTranslationKept(string $reason): void
+    {
+        // Valid JSON on purpose: the provider's mark alone is enough to discard it.
+        $result = $this->dishTranslator([self::dish('Roast lamb')], [[self::dish('Lamb (reviewed)'), $reason]])
+            ->withIndependentReview()
+            ->translate(self::DISHES, 'en', [5885 => 'es']);
+
+        self::assertSame(['api.groq.com', 'generativelanguage.googleapis.com'], $this->hosts(), 'never reviewed by Groq itself');
+        self::assertSame('Roast lamb', $result[5885]['name']);
+    }
+
+    /** Gemini translated (Groq out of tokens); Groq's review stopped by a content filter: discarded. */
+    public function testAGroqReviewStoppedByAFilterIsDiscarded(): void
+    {
+        $result = $this->dishTranslator([429, [self::dish('Lamb (reviewed)'), 'content_filter']], [self::dish('Roast lamb')])
+            ->withIndependentReview()
+            ->translate(self::DISHES, 'en', [5885 => 'es']);
+
+        self::assertSame(['api.groq.com', 'generativelanguage.googleapis.com', 'api.groq.com'], $this->hosts());
+        self::assertSame('Roast lamb', $result[5885]['name']);
+    }
+
+    public function testACategoryReviewThatDidNotEndNormallyIsDiscarded(): void
+    {
+        $result = $this->categoryTranslator([json_encode(['638' => 'Roasts and stews'])], [[json_encode(['638' => 'Roasts & stews']), 'SAFETY']])
+            ->withIndependentReview()
+            ->translate([638 => 'Asados y guisos'], 'en', [638 => 'es']);
+
+        self::assertSame([638 => 'Roasts and stews'], $result);
     }
 
     public function testCategoriesToo(): void
