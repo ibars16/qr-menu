@@ -24,10 +24,10 @@
 <div class="mp-overlay" id="mp-overlay" role="dialog" aria-modal="true" aria-labelledby="mp-title">
     <div class="mp-card">
         <div class="mp-icon">🌐</div>
-        <div class="mp-title" id="mp-title">{{ 'dialog.title'|trans({}, 'menu_public') }}</div>
+        <div class="mp-title" id="mp-title">{{ 'dialog.title'|trans({}, 'menu_public', locale) }}</div>
 
         <div class="mp-field">
-            <label for="mp-lang">{{ 'dialog.language_label'|trans({}, 'menu_public') }}</label>
+            <label for="mp-lang">{{ 'dialog.language_label'|trans({}, 'menu_public', locale) }}</label>
             <select id="mp-lang">
                 {% for code, lang in languages %}
                     <option value="{{ code }}" {{ locale == code ? 'selected' : '' }}>{{ lang.flag }} {{ lang.name }}</option>
@@ -36,7 +36,7 @@
         </div>
 
         <div class="mp-field">
-            <label for="mp-currency">{{ 'dialog.currency_label'|trans({}, 'menu_public') }}</label>
+            <label for="mp-currency">{{ 'dialog.currency_label'|trans({}, 'menu_public', locale) }}</label>
             <select id="mp-currency">
                 {% for code, curr in currencies %}
                     <option value="{{ code }}" {{ currency == code ? 'selected' : '' }}>{{ curr.symbol }} {{ code }} — {{ curr.name }}</option>
@@ -44,7 +44,7 @@
             </select>
         </div>
 
-        <button type="button" class="mp-confirm" id="mp-confirm">{{ 'dialog.confirm'|trans({}, 'menu_public') }}</button>
+        <button type="button" class="mp-confirm" id="mp-confirm">{{ 'dialog.confirm'|trans({}, 'menu_public', locale) }}</button>
     </div>
 </div>
 
