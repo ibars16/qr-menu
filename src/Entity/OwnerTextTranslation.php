@@ -15,6 +15,8 @@ use Doctrine\ORM\Mapping as ORM;
  * self::hash(source locale, text). A label repeated across dishes ("Copa")
  * is one row per locale, and editing a text just produces a new hash, so a
  * stale translation is never looked up — nothing to invalidate per screen.
+ * The rows nothing refers to any more are deleted after each admin save
+ * that can leave one behind (OwnerTextTranslationPruner).
  * Write-once (plain createdAt, like ProductView).
  */
 #[ORM\Entity(repositoryClass: OwnerTextTranslationRepository::class)]

@@ -23,6 +23,7 @@ use App\Service\AllergenBackfill\AllergenReviewQueue;
 use App\Service\AllergenBackfill\IngredientAllergenBackfill;
 use App\Service\CartaReorder;
 use App\Service\CategoryTranslationService;
+use App\Service\OwnerTextTranslationPruner;
 use App\Service\MenuImportLanguageNotice;
 use App\Service\MenuImportReview;
 use App\Service\ProductAllergenResolver;
@@ -52,6 +53,7 @@ class MenuAdminController extends AbstractController
         private readonly ProductAllergenResolver $allergenResolver,
         private readonly ProductTranslationService $productTranslationService,
         private readonly CategoryTranslationService $categoryTranslationService,
+        private readonly OwnerTextTranslationPruner $ownerTextPruner,
         private readonly UploadValidator $uploadValidator,
         private readonly ClipTranscoder $clipTranscoder,
         private readonly string $kernelEnvironment,
@@ -298,6 +300,7 @@ class MenuAdminController extends AbstractController
         $restaurant->bumpMenuContentVersion();
         $em->remove($category);
         $em->flush();
+        $this->ownerTextPruner->prune($restaurant);
         $importReview->closeFinished($restaurant);
         return $this->json(['ok' => true]);
     }
@@ -1212,6 +1215,9 @@ class MenuAdminController extends AbstractController
         $importReview->confirm($product);
         $restaurant->bumpMenuContentVersion();
         $em->flush();
+        // A rewritten price label or variant, or an ingredient taken off,
+        // leaves its translations unused.
+        $this->ownerTextPruner->prune($restaurant);
         $importReview->closeFinished($restaurant);
 
         $locale      = $restaurant->getDefaultLanguage();
@@ -1246,6 +1252,7 @@ class MenuAdminController extends AbstractController
         $restaurant->bumpMenuContentVersion();
         $em->remove($product);
         $em->flush();
+        $this->ownerTextPruner->prune($restaurant);
         $importReview->closeFinished($restaurant);
         return $this->json(['ok' => true]);
     }
@@ -1272,6 +1279,7 @@ class MenuAdminController extends AbstractController
         }
         $restaurant->bumpMenuContentVersion();
         $em->flush();
+        $this->ownerTextPruner->prune($restaurant);
 
         return $this->json(['ok' => true]);
     }

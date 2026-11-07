@@ -83,6 +83,7 @@ final class MenuLanguageChanger
         private readonly OwnerTextTranslationRepository $ownerTexts,
         private readonly LoggerInterface                $logger,
         private readonly CacheItemPoolInterface         $cache,
+        private readonly OwnerTextTranslationPruner     $ownerTextPruner,
     ) {}
 
     /** An import still being read (uploaded / processing, under a day old): its dishes would come in the old language. */
@@ -655,6 +656,9 @@ final class MenuLanguageChanger
         $restaurant->setLanguageChangeTo(null);
         $restaurant->bumpMenuContentVersion();
         $this->em->flush();
+        // The old language's translations of the texts are unused now (the
+        // texts are in the new one, and so are the owner's originals' keys).
+        $this->ownerTextPruner->prune($restaurant);
     }
 
     // ── Helpers ──

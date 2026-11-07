@@ -9,6 +9,7 @@ use App\Enum\CategoryType;
 use App\Repository\AllergenRepository;
 use App\Service\CategoryMenuPriceResolver;
 use App\Service\CategoryTranslationService;
+use App\Service\OwnerTextTranslationPruner;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -37,6 +38,7 @@ class MenusController extends AbstractController
         private readonly TranslatorInterface $translator,
         private readonly CategoryMenuPriceResolver $menuPriceResolver,
         private readonly AllergenRepository $allergenRepository,
+        private readonly OwnerTextTranslationPruner $ownerTextPruner,
     ) {
     }
 
@@ -201,6 +203,8 @@ class MenusController extends AbstractController
 
         $menu->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
+        // A rewritten description leaves its translations unused.
+        $this->ownerTextPruner->prune($menu->getRestaurant());
 
         return $this->json(['id' => $menu->getId(), 'name' => $name]);
     }
@@ -239,6 +243,7 @@ class MenusController extends AbstractController
         }
         $restaurant->bumpMenuContentVersion();
         $em->flush();
+        $this->ownerTextPruner->prune($restaurant);
 
         return $this->json(['ok' => true]);
     }
@@ -285,6 +290,7 @@ class MenusController extends AbstractController
         $section->setLabel($label);
         $section->getCategory()->getRestaurant()->bumpMenuContentVersion();
         $em->flush();
+        $this->ownerTextPruner->prune($section->getCategory()->getRestaurant());
 
         return $this->json(['id' => $section->getId(), 'label' => $label]);
     }
@@ -301,9 +307,11 @@ class MenusController extends AbstractController
         // same way, so a section behaves like the small category-like
         // container it is. The client confirms the dish count first — see
         // the confirm_delete_section_with_dishes copy.
-        $section->getCategory()->getRestaurant()->bumpMenuContentVersion();
+        $restaurant = $section->getCategory()->getRestaurant();
+        $restaurant->bumpMenuContentVersion();
         $em->remove($section);
         $em->flush();
+        $this->ownerTextPruner->prune($restaurant);
 
         return $this->json(['ok' => true]);
     }

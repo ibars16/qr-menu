@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\OwnerTextTranslation;
 use App\Entity\Restaurant;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ArrayParameterType;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;
 
 /** @extends ServiceEntityRepository<OwnerTextTranslation> */
@@ -102,6 +104,28 @@ class OwnerTextTranslationRepository extends ServiceEntityRepository
                 'createdAt'  => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
                 'human'      => OwnerTextTranslation::ORIGIN_HUMAN,
             ],
+        );
+    }
+
+    /**
+     * Deletes the restaurant's rows whose source hash isn't one of
+     * $liveHashes (see OwnerTextTranslationPruner) — every row when it's
+     * empty. One statement; the restaurant's rows only.
+     *
+     * @param  string[] $liveHashes
+     * @return int rows deleted
+     */
+    public function deleteUnreferenced(Restaurant $restaurant, array $liveHashes): int
+    {
+        $connection = $this->getEntityManager()->getConnection();
+        if ($liveHashes === []) {
+            return (int) $connection->executeStatement('DELETE FROM owner_text_translation WHERE restaurant_id = ?', [$restaurant->getId()]);
+        }
+
+        return (int) $connection->executeStatement(
+            'DELETE FROM owner_text_translation WHERE restaurant_id = ? AND source_hash NOT IN (?)',
+            [$restaurant->getId(), array_values(array_unique($liveHashes))],
+            [ParameterType::INTEGER, ArrayParameterType::STRING],
         );
     }
 

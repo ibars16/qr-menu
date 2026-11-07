@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Service\AdminLocaleResolver;
 use App\Service\ContactDetailsNormalizer;
 use App\Service\MenuLanguageChanger;
+use App\Service\OwnerTextTranslationPruner;
 use App\Service\Upload\UploadProfile;
 use App\Service\Upload\UploadQualityWarning;
 use App\Service\Upload\UploadValidationError;
@@ -35,6 +36,7 @@ class SettingsController extends AbstractController
         TranslatorInterface $translator,
         ContactDetailsNormalizer $contactNormalizer,
         MenuLanguageChanger $languageChanger,
+        OwnerTextTranslationPruner $ownerTextPruner,
     ): Response {
         $restaurant = $this->getUser()->getRestaurant();
         if (!$restaurant) {
@@ -277,6 +279,11 @@ class SettingsController extends AbstractController
             // actually changed.
             $restaurant->bumpMenuContentVersion();
             $em->flush();
+            // A rewritten or removed tagline leaves its translations unused
+            // (never mid-language-change: see OwnerTextTranslationPruner).
+            if ($saves('info')) {
+                $ownerTextPruner->prune($restaurant);
+            }
 
             // The replaced files are orphaned on disk only now that the new
             // names are stored.

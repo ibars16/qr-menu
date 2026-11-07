@@ -23,6 +23,7 @@ use App\Service\CategoryTranslatorInterface;
 use App\Service\IndependentReviewTranslator;
 use App\Service\MenuLanguageChanger;
 use App\Service\MenuLanguageDetectorInterface;
+use App\Service\OwnerTextTranslationPruner;
 use App\Service\ProductTranslationService;
 use App\Service\ProductTranslatorInterface;
 use App\Service\TagTranslatorInterface;
@@ -663,6 +664,64 @@ final class MenuLanguageChangerTest extends WebTestCase
     }
 
     /**
+     * es→en→es with the cleanup of unused owner-text rows
+     * (OwnerTextTranslationPruner): nothing goes while the change is half
+     * done; once it's finished, the old language's translations of the
+     * texts go (they're in English now) but the owner's originals stay, so
+     * the way back still brings every free text back exactly, with no AI.
+     */
+    public function testFinishingAChangeDropsTheOldTranslationsAndTheRoundTripStillBringsTheOwnersTextsBack(): void
+    {
+        $repository = static::getContainer()->get(OwnerTextTranslationRepository::class);
+        $texts = ['Cocina de mercado.', 'Botella', 'Copa', 'Pan, bebida y postre', 'Primeros'];
+        foreach ($texts as $text) {
+            $repository->insertIfMissing($this->restaurant, 'fr', 'es', $text, "[fr] {$text}");
+        }
+        $frenchOfSpanish = fn () => (int) $this->em->getConnection()->fetchOne(
+            "SELECT COUNT(*) FROM owner_text_translation WHERE restaurant_id = ? AND locale = 'fr'",
+            [$this->restaurant->getId()],
+        );
+
+        self::assertSame(MenuLanguageChanger::CONVERTING, $this->changer()->start($this->restaurant, 'en'));
+        self::assertSame(0, static::getContainer()->get(OwnerTextTranslationPruner::class)->prune($this->reloaded()), 'half done: nothing goes');
+        self::assertSame(5, $frenchOfSpanish());
+
+        $results = $this->convert();
+        self::assertTrue(end($results)['done']);
+        self::assertSame(0, $frenchOfSpanish(), 'the French of the old Spanish texts is unused now');
+        $originals = $this->em->getConnection()->fetchAllKeyValue(
+            "SELECT source_text, translated_text FROM owner_text_translation WHERE restaurant_id = ? AND locale = 'es' AND origin = 'human' ORDER BY source_text",
+            [$this->restaurant->getId()],
+        );
+        self::assertSame([
+            '[en] Botella' => 'Botella', '[en] Cocina de mercado.' => 'Cocina de mercado.', '[en] Copa' => 'Copa',
+            '[en] Pan, bebida y postre' => 'Pan, bebida y postre', '[en] Primeros' => 'Primeros',
+        ], $originals, 'the owner\'s originals are kept');
+
+        $calls = count($this->ai->calls);
+        $this->detector->languages = array_fill_keys(['Paella', 'Vino tinto', 'Croquetas', 'Principales', 'Menú del día', 'Casero'], 'es');
+        $this->changer()->start($this->reloaded(), 'es');
+        $results = $this->convert();
+        self::assertTrue(end($results)['done']);
+
+        $restaurant = $this->reloaded();
+        self::assertSame($calls, count($this->ai->calls), 'nothing translated');
+        self::assertSame('Cocina de mercado.', $restaurant->getTagline());
+        $wine = $this->em->find(Product::class, $this->wine->getId());
+        self::assertSame('Botella', $wine->getBasePriceLabel());
+        self::assertSame('Copa', $wine->getPriceVariants()->first()->getLabel());
+        $setMenu = $this->em->find(Category::class, $this->setMenu->getId());
+        self::assertSame('Pan, bebida y postre', $setMenu->getMenuDescription());
+        self::assertSame('Primeros', $setMenu->getMenuSections()->first()->getLabel());
+        // Back in Spanish: the English of each text is kept (still used), the English originals' rows went.
+        self::assertSame(
+            ['Botella', 'Cocina de mercado.', 'Copa', 'Pan, bebida y postre', 'Primeros'],
+            $this->em->getConnection()->fetchFirstColumn("SELECT source_text FROM owner_text_translation WHERE restaurant_id = ? AND locale = 'en' ORDER BY source_text", [$restaurant->getId()]),
+        );
+        self::assertSame(0, (int) $this->em->getConnection()->fetchOne("SELECT COUNT(*) FROM owner_text_translation WHERE restaurant_id = ? AND locale = 'es'", [$restaurant->getId()]));
+    }
+
+    /**
      * David Test: the AI translated the tagline exactly as in an earlier
      * change, so a row for that English text was there already (an old AI
      * translation back into Spanish). The owner's original replaces it —
@@ -675,6 +734,12 @@ final class MenuLanguageChangerTest extends WebTestCase
 
         $this->changer()->start($this->restaurant, 'en');
         $this->convert();
+        $row = fn () => $this->em->getRepository(OwnerTextTranslation::class)->findOneBy([
+            'restaurant' => $this->restaurant->getId(), 'locale' => 'es', 'sourceHash' => OwnerTextTranslation::hash('en', '[en] Cocina de mercado.'),
+        ]);
+        $this->em->clear();
+        self::assertSame(['Cocina de mercado.', 'human'], [$row()->getTranslatedText(), $row()->getOrigin()]);
+
         $this->detector->languages = array_fill_keys(['Paella', 'Vino tinto', 'Croquetas', 'Principales', 'Menú del día', 'Casero'], 'es');
         $this->changer()->start($this->reloaded(), 'es');
         $results = $this->convert();
@@ -682,10 +747,8 @@ final class MenuLanguageChangerTest extends WebTestCase
 
         $restaurant = $this->reloaded();
         self::assertSame('Cocina de mercado.', $restaurant->getTagline());
-        $row = $this->em->getRepository(OwnerTextTranslation::class)->findOneBy([
-            'restaurant' => $restaurant, 'locale' => 'es', 'sourceHash' => OwnerTextTranslation::hash('en', '[en] Cocina de mercado.'),
-        ]);
-        self::assertSame(['Cocina de mercado.', 'human'], [$row->getTranslatedText(), $row->getOrigin()]);
+        // Back in Spanish, nothing refers to that English text any more: its row went (OwnerTextTranslationPruner).
+        self::assertNull($row());
         foreach ($this->ai->calls as $call) {
             self::assertNotContains('[en] Cocina de mercado.', $call, 'not translated back by the AI');
         }
