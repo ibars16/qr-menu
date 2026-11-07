@@ -79,6 +79,18 @@
     window.changeLanguage = function (lang) { applyPrefs(lang, current.currency); };
     window.changeCurrency = function (currency) { applyPrefs(current.lang, currency); };
 
+    // mtw=1 only marks THIS load as the one that already went through the
+    // loading screen (see MenuController). Left in the address bar, a
+    // reload or a copied link would skip the loading screen for good — and
+    // the menu never translates on its own — so anything edited since
+    // would stay untranslated. Dropped from the bar right away (no reload):
+    // the next load checks again and detours once if something's missing.
+    var here = new URL(window.location.href);
+    if (here.searchParams.has('mtw')) {
+        here.searchParams.delete('mtw');
+        history.replaceState(history.state, '', here.pathname + here.search + here.hash);
+    }
+
     // Keep the cookie in sync whenever this page was reached with an
     // explicit ?lang=/?currency= (own selector reload, or a shared link).
     var params = new URLSearchParams(window.location.search);
