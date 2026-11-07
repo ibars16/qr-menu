@@ -317,10 +317,11 @@ class MenuController extends AbstractController
             $nextParams        = $request->query->all();
             $nextParams['mtw'] = '1';
 
-            // Only ~20 of the 60 public menu languages have a "loading"
-            // string translated (translations/menu_public.*.yaml) — same
-            // coverage level as the rest of the public menu chrome. Falls
-            // back to English rather than an untranslated message id.
+            // Every public-menu language (config/languages.php) has its
+            // "loading" string (translations/menu_public.*.yaml — pinned by
+            // PublicMenuLanguageCoverageTest). The English fallback is only
+            // a safety net for a language added without it: English rather
+            // than an untranslated message id.
             $loadingText = $translator->getCatalogue($locale)->has('loading.title', 'menu_public')
                 ? $translator->trans('loading.title', [], 'menu_public', $locale)
                 : $translator->trans('loading.title', [], 'menu_public', 'en');
