@@ -124,9 +124,9 @@ final class IndependentTranslationReviewTest extends TestCase
             ->translate(self::DISHES, 'en', [5885 => 'es']);
 
         [$translate, $review] = $this->requests;
-        self::assertStringContainsString('false friends', $translate['prompt']);
-        self::assertStringContainsString('Never add or change details', $translate['prompt']);
-        self::assertStringContainsString('keep its original name and add a short plain explanation', $translate['prompt']);
+        self::assertStringContainsString('may be a false friend', $translate['prompt']);
+        self::assertStringContainsString('Never add, drop or change anything', $translate['prompt']);
+        self::assertStringContainsString('keep its original name and, only if you know for certain what it is', $translate['prompt']);
         self::assertStringContainsString('"menu_section":"Asados y guisos"', $translate['user']);
         self::assertStringContainsString('check the MEANING', $review['prompt']);
         self::assertStringContainsString('"menu_section":"Asados y guisos"', $review['user']);
@@ -253,7 +253,7 @@ final class IndependentTranslationReviewTest extends TestCase
             ->translate([638 => 'Asados y guisos'], 'en', [638 => 'es']);
 
         self::assertSame(['api.groq.com', 'generativelanguage.googleapis.com'], $this->hosts());
-        self::assertStringContainsString('false friends', $this->requests[0]['prompt']);
+        self::assertStringContainsString('may be a false friend', $this->requests[0]['prompt']);
         self::assertStringContainsString('check the MEANING', $this->requests[1]['prompt']);
         self::assertSame([638 => 'Roasts & stews'], $result);
     }

@@ -81,7 +81,7 @@ final class RouterProductTranslator implements ProductTranslatorInterface, Indep
         $systemPrompt = 'You are a restaurant menu translator. '
             . "Translate the \"name\" and \"description\" of each dish below into the language with ISO 639-1 code \"{$targetLocale}\". "
             . 'Each dish is written in the language whose ISO 639-1 code is its "source_locale" — translate from that language. '
-            . 'Keep dish names natural for a menu (do not translate proper nouns / brand names). '
+            . 'Keep dish names natural for a menu. '
             . TranslationGuidelines::DISH . ' '
             . 'If "description" is empty, return it as an empty string. '
             . 'Return ONLY a valid JSON object mapping each "id" to {"name": ..., "description": ...} — no other text, '
@@ -128,6 +128,9 @@ final class RouterProductTranslator implements ProductTranslatorInterface, Indep
             $item = [
                 'id'                     => (string) $id,
                 'source_name'            => $sourceProducts[$id]['name'] ?? '',
+                // The original description too: without it the check
+                // can't compare the translated description's meaning.
+                'source_description'     => $sourceProducts[$id]['description'] ?? '',
                 'translated_name'        => $pair['name'],
                 'translated_description' => $pair['description'] ?? '',
             ];
@@ -142,7 +145,7 @@ final class RouterProductTranslator implements ProductTranslatorInterface, Indep
         $itemsJson = json_encode($items, JSON_UNESCAPED_UNICODE);
 
         $systemPrompt = 'You are a translation quality checker for a restaurant menu. '
-            . "You'll see, for each dish, its original name (written in the language whose ISO 639-1 code is its \"source_locale\") and a candidate translation into the language with ISO 639-1 code \"{$targetLocale}\". "
+            . "You'll see, for each dish, its original name and description (\"source_name\", \"source_description\" — written in the language whose ISO 639-1 code is its \"source_locale\") and a candidate translation into the language with ISO 639-1 code \"{$targetLocale}\". "
             . 'For each one, check the candidate translation carefully: is "translated_name" and "translated_description" made of real, correctly-spelled words that actually exist in that language — not a fabricated string, and not two real words merged together with no space between them? Is it a fluent, natural, faithful translation of the original? '
             . TranslationGuidelines::DISH_REVIEW . ' '
             . 'If a candidate is already correct, return it completely unchanged. If it has a problem, replace it with a corrected translation. '
