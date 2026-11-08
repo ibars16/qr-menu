@@ -16,6 +16,7 @@ use App\Service\MenuContextBuilder;
 use App\Service\OwnerTextTranslationService;
 use App\Service\ProductAllergenResolver;
 use App\Service\ProductTranslatorInterface;
+use App\Service\SmartWaiterDishSafety;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
@@ -115,7 +116,7 @@ final class MenuContextBuilderSetMenuTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
         );
 
-        return new MenuContextBuilder($allergenResolver, $currencyConverter, $ownerTexts);
+        return new MenuContextBuilder($allergenResolver, $currencyConverter, $ownerTexts, new SmartWaiterDishSafety(), $this->createStub(AllergenRepository::class));
     }
 
     public function testSetMenuCategoryEmitsMenuPriceAndDescriptionInsteadOfProducts(): void

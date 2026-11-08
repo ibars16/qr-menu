@@ -8,6 +8,7 @@ use App\Entity\Product;
 use App\Entity\ProductPriceVariant;
 use App\Entity\ProductTag;
 use App\Entity\Restaurant;
+use App\Repository\AllergenRepository;
 
 /**
  * Builds the exact, restaurant-scoped, locale-resolved menu data Smart
@@ -25,6 +26,11 @@ use App\Entity\Restaurant;
  * isSystem — never by a tag's display name — so an owner renaming "Chef's
  * Recommendation" to anything else never breaks this. See ProductTag's
  * class docblock for the identity guarantee this relies on.
+ *
+ * Every other tag and every allergen goes through SmartWaiterDishSafety:
+ * "labels" ("none" when there's none), grouped "allergens" ("unknown
+ * (not specified by the restaurant)"), "contains-…" tags folded into the allergens and diet tags the
+ * allergens contradict left out — see its class docblock.
  */
 final class MenuContextBuilder
 {
@@ -40,7 +46,12 @@ final class MenuContextBuilder
         private readonly ProductAllergenResolver $allergenResolver,
         private readonly CurrencyConverter $currencyConverter,
         private readonly OwnerTextTranslationService $ownerTexts,
+        private readonly SmartWaiterDishSafety $dishSafety,
+        private readonly AllergenRepository $allergenRepository,
     ) {}
+
+    /** @var array<string, \App\Entity\Allergen>|null per build(), loaded only if a "contains-…" tag needs it */
+    private ?array $allergensByCode = null;
 
     /**
      * $currency is the customer's own chosen/resolved currency (same
@@ -53,6 +64,7 @@ final class MenuContextBuilder
      */
     public function build(Restaurant $restaurant, string $locale, string $currency): array
     {
+        $this->allergensByCode = null;
         $categories = $restaurant->getCategories()
             ->filter(fn (Category $c) => $c->isActive())
             ->toArray();
@@ -145,12 +157,18 @@ final class MenuContextBuilder
     {
         $vocabulary = [];
         foreach ($context['categories'] as $category) {
-            foreach ($category['products'] as $product) {
-                foreach ($product['dietary_tags'] as $name) {
+            // A normal category lists 'products'; a fixed-price menu has
+            // none — its dishes are in its 'sections'.
+            $dishes = $category['products']
+                ?? array_merge([], ...array_column($category['sections'] ?? [], 'dishes'));
+            foreach ($dishes as $dish) {
+                foreach (is_array($dish['labels']) ? $dish['labels'] : [] as $name) {
                     $vocabulary[$name] = true;
                 }
-                foreach ($product['allergens'] as $allergen) {
-                    $vocabulary[$allergen['name']] = true;
+                foreach (is_array($dish['allergens']) ? $dish['allergens'] : [] as $names) {
+                    foreach ($names as $name) {
+                        $vocabulary[$name] = true;
+                    }
                 }
             }
         }
@@ -173,23 +191,25 @@ final class MenuContextBuilder
             ?? $product->getTranslation($restaurant->getDefaultLanguage())
             ?? ($product->getTranslations()->first() ?: null);
 
-        $dietaryTags = [];
+        $otherTags = [];
         $highlighted = [];
         foreach ($product->getTags() as $tag) {
             if ($tag->isSystem() && in_array($tag->getCode(), self::KNOWN_HIGHLIGHT_CODES, true)) {
                 $highlighted[] = $tag->getCode();
                 continue;
             }
-            $dietaryTags[] = $this->tagName($tag, $locale, $restaurant);
+            $otherTags[] = $tag;
         }
 
         $ingredientNames = $product->getIngredientNames($locale, $restaurant->getDefaultLanguage(), $ingredientDictionary);
 
-        $allergens = array_map(fn (array $entry) => [
-            'name' => $this->allergenName($entry['allergen'], $locale, $restaurant),
-            'presence' => $entry['presence']->value,
-            'note' => $entry['note'],
-        ], $allergenEntries);
+        $safety = $this->dishSafety->shape(
+            $otherTags,
+            $allergenEntries,
+            fn (ProductTag $tag) => $this->tagName($tag, $locale, $restaurant),
+            fn (Allergen $allergen) => $this->allergenName($allergen, $locale, $restaurant),
+            fn () => $this->allergensByCode ??= $this->allergenRepository->findAllIndexedByCode(),
+        );
 
         $base = [
             'name' => $translation?->getName() ?? '',
@@ -197,8 +217,7 @@ final class MenuContextBuilder
             'calories' => $product->getCalories(),
             'spicy_level' => $product->getSpicyLevel(),
             'ingredients' => $ingredientNames,
-            'dietary_tags' => $dietaryTags,
-            'allergens' => $allergens,
+            ...$safety,
             'highlighted' => $highlighted,
         ];
 
