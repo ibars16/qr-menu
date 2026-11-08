@@ -115,10 +115,14 @@ class MenuController extends AbstractController
      * background fetch instead of from the page request. The ONLY place the
      * public menu translates anything — the menu render never calls the AI.
      *
-     * Batch by batch (dishes, categories, tags, then owner texts and
-     * ingredient names), each stored as soon as it works; no batch starts
+     * Batch by batch, each stored as soon as it works; no batch starts
      * after TranslationDeadline::WARM_SECONDS, since the loading screen
-     * stops waiting at 25 s — the rest is left for the next visit.
+     * stops waiting at 25 s — the rest is left for the next visit. Short
+     * and seen first goes first, so a big menu running out of time still
+     * gets them: owner texts (tagline, price labels, set-menu texts),
+     * categories, tags, then the dishes, and last the ingredient names
+     * (only seen in a dish's detail). Before, the owner texts came after
+     * the dishes and a 58-dish menu ran out of time before reaching them.
      */
     #[Route('/r/{slug}/warm-translations', name: 'menu_warm_translations', methods: ['POST'])]
     public function warmTranslations(
@@ -147,12 +151,8 @@ class MenuController extends AbstractController
             return $this->json(['ok' => false], 400);
         }
 
-        $productTranslationService->resolveForMenu(
-            $restaurant,
-            array_values(array_filter($productRepo->findActiveForRestaurant($restaurant), static fn ($p) => $p->isShownOnMenu())),
-            $locale,
-            $deadline,
-        );
+        // Owner texts first: few, short, at the top of the menu.
+        $ownerTextTranslationService->translateMissingTexts($restaurant, $locale, $deadline);
 
         $categoryTranslationService->resolveForMenu(
             $restaurant,
@@ -164,8 +164,15 @@ class MenuController extends AbstractController
         // Tags: every tag still missing in $locale, batch by batch.
         $tagTranslationService->translateMissing($restaurant, $locale, $deadline);
 
-        // Last: every owner text and ingredient name still missing in $locale.
-        $ownerTextTranslationService->translateMissing($restaurant, $locale, $deadline);
+        $productTranslationService->resolveForMenu(
+            $restaurant,
+            array_values(array_filter($productRepo->findActiveForRestaurant($restaurant), static fn ($p) => $p->isShownOnMenu())),
+            $locale,
+            $deadline,
+        );
+
+        // Last: ingredient names, seen only in a dish's detail.
+        $ownerTextTranslationService->translateMissingIngredientNames($restaurant, $locale, $deadline);
 
         // Every batch above that stored something bumped the menu content
         // version, so the menu this screen reloads into reads it fresh.

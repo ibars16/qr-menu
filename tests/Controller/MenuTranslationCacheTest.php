@@ -8,6 +8,7 @@ use App\Entity\Ingredient;
 use App\Entity\IngredientTranslation;
 use App\Entity\Product;
 use App\Entity\ProductIngredient;
+use App\Entity\ProductPriceVariant;
 use App\Entity\ProductTag;
 use App\Entity\ProductTagTranslation;
 use App\Entity\ProductTranslation;
@@ -110,6 +111,7 @@ final class MenuTranslationCacheTest extends WebTestCase
             $products = 'SELECT p.id FROM product p JOIN category c ON c.id = p.category_id WHERE c.restaurant_id = ?';
             $this->conn->executeStatement("DELETE FROM product_translation WHERE product_id IN ($products)", [$id]);
             $this->conn->executeStatement("DELETE FROM product_ingredient WHERE product_id IN ($products)", [$id]);
+            $this->conn->executeStatement("DELETE FROM product_price_variant WHERE product_id IN ($products)", [$id]);
             $this->conn->executeStatement("DELETE FROM product_tag_assignment WHERE product_id IN ($products)", [$id]);
             $this->conn->executeStatement('DELETE FROM product WHERE category_id IN (SELECT id FROM category WHERE restaurant_id = ?)', [$id]);
             $this->conn->executeStatement('DELETE FROM category_translation WHERE category_id IN (SELECT id FROM category WHERE restaurant_id = ?)', [$id]);
@@ -280,7 +282,7 @@ final class MenuTranslationCacheTest extends WebTestCase
 
     /**
      * Owner texts and ingredient names in their own batches: the tagline in
-     * one, 70 ingredient names in 60 + 10 — after the dish.
+     * one — before the dish — and 70 ingredient names in 60 + 10, after it.
      */
     public function testOwnerTextsAndIngredientNamesGoInTheirOwnBatches(): void
     {
@@ -288,11 +290,58 @@ final class MenuTranslationCacheTest extends WebTestCase
 
         $this->warm('fr');
 
-        self::assertSame([1, 1, 60, 10], array_map('count', $this->dishAi->batches), 'dish, tagline, 60 + 10 ingredient names');
-        self::assertSame(['Flan'], $this->dishAi->batches[0]);
-        self::assertSame(['Cocina casera.'], $this->dishAi->batches[1]);
+        self::assertSame([1, 1, 60, 10], array_map('count', $this->dishAi->batches), 'tagline, dish, 60 + 10 ingredient names');
+        self::assertSame(['Cocina casera.'], $this->dishAi->batches[0]);
+        self::assertSame(['Flan'], $this->dishAi->batches[1]);
         self::assertSame(71, (int) $this->conn->fetchOne("SELECT COUNT(*) FROM owner_text_translation WHERE restaurant_id = ? AND locale = 'fr'", [$this->restaurantId]));
         self::assertFalse($this->isLoadingScreen($this->get('fr')));
+    }
+
+    /**
+     * The order of the loading screen's work: owner texts (tagline, price
+     * labels) → categories → tags → dishes → ingredient names. Each AI call
+     * takes 15 s on the fake clock, so the deadline (20 s) passes during the
+     * dishes: the tagline and the price labels — done first — are stored
+     * anyway, and so are the category and the tag; dishes and ingredient
+     * names left after the deadline wait for the next visit. Before, the
+     * owner texts came after the dishes and a big menu never reached them
+     * (David Test, 58 dishes: tagline and "botella"/"vaso" in Spanish in
+     * French and Italian).
+     */
+    public function testWhenTimeRunsOutInTheDishesTheTaglineAndPriceLabelsAreStillTranslated(): void
+    {
+        $this->spanishMenu(dishes: 60, withTag: true, tagline: 'Mercado propio tratado con respeto', ingredients: 3, priceLabels: ['botella', 'vaso']);
+        $clock = $this->clock;
+        $order = [];
+        $this->dishAi->meanwhile = static function () use ($clock) { $clock->sleep(15); };
+        $this->categoryAi->meanwhile = static function () use (&$order) { $order[] = 'category'; };
+        $this->tagAi->meanwhile = static function () use (&$order) { $order[] = 'tag'; };
+
+        $this->warm('fr');
+
+        // 1st call, at 0 s: the owner texts. Categories and tags (no time on
+        // the fake clock) at 15 s, then the 1st dish batch at 15 s; at 30 s
+        // the deadline has passed: nothing else starts.
+        self::assertSame([['Mercado propio tratado con respeto', 'botella', 'vaso'], 25], [$this->dishAi->batches[0], count($this->dishAi->batches[1])]);
+        self::assertCount(2, $this->dishAi->batches, 'no 2nd dish batch, no ingredient names: out of time');
+        self::assertSame(['category', 'tag'], $order);
+
+        $owner = $this->conn->fetchAllKeyValue("SELECT source_text, translated_text FROM owner_text_translation WHERE restaurant_id = ? AND locale = 'fr' ORDER BY source_text", [$this->restaurantId]);
+        self::assertSame(['Mercado propio tratado con respeto' => '[fr] Mercado propio tratado con respeto', 'botella' => '[fr] botella', 'vaso' => '[fr] vaso'], $owner, 'tagline and price labels stored; no ingredient name yet');
+        self::assertSame('[fr] Postres', $this->conn->fetchOne("SELECT t.name FROM category_translation t JOIN category c ON c.id = t.category_id WHERE c.restaurant_id = ? AND t.locale = 'fr'", [$this->restaurantId]));
+        self::assertSame('[fr] Casero', $this->conn->fetchOne("SELECT t.name FROM product_tag_translation t JOIN product_tag g ON g.id = t.tag_id WHERE g.restaurant_id = ? AND t.locale = 'fr'", [$this->restaurantId]));
+        self::assertSame(25, $this->frenchDishCount());
+
+        $html = $this->get('fr', mtw: true);
+        self::assertStringContainsString('[fr] Mercado propio tratado con respeto', $html);
+        self::assertStringContainsString('[fr] botella', $html);
+        self::assertStringContainsString('[fr] vaso', $html);
+
+        // Next visit: only what's left — the other dishes, then the names.
+        $this->dishAi->meanwhile = null;
+        $this->warm('fr');
+        self::assertSame([25, 10, 3], array_map('count', array_slice($this->dishAi->batches, 2)));
+        self::assertSame(60, $this->frenchDishCount());
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────
@@ -352,6 +401,7 @@ final class MenuTranslationCacheTest extends WebTestCase
         bool $withTag = false,
         ?string $tagline = null,
         int $ingredients = 0,
+        array $priceLabels = [],
     ): int {
         $restaurant = new Restaurant();
         $restaurant->setName('Casa caché');
@@ -398,6 +448,18 @@ final class MenuTranslationCacheTest extends WebTestCase
                 $t->setSource($locale === 'es' ? ProductTranslation::SOURCE_HUMAN : ProductTranslation::SOURCE_AI);
                 $product->addTranslation($t);
                 $this->em->persist($t);
+            }
+        }
+
+        // Price labels on the 1st dish: the base price's, then one variant each.
+        if ($priceLabels !== []) {
+            $first->setBasePriceLabel(array_shift($priceLabels));
+            foreach ($priceLabels as $i => $label) {
+                $variant = new ProductPriceVariant();
+                $variant->setLabel($label);
+                $variant->setPrice(2500 + $i);
+                $variant->setPosition($i);
+                $first->addPriceVariant($variant);
             }
         }
 

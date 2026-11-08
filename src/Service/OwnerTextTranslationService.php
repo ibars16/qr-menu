@@ -17,10 +17,13 @@ use Symfony\Contracts\Service\ResetInterface;
  * descriptions and set-menu section labels. Never the restaurant's name or
  * address — those are data, not copy.
  *
- * - translateMissing(): every text still missing, in batches (TEXT_BATCH
- *   owner texts, then NAME_BATCH ingredient names per AI call), through the
- *   dish translator (ProductTranslatorInterface — same model chain and
- *   verifyAndFix() second pass). Only ever called from
+ * - translateMissingTexts() / translateMissingIngredientNames(): every
+ *   owner text (TEXT_BATCH per AI call) / ingredient name (NAME_BATCH)
+ *   still missing, through the dish translator (ProductTranslatorInterface
+ *   — same model chain and verifyAndFix() second pass). Two calls so the
+ *   loading screen can do the owner texts FIRST (few, short, at the top of
+ *   the menu: tagline, price labels) and the ingredient names LAST (seen
+ *   only in a dish's detail). Only ever called from
  *   MenuController::warmTranslations(), i.e. behind the loading screen —
  *   never from a menu render, never through the queue.
  * - primeForMenu() + text(): the render side. One query loads every
@@ -123,25 +126,36 @@ final class OwnerTextTranslationService implements ResetInterface
     }
 
     /**
-     * Translates every missing text into $locale batch by batch — the owner
-     * texts first (TEXT_BATCH per call), then the ingredient names
-     * (NAME_BATCH) — storing each batch that works and bumping the menu
-     * content version after it. A failed, cut-off or partial AI answer just
-     * leaves those texts missing, and no batch starts once $deadline has
-     * passed — the menu shows the original meanwhile, and the next loading
-     * screen tries again for what's still missing.
+     * Translates every missing owner text (tagline, price labels, set-menu
+     * texts) into $locale, TEXT_BATCH per AI call, storing each batch that
+     * works and bumping the menu content version after it. A failed,
+     * cut-off or partial AI answer just leaves those texts missing, and no
+     * batch starts once $deadline has passed — the menu shows the original
+     * meanwhile, and the next loading screen tries again for what's left.
      */
-    public function translateMissing(Restaurant $restaurant, string $locale, ?TranslationDeadline $deadline = null): void
+    public function translateMissingTexts(Restaurant $restaurant, string $locale, ?TranslationDeadline $deadline = null): void
+    {
+        $this->translateInBatches($restaurant, $locale, $this->splitMissing($restaurant, $locale)[0], self::TEXT_BATCH, $deadline);
+    }
+
+    /** Same, for the visible dishes' ingredient names (NAME_BATCH per AI call). */
+    public function translateMissingIngredientNames(Restaurant $restaurant, string $locale, ?TranslationDeadline $deadline = null): void
+    {
+        $this->translateInBatches($restaurant, $locale, $this->splitMissing($restaurant, $locale)[1], self::NAME_BATCH, $deadline);
+    }
+
+    /**
+     * The missing [sourceLocale, text] pairs, split into owner texts and
+     * ingredient names — the same pair can't be both: allSources() lists it
+     * once, as an owner text.
+     *
+     * @return array{0: list<array{0: string, 1: string}>, 1: list<array{0: string, 1: string}>}
+     */
+    private function splitMissing(Restaurant $restaurant, string $locale): array
     {
         $missing = $this->missingSources($restaurant, $locale);
-        if ($missing === []) {
-            return;
-        }
-
-        // Owner texts and ingredient names — the same [sourceLocale, text]
-        // pair can't be both: allSources() lists it once, as an owner text.
         $ownerTextHashes = [];
-        if ($locale !== $restaurant->getDefaultLanguage()) {
+        if ($missing !== [] && $locale !== $restaurant->getDefaultLanguage()) {
             foreach ($this->collectTexts($restaurant) as $text) {
                 $ownerTextHashes[OwnerTextTranslation::hash($restaurant->getDefaultLanguage(), $text)] = true;
             }
@@ -155,7 +169,13 @@ final class OwnerTextTranslationService implements ResetInterface
             }
         }
 
-        foreach ([...array_chunk($texts, self::TEXT_BATCH), ...array_chunk($names, self::NAME_BATCH)] as $batch) {
+        return [$texts, $names];
+    }
+
+    /** @param list<array{0: string, 1: string}> $sources [sourceLocale, text] pairs */
+    private function translateInBatches(Restaurant $restaurant, string $locale, array $sources, int $size, ?TranslationDeadline $deadline): void
+    {
+        foreach (array_chunk($sources, $size) as $batch) {
             if ($deadline?->isPassed()) {
                 $this->logger->info('Owner text translation: out of time, the rest is left for the next visit.', [
                     'restaurantId' => $restaurant->getId(),

@@ -329,10 +329,10 @@ final class SourceLanguageTranslationTest extends WebTestCase
         $this->warm('de');
 
         self::assertSame([
-            ['texts' => ['Soupe gratinée'], 'sources' => ['fr']],
             ['texts' => ['Cuisine du marché.'], 'sources' => ['fr']],
+            ['texts' => ['Soupe gratinée'], 'sources' => ['fr']],
             ['texts' => ['Oignon'], 'sources' => ['fr']],
-        ], $this->sortedBatches($this->dishAi), 'dishes, then owner texts, then ingredient names (own batches)');
+        ], $this->sortedBatches($this->dishAi), 'owner texts, then dishes, then ingredient names (own batches)');
         self::assertSame([['texts' => ['Entrées'], 'sources' => ['fr']]], $this->categoryAi->batches);
         self::assertSame([['texts' => ['Fait maison'], 'sources' => ['fr']]], $this->tagAi->batches);
 
@@ -510,7 +510,8 @@ final class SourceLanguageTranslationTest extends WebTestCase
 
         $this->warm('de');
 
-        self::assertSame([['Tarta de queso'], ['Cocina casera.'], ['Huevo', 'Nata']], array_column($this->sortedBatches($this->dishAi), 'texts'));
+        // Owner texts first, then dishes, then ingredient names (see MenuController::warmTranslations()).
+        self::assertSame([['Cocina casera.'], ['Tarta de queso'], ['Huevo', 'Nata']], array_column($this->sortedBatches($this->dishAi), 'texts'));
         self::assertSame([['Postres']], array_column($this->categoryAi->batches, 'texts'));
         self::assertSame([['Casero']], array_column($this->tagAi->batches, 'texts'));
         $html = $this->render('de', mtw: false);
