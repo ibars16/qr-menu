@@ -212,7 +212,12 @@ final class TranslationReuseTest extends KernelTestCase
 
         $stored = $this->translator(AiCategoryTranslator::class)->translateMissing($this->reload($r), 'fr');
 
-        self::assertSame([['Entrantes', 'entrantes', 'Arroces']], $this->sent);
+        // One AI call with these three names; the order they're sent in
+        // follows Restaurant::getCategories(), which the DB doesn't fix.
+        self::assertCount(1, $this->sent);
+        $sent = $this->sent[0];
+        sort($sent);
+        self::assertSame(['Arroces', 'Entrantes', 'entrantes'], $sent);
         self::assertSame(5, $stored);
         self::assertSame(
             ['Desserts maison', 'Desserts maison', '[fr] Entrantes', '[fr] Entrantes', '[fr] entrantes', '[fr] Arroces'],
