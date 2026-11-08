@@ -20,6 +20,12 @@ use Psr\Log\LoggerInterface;
  *
  * Batches, deadline, "insert if missing" and the menu content version bump:
  * same as AiProductTranslator, with BATCH names per call.
+ *
+ * The same name is translated the same way (TranslationReuse, as for
+ * dishes): a category whose source (its language and exact name) is the same
+ * as another category's already translated into $locale gets a copy of that
+ * translation, no AI call; categorys with the same source still missing are
+ * sent once. Copies are 'ai' rows with "insert if missing" too.
  */
 final class AiCategoryTranslator
 {
@@ -43,8 +49,23 @@ final class AiCategoryTranslator
 
         [$names, $sourceLocales] = $this->buildNameMap($missing, $restaurant->getDefaultLanguage(), $locale);
 
-        $stored = 0;
-        foreach (array_chunk($names, self::BATCH, true) as $batch) {
+        // Same source as a category already translated into $locale: copied.
+        $stored = $this->copyTranslated($restaurant, $locale, $names, $sourceLocales);
+
+        // Same source as another category still missing: sent once.
+        $copiesOf = $toSend = $first = [];
+        foreach ($names as $id => $name) {
+            $key = TranslationReuse::key($sourceLocales[$id], $name);
+            if (isset($first[$key])) {
+                $copiesOf[$first[$key]][] = $id;
+                continue;
+            }
+            $first[$key] = $id;
+            $copiesOf[$id] = [$id];
+            $toSend[$id] = $name;
+        }
+
+        foreach (array_chunk($toSend, self::BATCH, true) as $batch) {
             if ($deadline?->isPassed()) {
                 $this->logger->info('Category translation: out of time, the rest is left for the next visit.', [
                     'restaurantId' => $restaurant->getId(),
@@ -67,8 +88,13 @@ final class AiCategoryTranslator
             $storedNow = 0;
             foreach (array_keys($batch) as $categoryId) {
                 $result = trim((string) ($translated[$categoryId] ?? ''));
-                if ($result !== '' && $this->translationRepo->insertAiIfMissing($categoryId, $locale, $result)) {
-                    $storedNow++;
+                if ($result === '') {
+                    continue;
+                }
+                foreach ($copiesOf[$categoryId] as $sameSourceId) {
+                    if ($this->translationRepo->insertAiIfMissing($sameSourceId, $locale, $result)) {
+                        $storedNow++;
+                    }
                 }
             }
 
@@ -83,6 +109,50 @@ final class AiCategoryTranslator
     }
 
     /** @return Category[] */
+    /**
+     * Stores, for each category in $names, a copy of the $locale translation of
+     * another category of the restaurant with exactly the same source (see
+     * TranslationReuse), and takes it out of $names. Bumps the menu content
+     * version when it stored any.
+     *
+     * @param  array<int, string> $names         id → source name (copied ones are removed)
+     * @param  array<int, string> $sourceLocales id → its language
+     * @return int how many it stored
+     */
+    private function copyTranslated(Restaurant $restaurant, string $locale, array &$names, array $sourceLocales): int
+    {
+        $known = [];
+        foreach ($restaurant->getCategories() as $other) {
+            $done = trim((string) $other->getTranslation($locale)?->getName());
+            if ($done === '') {
+                continue;
+            }
+            $from = TranslationSource::pick($other->getTranslations(), $restaurant->getDefaultLanguage(), $locale);
+            if ($from !== null) {
+                $known[TranslationReuse::key($from->getLocale(), $from->getName())] ??= $done;
+            }
+        }
+
+        $stored = 0;
+        foreach ($names as $id => $name) {
+            $done = $known[TranslationReuse::key($sourceLocales[$id], $name)] ?? null;
+            if ($done === null) {
+                continue;
+            }
+            unset($names[$id]);
+            if ($this->translationRepo->insertAiIfMissing($id, $locale, $done)) {
+                $stored++;
+            }
+        }
+
+        if ($stored > 0) {
+            $restaurant->bumpMenuContentVersion();
+            $this->em->flush();
+        }
+
+        return $stored;
+    }
+
     private function findCategoriesMissingTranslation(Restaurant $restaurant, string $locale): array
     {
         $missing = [];

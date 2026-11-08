@@ -28,6 +28,16 @@ use Psr\Log\LoggerInterface;
  * stored meanwhile is kept. Every batch that stored something bumps the
  * menu content version, so the public menu's cache stops serving the copy
  * read before it (see MenuController::menuCacheKeyPrefix()).
+ *
+ * The same text is translated the same way across the menu (one restaurant,
+ * one target language) — see TranslationReuse: a dish whose source (its
+ * language, name and description, exactly) is the same as another dish's
+ * already translated into $locale gets a copy of that translation, no AI
+ * call; dishes with the same source still missing are sent once and the
+ * answer is stored for each. A copy is an 'ai' row like any other, written
+ * with "insert if missing" too, so it never replaces anything (an owner's
+ * text it copies from is copied as 'ai'). Not used by the main-language
+ * change (MenuLanguageChanger).
  */
 final class AiProductTranslator
 {
@@ -52,8 +62,27 @@ final class AiProductTranslator
 
         [$source, $sourceLocales] = $this->buildSourceMap($missing, $restaurant->getDefaultLanguage(), $locale);
 
-        $stored = 0;
-        foreach (array_chunk($source, self::BATCH, true) as $batch) {
+        // Same source as a dish already translated into $locale: copied.
+        $stored = $this->copyTranslated($restaurant, $locale, $source, $sourceLocales);
+
+        // Same source as another dish still missing: sent once.
+        $sameAs = [];
+        $toSend = [];
+        foreach ($source as $productId => $item) {
+            $key = TranslationReuse::key($sourceLocales[$productId], $item['name'], $item['description']);
+            if (isset($sameAs[$key])) {
+                $sameAs[$key][] = $productId;
+                continue;
+            }
+            $sameAs[$key] = [$productId];
+            $toSend[$productId] = $item;
+        }
+        $copiesOf = [];
+        foreach ($sameAs as $ids) {
+            $copiesOf[$ids[0]] = $ids;
+        }
+
+        foreach (array_chunk($toSend, self::BATCH, true) as $batch) {
             if ($deadline?->isPassed()) {
                 $this->logger->info('Dish translation: out of time, the rest is left for the next visit.', [
                     'restaurantId' => $restaurant->getId(),
@@ -82,8 +111,10 @@ final class AiProductTranslator
                 $description = isset($result['description']) && trim((string) $result['description']) !== ''
                     ? trim($result['description'])
                     : null;
-                if ($this->translationRepo->insertAiIfMissing($productId, $locale, trim($result['name']), $description)) {
-                    $storedNow++;
+                foreach ($copiesOf[$productId] as $sameSourceId) {
+                    if ($this->translationRepo->insertAiIfMissing($sameSourceId, $locale, trim($result['name']), $description)) {
+                        $storedNow++;
+                    }
                 }
             }
 
@@ -92,6 +123,51 @@ final class AiProductTranslator
                 $this->em->flush();
                 $stored += $storedNow;
             }
+        }
+
+        return $stored;
+    }
+
+    /**
+     * Stores, for each dish in $source, a copy of the $locale translation of
+     * another dish of the restaurant with exactly the same source (see
+     * TranslationReuse), and takes it out of $source. Bumps the menu
+     * content version when it stored any.
+     *
+     * @param  array<int, array{name: string, description: ?string, section: ?string}> $source        productId → source (copied ones are removed)
+     * @param  array<int, string>                                                      $sourceLocales productId → its language
+     * @return int how many it stored
+     */
+    private function copyTranslated(Restaurant $restaurant, string $locale, array &$source, array $sourceLocales): int
+    {
+        $known = [];
+        foreach ($this->productRepo->findActiveForRestaurant($restaurant) as $product) {
+            $done = $product->getTranslation($locale);
+            if ($done === null || trim($done->getName()) === '') {
+                continue;
+            }
+            $from = TranslationSource::pick($product->getTranslations(), $restaurant->getDefaultLanguage(), $locale);
+            if ($from !== null) {
+                $known[TranslationReuse::key($from->getLocale(), $from->getName(), $from->getDescription())] ??= $done;
+            }
+        }
+
+        $stored = 0;
+        foreach ($source as $productId => $item) {
+            $done = $known[TranslationReuse::key($sourceLocales[$productId], $item['name'], $item['description'])] ?? null;
+            if ($done === null) {
+                continue;
+            }
+            unset($source[$productId]);
+            $description = trim((string) $done->getDescription()) !== '' ? trim((string) $done->getDescription()) : null;
+            if ($this->translationRepo->insertAiIfMissing($productId, $locale, trim($done->getName()), $description)) {
+                $stored++;
+            }
+        }
+
+        if ($stored > 0) {
+            $restaurant->bumpMenuContentVersion();
+            $this->em->flush();
         }
 
         return $stored;
