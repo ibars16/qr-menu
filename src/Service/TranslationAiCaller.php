@@ -32,7 +32,7 @@ use Psr\Log\LoggerInterface;
  *   waits at most ELSEWHERE_MAX_SECONDS: slower = null (the translation
  *   stays and the conversion goes on).
  */
-final class TranslationAiCaller
+final class TranslationAiCaller implements TranslationAiCallerInterface
 {
     /** The whole review by another AI (every provider tried) waits at most this long; then the translation stays. */
     public const ELSEWHERE_MAX_SECONDS = 10.0;
@@ -48,7 +48,7 @@ final class TranslationAiCaller
     /** @return array{content: string, provider: string}|null */
     public function complete(string $systemPrompt, string $userContent, int $maxTokens): ?array
     {
-        $request = $this->request($systemPrompt, $userContent, $maxTokens);
+        $request = self::request($systemPrompt, $userContent, $maxTokens);
 
         $freeProvider = $this->providerFactory->getProviderById('groq-llama');
         if ($freeProvider !== null) {
@@ -103,7 +103,7 @@ final class TranslationAiCaller
                 return null;
             }
             try {
-                $response = $provider->complete($this->request($systemPrompt, $userContent, $maxTokens, round($left, 1)));
+                $response = $provider->complete(self::request($systemPrompt, $userContent, $maxTokens, round($left, 1)));
             } catch (AIProviderException $e) {
                 $this->logger->warning('Independent translation review: provider failed, trying the next one.', [
                     'provider' => $provider->getId(),
@@ -136,7 +136,8 @@ final class TranslationAiCaller
         return null;
     }
 
-    private function request(string $systemPrompt, string $userContent, int $maxTokens, ?float $maxDuration = null): AIRequest
+    /** The request every translation call sends — also PinnedProviderAiCaller's (one place for temperature etc.). */
+    public static function request(string $systemPrompt, string $userContent, int $maxTokens, ?float $maxDuration = null): AIRequest
     {
         return new AIRequest(
             systemPrompt: $systemPrompt,

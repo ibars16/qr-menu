@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
  * from a strong model — real, observed failures: two source words fused
  * into one non-word ("ibericogris"), or an outright fabricated word
  * ("klippektoppektopus" for "rock octopus"). translate() always runs a
- * second pass afterwards (verifyAndFix()) that shows the same model its own
+ * second pass afterwards (review()) that shows the same model its own
  * output next to the source text and asks it to catch and correct
  * exactly that kind of error. No human ever sees or fixes this — it's part
  * of the one-time-per-locale warm-up (see ProductTranslationService), so
@@ -34,7 +34,7 @@ use Psr\Log\LoggerInterface;
  */
 final class RouterProductTranslator implements ProductTranslatorInterface, IndependentReviewTranslator
 {
-    private readonly TranslationAiCaller $caller;
+    private TranslationAiCallerInterface $caller;
 
     /** The review pass goes to another AI than the translator (withIndependentReview()). */
     private bool $independentReview = false;
@@ -55,10 +55,42 @@ final class RouterProductTranslator implements ProductTranslatorInterface, Indep
         return $copy;
     }
 
+    /**
+     * The same translator sending its calls to another caller — the manual
+     * translation eval's single pinned provider (app:translation:eval).
+     * Same prompts, same parsing, same merge: only who answers changes.
+     */
+    public function withCaller(TranslationAiCallerInterface $caller): static
+    {
+        $copy = clone $this;
+        $copy->caller = $caller;
+
+        return $copy;
+    }
+
     public function translate(array $products, string $targetLocale, array $sourceLocales = []): array
     {
-        if (empty($products)) {
+        $first = $this->firstPass($products, $targetLocale, $sourceLocales);
+        if ($first === null) {
             return [];
+        }
+
+        return $this->review($first['translated'], $products, $targetLocale, $sourceLocales, $first['provider'])['merged'];
+    }
+
+    /**
+     * The translation pass alone (translate() = firstPass() + review()).
+     * Null when there's nothing to translate, no answer, or an answer with
+     * no usable item.
+     *
+     * @param  array<int, array{name: string, description: ?string, section?: ?string}> $products
+     * @param  array<int, string> $sourceLocales
+     * @return array{translated: array<int, array{name: string, description: ?string}>, provider: string}|null
+     */
+    public function firstPass(array $products, string $targetLocale, array $sourceLocales = []): ?array
+    {
+        if (empty($products)) {
+            return null;
         }
 
         $items = [];
@@ -89,15 +121,15 @@ final class RouterProductTranslator implements ProductTranslatorInterface, Indep
 
         $answer = $this->caller->complete($systemPrompt, "Dishes: {$itemsJson}", 4096);
         if ($answer === null) {
-            return [];
+            return null;
         }
 
-        $translated = $this->parse($answer['content']);
+        $translated = $this->parse($answer['content']) ?? [];
         if (empty($translated)) {
-            return [];
+            return null;
         }
 
-        return $this->verifyAndFix($translated, $products, $targetLocale, $sourceLocales, $answer['provider']);
+        return ['translated' => $translated, 'provider' => $answer['provider']];
     }
 
     /**
@@ -116,12 +148,17 @@ final class RouterProductTranslator implements ProductTranslatorInterface, Indep
      * omits or leaves empty keeps the first pass (a blank description in a
      * correction keeps the first-pass description too).
      *
+     * "merged" is that result; "readable" says whether the check answered
+     * with a JSON object at all (false: no answer, or not JSON — the first
+     * pass is kept, which the menu wants and the eval must not take for
+     * "no changes").
+     *
      * @param array<int, array{name: string, description: ?string}> $translated
      * @param array<int, array{name: string, description: ?string}> $sourceProducts
      * @param array<int, string> $sourceLocales
-     * @return array<int, array{name: string, description: ?string}>
+     * @return array{merged: array<int, array{name: string, description: ?string}>, readable: bool}
      */
-    private function verifyAndFix(array $translated, array $sourceProducts, string $targetLocale, array $sourceLocales, string $translatedBy): array
+    public function review(array $translated, array $sourceProducts, string $targetLocale, array $sourceLocales, string $translatedBy): array
     {
         $items = [];
         foreach ($translated as $id => $pair) {
@@ -154,12 +191,13 @@ final class RouterProductTranslator implements ProductTranslatorInterface, Indep
         $content = $this->independentReview
             ? $this->caller->completeElsewhere($systemPrompt, "Dishes: {$itemsJson}", 4096, $translatedBy)
             : $this->caller->complete($systemPrompt, "Dishes: {$itemsJson}", 4096)['content'] ?? null;
-        if ($content === null) {
-            return $translated;
+        $checked = $content === null ? null : $this->parse($content);
+        if ($checked === null) {
+            return ['merged' => $translated, 'readable' => false];
         }
 
         $merged = $translated;
-        foreach ($this->parse($content) as $id => $pair) {
+        foreach ($checked as $id => $pair) {
             if (!isset($merged[$id]) || trim($pair['name']) === '') {
                 continue; // unknown id, or blanked by the check: keep the first pass
             }
@@ -169,11 +207,11 @@ final class RouterProductTranslator implements ProductTranslatorInterface, Indep
             ];
         }
 
-        return $merged;
+        return ['merged' => $merged, 'readable' => true];
     }
 
-    /** @return array<int, array{name: string, description: ?string}> */
-    private function parse(string $text): array
+    /** @return array<int, array{name: string, description: ?string}>|null null when the answer isn't a JSON object/array */
+    private function parse(string $text): ?array
     {
         // A capable-tier model asked for JSON-only sometimes still wraps it
         // in a markdown code fence — strip it defensively, same as before.
@@ -182,7 +220,7 @@ final class RouterProductTranslator implements ProductTranslatorInterface, Indep
 
         $decoded = json_decode($text, true);
         if (!is_array($decoded)) {
-            return [];
+            return null;
         }
 
         $result = [];
