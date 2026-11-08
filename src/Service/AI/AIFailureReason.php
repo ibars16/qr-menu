@@ -14,4 +14,9 @@ enum AIFailureReason: string
     case HTTP_ERROR = 'http_error';
     case INVALID_RESPONSE = 'invalid_response';
     case NETWORK_ERROR = 'network_error';
+    // The provider answered but didn't end normally (AIResponse::
+    // endedNormally(): cut off at max tokens, or stopped for any other
+    // reason) — only raised for a caller that asks AIModelRouter to reject
+    // those (Smart Waiter). Fits the log's VARCHAR(20) column as is.
+    case CUT_OFF = 'cut_off';
 }

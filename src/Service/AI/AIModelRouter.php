@@ -24,7 +24,17 @@ final class AIModelRouter
         private readonly LoggerInterface $logger,
     ) {}
 
-    public function route(AIRequest $request, string $complexity): AIRouterResult
+    /**
+     * $rejectCutOff: an answer that didn't end normally
+     * (AIResponse::endedNormally() — cut off at max tokens, or stopped for
+     * any other reason, whichever provider and however it says so) counts
+     * as that provider failing (AIFailureReason::CUT_OFF, logged with its
+     * finish reason) and the next one is tried. Off by default: the
+     * translation callers deliberately receive the cut-off answer and
+     * decide for themselves (see TranslationAiCaller). Smart Waiter turns
+     * it on — a customer must never see a half answer.
+     */
+    public function route(AIRequest $request, string $complexity, bool $rejectCutOff = false): AIRouterResult
     {
         $providers = $this->providerFactory->getAvailableProviders();
         $primary = $complexity === 'complex' ? $providers['capable'] : $providers['fast'];
@@ -34,6 +44,19 @@ final class AIModelRouter
         foreach ([...$primary, ...$secondary] as $provider) {
             try {
                 $response = $provider->complete($request);
+                if ($rejectCutOff && !$response->endedNormally()) {
+                    $attempts[] = new AIProviderAttempt(
+                        $response->providerId,
+                        AIFailureReason::CUT_OFF,
+                        sprintf('%s answer did not end normally (finish_reason=%s)', $response->providerId, $response->finishReason),
+                    );
+                    $this->logger->warning('AI answer did not end normally, trying next', [
+                        'provider' => $response->providerId,
+                        'finishReason' => $response->finishReason,
+                    ]);
+                    continue;
+                }
+
                 return new AIRouterResult($response, $attempts);
             } catch (AIProviderException $e) {
                 $attempts[] = new AIProviderAttempt($e->providerId, $e->reason, $e->getMessage());

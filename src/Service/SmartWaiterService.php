@@ -54,7 +54,9 @@ final class SmartWaiterService
         );
 
         $log = new SmartWaiterExchangeLog($restaurant, $conversationId, $locale, $complexity);
-        $result = $this->router->route($aiRequest, $complexity);
+        // rejectCutOff: a reply that didn't end normally is never shown nor
+        // kept in the history — the next provider answers instead.
+        $result = $this->router->route($aiRequest, $complexity, rejectCutOff: true);
 
         if (!$result->isSuccess()) {
             $attempts = $result->attempts;
