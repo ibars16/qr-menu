@@ -17,5 +17,9 @@ final readonly class AIRequest
         // Total seconds the whole request may take (HttpClient max_duration);
         // null = only the adapter's usual inactivity timeout.
         public ?float $maxDuration = null,
+        // Seconds without any data before giving up (HttpClient timeout);
+        // null = the adapter's usual 20 s. The customer chat never sets it —
+        // only a manual tool (app:smart-waiter:ask --modelos) waits longer.
+        public ?float $timeout = null,
     ) {}
 }

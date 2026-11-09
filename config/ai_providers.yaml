@@ -31,6 +31,12 @@
 # Omitted (or false) elsewhere on purpose: Groq/OpenRouter's free-tier
 # llama models aren't vision-capable, and OpenAI-compatible vision support
 # isn't built yet even though gpt-4o-mini itself could do it.
+#
+# manual_only: true marks an entry ONLY manual console tools may use, by
+# asking for it by its id (AIProviderFactory::getProviderById(), e.g.
+# app:smart-waiter:ask --modelos=gemini-flash). getAvailableProviders()
+# (the chat, translations) and getAvailableVisionProviders() (menu photos)
+# never include it, whatever its tier and priority.
 
 providers:
   # Gemini is priority 1 deliberately — it's the platform's primary
@@ -57,6 +63,19 @@ providers:
     cost_per_1m_input: null
     cost_per_1m_output: null
     supports_vision: true
+
+  # Only for comparing models by hand (app:smart-waiter:ask --modelos):
+  # manual_only, so no customer chat, translation or menu photo ever uses it.
+  - id: gemini-flash
+    adapter: gemini
+    enabled: true
+    manual_only: true
+    tier: fast
+    priority: 9
+    model: gemini-flash-latest
+    api_key_env: GEMINI_API_KEY
+    cost_per_1m_input: null
+    cost_per_1m_output: null
 
   - id: groq-llama
     adapter: openai_compatible

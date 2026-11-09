@@ -6,15 +6,14 @@ use App\Entity\Restaurant;
 use App\Entity\SmartWaiterExchangeLog;
 use App\Service\AI\AIModelRouter;
 use App\Service\AI\AIProviderFactory;
-use App\Service\AI\AIRequest;
-use App\Service\AI\ChatComplexityClassifierInterface;
 use App\Service\AI\ChatMessage;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Orchestrates one chat exchange end to end: load short-term memory, build
- * this restaurant's own menu context, classify complexity, route to a
- * provider, remember the exchange (cache) and log it (DB, aggregated only).
+ * the request (SmartWaiterRequestBuilder: this restaurant's own menu
+ * context, the instruction, complexity), route to a provider, remember the
+ * exchange (cache) and log it (DB, aggregated only).
  *
  * The restaurant passed in must already be resolved server-side by the
  * caller (SmartWaiterController, from the URL slug) — this class never
@@ -25,9 +24,7 @@ use Doctrine\ORM\EntityManagerInterface;
 final class SmartWaiterService
 {
     public function __construct(
-        private readonly MenuContextBuilder $menuContextBuilder,
-        private readonly SmartWaiterPromptBuilder $promptBuilder,
-        private readonly ChatComplexityClassifierInterface $complexityClassifier,
+        private readonly SmartWaiterRequestBuilder $requestBuilder,
         private readonly AIModelRouter $router,
         private readonly AIProviderFactory $providerFactory,
         private readonly SmartWaiterConversationStore $conversationStore,
@@ -44,14 +41,13 @@ final class SmartWaiterService
         $history = $this->conversationStore->getHistory($conversationId, $restaurantId);
         $earlierCustomerMessages = $this->conversationStore->getEarlierCustomerMessages($conversationId, $restaurantId);
 
-        $menuContext = $this->menuContextBuilder->build($restaurant, $locale, $currency);
-        $vocabulary = $this->menuContextBuilder->extractVocabulary($menuContext);
-        $complexity = $this->complexityClassifier->classify($userMessage, $vocabulary);
-
         $userChatMessage = new ChatMessage('user', $userMessage);
-        $aiRequest = new AIRequest(
-            systemPrompt: $this->promptBuilder->build($menuContext, $locale, $earlierCustomerMessages),
-            messages: [...$history, $userChatMessage],
+        [$aiRequest, $complexity] = $this->requestBuilder->request(
+            $this->requestBuilder->menuContext($restaurant, $locale, $currency),
+            $locale,
+            $history,
+            $earlierCustomerMessages,
+            $userChatMessage,
         );
 
         $log = new SmartWaiterExchangeLog($restaurant, $conversationId, $locale, $complexity);

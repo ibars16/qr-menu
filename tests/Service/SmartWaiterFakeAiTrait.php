@@ -19,6 +19,7 @@ use App\Service\SmartWaiterConversationStore;
 use App\Service\SmartWaiterDishSafety;
 use App\Service\SmartWaiterFailureAlertMailer;
 use App\Service\SmartWaiterPromptBuilder;
+use App\Service\SmartWaiterRequestBuilder;
 use App\Service\SmartWaiterService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -40,6 +41,11 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
  *
  * Order with those three: simple = Gemini → Groq → OpenAI; complex =
  * OpenAI → Gemini → Groq (AIModelRouter, config/ai_providers.yaml).
+ *
+ * Replies are scripted per host; for Gemini, "host/model" (e.g.
+ * self::GEMINI . '/gemini-flash-latest') scripts one model only, taking
+ * precedence over the plain host — two Gemini models share one host.
+ * Every request records its host, model and timeout too.
  *
  * The using TestCase must call fakeAiSetUp() / fakeAiTearDown().
  */
@@ -66,7 +72,7 @@ trait SmartWaiterFakeAiTrait
     /** @var array<string, list<array{0: string, 1: ?string}>> host => scripted [text, finish reason] replies */
     private array $replies = [];
 
-    /** @var list<array{host: string, body: array<string, mixed>}> */
+    /** @var list<array{host: string, model: string, timeout: ?float, body: array<string, mixed>}> */
     private array $requests = [];
 
     /** @var SmartWaiterExchangeLog[] */
@@ -98,8 +104,13 @@ trait SmartWaiterFakeAiTrait
     {
         $http = new MockHttpClient(function (string $method, string $url, array $options): MockResponse {
             $host = (string) parse_url($url, PHP_URL_HOST);
-            $this->requests[] = ['host' => $host, 'body' => json_decode($options['body'] ?? '{}', true) ?? []];
-            $reply = isset($this->replies[$host]) ? array_shift($this->replies[$host]) : null;
+            $body = json_decode($options['body'] ?? '{}', true) ?? [];
+            $model = $host === self::GEMINI
+                ? (preg_match('#/models/([^:/]+):generateContent#', $url, $m) === 1 ? $m[1] : '')
+                : (string) ($body['model'] ?? '');
+            $this->requests[] = ['host' => $host, 'model' => $model, 'timeout' => isset($options['timeout']) ? (float) $options['timeout'] : null, 'body' => $body];
+            $key = isset($this->replies[$host . '/' . $model]) ? $host . '/' . $model : $host;
+            $reply = isset($this->replies[$key]) ? array_shift($this->replies[$key]) : null;
             if ($reply === null) {
                 return new MockResponse('{"error":{"message":"unexpected request"}}', ['http_code' => 500]);
             }
@@ -132,17 +143,9 @@ trait SmartWaiterFakeAiTrait
         return $restaurant;
     }
 
-    private function service(): SmartWaiterService
+    /** The real request builder — what both the chat and the model comparison use — over an empty menu. */
+    private function requestBuilder(): SmartWaiterRequestBuilder
     {
-        $factory = $this->factory();
-
-        $em = $this->createStub(EntityManagerInterface::class);
-        $em->method('persist')->willReturnCallback(function (object $entity): void {
-            if ($entity instanceof SmartWaiterExchangeLog) {
-                $this->logs[] = $entity;
-            }
-        });
-
         $menuContextBuilder = new MenuContextBuilder(
             new ProductAllergenResolver(
                 $this->createStub(EntityManagerInterface::class),
@@ -160,10 +163,22 @@ trait SmartWaiterFakeAiTrait
             $this->createStub(AllergenRepository::class),
         );
 
+        return new SmartWaiterRequestBuilder($menuContextBuilder, new SmartWaiterPromptBuilder(), new HeuristicChatComplexityClassifier());
+    }
+
+    private function service(): SmartWaiterService
+    {
+        $factory = $this->factory();
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('persist')->willReturnCallback(function (object $entity): void {
+            if ($entity instanceof SmartWaiterExchangeLog) {
+                $this->logs[] = $entity;
+            }
+        });
+
         return new SmartWaiterService(
-            $menuContextBuilder,
-            new SmartWaiterPromptBuilder(),
-            new HeuristicChatComplexityClassifier(),
+            $this->requestBuilder(),
             new AIModelRouter($factory, new NullLogger()),
             $factory,
             $this->store,

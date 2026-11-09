@@ -31,14 +31,20 @@ final class AIProviderFactory
         private readonly string $projectDir,
     ) {}
 
-    /** @return array{fast: AIProviderInterface[], capable: AIProviderInterface[]} */
+    /**
+     * Every enabled, key-configured provider by tier — what AIModelRouter
+     * (Smart Waiter) and TranslationAiCaller try in order. Never includes a
+     * manual_only entry (see config/ai_providers.yaml).
+     *
+     * @return array{fast: AIProviderInterface[], capable: AIProviderInterface[]}
+     */
     public function getAvailableProviders(): array
     {
         $byTier = ['fast' => [], 'capable' => []];
 
         foreach ($this->loadConfig() as $tier => $entries) {
             foreach ($entries as $entry) {
-                if (!$entry['enabled']) {
+                if (!$entry['enabled'] || self::isManualOnly($entry)) {
                     continue;
                 }
                 $apiKey = $this->resolveEnv($entry['api_key_env']);
@@ -68,7 +74,7 @@ final class AIProviderFactory
 
         foreach ($this->loadConfig() as $entries) {
             foreach ($entries as $entry) {
-                if (!$entry['enabled'] || !($entry['supports_vision'] ?? false)) {
+                if (!$entry['enabled'] || self::isManualOnly($entry) || !($entry['supports_vision'] ?? false)) {
                     continue;
                 }
                 $apiKey = $this->resolveEnv($entry['api_key_env']);
@@ -121,6 +127,8 @@ final class AIProviderFactory
      * AIModelRouter's normal callers (Smart Waiter). Same
      * enabled+key-configured availability check as getAvailableProviders().
      * Returns null if the id doesn't exist, is disabled, or has no key set.
+     * The only way to reach a manual_only entry: only manual console tools
+     * ask for one by its id (app:smart-waiter:ask --modelos).
      */
     public function getProviderById(string $id): ?AIProviderInterface
     {
@@ -142,6 +150,12 @@ final class AIProviderFactory
         }
 
         return null;
+    }
+
+    /** manual_only: true — only manual console tools may use it, asking by its id; never the chat, translations or menu photos. */
+    private static function isManualOnly(array $entry): bool
+    {
+        return ($entry['manual_only'] ?? false) === true;
     }
 
     private function build(array $entry, string $apiKey): AIProviderInterface

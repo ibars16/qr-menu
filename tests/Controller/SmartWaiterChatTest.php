@@ -45,7 +45,7 @@ final class SmartWaiterChatTest extends WebTestCase
     /** @var array<string, mixed> */
     private array $previousEnv = [];
 
-    /** @var list<array{host: string, body: array<string, mixed>}> */
+    /** @var list<array{host: string, url: string, body: array<string, mixed>}> */
     private array $requests = [];
 
     protected function setUp(): void
@@ -61,7 +61,7 @@ final class SmartWaiterChatTest extends WebTestCase
 
         $http = new MockHttpClient(function (string $method, string $url, array $options): MockResponse {
             $host = (string) parse_url($url, PHP_URL_HOST);
-            $this->requests[] = ['host' => $host, 'body' => json_decode($options['body'] ?? '{}', true) ?? []];
+            $this->requests[] = ['host' => $host, 'url' => $url, 'body' => json_decode($options['body'] ?? '{}', true) ?? []];
             if ($host !== 'generativelanguage.googleapis.com') {
                 return new MockResponse('{"error":{"message":"unexpected request"}}', ['http_code' => 500]);
             }
@@ -172,6 +172,21 @@ final class SmartWaiterChatTest extends WebTestCase
         );
 
         return json_decode((string) $this->client->getResponse()->getContent(), true) ?? [];
+    }
+
+    /** Pinning a model is only for app:smart-waiter:ask --modelos (console): nothing a customer sends can pick one, not even a manual_only one. */
+    public function testNothingInTheRequestCanPickTheModel(): void
+    {
+        $this->client->request(
+            'POST',
+            '/r/' . $this->restaurant->getSlug() . '/chat',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode(['message' => '¿Qué entrantes hay?', 'locale' => 'es', 'provider' => 'gemini-flash', 'modelos' => 'gemini-flash', 'model' => 'gemini-flash-latest']),
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $this->requests);
+        self::assertStringContainsString('/models/gemini-flash-lite-latest:generateContent', $this->requests[0]['url'], 'the usual order: Gemini flash-lite first');
     }
 
     public function testAMenuWithASetMenuIsAnswered(): void

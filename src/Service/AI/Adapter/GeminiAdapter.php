@@ -63,7 +63,7 @@ final class GeminiAdapter implements AIProviderInterface
                         'temperature' => $request->temperature,
                     ],
                 ],
-                'timeout' => 20,
+                'timeout' => $request->timeout ?? 20,
             ] + ($request->maxDuration !== null ? ['max_duration' => $request->maxDuration] : []));
 
             $status = $response->getStatusCode();

@@ -20,7 +20,8 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 class SmartWaiterController extends AbstractController
 {
-    private const MAX_MESSAGE_LENGTH = 800;
+    /** Also applied by app:smart-waiter:ask --modelos, so a comparison never answers what the chat would refuse. */
+    public const MAX_MESSAGE_LENGTH = 800;
     private const RATE_LIMIT_PER_MINUTE = 20;
 
     #[Route('/r/{slug}/chat', name: 'menu_chat', methods: ['POST'])]
