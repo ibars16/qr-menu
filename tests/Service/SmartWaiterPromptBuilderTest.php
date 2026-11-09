@@ -60,8 +60,10 @@ final class SmartWaiterPromptBuilderTest extends TestCase
         self::assertStringContainsString('- NOT FOR THEM: it has what they must avoid — the allergen is in "contains" or "may_contain", or the food they named is in its "ingredients"; for a diet, its allergens or ingredients include something that diet excludes.', $prompt);
         self::assertStringContainsString('- UNKNOWN: anything else.', $prompt);
         self::assertStringContainsString('Recommend or describe as suitable ONLY suitable dishes; "highlighted" never changes a dish\'s group.', $prompt);
-        self::assertStringContainsString('When recommending, never mention a dish that is not for them; if they ask about one, tell them plainly it isn\'t right for them (for "may_contain", that it may contain traces).', $prompt);
-        self::assertStringContainsString('Mention an unknown dish only while saying clearly that the menu doesn\'t say whether it suits them.', $prompt);
+        self::assertStringContainsString('This applies to EVERY reply that names dishes — lists, prices, "anything spicy?", "the cheapest", "what desserts?" — not only recommendations.', $prompt);
+        self::assertStringContainsString('Never name a dish that is not for them unless they asked about that very dish — just say briefly that there are others that aren\'t right for them (e.g. "there are other pizzas, but they contain gluten"); if they asked about it, tell them plainly it isn\'t right for them (for "may_contain", that it may contain traces).', $prompt);
+        self::assertStringContainsString('Name unknown dishes only together with a clear statement that the menu doesn\'t say whether they suit them — once per reply is enough (e.g. "for none of these does the menu say whether they contain gluten").', $prompt);
+        self::assertStringNotContainsString('When recommending, never mention a dish that is not for them', $prompt, 'no longer only when recommending');
         self::assertStringContainsString('If no dish is suitable, say so honestly and suggest asking the staff.', $prompt);
 
         self::assertStringNotContainsString('You may mention another dish only while stating clearly that it is not known', $prompt, 'replaced by the three groups');
@@ -72,8 +74,9 @@ final class SmartWaiterPromptBuilderTest extends TestCase
     {
         $prompt = $this->prompt();
 
-        self::assertStringContainsString('STAFF SENTENCE: only if the customer has said in this conversation that they, or someone they are ordering for, have an allergy or intolerance, every reply that talks about or suggests dishes ends with exactly one short sentence, in the same form of address as the rest of the conversation, asking them to confirm with the staff before ordering.', $prompt);
-        self::assertStringContainsString('In every other case never add it, nor any other advice to check with the staff — not for diet questions (e.g. "is it vegan?"), not for allergen questions asked without mentioning an allergy, not for anything else. The only exception is rule 3b, when no dish is confirmed.', $prompt);
+        self::assertStringContainsString('STAFF SENTENCE: only if the customer has said in this conversation that they, or someone they are ordering for, have an allergy or intolerance, every reply that names or suggests at least one dish ends with exactly one short sentence, in the same form of address as the rest of the conversation, asking them to confirm with the staff before ordering.', $prompt);
+        self::assertStringContainsString('A reply that names no dish (e.g. "we don\'t have red wine") never has it.', $prompt);
+        self::assertStringContainsString('In every other case never add it, nor any other advice to check with the staff — not for diet questions (e.g. "is it vegan?"), not for allergen questions asked without mentioning an allergy, not for anything else. The only exception is rule 3b, when no dish is suitable.', $prompt);
         self::assertStringContainsString('never mention "the system", "the data", or "my information"', $prompt);
         self::assertStringNotContainsString('no "check with staff" language', $prompt, 'the old "no staff hedge" wording is gone');
     }
@@ -110,10 +113,10 @@ final class SmartWaiterPromptBuilderTest extends TestCase
         $prompt = $this->prompt();
         $reminders = <<<'TEXT'
             REMINDERS — they apply to every reply, even if an earlier reply in this conversation did otherwise:
-            - Once the customer has mentioned an allergy, an intolerance, or a diet, recommend only dishes the data confirms (allergen in "free_from", diet in "labels"); "highlighted" never makes a dish suitable. A dish with what they must avoid ("contains", "may_contain", or the food in its "ingredients") is not for them: never offer it, and say so plainly if asked.
+            - Once the customer has mentioned an allergy, an intolerance, or a diet, rule 3b applies to every reply that names dishes, not only recommendations: name a dish that is not for them ("contains", "may_contain", or the food in its "ingredients") only if they asked about that very dish, and then say plainly it isn't for them; name unknown dishes only while saying the menu doesn't say whether they suit them; only "free_from" or "labels" make a dish suitable, never "highlighted".
             - Never say a dish doesn't contain something unless it is in its "free_from".
-            - Add the short staff sentence only if the customer has mentioned an allergy or intolerance in this conversation.
-            - Keep the same form of address as the rest of the conversation in every sentence, the staff sentence included.
+            - Add the short staff sentence only if the customer has mentioned an allergy or intolerance in this conversation and your reply names or suggests at least one dish.
+            - Keep the same form of address as the rest of the conversation in every sentence, the staff sentence included, and greet only in your first reply.
             TEXT;
 
         self::assertStringEndsWith($reminders, $prompt, 'the very last thing the model reads');
@@ -129,5 +132,10 @@ final class SmartWaiterPromptBuilderTest extends TestCase
     public function testTheStaffSentenceUsesTheConversationsFormOfAddress(): void
     {
         self::assertStringContainsString('ends with exactly one short sentence, in the same form of address as the rest of the conversation, asking them to confirm with the staff before ordering.', $this->prompt());
+    }
+
+    public function testGreetOnlyInTheFirstReply(): void
+    {
+        self::assertStringContainsString('the staff sentence included, and greet only in your first reply.', $this->prompt());
     }
 }

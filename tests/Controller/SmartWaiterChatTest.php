@@ -197,7 +197,7 @@ final class SmartWaiterChatTest extends WebTestCase
 
         $menuStart = strpos($prompt, "MENU DATA (JSON — the complete and only menu of this restaurant):\n") + strlen("MENU DATA (JSON — the complete and only menu of this restaurant):\n");
         $menuJson = substr($prompt, $menuStart, strpos($prompt, "\n\nREMINDERS —") - $menuStart);
-        self::assertStringEndsWith('Keep the same form of address as the rest of the conversation in every sentence, the staff sentence included.', $prompt, 'the reminders close the instruction, after the menu');
+        self::assertStringEndsWith('Keep the same form of address as the rest of the conversation in every sentence, the staff sentence included, and greet only in your first reply.', $prompt, 'the reminders close the instruction, after the menu');
         $categories = json_decode(trim($menuJson), true);
         self::assertIsArray($categories, 'the menu data is valid JSON');
 
