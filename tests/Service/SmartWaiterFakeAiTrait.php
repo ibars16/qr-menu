@@ -80,7 +80,7 @@ trait SmartWaiterFakeAiTrait
             $this->previousEnv[$name] = $_ENV[$name] ?? null;
             $_ENV[$name] = $value;
         }
-        $this->store = new SmartWaiterConversationStore(new ArrayAdapter());
+        $this->store = new SmartWaiterConversationStore(new ArrayAdapter(), new NullLogger());
     }
 
     private function fakeAiTearDown(): void
@@ -203,5 +203,29 @@ trait SmartWaiterFakeAiTrait
             static fn (array $m) => [$m['role'], $m['content']],
             array_filter($request['body']['messages'], static fn (array $m) => $m['role'] !== 'system'),
         ));
+    }
+
+    /** The instruction exactly as one request carried it: Gemini's systemInstruction, or the OpenAI-shape system message. */
+    private function systemText(array $request): string
+    {
+        if ($request['host'] === self::GEMINI) {
+            return $request['body']['systemInstruction']['parts'][0]['text'];
+        }
+
+        return $request['body']['messages'][0]['content'];
+    }
+
+    /** @return list<string>|null the EARLIER CUSTOMER MESSAGES block of one request, decoded; null when there is none */
+    private function earlierCustomerMessages(array $request): ?array
+    {
+        $system = $this->systemText($request);
+        $header = strpos($system, "\nEARLIER CUSTOMER MESSAGES (JSON");
+        if ($header === false) {
+            return null;
+        }
+        $jsonStart = strpos($system, "\n", $header + 1) + 1;
+        $jsonEnd = strpos($system, "\n\nREMINDERS —", $jsonStart);
+
+        return json_decode(substr($system, $jsonStart, $jsonEnd - $jsonStart), true, flags: JSON_THROW_ON_ERROR);
     }
 }

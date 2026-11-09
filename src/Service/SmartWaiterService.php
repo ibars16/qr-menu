@@ -42,6 +42,7 @@ final class SmartWaiterService
         $restaurantId = $restaurant->getId();
 
         $history = $this->conversationStore->getHistory($conversationId, $restaurantId);
+        $earlierCustomerMessages = $this->conversationStore->getEarlierCustomerMessages($conversationId, $restaurantId);
 
         $menuContext = $this->menuContextBuilder->build($restaurant, $locale, $currency);
         $vocabulary = $this->menuContextBuilder->extractVocabulary($menuContext);
@@ -49,7 +50,7 @@ final class SmartWaiterService
 
         $userChatMessage = new ChatMessage('user', $userMessage);
         $aiRequest = new AIRequest(
-            systemPrompt: $this->promptBuilder->build($menuContext, $locale),
+            systemPrompt: $this->promptBuilder->build($menuContext, $locale, $earlierCustomerMessages),
             messages: [...$history, $userChatMessage],
         );
 
@@ -64,6 +65,10 @@ final class SmartWaiterService
             $log->recordFailure(count($result->attempts), $lastAttempt?->reason);
             $this->em->persist($log);
             $this->em->flush();
+
+            // Unanswered, but still said: e.g. "I'm allergic to bread" must
+            // reach the next question even though this one got no reply.
+            $this->conversationStore->rememberUnansweredCustomerMessage($conversationId, $restaurantId, $userChatMessage);
 
             // Every configured provider just failed — the customer is
             // about to see the generic fallback message (see
