@@ -17,11 +17,14 @@ use App\Repository\AllergenRepository;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\OwnerTextTranslationRepository;
 use App\Service\CurrencyConverter;
+use App\Service\CustomerNeeds;
 use App\Service\MenuContextBuilder;
 use App\Service\OwnerTextTranslationService;
 use App\Service\ProductAllergenResolver;
 use App\Service\ProductTranslatorInterface;
+use App\Service\SmartWaiterDishFit;
 use App\Service\SmartWaiterDishSafety;
+use App\Service\SmartWaiterPromptBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
@@ -168,8 +171,7 @@ final class MenuContextBuilderSmartWaiterDataTest extends TestCase
         $dish = $this->builder()->build($restaurant, 'es', 'EUR')['categories'][0]['products'][0];
 
         self::assertSame('none', $dish['labels']);
-        self::assertSame('unknown (not specified by the restaurant)', $dish['allergens']);
-        self::assertStringStartsWith('unknown', $dish['allergens'], 'rule 6 reads it by this prefix');
+        self::assertSame('?', $dish['allergens'], 'rule 6 explains "?": nothing to quote, nothing that reads as "no allergens"');
         self::assertArrayNotHasKey('allergen_notes', $dish);
         self::assertArrayNotHasKey('dietary_tags', $dish, 'the old key is gone');
     }
@@ -186,7 +188,7 @@ final class MenuContextBuilderSmartWaiterDataTest extends TestCase
         self::assertSame('none', $data['labels']);
     }
 
-    // ── 9. allergens grouped; none = "unknown (…)", never "none …" ───────
+    // ── 9. allergens grouped; none given = "?", never "none …" ──────────
 
     public function testAllergensAreGroupedByPresenceInAllergenOrder(): void
     {
@@ -207,7 +209,7 @@ final class MenuContextBuilderSmartWaiterDataTest extends TestCase
     public function testEmptyGroupsAreLeftOutAndNoAllergensReadsNoneRecorded(): void
     {
         self::assertSame(['contains' => ['Leche']], $this->shape([], ['milk' => [AllergenPresence::CONTAINS]])['allergens']);
-        self::assertSame('unknown (not specified by the restaurant)', $this->shape([], [])['allergens']);
+        self::assertSame('?', $this->shape([], [])['allergens']);
     }
 
     // ── 10. a diet label the allergens contradict is left out ──────────
@@ -352,6 +354,59 @@ final class MenuContextBuilderSmartWaiterDataTest extends TestCase
         self::assertSame(SmartWaiterDishSafety::NO_ALLERGENS, $context['categories'][0]['products'][0]['allergens']);
         self::assertSame(SmartWaiterDishSafety::NO_ALLERGENS, $context['categories'][1]['sections'][0]['dishes'][0]['allergens']);
 
-        self::assertSame([], $builder->extractVocabulary($context), 'neither "unknown (…)" nor "none" is a term');
+        self::assertSame([], $builder->extractVocabulary($context), 'neither "?" nor "none" is a term');
+    }
+
+    public function testTheSpiceLevelReachesTheModelAsWordsNeverANumber(): void
+    {
+        $restaurant = $this->restaurant();
+        $category = $this->category($restaurant, 'Entrantes');
+        foreach ([null, 0, 1, 2, 3, 4, 5] as $level) {
+            $this->dish($category, 'Plato ' . var_export($level, true))->setSpicyLevel($level);
+        }
+
+        $products = $this->builder()->build($restaurant, 'es', 'EUR')['categories'][0]['products'];
+
+        self::assertSame(
+            [null, null, 'mild', 'medium', 'spicy', 'very spicy', 'extreme'],
+            array_column($products, 'spicy_level'),
+            'the public menu\'s own 1–5 scale, in words; unset or 0 stays null',
+        );
+    }
+
+    /**
+     * The case that made us sort the dishes in code: a coeliac asks "anything
+     * spicy?" — the spicy, recommended pizza with gluten reaches the AI only
+     * in "not_suitable": its name, why, and "spicy": true (so it can say
+     * "our only spicy dish has gluten") — no price, no "recommended".
+     */
+    public function testForACoeliacTheSpicyPizzaWithGlutenIsOnlyInNotSuitable(): void
+    {
+        $restaurant = $this->restaurant();
+        $pizzas = $this->category($restaurant, 'Pizzas');
+        $escalivada = $this->dish($pizzas, 'Pizza de escalivada y butifarra de Valls', 1400);
+        $escalivada->setSpicyLevel(3);
+        $escalivada->addTag($this->tag($restaurant, 'contains-gluten', 'Contiene gluten'));
+        $escalivada->addTag($this->tag($restaurant, 'recommended', 'Recomendado'));
+        $this->dish($pizzas, 'Pizza cuatro quesos', 1200);
+
+        $context = $this->builder()->build($restaurant, 'es', 'EUR');
+        self::assertSame(['recommended'], $context['categories'][0]['products'][0]['highlighted'], 'before sorting: recommended…');
+        self::assertSame('spicy', $context['categories'][0]['products'][0]['spicy_level'], '…and spicy');
+        $needs = new CustomerNeeds(['gluten'], [], true);
+        $prompt = (new SmartWaiterPromptBuilder())->build((new SmartWaiterDishFit())->apply($context, $needs), 'es', [], $needs);
+
+        $category = (new SmartWaiterDishFit())->apply($context, $needs)['categories'][0];
+        self::assertSame([['name' => 'Pizza de escalivada y butifarra de Valls', 'spicy' => true, 'contains' => ['Gluten']]], $category['not_suitable']);
+        self::assertSame(['Pizza cuatro quesos'], array_column($category['not_confirmed'], 'name'));
+        self::assertSame(['gluten'], $category['not_confirmed'][0]['unknown_for_customer']);
+        self::assertArrayNotHasKey('allergens', $category['not_confirmed'][0], 'no bare "?" to quote');
+        self::assertArrayNotHasKey('suitable', $category);
+
+        self::assertStringContainsString('"not_suitable":[{"name":"Pizza de escalivada y butifarra de Valls","spicy":true,"contains":["Gluten"]}]', $prompt, 'its spice level only so the AI can say "our only spicy dish has gluten"');
+        self::assertStringNotContainsString('"spicy_level":"spicy"', $prompt, 'never its level, nothing to quote');
+        self::assertStringNotContainsString('"allergens":"?"', $prompt);
+        self::assertStringNotContainsString('"highlighted":["recommended"]', $prompt, 'nor its "recommended"');
+        self::assertStringNotContainsString(SmartWaiterDishSafety::FIT_KEY, $prompt);
     }
 }

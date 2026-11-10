@@ -15,8 +15,9 @@ use App\Enum\AllergenPresence;
  *   a dish without a diet label says so instead of leaving a gap the model
  *   might fill from the dish's name or ingredients.
  * - "allergens": grouped contains / may_contain / free_from (empty groups
- *   left out), or "unknown (not specified by the restaurant)" — never
- *   anything that reads as "no allergens"; notes separately in "allergen_notes",
+ *   left out), or "?" when the restaurant gave none — never anything that
+ *   reads as "no allergens", and no phrase the model could quote to the
+ *   customer; notes separately in "allergen_notes",
  *   text untouched.
  * - A "contains-…" system tag (CONTAINS_TAGS) is an allergen fact, so it is
  *   added to "allergens" as contains — it only ever raises a presence
@@ -27,6 +28,12 @@ use App\Enum\AllergenPresence;
  *
  * Only system tags are recognised by code; an owner's own tag is a label
  * by its name, as written.
+ *
+ * FIT_KEY ("_fit") carries the same facts as codes — allergen code =>
+ * presence (+ its name), and the system diet tags kept as labels — for
+ * SmartWaiterDishFit to sort the dishes for one customer. Internal only:
+ * SmartWaiterDishFit::apply() always removes it before anything reaches
+ * the AI.
  */
 final class SmartWaiterDishSafety
 {
@@ -51,9 +58,13 @@ final class SmartWaiterDishSafety
         ],
     ];
 
+    public const FIT_KEY = '_fit';
+
     public const NO_LABELS = 'none';
-    // Never "none …": the model must not be able to read it as "no allergens".
-    public const NO_ALLERGENS = 'unknown (not specified by the restaurant)';
+    // Never "none", an empty list or a missing key (all readable as "no
+    // allergens"), and no phrase either (models quoted the old "unknown (not
+    // specified by the restaurant)" to customers). Rule 6 explains it.
+    public const NO_ALLERGENS = '?';
 
     /**
      * @param ProductTag[] $tags the dish's tags, "recommended" already taken out
@@ -64,7 +75,7 @@ final class SmartWaiterDishSafety
      * @param \Closure(): array<string, Allergen> $allergensByCode only called when a
      *   "contains-…" tag names an allergen the dish has no entry for
      *
-     * @return array{labels: list<string>|string, allergens: array<string, list<string>>|string, allergen_notes?: list<array{allergen: string, note: string}>}
+     * @return array{labels: list<string>|string, allergens: array<string, list<string>>|string, allergen_notes?: list<array{allergen: string, note: string}>, _fit: array{allergens: array<string, array{presence: string, name: string}>, diets: list<string>}}
      */
     public function shape(array $tags, array $allergenEntries, \Closure $tagName, \Closure $allergenName, \Closure $allergensByCode): array
     {
@@ -98,11 +109,15 @@ final class SmartWaiterDishSafety
         }
 
         $labels = [];
+        $dietCodes = [];
         foreach ($labelTags as $tag) {
             if ($tag->isSystem() && $this->isContradicted($tag->getCode(), $byCode)) {
                 continue;
             }
             $labels[] = $tagName($tag);
+            if ($tag->isSystem()) {
+                $dietCodes[] = $tag->getCode();
+            }
         }
 
         $entries = array_values($byCode);
@@ -110,9 +125,11 @@ final class SmartWaiterDishSafety
 
         $groups = [];
         $notes = [];
+        $fitAllergens = [];
         foreach ($entries as $entry) {
             $name = $allergenName($entry['allergen']);
             $groups[$entry['presence']][] = $name;
+            $fitAllergens[$entry['allergen']->getCode()] = ['presence' => $entry['presence'], 'name' => $name];
             if ($entry['note'] !== null && trim($entry['note']) !== '') {
                 $notes[] = ['allergen' => $name, 'note' => $entry['note']];
             }
@@ -131,6 +148,7 @@ final class SmartWaiterDishSafety
         if ($notes !== []) {
             $result['allergen_notes'] = $notes;
         }
+        $result[self::FIT_KEY] = ['allergens' => $fitAllergens, 'diets' => $dietCodes];
 
         return $result;
     }

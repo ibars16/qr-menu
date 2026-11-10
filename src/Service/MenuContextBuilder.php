@@ -42,6 +42,12 @@ final class MenuContextBuilder
      */
     public const KNOWN_HIGHLIGHT_CODES = ['recommended'];
 
+    /**
+     * "spicy_level" as words, not a number the AI could quote ("nivel 3"):
+     * the public menu's own 1–5 scale (dish.spice_1…5). 0 or unset → null.
+     */
+    public const SPICE_WORDS = [1 => 'mild', 2 => 'medium', 3 => 'spicy', 4 => 'very spicy', 5 => 'extreme'];
+
     public function __construct(
         private readonly ProductAllergenResolver $allergenResolver,
         private readonly CurrencyConverter $currencyConverter,
@@ -215,7 +221,7 @@ final class MenuContextBuilder
             'name' => $translation?->getName() ?? '',
             'description' => $translation?->getDescription(),
             'calories' => $product->getCalories(),
-            'spicy_level' => $product->getSpicyLevel(),
+            'spicy_level' => self::spiceWords($product->getSpicyLevel()),
             'ingredients' => $ingredientNames,
             ...$safety,
             'highlighted' => $highlighted,
@@ -278,5 +284,14 @@ final class MenuContextBuilder
             ?? $allergen->getTranslation('en');
 
         return $t?->getName() ?? $allergen->getCode();
+    }
+
+    private static function spiceWords(?int $level): ?string
+    {
+        if ($level === null || $level < 1) {
+            return null;
+        }
+
+        return self::SPICE_WORDS[min($level, 5)];
     }
 }

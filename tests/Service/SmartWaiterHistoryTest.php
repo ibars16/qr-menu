@@ -59,7 +59,7 @@ final class SmartWaiterHistoryTest extends TestCase
     public function testGroqAndOpenAiSeeTheEarlierAllergyAsAUserMessage(): void
     {
         $service = $this->service();
-        // Gemini unscripted → 500 → Groq answers both questions.
+        // Groq — first in smart_waiter_first — answers both questions.
         $this->replies = [self::GROQ => [[self::FIRST_REPLY, 'stop'], ['Ningún plato está confirmado sin gluten.', 'stop']]];
 
         $first = $service->reply($this->restaurant(), 'es', 'EUR', null, self::ALLERGY);

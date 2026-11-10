@@ -10,6 +10,7 @@ use App\Entity\ProductTranslation;
 use App\Entity\Restaurant;
 use App\Entity\SmartWaiterExchangeLog;
 use App\Service\AI\AIProviderFactory;
+use App\Service\SmartWaiterNeedsDetector;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -48,6 +49,9 @@ final class SmartWaiterChatTest extends WebTestCase
     /** @var list<array{host: string, url: string, body: array<string, mixed>}> */
     private array $requests = [];
 
+    /** @var list<array<string, mixed>> the needs detection calls (request bodies) */
+    private array $detections = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -61,10 +65,21 @@ final class SmartWaiterChatTest extends WebTestCase
 
         $http = new MockHttpClient(function (string $method, string $url, array $options): MockResponse {
             $host = (string) parse_url($url, PHP_URL_HOST);
-            $this->requests[] = ['host' => $host, 'url' => $url, 'body' => json_decode($options['body'] ?? '{}', true) ?? []];
+            $body = json_decode($options['body'] ?? '{}', true) ?? [];
             if ($host !== 'generativelanguage.googleapis.com') {
+                $this->requests[] = ['host' => $host, 'url' => $url, 'body' => $body];
+
                 return new MockResponse('{"error":{"message":"unexpected request"}}', ['http_code' => 500]);
             }
+            // The needs detection (small call, no menu): kept apart, answered "nothing to avoid".
+            if (str_starts_with($body['systemInstruction']['parts'][0]['text'] ?? '', SmartWaiterNeedsDetector::PROMPT_START)) {
+                $this->detections[] = $body;
+
+                return new MockResponse(json_encode([
+                    'candidates' => [['content' => ['parts' => [['text' => '{"avoid":[],"diets":[],"allergy":false,"other":false}']], 'role' => 'model'], 'finishReason' => 'STOP']],
+                ]));
+            }
+            $this->requests[] = ['host' => $host, 'url' => $url, 'body' => $body];
 
             return new MockResponse(json_encode([
                 'candidates' => [['content' => ['parts' => [['text' => 'De primero hay sopa.']], 'role' => 'model'], 'finishReason' => 'STOP']],
@@ -206,26 +221,28 @@ final class SmartWaiterChatTest extends WebTestCase
         self::assertCount(1, $this->requests);
         $prompt = $this->requests[0]['body']['systemInstruction']['parts'][0]['text'];
 
-        foreach (['3b. Once the customer has mentioned an allergy, an intolerance, or a diet', '5. DIETS.', '6. ALLERGENS.', 'STAFF SENTENCE: only if', '7. NO PROMISES.', '8. STAY THE WAITER.', 'Address the customer the same way'] as $rule) {
+        // This fake detection finds nothing to avoid: no sorting rule, no staff sentence (see SmartWaiterDishFitTest / SmartWaiterNeedsFlowTest).
+        foreach (['5. DIETS.', '6. ALLERGENS.', '- STAFF: never advise checking with the staff', '7. NO PROMISES.', '8. STAY THE WAITER.', 'Address the customer the same way'] as $rule) {
             self::assertStringContainsString($rule, $prompt);
         }
 
         $menuStart = strpos($prompt, "MENU DATA (JSON — the complete and only menu of this restaurant):\n") + strlen("MENU DATA (JSON — the complete and only menu of this restaurant):\n");
         $menuJson = substr($prompt, $menuStart, strpos($prompt, "\n\nREMINDERS —") - $menuStart);
-        self::assertStringEndsWith('Keep the same form of address as the rest of the conversation in every sentence, the staff sentence included, and greet only in your first reply.', $prompt, 'the reminders close the instruction, after the menu');
+        self::assertStringEndsWith('and greet only in your first reply. In Spanish, unless the customer uses "usted", keep "tú" also when apologising or declining (e.g. "puedo ayudarte", never "ayudarle").', $prompt, 'the reminders close the instruction, after the menu');
         $categories = json_decode(trim($menuJson), true);
         self::assertIsArray($categories, 'the menu data is valid JSON');
 
         $carpaccio = $categories[0]['products'][0];
         self::assertSame('Carpaccio de salmón', $carpaccio['name']);
         self::assertSame('none', $carpaccio['labels']);
-        self::assertSame('unknown (not specified by the restaurant)', $carpaccio['allergens']);
+        self::assertSame('?', $carpaccio['allergens']);
         self::assertSame(14.0, (float) $carpaccio['price']);
 
         $setDish = $categories[1]['sections'][0]['dishes'][0];
         self::assertSame(15.0, (float) $categories[1]['menu_price']);
         self::assertSame('Sopa de la casa', $setDish['name']);
         self::assertSame('none', $setDish['labels']);
-        self::assertSame('unknown (not specified by the restaurant)', $setDish['allergens']);
+        self::assertSame('?', $setDish['allergens']);
+        self::assertStringNotContainsString('unknown (', $prompt, 'no quotable phrase for unknown allergens anywhere');
     }
 }

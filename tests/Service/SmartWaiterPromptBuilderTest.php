@@ -2,6 +2,7 @@
 
 namespace App\Tests\Service;
 
+use App\Service\CustomerNeeds;
 use App\Service\SmartWaiterPromptBuilder;
 use PHPUnit\Framework\TestCase;
 
@@ -13,14 +14,65 @@ use PHPUnit\Framework\TestCase;
  */
 final class SmartWaiterPromptBuilderTest extends TestCase
 {
-    private function prompt(): string
+    private function prompt(?CustomerNeeds $needs = null, ?string $language = null): string
     {
         return (new SmartWaiterPromptBuilder())->build([
             'restaurant_name' => 'Casa Test',
             'currency' => 'EUR',
-            'categories' => [['name' => 'Entrantes', 'products' => [['name' => 'Carpaccio', 'labels' => 'none', 'allergens' => 'unknown (not specified by the restaurant)']]]],
-        ], 'es');
+            'categories' => [['name' => 'Entrantes', 'products' => [['name' => 'Carpaccio', 'labels' => 'none', 'allergens' => '?']]]],
+        ], 'es', [], $needs, $language);
     }
+
+    private const RULE_10_GENERAL = '10. Reply in the same language the customer is writing in, regardless of this prompt\'s language. Address';
+
+    public function testTheDetectedLanguageIsNamedInRule10AndTheReminders(): void
+    {
+        $prompt = $this->prompt(null, 'en');
+
+        self::assertStringContainsString('10. The customer\'s latest message is in English: reply in English, whatever the language of this prompt, the menu or earlier replies (only if that message is just a dish name or a word like "ok", keep the language of the conversation). Address the customer', $prompt);
+        self::assertStringNotContainsString(self::RULE_10_GENERAL, $prompt);
+        self::assertStringContainsString("did otherwise:\n- Reply in English (rule 10).\n", $prompt, 'first of the reminders');
+        self::assertStringContainsString('reply in Japanese', $this->prompt(new CustomerNeeds(['gluten'], [], true), 'ja'));
+    }
+
+    public function testWithoutAKnownLanguageRule10StaysAsItWas(): void
+    {
+        foreach (['not given' => null, 'not one of the 20' => 'ca', 'empty' => ''] as $case => $language) {
+            $prompt = $this->prompt(null, $language);
+            self::assertStringContainsString(self::RULE_10_GENERAL, $prompt, $case);
+            self::assertStringNotContainsString('(rule 10).', $prompt, $case);
+            self::assertStringNotContainsString('latest message is in', $prompt, $case);
+        }
+    }
+
+    public function testEveryPublicMenuLanguageHasItsEnglishName(): void
+    {
+        self::assertSame(array_keys(require dirname(__DIR__, 2) . '/config/languages.php'), array_keys(SmartWaiterPromptBuilder::LANGUAGE_NAMES));
+    }
+
+    public function testABudgetGetsOneCombinationAddedUpAndNeverOverIt(): void
+    {
+        $rule = '3c. BUDGET. When the customer gives a budget, suggest one single combination: write each dish\'s price and the sum (e.g. "11 + 13.5 = 24.5"), and the total must never go over the budget — if it would, swap or drop a dish. Add a dessert or a drink only if the new total still fits, and say that new total.';
+
+        self::assertStringContainsString($rule, $this->prompt());
+        self::assertStringContainsString($rule, $this->prompt(new CustomerNeeds(['gluten'], [], true)));
+    }
+
+    public function testAllergensAndDietsOnlyWhenAskedIfTheCustomerSaidNoNeed(): void
+    {
+        $line = 'name several dishes in a normal sentence. Bring up allergens or diets only if the customer asks about them.';
+
+        self::assertStringContainsString($line, $this->prompt());
+        self::assertStringNotContainsString('Bring up allergens or diets', $this->prompt(new CustomerNeeds(['gluten'])));
+        self::assertStringNotContainsString('Bring up allergens or diets', $this->prompt(new CustomerNeeds([], ['vegan'])));
+    }
+
+    private const RULE_3B = '3b. The MENU DATA dishes are already sorted for this customer into "suitable", "not_confirmed" and "not_suitable". "suitable": the only dishes you may recommend or call suitable, safe, or free from what they avoid. "not_confirmed": the menu doesn\'t say whether they suit this customer — "unknown_for_customer" lists what is unknown; whenever you name one, say the menu doesn\'t say whether it contains that (e.g. "the menu doesn\'t say whether it has gluten"); never call it suitable or safe, never say it is "without" it, and never say its allergens don\'t show, list or mention it. "not_suitable": never offer or recommend these; you may say they exist and why they aren\'t right for them (e.g. "our only spicy dish has gluten"); if asked about one by name, say plainly it isn\'t right for them (for "may_contain", that it may contain traces). If there is no "suitable" dish, say so honestly. This sorting overrides everything else in the data, "highlighted" included.';
+
+    /** With an allergy the staff sentence is OUR code's (SmartWaiterStaffNote): the AI must write none. */
+    private const NEVER_STAFF = '- STAFF: never mention the staff — a fixed closing sentence about it is added after your reply.';
+
+    private const NO_STAFF = '- STAFF: never advise checking with the staff — not for diet questions (e.g. "is it vegan?"), not for allergen questions, not for anything else.';
 
     public function testDietsComeOnlyFromLabels(): void
     {
@@ -36,7 +88,7 @@ final class SmartWaiterPromptBuilderTest extends TestCase
         $prompt = $this->prompt();
 
         self::assertStringContainsString('6. ALLERGENS.', $prompt);
-        self::assertStringContainsString('every allergen when "allergens" starts with "unknown", is unknown: say the menu doesn\'t say whether the dish contains it.', $prompt);
+        self::assertStringContainsString('every allergen when "allergens" is "?" (the restaurant has given no allergen information for that dish), is unknown: say the menu doesn\'t say whether the dish contains it.', $prompt);
         self::assertStringNotContainsString('none recorded', $prompt);
         self::assertStringContainsString('Never say or imply that a dish does not contain something unless it is listed in "free_from"', $prompt);
         self::assertStringContainsString('say the dish contains it only if its "ingredients" list it; otherwise it is unknown', $prompt);
@@ -51,34 +103,57 @@ final class SmartWaiterPromptBuilderTest extends TestCase
         self::assertStringContainsString('Never use wording that could be heard as "it has no allergens", such as "no allergens registered", "no allergens listed", or "no known allergens".', $prompt);
     }
 
-    public function testWithAConstraintEveryDishIsSuitableNotForThemOrUnknown(): void
+    public function testWithoutNeedsThereIsNoSortingRuleNorCheckedBlock(): void
     {
         $prompt = $this->prompt();
 
-        self::assertStringContainsString('3b. Once the customer has mentioned an allergy, an intolerance, or a diet, every dish is, for them, one of:', $prompt);
-        self::assertStringContainsString('- SUITABLE: the data confirms it — for an allergy or intolerance, the allergen is in its "free_from"; for a diet, the diet is in its "labels".', $prompt);
-        self::assertStringContainsString('- NOT FOR THEM: it has what they must avoid — the allergen is in "contains" or "may_contain", or the food they named is in its "ingredients"; for a diet, its allergens or ingredients include something that diet excludes.', $prompt);
-        self::assertStringContainsString('- UNKNOWN: anything else.', $prompt);
-        self::assertStringContainsString('Recommend or describe as suitable ONLY suitable dishes; "highlighted" never changes a dish\'s group.', $prompt);
-        self::assertStringContainsString('This applies to EVERY reply that names dishes — lists, prices, "anything spicy?", "the cheapest", "what desserts?" — not only recommendations.', $prompt);
-        self::assertStringContainsString('Never name a dish that is not for them unless they asked about that very dish — just say briefly that there are others that aren\'t right for them (e.g. "there are other pizzas, but they contain gluten"); if they asked about it, tell them plainly it isn\'t right for them (for "may_contain", that it may contain traces).', $prompt);
-        self::assertStringContainsString('Name unknown dishes only together with a clear statement that the menu doesn\'t say whether they suit them — once per reply is enough (e.g. "for none of these does the menu say whether they contain gluten").', $prompt);
-        self::assertStringNotContainsString('When recommending, never mention a dish that is not for them', $prompt, 'no longer only when recommending');
-        self::assertStringContainsString('If no dish is suitable, say so honestly and suggest asking the staff.', $prompt);
-
-        self::assertStringNotContainsString('You may mention another dish only while stating clearly that it is not known', $prompt, 'replaced by the three groups');
-        self::assertStringNotContainsString('whose fit for that constraint is unknown as if it were safe', $prompt);
+        self::assertStringNotContainsString('3b.', $prompt);
+        self::assertStringNotContainsString('CHECKED FOR THIS CUSTOMER', $prompt);
+        self::assertStringNotContainsString('"suitable"', $prompt);
     }
 
-    public function testTheStaffSentenceOnlyAfterAnAllergyInThisConversation(): void
+    public function testWithNeedsRule3bOnlyReadsTheSortingAndTheCheckedBlockSaysWhat(): void
     {
-        $prompt = $this->prompt();
+        $prompt = $this->prompt(new CustomerNeeds(['gluten', 'nuts'], ['vegan'], true, true));
 
-        self::assertStringContainsString('STAFF SENTENCE: only if the customer has said in this conversation that they, or someone they are ordering for, have an allergy or intolerance, every reply that names or suggests at least one dish ends with exactly one short sentence, in the same form of address as the rest of the conversation, asking them to confirm with the staff before ordering.', $prompt);
-        self::assertStringContainsString('A reply that names no dish (e.g. "we don\'t have red wine") never has it.', $prompt);
-        self::assertStringContainsString('In every other case never add it, nor any other advice to check with the staff — not for diet questions (e.g. "is it vegan?"), not for allergen questions asked without mentioning an allergy, not for anything else. The only exception is rule 3b, when no dish is suitable.', $prompt);
-        self::assertStringContainsString('never mention "the system", "the data", or "my information"', $prompt);
-        self::assertStringNotContainsString('no "check with staff" language', $prompt, 'the old "no staff hedge" wording is gone');
+        self::assertStringContainsString(self::RULE_3B, $prompt);
+        self::assertStringContainsString(
+            "CHECKED FOR THIS CUSTOMER — from what they said in this conversation; the dishes in the MENU DATA are already sorted for them (rule 3b):\n"
+            . "- avoids: gluten, tree nuts\n- diets: vegan\n- also avoids something the menu can't check, so no dish is confirmed for them\n\n"
+            . "MENU DATA (JSON",
+            $prompt,
+        );
+
+        // The AI no longer crosses an allergy with each dish itself.
+        foreach (['- SUITABLE: the data confirms it', '- NOT FOR THEM:', '- UNKNOWN: anything else.', 'the allergen that food carries', 'This applies to EVERY reply that names dishes', 'Once the customer has mentioned an allergy'] as $gone) {
+            self::assertStringNotContainsString($gone, $prompt);
+        }
+        self::assertStringNotContainsString('say so honestly and suggest asking the staff', $prompt);
+    }
+
+    public function testTheCheckedBlockLeavesOutWhatThereIsNot(): void
+    {
+        $prompt = $this->prompt(new CustomerNeeds(['milk']));
+
+        self::assertStringContainsString("(rule 3b):\n- avoids: milk\n\nMENU DATA (JSON", $prompt);
+    }
+
+    public function testWithAnAllergyTheAiNeverWritesTheStaffSentenceOurCodeDoes(): void
+    {
+        $allergy = $this->prompt(new CustomerNeeds(['gluten'], [], true));
+        self::assertStringContainsString(self::NEVER_STAFF, $allergy);
+        self::assertStringNotContainsString(self::NO_STAFF, $allergy);
+        self::assertStringNotContainsString('STAFF SENTENCE', $allergy);
+        self::assertStringNotContainsString('asking them to confirm with the staff', $allergy);
+
+        foreach ([$this->prompt(), $this->prompt(new CustomerNeeds([], ['vegan'])), $this->prompt(new CustomerNeeds(['gluten']))] as $noAllergy) {
+            self::assertStringContainsString(self::NO_STAFF, $noAllergy, 'no needs, a diet, or avoiding without an allergy: never the staff');
+            self::assertStringNotContainsString(self::NEVER_STAFF, $noAllergy);
+        }
+
+        self::assertStringNotContainsString('only if the customer has said in this conversation that they', $allergy, 'decided by the code, not by the model');
+        self::assertStringNotContainsString('The only exception is rule 3b', $allergy);
+        self::assertStringContainsString('never mention "the system", "the data", or "my information"', $allergy);
     }
 
     public function testNoPromisesAndStayTheWaiter(): void
@@ -95,7 +170,41 @@ final class SmartWaiterPromptBuilderTest extends TestCase
 
     public function testTheSameFormOfAddressAsTheCustomer(): void
     {
-        self::assertStringContainsString('Address the customer the same way throughout every reply and the whole conversation: the way the customer addresses you (e.g. in Spanish, "tú" or "usted"). If it isn\'t clear, use "tú" in Spanish, and in other languages the form a waiter would normally use.', $this->prompt());
+        self::assertStringContainsString('Address the customer the same way throughout every reply and the whole conversation, also when you decline something: the way the customer addresses you (e.g. in Spanish, "tú" or "usted" — the verbs show it too: "cuéntame", "¿tienes…?" are "tú"; "cuénteme", "¿tiene…?" are "usted"). If it isn\'t clear — e.g. "¿tenéis…?" speaks to the whole restaurant — use "tú" in Spanish, and in other languages the form a waiter would normally use.', $this->prompt());
+    }
+
+    public function testPlainEverydayWordsNeverTheDatasOwn(): void
+    {
+        self::assertStringContainsString('- Speak as the waiter about what the menu says, in plain everyday words and as the restaurant\'s own menu ("we don\'t have…", "our menu doesn\'t say…", never "the menu I have"): never mention "the system", "the data", or "my information"; never describe how the menu data is arranged (e.g. "it\'s in the list of dishes with gluten", "it\'s marked as not suitable") — just say what it means ("it has gluten, so it isn\'t right for you"); and never copy the data\'s own words or values, nor put one in quotation marks (e.g. "?", "none", "may_contain", a "spicy_level"), except an "allergen_notes" note — say it naturally, e.g. "the menu doesn\'t say", "it isn\'t marked as vegan", "it may contain traces", "it\'s quite spicy".', $this->prompt());
+    }
+
+    public function testNeverQuotingButTheAllergenNotesStillQuotedVerbatim(): void
+    {
+        $prompt = $this->prompt(new CustomerNeeds(['gluten'], [], true));
+
+        self::assertStringContainsString('nor put one in quotation marks (e.g. "?", "none", "may_contain", a "spicy_level"), except an "allergen_notes" note', $prompt);
+        self::assertStringContainsString('reproduce the note text itself inside quotation marks, character-for-character exactly as written', $prompt, 'rule 6 untouched');
+        self::assertStringContainsString('"it isn\'t marked as vegan"', $prompt, '"marked" itself is still the good wording (rule 5)');
+        self::assertStringContainsString('"labels": "none" means the restaurant has marked no label on that dish: say it isn\'t marked as such.', $prompt);
+    }
+
+    public function testPlainTextNoFormatting(): void
+    {
+        self::assertStringContainsString('Plain text only: the chat shows your words exactly as typed, so never use any formatting — no **bold**, no "-" or "*" lists, no "#" headings; name several dishes in a normal sentence.', $this->prompt());
+    }
+
+    public function testANotConfirmedDishCanNeverBeSoldAsSafe(): void
+    {
+        $prompt = $this->prompt(new CustomerNeeds(['gluten'], [], true));
+
+        self::assertStringContainsString('never call it suitable or safe, never say it is "without" it, and never say its allergens don\'t show, list or mention it', $prompt);
+        self::assertStringContainsString('- Recommend only "suitable" dishes. For a "not_confirmed" dish always say the menu doesn\'t say whether it has what they avoid', $prompt);
+        self::assertStringNotContainsString('"unconfirmed"', $prompt);
+    }
+
+    public function testANotSuitableDishMayBeSaidToExistWithoutBeingSold(): void
+    {
+        self::assertStringContainsString('"not_suitable": never offer or recommend these; you may say they exist and why they aren\'t right for them (e.g. "our only spicy dish has gluten")', $this->prompt(new CustomerNeeds(['gluten'], [], true)));
     }
 
     public function testTheMenuDataComesRightBeforeTheReminders(): void
@@ -104,39 +213,54 @@ final class SmartWaiterPromptBuilderTest extends TestCase
 
         self::assertStringContainsString('You are the digital waiter for "Casa Test"', $prompt);
         self::assertStringContainsString('Prices are in EUR.', $prompt);
-        self::assertStringContainsString("MENU DATA (JSON — the complete and only menu of this restaurant):\n" . '[{"name":"Entrantes","products":[{"name":"Carpaccio","labels":"none","allergens":"unknown (not specified by the restaurant)"}]}]' . "\n\nREMINDERS", $prompt);
+        self::assertStringContainsString("MENU DATA (JSON — the complete and only menu of this restaurant):\n" . '[{"name":"Entrantes","products":[{"name":"Carpaccio","labels":"none","allergens":"?"}]}]' . "\n\nREMINDERS", $prompt);
         self::assertStringNotContainsString('dietary_tags', $prompt);
     }
 
     public function testTheRemindersCloseThePromptAfterTheMenu(): void
     {
-        $prompt = $this->prompt();
-        $reminders = <<<'TEXT'
+        $plain = <<<'TEXT'
             REMINDERS — they apply to every reply, even if an earlier reply in this conversation did otherwise:
-            - Once the customer has mentioned an allergy, an intolerance, or a diet, rule 3b applies to every reply that names dishes, not only recommendations: name a dish that is not for them ("contains", "may_contain", or the food in its "ingredients") only if they asked about that very dish, and then say plainly it isn't for them; name unknown dishes only while saying the menu doesn't say whether they suit them; only "free_from" or "labels" make a dish suitable, never "highlighted".
             - Never say a dish doesn't contain something unless it is in its "free_from".
-            - Add the short staff sentence only if the customer has mentioned an allergy or intolerance in this conversation and your reply names or suggests at least one dish.
-            - Keep the same form of address as the rest of the conversation in every sentence, the staff sentence included, and greet only in your first reply.
+            - Never advise checking with the staff.
+            - Plain everyday words and plain text: no formatting (**, -, #), no wording copied from the data, and never talk about how the data is arranged.
+            - Keep the same form of address as the rest of the conversation in every sentence and every verb (never "le recomendaría" and "confirma" together), and greet only in your first reply. In Spanish, unless the customer uses "usted", keep "tú" also when apologising or declining (e.g. "puedo ayudarte", never "ayudarle").
             TEXT;
-
-        self::assertStringEndsWith($reminders, $prompt, 'the very last thing the model reads');
+        $prompt = $this->prompt();
+        self::assertStringEndsWith($plain, $prompt, 'the very last thing the model reads');
         self::assertGreaterThan(strpos($prompt, 'MENU DATA (JSON'), strpos($prompt, 'REMINDERS —'));
-        self::assertLessThanOrEqual(5, substr_count($reminders, "\n"), 'a header and four lines at most');
+
+        $withAllergy = <<<'TEXT'
+            REMINDERS — they apply to every reply, even if an earlier reply in this conversation did otherwise:
+            - Recommend only "suitable" dishes. For a "not_confirmed" dish always say the menu doesn't say whether it has what they avoid — never "without", "suitable", "safe", or "doesn't show/mention it". Never offer "not_suitable" ones.
+            - Never say a dish doesn't contain something unless it is in its "free_from".
+            - Never mention the staff.
+            - Plain everyday words and plain text: no formatting (**, -, #), no wording copied from the data, and never talk about how the data is arranged.
+            - Keep the same form of address as the rest of the conversation in every sentence and every verb (never "le recomendaría" and "confirma" together), and greet only in your first reply. In Spanish, unless the customer uses "usted", keep "tú" also when apologising or declining (e.g. "puedo ayudarte", never "ayudarle").
+            TEXT;
+        self::assertStringEndsWith($withAllergy, $this->prompt(new CustomerNeeds(['gluten'], [], true)));
+        self::assertLessThanOrEqual(6, substr_count($withAllergy, "\n"), 'a header and five lines at most');
     }
 
-    public function testRuleTwoGivesWayToRuleThreeB(): void
+    public function testRuleTwoNoLongerCrossesAllergiesItself(): void
     {
-        self::assertStringContainsString('2. A dish is "recommended" / "the specialty" / "what you\'d suggest" ONLY if its "highlighted" array contains "recommended". Once the customer has mentioned an allergy, an intolerance, or a diet, rule 3b comes first: never recommend a "highlighted" dish to them unless the data confirms it suits them. If no dish has it,', $this->prompt());
-    }
+        $prompt = $this->prompt(new CustomerNeeds(['gluten']));
 
-    public function testTheStaffSentenceUsesTheConversationsFormOfAddress(): void
-    {
-        self::assertStringContainsString('ends with exactly one short sentence, in the same form of address as the rest of the conversation, asking them to confirm with the staff before ordering.', $this->prompt());
+        self::assertStringContainsString('2. A dish is "recommended" / "the specialty" / "what you\'d suggest" ONLY if its "highlighted" array contains "recommended". If no dish has it,', $prompt);
+        self::assertStringContainsString('This sorting overrides everything else in the data, "highlighted" included.', $prompt);
     }
 
     public function testGreetOnlyInTheFirstReply(): void
     {
-        self::assertStringContainsString('the staff sentence included, and greet only in your first reply.', $this->prompt());
+        self::assertStringContainsString('(never "le recomendaría" and "confirma" together), and greet only in your first reply. In Spanish, unless the customer uses "usted", keep "tú" also when apologising or declining (e.g. "puedo ayudarte", never "ayudarle").', $this->prompt());
+    }
+
+    public function testTheFormOfAddressExamplesAreNotTheTestCsvsWording(): void
+    {
+        $prompt = $this->prompt();
+        foreach (['"ignora"', '"dime"'] as $word) {
+            self::assertStringNotContainsString($word, $prompt, 'so the CSV run measures the rule');
+        }
     }
 
     public function testNoEarlierMessagesNoBlock(): void
@@ -158,7 +282,7 @@ final class SmartWaiterPromptBuilderTest extends TestCase
             . '["Soy alérgico al pan, ¿puedo tomar el carpaccio de salmón?","¿Y de postre?"]' . "\n\nREMINDERS —",
             $prompt,
         );
-        self::assertStringEndsWith('greet only in your first reply.', $prompt, 'the reminders are still the last thing');
+        self::assertStringEndsWith('(e.g. "puedo ayudarte", never "ayudarle").', $prompt, 'the reminders are still the last thing');
     }
 
     public function testACustomerMessageCannotBreakOutOfTheBlock(): void
@@ -172,9 +296,14 @@ final class SmartWaiterPromptBuilderTest extends TestCase
 
         self::assertSame(1, substr_count($prompt, "\n\nREMINDERS —"), 'the customer\'s text stays on one escaped line');
         self::assertSame(1, substr_count($prompt, "\nMENU DATA (JSON"));
-        self::assertStringEndsWith('greet only in your first reply.', $prompt);
+        self::assertStringEndsWith('(e.g. "puedo ayudarte", never "ayudarle").', $prompt);
 
         $line = explode("\n", substr($prompt, strpos($prompt, 'EARLIER CUSTOMER MESSAGES')))[1];
         self::assertSame([$tricky], json_decode($line, true, flags: JSON_THROW_ON_ERROR), 'and decodes back to exactly what was typed');
+    }
+
+    public function testNoQuotablePhraseForUnknownAllergensIsLeft(): void
+    {
+        self::assertStringNotContainsString('unknown (', $this->prompt(), 'not in the rules, not in the data');
     }
 }

@@ -7,6 +7,7 @@ use App\Entity\Restaurant;
 use App\Repository\RestaurantRepository;
 use App\Service\MenuPreferencesResolver;
 use App\Service\SmartWaiterModelComparison;
+use App\Service\SmartWaiterReplyCleaner;
 use App\Tests\Service\SmartWaiterFakeAiTrait;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
@@ -71,11 +72,15 @@ final class SmartWaiterAskModelsTest extends TestCase
             fn (array $criteria) => ($criteria['slug'] ?? null) === 'david-test' ? $this->theRestaurant : null,
         );
 
+        $factory = $this->factory();
         $comparison = new SmartWaiterModelComparison(
             $this->requestBuilder(),
-            $this->factory(),
+            $factory,
             $restaurants,
             new MenuPreferencesResolver(dirname(__DIR__, 2)),
+            new SmartWaiterReplyCleaner(),
+            $this->needsDetector($factory),
+            $this->staffNote(),
         );
 
         return new CommandTester(new SmartWaiterAskCommand($chatHttp, $this->clock, $connection, $comparison, $this->dir));
@@ -167,12 +172,13 @@ final class SmartWaiterAskModelsTest extends TestCase
     {
         $questions = ['Soy alérgico al pan', '¿Y qué me recomiendas?'];
 
-        // The customer chat, answered by Gemini flash-lite.
+        // The customer chat, answered by Gemini flash-lite (Groq, first in
+        // smart_waiter_first, is unscripted here and fails).
         $this->replies = [self::GEMINI => [['Respuesta 1', 'STOP'], ['Respuesta 2', 'STOP']]];
         $chat = $this->service();
         $conversationId = $chat->reply($this->theRestaurant, 'es', 'EUR', null, $questions[0])['conversationId'];
         $chat->reply($this->theRestaurant, 'es', 'EUR', $conversationId, $questions[1]);
-        [, $chatSecond] = $this->requests;
+        $chatSecond = $this->requestsTo('gemini-flash-lite-latest')[1];
 
         // The comparison, same questions, same replies.
         $this->requests = [];
@@ -199,6 +205,65 @@ final class SmartWaiterAskModelsTest extends TestCase
         $second = $this->requests[1];
         self::assertSame([['user', '¿Y qué me recomiendas?']], $this->sentTurns($second), 'like the chat: a cut-off answer never becomes a turn…');
         self::assertSame(['Soy alérgico al pan'], $this->earlierCustomerMessages($second), '…but the question is still said');
+    }
+
+    public function testAnswersAreCleanedLikeTheChatsInTheCsvAndInTheHistory(): void
+    {
+        $this->replies = [self::GROQ => [['Te recomiendo la **ensalada**.', 'stop'], ['Vale.', 'stop']]];
+
+        $this->runCommand("conversacion;pregunta\nA;¿Qué me recomiendas?\nA;¿Y de postre?\n", ['--modelos' => 'groq-llama']);
+
+        self::assertSame('Te recomiendo la ensalada.', $this->outputRows()[1][3]);
+        self::assertSame('Te recomiendo la ensalada.', $this->sentTurns($this->requests[1])[1][1]);
+    }
+
+    public function testEachModelDetectsTheNeedsItselfWithNoFallback(): void
+    {
+        $this->needsReplies = [self::GROQ => [['Eres celíaco.', 'stop'], [self::needs(), 'stop']]];
+        $this->replies = [
+            self::GROQ => [['Groq 2', 'stop']],
+            self::FLASH_LITE => [['Lite 1', 'STOP'], ['Lite 2', 'STOP']],
+        ];
+
+        $this->runCommand("conversacion;pregunta\nA;Soy celíaco\nA;¿Algo picante?\n", ['--modelos' => 'groq-llama,gemini-flash-lite']);
+
+        $rows = $this->outputRows();
+        self::assertSame('', $rows[1][3]);
+        self::assertSame('no se pudo comprobar la alergia (respuesta no válida)', $rows[1][4], 'Groq\'s own detection failed: nobody stepped in');
+        self::assertSame(['Lite 1', ''], [$rows[1][5], $rows[1][6]]);
+        self::assertSame(['Groq 2', ''], [$rows[2][3], $rows[2][4]]);
+
+        self::assertSame(['openai/gpt-oss-120b', 'gemini-flash-lite-latest', 'openai/gpt-oss-120b', 'gemini-flash-lite-latest'], array_column($this->detections, 'model'), 'one detection per model and question, by that model');
+        self::assertSame(['gemini-flash-lite-latest', 'openai/gpt-oss-120b', 'gemini-flash-lite-latest'], array_column($this->requests, 'model'), 'no answer without a detection');
+
+        $groqSecond = json_decode($this->sentTurns($this->detections[2])[0][1], true);
+        self::assertSame(['Soy celíaco', '¿Algo picante?'], $groqSecond['customer_messages'], 'like the chat: the failed one is detected again');
+    }
+
+    public function testTheDetectedNeedsSortTheModelsInstructionLikeTheChats(): void
+    {
+        $this->needsReplies = [self::FLASH_LITE => [[self::needs(['gluten'], [], true), 'STOP']]];
+        $this->replies = [self::FLASH_LITE => [['Vale.', 'STOP']]];
+
+        $this->runCommand("conversacion;pregunta\nA;Soy celíaco\n", ['--modelos' => 'gemini-flash-lite']);
+
+        $system = $this->systemText($this->requests[0]);
+        self::assertStringContainsString("- avoids: gluten\n", $system);
+        self::assertStringContainsString('- STAFF: never mention the staff', $system);
+        self::assertSame(60.0, $this->detections[0]['timeout'], '--espera applies to the small call too');
+        self::assertSame("Vale.\n\nNingún plato de nuestra carta está confirmado sin gluten. Antes de pedir, conviene confirmarlo con el personal.", $this->outputRows()[1][3], 'the column shows what the customer would see');
+    }
+
+    public function testTheDetectedLanguageIsNamedInTheModelsInstructionLikeTheChats(): void
+    {
+        $this->needsReplies = [self::FLASH_LITE => [[self::needs([], [], false, false, 'en'), 'STOP']]];
+        $this->replies = [self::FLASH_LITE => [['We have flan.', 'STOP']]];
+
+        $this->runCommand("conversacion;pregunta\nN;What do you recommend for dessert?\n", ['--modelos' => 'gemini-flash-lite']);
+
+        $system = $this->systemText($this->requests[0]);
+        self::assertStringContainsString('The customer\'s latest message is in English: reply in English', $system);
+        self::assertStringContainsString('- Reply in English (rule 10).', $system);
     }
 
     public function testAnUnknownOrUnconfiguredModelIsRefusedBeforeAnyCall(): void
@@ -234,7 +299,7 @@ final class SmartWaiterAskModelsTest extends TestCase
         $this->requests = [];
         $this->replies = [self::GEMINI => [['ok', 'STOP']]];
         $this->service()->reply($this->theRestaurant, 'es', 'EUR', null, 'Hola');
-        self::assertSame([20.0], array_column($this->requests, 'timeout'), 'the customer chat: still 20 s');
+        self::assertSame([20.0], array_values(array_unique(array_column($this->requests, 'timeout'))), 'the customer chat: still 20 s, Groq and Gemini alike');
     }
 
     public function testThePauseIsPerModelSoOneModelsWaitCountsForTheOthers(): void

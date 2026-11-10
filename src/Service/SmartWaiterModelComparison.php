@@ -18,8 +18,15 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
  * exactly what the customer chat would send — the same
  * SmartWaiterRequestBuilder (menu, instruction, turns, earlier customer
  * messages) and the same history rules as SmartWaiterService (an answer
- * joins the history; a failed or cut-off one leaves the question
- * remembered as said but unanswered).
+ * joins the history, cleaned by SmartWaiterReplyCleaner, and is shown with
+ * the fixed staff sentence (SmartWaiterStaffNote); a failed or
+ * cut-off one leaves the question remembered as said but unanswered).
+ *
+ * The provider order (smart_waiter_first) doesn't apply here: each model
+ * is asked on its own — the needs detection (SmartWaiterNeedsDetector) too,
+ * with the same model and no fallback; if it fails, the question gets the
+ * chat's safe side (no answer, detected again with the next question) and
+ * "no se pudo comprobar la alergia (…)" in that model's error column.
  *
  * Only reachable from the console command: nothing in the chat
  * (SmartWaiterController / SmartWaiterService) uses it, and the provider is
@@ -44,6 +51,9 @@ final class SmartWaiterModelComparison
         private readonly AIProviderFactory $providerFactory,
         private readonly RestaurantRepository $restaurantRepository,
         private readonly MenuPreferencesResolver $menuPreferencesResolver,
+        private readonly SmartWaiterReplyCleaner $replyCleaner,
+        private readonly SmartWaiterNeedsDetector $needsDetector,
+        private readonly SmartWaiterStaffNote $staffNote,
     ) {}
 
     public function findRestaurant(string $slug): ?Restaurant
@@ -82,12 +92,40 @@ final class SmartWaiterModelComparison
 
         $restaurantId = $restaurant->getId();
         $userMessage = new ChatMessage('user', $question);
-        [$request] = $this->requestBuilder->request(
+
+        // Step 1, like the chat, but with THIS model and no fallback.
+        $detection = $this->needsDetector->request(
+            [...$store->getPendingDetection($conversationId, $restaurantId), $question],
+            $store->getLastReply($conversationId, $restaurantId),
+            $timeout,
+        );
+        try {
+            $detected = $provider->complete($detection);
+            $needs = $detected->endedNormally() ? $this->needsDetector->parse($detected->content) : null;
+            $detectedLanguage = $this->needsDetector->language($detected->content);
+            $language = $this->staffNote->language($detectedLanguage, $locale);
+            $why = $needs === null ? sprintf('respuesta no válida%s', $detected->endedNormally() ? '' : ' (cortada)') : '';
+        } catch (AIProviderException $e) {
+            $needs = null;
+            $why = sprintf('%s: %s', $e->reason->value, $e->getMessage());
+        }
+        if ($needs === null) {
+            // The chat's safe side: no answer with dishes, the message detected again next time.
+            $store->rememberUnansweredCustomerMessage($conversationId, $restaurantId, $userMessage);
+            $store->addPendingDetection($conversationId, $restaurantId, $question);
+
+            return ['reply' => '', 'error' => sprintf('no se pudo comprobar la alergia (%s)', $why)];
+        }
+        $needs = $store->addNeeds($conversationId, $restaurantId, $needs);
+
+        [$request, , $anySuitable] = $this->requestBuilder->request(
             $this->menuContext($restaurant, $locale),
             $locale,
             $store->getHistory($conversationId, $restaurantId),
             $store->getEarlierCustomerMessages($conversationId, $restaurantId),
             $userMessage,
+            $needs,
+            $detectedLanguage,
             $timeout,
         );
 
@@ -102,12 +140,15 @@ final class SmartWaiterModelComparison
         if (!$response->endedNormally()) {
             $store->rememberUnansweredCustomerMessage($conversationId, $restaurantId, $userMessage);
 
-            return ['reply' => $response->content, 'error' => sprintf('cortada (%s): el chat no la mostraría', $response->finishReason ?? 'sin motivo')];
+            return ['reply' => $this->replyCleaner->clean($response->content, $language), 'error' => sprintf('cortada (%s): el chat no la mostraría', $response->finishReason ?? 'sin motivo')];
         }
 
-        $store->append($conversationId, $restaurantId, $userMessage, new ChatMessage('assistant', $response->content));
+        // Like the chat's: cleaned (SmartWaiterReplyCleaner), kept in the
+        // history without the staff sentence, shown with it (SmartWaiterStaffNote).
+        $reply = $this->replyCleaner->clean($response->content, $language);
+        $store->append($conversationId, $restaurantId, $userMessage, new ChatMessage('assistant', $reply));
 
-        return ['reply' => $response->content, 'error' => ''];
+        return ['reply' => $this->staffNote->append($reply, $this->staffNote->note($needs, $anySuitable, $language)), 'error' => ''];
     }
 
     /** @return array<string, mixed> */

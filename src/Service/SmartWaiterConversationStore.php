@@ -26,6 +26,10 @@ use Psr\Log\LoggerInterface;
  *   are dropped. Capped at MAX_EARLIER_CUSTOMER_MESSAGES and
  *   MAX_EARLIER_CHARS: past either, the oldest go first and a warning
  *   (no message text) is logged.
+ * - what the customer must avoid (getNeeds()): CustomerNeeds found by
+ *   SmartWaiterNeedsDetector, only ever merged in (addNeeds()); and the
+ *   customer messages whose detection failed (getPendingDetection()), to
+ *   be detected again with the next one — nothing said goes unchecked.
  *
  * The conversation id is opaque and client-held, so it is never trusted on
  * its own: every read verifies the restaurant id embedded in the cached
@@ -61,6 +65,18 @@ final class SmartWaiterConversationStore
         );
     }
 
+    /** The waiter's last reply in the recent turns — SmartWaiterNeedsDetector's context — or null. */
+    public function getLastReply(string $conversationId, int $restaurantId): ?string
+    {
+        foreach (array_reverse($this->load($conversationId, $restaurantId)['messages']) as $m) {
+            if ($m['role'] === 'assistant') {
+                return $m['content'];
+            }
+        }
+
+        return null;
+    }
+
     /** @return list<string> oldest first */
     public function getEarlierCustomerMessages(string $conversationId, int $restaurantId): array
     {
@@ -85,7 +101,9 @@ final class SmartWaiterConversationStore
             }
         }
 
-        $this->save($conversationId, $restaurantId, $messages, $earlier);
+        $data['messages'] = $messages;
+        $data['earlier_customer_messages'] = $earlier;
+        $this->save($conversationId, $restaurantId, $data);
     }
 
     /**
@@ -96,16 +114,46 @@ final class SmartWaiterConversationStore
     public function rememberUnansweredCustomerMessage(string $conversationId, int $restaurantId, ChatMessage $userMessage): void
     {
         $data = $this->load($conversationId, $restaurantId);
-        $earlier = $data['earlier_customer_messages'];
-        $earlier[] = $userMessage->content;
+        $data['earlier_customer_messages'][] = $userMessage->content;
 
-        $this->save($conversationId, $restaurantId, $data['messages'], $earlier);
+        $this->save($conversationId, $restaurantId, $data);
     }
 
-    /** @return array{messages: list<array{role: string, content: string}>, earlier_customer_messages: list<string>} */
+    public function getNeeds(string $conversationId, int $restaurantId): CustomerNeeds
+    {
+        return CustomerNeeds::fromArray($this->load($conversationId, $restaurantId)['needs']);
+    }
+
+    /** Merges $needs into what this conversation already knows (never removes anything) and clears the pending detection. */
+    public function addNeeds(string $conversationId, int $restaurantId, CustomerNeeds $needs): CustomerNeeds
+    {
+        $data = $this->load($conversationId, $restaurantId);
+        $merged = CustomerNeeds::fromArray($data['needs'])->merge($needs);
+        $data['needs'] = $merged->toArray();
+        $data['pending_detection'] = [];
+        $this->save($conversationId, $restaurantId, $data);
+
+        return $merged;
+    }
+
+    /** @return list<string> customer messages whose needs detection failed, oldest first */
+    public function getPendingDetection(string $conversationId, int $restaurantId): array
+    {
+        return $this->load($conversationId, $restaurantId)['pending_detection'];
+    }
+
+    /** A message whose needs detection failed: detected again, together with the next one. */
+    public function addPendingDetection(string $conversationId, int $restaurantId, string $customerMessage): void
+    {
+        $data = $this->load($conversationId, $restaurantId);
+        $data['pending_detection'][] = $customerMessage;
+        $this->save($conversationId, $restaurantId, $data);
+    }
+
+    /** @return array{messages: list<array{role: string, content: string}>, earlier_customer_messages: list<string>, needs: array<string, mixed>, pending_detection: list<string>} */
     private function load(string $conversationId, int $restaurantId): array
     {
-        $empty = ['messages' => [], 'earlier_customer_messages' => []];
+        $empty = ['messages' => [], 'earlier_customer_messages' => [], 'needs' => [], 'pending_detection' => []];
 
         $item = $this->cache->getItem($this->key($conversationId));
         if (!$item->isHit()) {
@@ -117,19 +165,19 @@ final class SmartWaiterConversationStore
             return $empty;
         }
 
-        // A conversation saved before 'earlier_customer_messages' existed has none.
+        // A conversation saved in an older format just has fewer parts.
         return [
             'messages' => array_values($data['messages'] ?? []),
             'earlier_customer_messages' => array_values($data['earlier_customer_messages'] ?? []),
+            'needs' => is_array($data['needs'] ?? null) ? $data['needs'] : [],
+            'pending_detection' => array_values(array_filter($data['pending_detection'] ?? [], 'is_string')),
         ];
     }
 
-    /**
-     * @param list<array{role: string, content: string}> $messages
-     * @param list<string> $earlier
-     */
-    private function save(string $conversationId, int $restaurantId, array $messages, array $earlier): void
+    /** @param array{messages: list<array{role: string, content: string}>, earlier_customer_messages: list<string>, needs: array<string, mixed>, pending_detection: list<string>} $data */
+    private function save(string $conversationId, int $restaurantId, array $data): void
     {
+        $earlier = $data['earlier_customer_messages'];
         $dropped = 0;
         while (count($earlier) > self::MAX_EARLIER_CUSTOMER_MESSAGES
             || ($earlier !== [] && array_sum(array_map('mb_strlen', $earlier)) > self::MAX_EARLIER_CHARS)) {
@@ -146,8 +194,11 @@ final class SmartWaiterConversationStore
         $item = $this->cache->getItem($this->key($conversationId));
         $item->set([
             'restaurant_id' => $restaurantId,
-            'messages' => $messages,
+            'messages' => $data['messages'],
             'earlier_customer_messages' => $earlier,
+            'needs' => $data['needs'],
+            // Capped like the earlier messages (it never grows past a few: a success clears it).
+            'pending_detection' => array_slice($data['pending_detection'], -self::MAX_EARLIER_CUSTOMER_MESSAGES),
         ]);
         $item->expiresAfter(self::TTL_SECONDS);
         $this->cache->save($item);

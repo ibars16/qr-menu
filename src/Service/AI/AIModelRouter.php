@@ -33,15 +33,28 @@ final class AIModelRouter
      * translation callers deliberately receive the cut-off answer and
      * decide for themselves (see TranslationAiCaller). Smart Waiter turns
      * it on — a customer must never see a half answer.
+     *
+     * $tryFirst: provider ids tried before everyone else, in this order,
+     * whatever the complexity — then the rest in the usual tier order, none
+     * twice. An id that isn't available is skipped. Empty by default: only
+     * Smart Waiter passes it (AIProviderFactory::getSmartWaiterFirst()), so
+     * the translation callers' order never changes.
+     *
+     * $accept: when given, an answer it returns false for counts as that
+     * provider failing (AIFailureReason::INVALID_RESPONSE) and the next one
+     * is tried — e.g. SmartWaiterNeedsDetector's JSON that doesn't validate.
+     *
+     * @param list<string>                     $tryFirst
+     * @param (\Closure(AIResponse): bool)|null $accept
      */
-    public function route(AIRequest $request, string $complexity, bool $rejectCutOff = false): AIRouterResult
+    public function route(AIRequest $request, string $complexity, bool $rejectCutOff = false, array $tryFirst = [], ?\Closure $accept = null): AIRouterResult
     {
         $providers = $this->providerFactory->getAvailableProviders();
         $primary = $complexity === 'complex' ? $providers['capable'] : $providers['fast'];
         $secondary = $complexity === 'complex' ? $providers['fast'] : $providers['capable'];
 
         $attempts = [];
-        foreach ([...$primary, ...$secondary] as $provider) {
+        foreach (self::order([...$primary, ...$secondary], $tryFirst) as $provider) {
             try {
                 $response = $provider->complete($request);
                 if ($rejectCutOff && !$response->endedNormally()) {
@@ -54,6 +67,15 @@ final class AIModelRouter
                         'provider' => $response->providerId,
                         'finishReason' => $response->finishReason,
                     ]);
+                    continue;
+                }
+                if ($accept !== null && !$accept($response)) {
+                    $attempts[] = new AIProviderAttempt(
+                        $response->providerId,
+                        AIFailureReason::INVALID_RESPONSE,
+                        sprintf('%s answer was not accepted by the caller', $response->providerId),
+                    );
+                    $this->logger->warning('AI answer not accepted, trying next', ['provider' => $response->providerId]);
                     continue;
                 }
 
@@ -73,5 +95,27 @@ final class AIModelRouter
         }
 
         return new AIRouterResult(null, $attempts);
+    }
+
+    /**
+     * @param AIProviderInterface[] $providers in tier order
+     * @param list<string>          $tryFirst
+     *
+     * @return AIProviderInterface[] the $tryFirst ones that are there, in that order, then the rest as they were
+     */
+    private static function order(array $providers, array $tryFirst): array
+    {
+        $first = [];
+        foreach ($tryFirst as $id) {
+            foreach ($providers as $i => $provider) {
+                if ($provider->getId() === $id) {
+                    $first[] = $provider;
+                    unset($providers[$i]);
+                    break;
+                }
+            }
+        }
+
+        return [...$first, ...array_values($providers)];
     }
 }

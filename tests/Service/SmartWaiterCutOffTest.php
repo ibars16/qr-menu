@@ -16,6 +16,9 @@ use Psr\Log\NullLogger;
  * its own real response shape — Gemini's finishReason (STOP / MAX_TOKENS /
  * SAFETY…), Groq's and OpenAI's finish_reason (stop / length).
  *
+ * Smart Waiter's order (smart_waiter_first): Groq → Gemini flash-lite → the
+ * rest (OpenAI here), for simple and complex questions alike.
+ *
  * Fake AI, real pipeline: see SmartWaiterFakeAiTrait.
  */
 final class SmartWaiterCutOffTest extends TestCase
@@ -32,76 +35,79 @@ final class SmartWaiterCutOffTest extends TestCase
         $this->fakeAiTearDown();
     }
 
-    public function testGeminiCutOffMovesOnToGroq(): void
+    public function testGroqCutOffMovesOnToGemini(): void
     {
         $this->replies = [
-            self::GEMINI => [['Sin gluten tienes la ensalada y', 'MAX_TOKENS']],
-            self::GROQ => [['Sin gluten tienes la ensalada.', 'stop']],
+            self::GROQ => [['Sin gluten tienes la ensalada y', 'length']],
+            self::GEMINI => [['Sin gluten tienes la ensalada.', 'STOP']],
         ];
 
         $result = $this->service()->reply($this->restaurant(), 'es', 'EUR', null, '¿Qué hay sin gluten?');
 
         self::assertFalse($result['error']);
         self::assertSame('Sin gluten tienes la ensalada.', $result['reply']);
-        self::assertSame([self::GEMINI, self::GROQ], $this->hosts());
-        self::assertSame('groq-llama', $this->logs[0]->getProviderId());
+        self::assertSame([self::GROQ, self::GEMINI], $this->hosts());
+        self::assertSame('gemini-flash-lite', $this->logs[0]->getProviderId());
         self::assertSame(2, $this->logs[0]->getAttemptsCount());
     }
 
-    public function testGroqCutOffMovesOnToTheNextProvider(): void
+    public function testGeminiCutOffMovesOnToTheNextProvider(): void
     {
         $this->replies = [
-            self::GEMINI => [['', 'STOP']], // no usable text: an ordinary failure
-            self::GROQ => [['Tenemos tres postres: tarta', 'length']],
+            self::GROQ => [['', 'stop']], // no usable text: an ordinary failure
+            self::GEMINI => [['Tenemos tres postres: tarta', 'MAX_TOKENS']],
             self::OPENAI => [['Tenemos tres postres: tarta, flan y helado.', 'stop']],
         ];
 
         $result = $this->service()->reply($this->restaurant(), 'es', 'EUR', null, '¿Qué postres hay?');
 
         self::assertSame('Tenemos tres postres: tarta, flan y helado.', $result['reply']);
-        self::assertSame([self::GEMINI, self::GROQ, self::OPENAI], $this->hosts());
+        self::assertSame([self::GROQ, self::GEMINI, self::OPENAI], $this->hosts());
         self::assertSame('openai-mini', $this->logs[0]->getProviderId());
     }
 
-    public function testOpenAiCutOffMovesOnToTheNextProvider(): void
+    public function testAComplexQuestionAlsoGoesGroqThenGeminiThenOpenAi(): void
     {
         $this->replies = [
-            self::OPENAI => [['Para cuatro os sugiero', 'length']],
-            self::GEMINI => [['Para cuatro os sugiero las verduras a la plancha.', 'STOP']],
+            self::GROQ => [['Para cuatro os sugiero', 'length']],
+            self::GEMINI => [['', 'STOP']],
+            self::OPENAI => [['Para cuatro os sugiero las verduras a la plancha.', 'stop']],
         ];
 
         $result = $this->service()->reply($this->restaurant(), 'es', 'EUR', null, self::COMPLEX_MESSAGE);
 
         self::assertSame('Para cuatro os sugiero las verduras a la plancha.', $result['reply']);
-        self::assertSame([self::OPENAI, self::GEMINI], $this->hosts(), 'complex: OpenAI first, then the fast tier');
+        self::assertSame([self::GROQ, self::GEMINI, self::OPENAI], $this->hosts(), 'complex: smart_waiter_first too, then the capable tier');
         self::assertSame('complex', $this->logs[0]->getComplexity());
     }
 
     public function testGeminiStoppedForAnyOtherReasonIsNotUsedEither(): void
     {
+        // Groq unscripted → 500, so Gemini is asked.
         $this->replies = [
             self::GEMINI => [['La pizza lleva', 'SAFETY']],
-            self::GROQ => [['La pizza lleva tomate y mozzarella.', 'stop']],
+            self::OPENAI => [['La pizza lleva tomate y mozzarella.', 'stop']],
         ];
 
         $result = $this->service()->reply($this->restaurant(), 'es', 'EUR', null, '¿Qué lleva la pizza?');
 
         self::assertSame('La pizza lleva tomate y mozzarella.', $result['reply']);
+        self::assertSame([self::GROQ, self::GEMINI, self::OPENAI], $this->hosts());
     }
 
     public function testACutOffAnswerNeverEntersTheHistory(): void
     {
         $service = $this->service();
         $this->replies = [
-            self::GEMINI => [['PARTIAL answer', 'MAX_TOKENS'], ['Second answer.', 'STOP']],
-            self::GROQ => [['GOOD answer.', 'stop']],
+            self::GROQ => [['PARTIAL answer', 'length'], ['Second answer.', 'stop']],
+            self::GEMINI => [['GOOD answer.', 'STOP']],
         ];
 
         $first = $service->reply($this->restaurant(), 'es', 'EUR', null, 'First question');
         $service->reply($this->restaurant(), 'es', 'EUR', $first['conversationId'], 'Second question');
 
         $last = end($this->requests);
-        self::assertSame(self::GEMINI, $last['host']);
+        self::assertSame(self::GROQ, $last['host']);
         self::assertSame(['First question', 'GOOD answer.', 'Second question'], $this->sentMessages($last));
         self::assertStringNotContainsString('PARTIAL', json_encode($last['body']));
     }
@@ -130,7 +136,8 @@ final class SmartWaiterCutOffTest extends TestCase
 
     public function testTheRouterStillReturnsACutOffAnswerWhenNotAskedToRejectIt(): void
     {
-        // The translation callers rely on this (TranslationAiCaller decides itself).
+        // The translation callers rely on this (TranslationAiCaller decides
+        // itself) — and, without tryFirst, on the usual tier order: Gemini first.
         $this->replies = [self::GEMINI => [['Cut', 'MAX_TOKENS']]];
         $router = new AIModelRouter($this->factory(), new NullLogger());
 

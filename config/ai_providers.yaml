@@ -38,6 +38,14 @@
 # (the chat, translations) and getAvailableVisionProviders() (menu photos)
 # never include it, whatever its tier and priority.
 
+# smart_waiter_first: Smart Waiter ONLY (never translations, language
+# detection or menu photos) tries these first, in this order, for simple and
+# complex questions alike — then everyone else in the usual tier/priority
+# order above. So for the chat, this list (not the priorities) decides who
+# answers first. An id that isn't available (unknown, disabled, no key,
+# manual_only) is skipped.
+smart_waiter_first: [groq-llama, gemini-flash-lite]
+
 providers:
   # Gemini is priority 1 deliberately — it's the platform's primary
   # provider today. Router fallback is driven purely by this number, so

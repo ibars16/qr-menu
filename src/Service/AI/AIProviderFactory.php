@@ -26,6 +26,9 @@ final class AIProviderFactory
     /** @var array<string, list<array<string, mixed>>>|null */
     private ?array $providersByTier = null;
 
+    /** @var list<string>|null */
+    private ?array $smartWaiterFirst = null;
+
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly string $projectDir,
@@ -91,6 +94,24 @@ final class AIProviderFactory
         // today's single vision provider. Revisit if a second one is ever
         // added to a different tier than "fast".
         return $providers;
+    }
+
+    /**
+     * config/ai_providers.yaml's smart_waiter_first: the provider ids Smart
+     * Waiter tries first, in order (AIModelRouter::route()'s $tryFirst).
+     * Only Smart Waiter asks for it — translations, language detection and
+     * menu photos keep the tier order. Ids as written; the router skips any
+     * that isn't available.
+     *
+     * @return list<string>
+     */
+    public function getSmartWaiterFirst(): array
+    {
+        if ($this->smartWaiterFirst === null) {
+            $this->loadConfig();
+        }
+
+        return $this->smartWaiterFirst;
     }
 
     /**
@@ -183,6 +204,7 @@ final class AIProviderFactory
         }
 
         $data = Yaml::parseFile($this->projectDir . '/config/ai_providers.yaml');
+        $this->smartWaiterFirst = array_values(array_filter($data['smart_waiter_first'] ?? [], 'is_string'));
 
         $byTier = ['fast' => [], 'capable' => []];
         foreach ($data['providers'] as $entry) {

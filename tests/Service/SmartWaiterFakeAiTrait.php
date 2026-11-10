@@ -18,9 +18,13 @@ use App\Service\ProductTranslatorInterface;
 use App\Service\SmartWaiterConversationStore;
 use App\Service\SmartWaiterDishSafety;
 use App\Service\SmartWaiterFailureAlertMailer;
+use App\Service\SmartWaiterDishFit;
+use App\Service\SmartWaiterNeedsDetector;
 use App\Service\SmartWaiterPromptBuilder;
+use App\Service\SmartWaiterReplyCleaner;
 use App\Service\SmartWaiterRequestBuilder;
 use App\Service\SmartWaiterService;
+use App\Service\SmartWaiterStaffNote;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
@@ -29,6 +33,8 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\Mailer\Transport\TransportInterface;
+use Symfony\Component\Translation\Loader\YamlFileLoader;
+use Symfony\Component\Translation\Translator;
 
 /**
  * The real Smart Waiter pipeline (SmartWaiterService, AIModelRouter,
@@ -45,7 +51,14 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
  * Replies are scripted per host; for Gemini, "host/model" (e.g.
  * self::GEMINI . '/gemini-flash-latest') scripts one model only, taking
  * precedence over the plain host — two Gemini models share one host.
- * Every request records its host, model and timeout too.
+ * Every request records its host, model and timeout too. A scripted
+ * [null, 429] answers that HTTP status instead (e.g. Groq's rate limit).
+ *
+ * The needs detection (SmartWaiterNeedsDetector's small call, told apart
+ * by its instruction's start) is answered separately so the main call's
+ * scripts and $requests stay as they were: it goes to $detections, scripted
+ * by $needsReplies (same keys and shape as $replies); unscripted, it
+ * answers "nothing to avoid" (NO_NEEDS) from whichever provider is asked.
  *
  * The using TestCase must call fakeAiSetUp() / fakeAiTearDown().
  */
@@ -64,16 +77,24 @@ trait SmartWaiterFakeAiTrait
         'DEEPSEEK_API_KEY' => '',
     ];
 
+    private const NO_NEEDS = '{"avoid":[],"diets":[],"allergy":false,"other":false}';
+
     private const COMPLEX_MESSAGE = 'Somos cuatro personas, uno de nosotros no come carne y otro no puede tomar nada picante, ¿qué platos nos recomiendas compartir para cenar esta noche sin gastar mucho dinero?';
 
     /** @var array<string, mixed> */
     private array $previousEnv = [];
 
-    /** @var array<string, list<array{0: string, 1: ?string}>> host => scripted [text, finish reason] replies */
+    /** @var array<string, list<array{0: ?string, 1: string|int|null}>> host => scripted [text, finish reason] replies, or [null, HTTP status] */
     private array $replies = [];
 
     /** @var list<array{host: string, model: string, timeout: ?float, body: array<string, mixed>}> */
     private array $requests = [];
+
+    /** @var array<string, list<array{0: ?string, 1: string|int|null}>> like $replies, for the needs detection */
+    private array $needsReplies = [];
+
+    /** @var list<array{host: string, model: string, timeout: ?float, body: array<string, mixed>}> the needs detection calls */
+    private array $detections = [];
 
     /** @var SmartWaiterExchangeLog[] */
     private array $logs = [];
@@ -108,13 +129,27 @@ trait SmartWaiterFakeAiTrait
             $model = $host === self::GEMINI
                 ? (preg_match('#/models/([^:/]+):generateContent#', $url, $m) === 1 ? $m[1] : '')
                 : (string) ($body['model'] ?? '');
-            $this->requests[] = ['host' => $host, 'model' => $model, 'timeout' => isset($options['timeout']) ? (float) $options['timeout'] : null, 'body' => $body];
-            $key = isset($this->replies[$host . '/' . $model]) ? $host . '/' . $model : $host;
-            $reply = isset($this->replies[$key]) ? array_shift($this->replies[$key]) : null;
+            $entry = ['host' => $host, 'model' => $model, 'timeout' => isset($options['timeout']) ? (float) $options['timeout'] : null, 'body' => $body];
+            $system = $host === self::GEMINI ? ($body['systemInstruction']['parts'][0]['text'] ?? '') : ($body['messages'][0]['content'] ?? '');
+            if (str_starts_with($system, SmartWaiterNeedsDetector::PROMPT_START)) {
+                $this->detections[] = $entry;
+                $script = &$this->needsReplies;
+                $default = [self::NO_NEEDS, $host === self::GEMINI ? 'STOP' : 'stop'];
+            } else {
+                $this->requests[] = $entry;
+                $script = &$this->replies;
+                $default = null;
+            }
+            $key = isset($script[$host . '/' . $model]) ? $host . '/' . $model : $host;
+            $reply = isset($script[$key]) ? (array_shift($script[$key]) ?? $default) : $default;
+            unset($script);
             if ($reply === null) {
                 return new MockResponse('{"error":{"message":"unexpected request"}}', ['http_code' => 500]);
             }
             [$text, $finish] = $reply;
+            if ($text === null) {
+                return new MockResponse('{"error":{"message":"scripted HTTP error"}}', ['http_code' => (int) $finish]);
+            }
 
             if ($host === self::GEMINI) {
                 return new MockResponse(json_encode([
@@ -163,7 +198,7 @@ trait SmartWaiterFakeAiTrait
             $this->createStub(AllergenRepository::class),
         );
 
-        return new SmartWaiterRequestBuilder($menuContextBuilder, new SmartWaiterPromptBuilder(), new HeuristicChatComplexityClassifier());
+        return new SmartWaiterRequestBuilder($menuContextBuilder, new SmartWaiterPromptBuilder(), new HeuristicChatComplexityClassifier(), new SmartWaiterDishFit());
     }
 
     private function service(): SmartWaiterService
@@ -185,7 +220,34 @@ trait SmartWaiterFakeAiTrait
             // No from address: the failure alert sends nothing.
             new SmartWaiterFailureAlertMailer($this->createStub(TransportInterface::class), new NullLogger(), '', ''),
             $em,
+            new SmartWaiterReplyCleaner(),
+            $this->needsDetector($factory),
+            $this->staffNote(),
         );
+    }
+
+    /** The real fixed staff sentence, over the real translations/menu_public.*.yaml (all 20 languages). */
+    private function staffNote(): SmartWaiterStaffNote
+    {
+        $root = dirname(__DIR__, 2);
+        $translator = new Translator('es');
+        $translator->addLoader('yaml', new YamlFileLoader());
+        foreach (glob($root . '/translations/menu_public.*.yaml') as $file) {
+            $translator->addResource('yaml', $file, explode('.', basename($file))[1], 'menu_public');
+        }
+
+        return new SmartWaiterStaffNote($translator, $root);
+    }
+
+    private function needsDetector(AIProviderFactory $factory): SmartWaiterNeedsDetector
+    {
+        return new SmartWaiterNeedsDetector(new AIModelRouter($factory, new NullLogger()), $factory, new NullLogger());
+    }
+
+    /** The detector's JSON, as a model would answer it ("language" only when given: it is optional). */
+    private static function needs(array $avoid = [], array $diets = [], bool $allergy = false, bool $other = false, ?string $language = null): string
+    {
+        return json_encode(['avoid' => $avoid, 'diets' => $diets, 'allergy' => $allergy, 'other' => $other] + ($language === null ? [] : ['language' => $language]));
     }
 
     /** @return list<string> */

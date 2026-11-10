@@ -3,6 +3,7 @@
 namespace App\Tests\Service;
 
 use App\Service\AI\ChatMessage;
+use App\Service\CustomerNeeds;
 use App\Service\SmartWaiterConversationStore;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\AbstractLogger;
@@ -122,5 +123,51 @@ final class SmartWaiterConversationStoreTest extends TestCase
 
         $this->exchange('conv', 'Pregunta nueva');
         self::assertCount(4, $this->store->getHistory('conv', self::RESTAURANT));
+    }
+
+    public function testNeedsAddUpNeverShrinkAndClearThePendingDetection(): void
+    {
+        $this->store->addPendingDetection('conv', self::RESTAURANT, 'Soy celíaco');
+        self::assertSame(['Soy celíaco'], $this->store->getPendingDetection('conv', self::RESTAURANT));
+
+        $this->store->addNeeds('conv', self::RESTAURANT, new CustomerNeeds(['gluten'], [], true));
+        $merged = $this->store->addNeeds('conv', self::RESTAURANT, new CustomerNeeds(['milk'], ['vegan']));
+        $this->store->addNeeds('conv', self::RESTAURANT, new CustomerNeeds());
+
+        self::assertEquals(new CustomerNeeds(['gluten', 'milk'], ['vegan'], true), $merged);
+        self::assertEquals($merged, $this->store->getNeeds('conv', self::RESTAURANT));
+        self::assertSame([], $this->store->getPendingDetection('conv', self::RESTAURANT), 'detected: no longer pending');
+    }
+
+    public function testAnotherRestaurantNeverGetsTheNeeds(): void
+    {
+        $this->store->addNeeds('conv', self::RESTAURANT, new CustomerNeeds(['gluten'], [], true));
+        $this->store->addPendingDetection('conv', self::RESTAURANT, 'Soy celíaco');
+
+        self::assertTrue($this->store->getNeeds('conv', 99)->isEmpty());
+        self::assertSame([], $this->store->getPendingDetection('conv', 99));
+    }
+
+    public function testNeedsSurviveTheConversationGoingOn(): void
+    {
+        $this->store->addNeeds('conv', self::RESTAURANT, new CustomerNeeds(['gluten'], [], true));
+        for ($i = 0; $i < 10; $i++) {
+            $this->exchange('conv', 'Pregunta ' . $i);
+        }
+        $this->store->rememberUnansweredCustomerMessage('conv', self::RESTAURANT, new ChatMessage('user', 'Otra'));
+
+        self::assertEquals(new CustomerNeeds(['gluten'], [], true), $this->store->getNeeds('conv', self::RESTAURANT));
+        self::assertSame('Respuesta a Pregunta 9', $this->store->getLastReply('conv', self::RESTAURANT));
+    }
+
+    public function testAnOldConversationHasNoNeedsAndNoLastReply(): void
+    {
+        $item = $this->cache->getItem('smart_waiter_conv_old');
+        $item->set(['restaurant_id' => self::RESTAURANT, 'messages' => [['role' => 'user', 'content' => 'Hola']]]);
+        $this->cache->save($item);
+
+        self::assertTrue($this->store->getNeeds('old', self::RESTAURANT)->isEmpty());
+        self::assertSame([], $this->store->getPendingDetection('old', self::RESTAURANT));
+        self::assertNull($this->store->getLastReply('old', self::RESTAURANT));
     }
 }
