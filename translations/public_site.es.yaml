@@ -134,3 +134,18 @@ footer:
   cookies: "Cookies"
   login: "Iniciar sesión"
   pricing: "Precios"
+
+pages:
+  updated: "Última actualización: %date%"
+  about:
+    title: "Sobre nosotros"
+    description: "QR Menu ayuda a los restaurantes a tener una carta digital simple, siempre actualizada y sin depender de nadie para mantenerla."
+  privacy:
+    title: "Política de Privacidad"
+    description: "Qué datos recoge QR Menu, para qué los usa y cuáles son tus derechos."
+  terms:
+    title: "Términos de Servicio"
+    description: "Las condiciones de uso de QR Menu, la carta digital para restaurantes."
+  cookies:
+    title: "Política de Cookies"
+    description: "Qué cookies usa QR Menu y cómo gestionarlas."

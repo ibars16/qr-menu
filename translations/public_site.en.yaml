@@ -134,3 +134,18 @@ footer:
   cookies: "Cookies"
   login: "Log in"
   pricing: "Pricing"
+
+pages:
+  updated: "Last updated: %date%"
+  about:
+    title: "About us"
+    description: "QR Menu helps restaurants have a simple digital menu, always up to date, without depending on anyone to maintain it."
+  privacy:
+    title: "Privacy Policy"
+    description: "What data QR Menu collects, what it uses it for and what your rights are."
+  terms:
+    title: "Terms of Service"
+    description: "The terms of use of QR Menu, the digital menu for restaurants."
+  cookies:
+    title: "Cookie Policy"
+    description: "Which cookies QR Menu uses and how to manage them."

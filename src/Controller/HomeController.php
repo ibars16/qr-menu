@@ -17,9 +17,9 @@ class HomeController extends AbstractController
         // and "Inicio" links of the public pages all lead here.
         $locale = $localeResolver->resolveFromRequest($request);
 
-        return $this->render('home/index.html.twig', [
+        return $localeResolver->remember($request, $this->render('home/index.html.twig', [
             'locale'  => $locale,
             'locales' => $localeResolver->getLocales(),
-        ]);
+        ]));
     }
 }

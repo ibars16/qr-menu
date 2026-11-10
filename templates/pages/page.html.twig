@@ -1,0 +1,20 @@
+{# About and the legal pages (PagesController): title and "last updated"
+   from public_site.*.yaml, the text from pages/{page}/{locale}.html.twig —
+   one file per language, as they're long prose. #}
+{% extends 'public/base.html.twig' %}
+
+{% block title %}{{ ('pages.' ~ page ~ '.title')|trans({}, 'public_site', locale) }} — QR Menu{% endblock %}
+
+{% block meta %}
+    <meta name="description" content="{{ ('pages.' ~ page ~ '.description')|trans({}, 'public_site', locale) }}">
+{% endblock %}
+
+{% block content %}
+    <div class="legal">
+        <h1>{{ ('pages.' ~ page ~ '.title')|trans({}, 'public_site', locale) }}</h1>
+        {% if page != 'about' %}
+            <div class="legal-updated">{{ 'pages.updated'|trans({'%date%': "now"|date("d/m/Y")}, 'public_site', locale) }}</div>
+        {% endif %}
+        {% include 'pages/' ~ page ~ '/' ~ locale ~ '.html.twig' %}
+    </div>
+{% endblock %}

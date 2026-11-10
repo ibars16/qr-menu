@@ -2,6 +2,9 @@
 
 {% block meta %}{% endblock %}
 
+{# The site's language (home, PagesController), for screen readers and search engines. #}
+{% block html_attributes %} lang="{{ locale|default('es') }}"{% endblock %}
+
 {# Each public page (and login/register) carries its own large inline
    <style> block instead of a shared external stylesheet. Turbo Drive only
    merges <head> elements it can track — an untracked inline <style> that
