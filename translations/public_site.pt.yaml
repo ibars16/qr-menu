@@ -7,8 +7,16 @@ meta:
 
 nav:
   login: "Iniciar sessão"
-  cta: "Teste grátis de 1 mês"
   panel: "Ir para o painel"
+  pricing: "Preços"
+  cta_short: "Teste grátis"
+  language: "Idioma"
+  theme_title: "Mudar tema"
+  theme_aria: "Alternar entre modo escuro e claro"
+  menu_aria: "Abrir menu"
+  panel_short: "Painel"
+  dark_mode: "Modo escuro"
+  light_mode: "Modo claro"
 
 hero:
   badge: "Teste grátis de 1 mês, sem cartão"

@@ -127,7 +127,12 @@ final class HomeControllerTest extends WebTestCase
         self::assertDoesNotMatchRegularExpression('/\b(pricing|features|faq|nav|footer)\.[a-z_0-9.]+\b/', $page->filter('body')->text());
         self::assertStringNotContainsString('20+', $page->text());
         self::assertSame('#precios', $page->filter('.hero-ctas a.btn-secondary')->attr('href'));
+        self::assertCount(1, $page->filter('.nav-links > a.nav-link.nav-desktop-only[href="#precios"]'));
+        self::assertCount(1, $page->filter('.nav-mobile-panel a[href="#precios"]'));
         self::assertCount(1, $page->filter('.footer a[href="#precios"]'));
+        // The trial CTA is on the bar (one element for desktop and mobile), not in the ☰ menu.
+        self::assertCount(1, $page->filter('.nav-links > a.nav-cta[href="/register"]'));
+        self::assertCount(0, $page->filter('.nav-mobile-panel a.nav-cta'));
     }
 
     public function testTheFeatureCardsNoLongerListAdminPanelOrSetMenus(): void
@@ -143,11 +148,46 @@ final class HomeControllerTest extends WebTestCase
         self::assertStringContainsString('Tu carta se pausa hasta que elijas un plan.', $page->filter('.faq')->text());
     }
 
+    /**
+     * Desktop: Precios · Iniciar sesión │ [idioma ▾] [☾] [Prueba gratis];
+     * mobile: [Prueba gratis] [idioma ▾] [☰], with Precios, login and the
+     * dark/light switch in the ☰ panel.
+     */
+    public function testHeaderOrderAndMobileMenu(): void
+    {
+        $page = $this->client->request('GET', '/?lang=es');
+
+        $row = $page->filter('.nav-links')->children()->each(static fn ($el): string => $el->nodeName() . '.' . explode(' ', (string) $el->attr('class'))[0]);
+        self::assertSame(['a.nav-link', 'a.nav-link', 'span.nav-sep', 'details.nav-lang-dropdown', 'button.nav-theme-toggle', 'a.nav-cta', 'details.nav-mobile'], $row);
+        self::assertSame(['Precios', 'Iniciar sesión'], $page->filter('.nav-links > a.nav-link')->each(static fn ($a): string => $a->text()));
+        self::assertSame('/admin/login', $page->filter('.nav-links > a.nav-link')->eq(1)->attr('href'));
+        self::assertSame('Prueba gratis', $page->filter('.nav-links > a.nav-cta')->text());
+        self::assertCount(1, $page->filter('nav.nav .nav-cta'), 'the only filled button');
+        // Hidden on mobile: the text links, the hairline and the ☾ icon (it
+        // moves into ☰); the language dropdown stays on the bar; ☰ only there.
+        self::assertSame(['a', 'a', 'span', 'button'], $page->filter('.nav-links > .nav-desktop-only')->each(static fn ($el): string => $el->nodeName()));
+        self::assertStringContainsString('nav-desktop-only', $page->filter('.nav-links > .nav-theme-toggle')->attr('class'));
+        self::assertStringNotContainsString('nav-desktop-only', $page->filter('.nav-links > .nav-lang-dropdown')->attr('class'));
+        self::assertCount(1, $page->filter('.nav-links > .nav-mobile-only.nav-mobile'));
+
+        self::assertCount(0, $page->filter('.nav-mobile-panel .nav-mobile-langs'));
+        $theme = $page->filter('.nav-mobile-panel button.nav-mobile-theme');
+        self::assertSame('Modo oscuro', $theme->filter('span.theme-icon-light')->text());
+        self::assertSame('Modo claro', $theme->filter('span.theme-icon-dark')->text());
+        $menu = $page->filter('.nav-mobile-panel a.nav-mobile-login');
+        self::assertCount(2, $menu);
+        self::assertSame('#precios', $menu->eq(0)->attr('href'));
+        self::assertSame('Precios', $menu->eq(0)->text());
+        self::assertSame('/admin/login', $menu->eq(1)->attr('href'));
+        self::assertSame('Iniciar sesión', $menu->eq(1)->text());
+    }
+
     public function testOtherPublicPagesLinkToTheHomePricing(): void
     {
         $page = $this->client->request('GET', '/sobre-nosotros');
         self::assertResponseIsSuccessful();
 
+        self::assertCount(1, $page->filter('.nav-links a.nav-link[href="/#precios"]'));
         self::assertCount(1, $page->filter('.footer a[href="/#precios"]'));
     }
 
@@ -174,7 +214,12 @@ final class HomeControllerTest extends WebTestCase
         $page = $this->client->request('GET', '/');
 
         self::assertResponseIsSuccessful();
-        self::assertCount(2, $page->filter('nav.nav a[href="/admin/menu"]'));   // desktop + mobile
+        // One "Ir al panel", in the CTA's place (long label on desktop, short on mobile).
+        self::assertCount(1, $page->filter('nav.nav a[href="/admin/menu"]'));
+        self::assertSame('nav-cta', $page->filter('nav.nav a[href="/admin/menu"]')->attr('class'));
+        self::assertSame('Go to dashboard', $page->filter('nav.nav a[href="/admin/menu"] .nav-label-long')->text());   // BrowserKit's default Accept-Language: en
+        self::assertSame('Dashboard', $page->filter('nav.nav a[href="/admin/menu"] .nav-label-short')->text());
+        self::assertCount(0, $page->filter('.nav-mobile-panel a[href="/admin/login"]'));
         self::assertCount(1, $page->filter('.footer a[href="/admin/menu"]'));
         self::assertCount(0, $page->filter('a[href="/admin/login"]'));
         self::assertCount(0, $page->filter('nav.nav a[href="/register"]'));

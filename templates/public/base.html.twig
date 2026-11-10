@@ -115,13 +115,23 @@
             box-shadow: inset 0 0 0 2px rgba(255,255,255,0.12), 0 0 0 1px var(--gold);
         }
         .nav-brand-name { font-family: var(--font-display); font-size: 19px; font-weight: 500; color: var(--tx-hi); letter-spacing: -0.01em; }
-        .nav-links { display: flex; align-items: center; gap: 12px; }
+        /* Controls, right-aligned (public/_nav.html.twig):
+           Precios · Iniciar sesión │ [idioma ▾] [☾] [Prueba gratis]
+           Text links, a hairline, the round icon controls, then the CTA —
+           the only filled button. */
+        .nav-links { display: flex; align-items: center; gap: 8px; }
+        .nav-link {
+            font-size: 13.5px; font-weight: 500; color: var(--tx-1); text-decoration: none; white-space: nowrap;
+            padding: 8px 10px; border-radius: 8px; transition: color 0.15s;
+        }
+        .nav-link:hover { color: var(--accent-text); }
+        .nav-sep { flex-shrink: 0; width: 1px; height: 20px; margin: 0 8px; background: var(--bd-2); }
         .nav-lang-dropdown { position: relative; }
         .nav-lang-current {
-            display: flex; align-items: center; gap: 5px; list-style: none; cursor: pointer;
-            font-size: 12.5px; font-weight: 500; color: var(--tx-2);
+            display: flex; align-items: center; gap: 5px; list-style: none; cursor: pointer; white-space: nowrap;
+            height: 34px; font-size: 12.5px; font-weight: 500; color: var(--tx-2);
             background: transparent; border: 1px solid var(--bd-2);
-            padding: 6px 11px; border-radius: 999px; user-select: none;
+            padding: 0 11px; border-radius: 999px; user-select: none;
             transition: color 0.15s, border-color 0.15s;
         }
         .nav-lang-current::-webkit-details-marker { display: none; }
@@ -142,31 +152,28 @@
         .nav-lang-item:hover { background: var(--bg-input); color: var(--tx-hi); }
         .nav-lang-item.active { color: var(--tx-hi); }
         .nav-lang-item i { margin-left: auto; font-size: 13px; color: var(--brand); }
-        .nav-login {
-            font-size: 13px; font-weight: 500; color: var(--tx-1); text-decoration: none;
-            background: transparent; border: 1px solid var(--bd-2);
-            padding: 8px 16px; border-radius: 999px; transition: border-color 0.15s, color 0.15s;
-        }
-        .nav-login:hover { color: var(--tx-hi); border-color: var(--gold); }
-        .nav-cta {
-            font-size: 13px; font-weight: 500; color: var(--on-brand); background: var(--brand);
-            padding: 9px 18px; border-radius: 999px; text-decoration: none;
-            box-shadow: 0 4px 14px rgba(122,30,40,0.22);
-            transition: background 0.15s, transform 0.15s;
-        }
-        .nav-cta:hover { background: var(--brand-hover); transform: translateY(-1px); }
         .nav-theme-toggle {
-            width: 34px; height: 34px; border-radius: 999px;
+            flex-shrink: 0; width: 34px; height: 34px; border-radius: 999px;
             border: 1px solid var(--bd-2); background: transparent;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; color: var(--tx-2); font-size: 15px;
             transition: color 0.15s, border-color 0.15s;
         }
         .nav-theme-toggle:hover { color: var(--tx-hi); border-color: var(--gold); }
+        .nav-cta {
+            flex-shrink: 0; margin-left: 4px; white-space: nowrap;
+            font-size: 13px; font-weight: 500; color: var(--on-brand); background: var(--brand);
+            padding: 9px 18px; border-radius: 999px; text-decoration: none;
+            box-shadow: 0 4px 14px rgba(122,30,40,0.22);
+            transition: background 0.15s, transform 0.15s;
+        }
+        .nav-cta:hover { background: var(--brand-hover); transform: translateY(-1px); }
+        /* --accent-text, not --gold: the ring needs 3:1 on the nav in both themes. */
+        .nav a:focus-visible, .nav button:focus-visible, .nav summary:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 
-        /* Mobile nav — hamburger + slide-down panel; .nav-links-desktop
-           takes over above 640px. */
-        .nav-mobile-controls { display: none; align-items: center; gap: 8px; }
+        /* Mobile: [idioma ▾] [Prueba gratis] [☰]; Precios, login and the
+           theme move into the ☰ panel (.nav-desktop-only hidden). */
+        .nav-mobile-only, .nav-label-short { display: none; }
         .nav-mobile { position: relative; }
         .nav-mobile-toggle {
             display: flex; align-items: center; justify-content: center; list-style: none; cursor: pointer;
@@ -184,23 +191,40 @@
             box-shadow: 0 22px 44px -16px rgba(var(--shadow-rgb),0.4);
             display: flex; flex-direction: column; gap: 14px;
         }
-        .nav-mobile-section-label { font-size: 10px; font-weight: 600; color: var(--gold-text); text-transform: uppercase; letter-spacing: 0.14em; }
-        .nav-mobile-langs { display: flex; flex-wrap: wrap; gap: 7px; margin-top: -6px; }
-        .nav-mobile-lang {
-            width: 36px; height: 36px; border-radius: 999px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 16px; background: var(--bg-input); border: 1px solid var(--bd-2);
-            text-decoration: none; opacity: 0.55; transition: opacity 0.12s, border-color 0.12s;
+        .nav-mobile-login {
+            width: 100%; text-align: center;
+            font-size: 13px; font-weight: 500; color: var(--tx-1); text-decoration: none;
+            background: transparent; border: 1px solid var(--bd-2);
+            padding: 10px 16px; border-radius: 999px; transition: border-color 0.15s, color 0.15s;
         }
-        .nav-mobile-lang.active { opacity: 1; border-color: var(--brand); }
-        .nav-mobile-login { width: 100%; text-align: center; }
-        .nav-mobile-cta { width: 100%; text-align: center; }
+        .nav-mobile-login:hover { color: var(--tx-hi); border-color: var(--gold); }
+        .nav-mobile-theme { font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .nav-mobile-theme i { font-size: 15px; }
 
-        @media (max-width: 640px) {
+        /* 760px, not 640px: the desktop row must fit in German
+           ("Preise · Anmelden │ 🇩🇪 DE ▾ ☾ Kostenlos testen") with the brand. */
+        @media (max-width: 760px) {
             .nav-inner { padding: 10px 16px; }
             .nav-brand-name { font-size: 17px; }
-            .nav-links-desktop { display: none; }
-            .nav-mobile-controls { display: flex; }
+            .nav-desktop-only { display: none; }
+            .nav-mobile-only { display: block; }
+            .nav-label-long { display: none; }
+            .nav-label-short { display: inline; }
+            .nav-cta { margin-left: 0; font-size: 12.5px; padding: 8px 14px; box-shadow: none; }
+            /* Mobile order: [Prueba gratis] [idioma ▾] [☰] */
+            .nav-cta { order: 1; }
+            .nav-lang-dropdown { order: 2; }
+            .nav-mobile { order: 3; }
+        }
+        /* Narrow phones: logo mark alone, then the flag alone, so the CTA
+           and the language keep their room ("Kostenlos testen" at 320px). */
+        @media (max-width: 460px) {
+            .nav-brand-name { display: none; }
+        }
+        @media (max-width: 380px) {
+            .nav-links { gap: 6px; }
+            .nav-lang-code { display: none; }
+            .nav-lang-current { padding: 0 9px; }
         }
 
         /* Buttons — pills, like the menu's "Explora nuestra carta" / "Ver más" */

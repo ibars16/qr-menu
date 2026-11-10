@@ -7,8 +7,16 @@ meta:
 
 nav:
   login: "Log in"
-  cta: "Free 1-month trial"
   panel: "Go to dashboard"
+  pricing: "Pricing"
+  cta_short: "Free trial"
+  language: "Language"
+  theme_title: "Change theme"
+  theme_aria: "Switch between dark and light mode"
+  menu_aria: "Open menu"
+  panel_short: "Dashboard"
+  dark_mode: "Dark mode"
+  light_mode: "Light mode"
 
 hero:
   badge: "Free 1-month trial, no card needed"

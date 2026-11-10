@@ -7,8 +7,16 @@ meta:
 
 nav:
   login: "Se connecter"
-  cta: "Essai gratuit d'1 mois"
   panel: "Aller au tableau de bord"
+  pricing: "Tarifs"
+  cta_short: "Essai gratuit"
+  language: "Langue"
+  theme_title: "Changer de thème"
+  theme_aria: "Basculer entre le mode sombre et le mode clair"
+  menu_aria: "Ouvrir le menu"
+  panel_short: "Mon espace"
+  dark_mode: "Mode sombre"
+  light_mode: "Mode clair"
 
 hero:
   badge: "Essai gratuit d'1 mois, sans carte"

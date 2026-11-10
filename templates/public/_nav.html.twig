@@ -1,3 +1,19 @@
+{# "Precios": on the home a same-page anchor, so ?lang= is kept; from the
+   other public pages, the home's section. #}
+{% set pricing_href = app.request.attributes.get('_route') == 'app_home' ? '#precios' : path('app_home') ~ '#precios' %}
+{# Language selector: on every public page that passes `locales` (home,
+   PagesController) — each option is this same page in that language
+   (?lang=, then remembered in a cookie: PublicSiteLocaleResolver). #}
+{% set site_locale = locale|default('es') %}
+{% set lang_route = app.request.attributes.get('_route') %}
+{% set lang_route_params = app.request.attributes.get('_route_params')|default({}) %}
+{# One row of controls for both layouts:
+     desktop  Precios · Iniciar sesión │ [idioma ▾] [☾] [Prueba gratis]
+     mobile   [Prueba gratis] [idioma ▾] [☰]   (CSS order: CTA first)
+   .nav-desktop-only / .nav-mobile-only (public/base.html.twig) pick what
+   each shows; on mobile Precios, login and the dark/light switch live in
+   the ☰ panel. The CTA is the only filled button. Logged in, "Ir al panel"
+   takes its place and there's no login link. #}
 <nav class="nav">
     <div class="nav-inner">
         <a href="{{ path('app_home') }}" class="nav-brand">
@@ -5,17 +21,22 @@
             <span class="nav-brand-name">QR Menu</span>
         </a>
 
-        {# Desktop controls — hidden on mobile, see .nav-mobile below for the equivalent there. #}
-        <div class="nav-links nav-links-desktop">
-            {% if app.request.attributes.get('_route') == 'app_home' and locales is defined %}
+        <div class="nav-links">
+            <a href="{{ pricing_href }}" class="nav-link nav-desktop-only">{{ 'nav.pricing'|trans({}, 'public_site', site_locale) }}</a>
+            {% if not app.user %}
+                <a href="{{ path('admin_login') }}" class="nav-link nav-desktop-only">{{ 'nav.login'|trans({}, 'public_site', site_locale) }}</a>
+            {% endif %}
+            <span class="nav-sep nav-desktop-only" aria-hidden="true"></span>
+
+            {% if locales is defined %}
                 <details class="nav-lang-dropdown nav-dropdown">
-                    <summary class="nav-lang-current">
-                        <span>{{ locales[locale].flag }}</span> {{ locale|upper }}
+                    <summary class="nav-lang-current" aria-label="{{ 'nav.language'|trans({}, 'public_site', site_locale) }}">
+                        <span>{{ locales[locale].flag }}</span> <span class="nav-lang-code">{{ locale|upper }}</span>
                         <i class="ti ti-chevron-down" aria-hidden="true"></i>
                     </summary>
                     <div class="nav-lang-menu">
                         {% for code, meta in locales %}
-                            <a href="{{ path('app_home') }}?lang={{ code }}" class="nav-lang-item{{ code == locale ? ' active' : '' }}">
+                            <a href="{{ path(lang_route, lang_route_params|merge({lang: code})) }}" hreflang="{{ code }}" lang="{{ code }}" class="nav-lang-item{{ code == locale ? ' active' : '' }}">
                                 <span>{{ meta.flag }}</span> {{ meta.name }}
                                 {% if code == locale %}<i class="ti ti-check" aria-hidden="true"></i>{% endif %}
                             </a>
@@ -23,45 +44,33 @@
                     </div>
                 </details>
             {% endif %}
-            <button type="button" class="nav-theme-toggle" onclick="toggleSiteTheme()" title="Cambiar tema" aria-label="Cambiar entre modo oscuro y claro">
+            <button type="button" class="nav-theme-toggle nav-desktop-only" onclick="toggleSiteTheme()" title="{{ 'nav.theme_title'|trans({}, 'public_site', site_locale) }}" aria-label="{{ 'nav.theme_aria'|trans({}, 'public_site', site_locale) }}">
                 <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
                 <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
             </button>
-            {% if app.user %}
-                <a href="{{ path('admin_menu') }}" class="nav-cta">{{ 'nav.panel'|trans({}, 'public_site', locale|default('es')) }}</a>
-            {% else %}
-                <a href="{{ path('admin_login') }}" class="nav-login">{{ 'nav.login'|trans({}, 'public_site', locale|default('es')) }}</a>
-                <a href="{{ path('app_register') }}" class="nav-cta">{{ 'nav.cta'|trans({}, 'public_site', locale|default('es')) }}</a>
-            {% endif %}
-        </div>
 
-        {# Mobile controls — theme toggle stays visible next to the hamburger
-           itself; everything else (language, login, CTA) lives in the
-           slide-down panel the hamburger opens. #}
-        <div class="nav-mobile-controls">
-            <button type="button" class="nav-theme-toggle" onclick="toggleSiteTheme()" title="Cambiar tema" aria-label="Cambiar entre modo oscuro y claro">
-                <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
-                <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
-            </button>
-            <details class="nav-mobile nav-dropdown">
-                <summary class="nav-mobile-toggle" aria-label="Abrir menú">
+            {% if app.user %}
+                <a href="{{ path('admin_menu') }}" class="nav-cta"><span class="nav-label-long">{{ 'nav.panel'|trans({}, 'public_site', site_locale) }}</span><span class="nav-label-short">{{ 'nav.panel_short'|trans({}, 'public_site', site_locale) }}</span></a>
+            {% else %}
+                <a href="{{ path('app_register') }}" class="nav-cta">{{ 'nav.cta_short'|trans({}, 'public_site', site_locale) }}</a>
+            {% endif %}
+
+            <details class="nav-mobile nav-dropdown nav-mobile-only">
+                <summary class="nav-mobile-toggle" aria-label="{{ 'nav.menu_aria'|trans({}, 'public_site', site_locale) }}">
                     <i class="ti ti-menu-2" aria-hidden="true"></i>
                 </summary>
                 <div class="nav-mobile-panel">
-                    {% if app.request.attributes.get('_route') == 'app_home' and locales is defined %}
-                        <div class="nav-mobile-section-label">Idioma</div>
-                        <div class="nav-mobile-langs">
-                            {% for code, meta in locales %}
-                                <a href="{{ path('app_home') }}?lang={{ code }}" class="nav-mobile-lang{{ code == locale ? ' active' : '' }}" title="{{ meta.name }}">{{ meta.flag }}</a>
-                            {% endfor %}
-                        </div>
+                    <a href="{{ pricing_href }}" class="nav-mobile-login">{{ 'nav.pricing'|trans({}, 'public_site', site_locale) }}</a>
+                    {% if not app.user %}
+                        <a href="{{ path('admin_login') }}" class="nav-mobile-login">{{ 'nav.login'|trans({}, 'public_site', site_locale) }}</a>
                     {% endif %}
-                    {% if app.user %}
-                        <a href="{{ path('admin_menu') }}" class="nav-cta nav-mobile-cta">{{ 'nav.panel'|trans({}, 'public_site', locale|default('es')) }}</a>
-                    {% else %}
-                        <a href="{{ path('admin_login') }}" class="nav-login nav-mobile-login">{{ 'nav.login'|trans({}, 'public_site', locale|default('es')) }}</a>
-                        <a href="{{ path('app_register') }}" class="nav-cta nav-mobile-cta">{{ 'nav.cta'|trans({}, 'public_site', locale|default('es')) }}</a>
-                    {% endif %}
+                    {# Names the mode it switches to: "Modo oscuro" while light. #}
+                    <button type="button" class="nav-mobile-login nav-mobile-theme" onclick="toggleSiteTheme()">
+                        <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
+                        <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
+                        <span class="theme-icon-light">{{ 'nav.dark_mode'|trans({}, 'public_site', site_locale) }}</span>
+                        <span class="theme-icon-dark">{{ 'nav.light_mode'|trans({}, 'public_site', site_locale) }}</span>
+                    </button>
                 </div>
             </details>
         </div>
@@ -76,7 +85,7 @@
 
     document.addEventListener('click', function (e) {
         document.querySelectorAll('.nav-dropdown[open]').forEach(function (el) {
-            if (!el.contains(e.target)) el.removeAttribute('open');
+            if (!el.contains(e.target) || e.target.closest('a[href^="#"]')) el.removeAttribute('open');
         });
     });
 </script>

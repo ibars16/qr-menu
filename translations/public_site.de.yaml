@@ -7,8 +7,16 @@ meta:
 
 nav:
   login: "Anmelden"
-  cta: "1 Monat kostenlos testen"
   panel: "Zum Dashboard"
+  pricing: "Preise"
+  cta_short: "Kostenlos testen"
+  language: "Sprache"
+  theme_title: "Design wechseln"
+  theme_aria: "Zwischen dunklem und hellem Modus wechseln"
+  menu_aria: "Menü öffnen"
+  panel_short: "Dashboard"
+  dark_mode: "Dunkler Modus"
+  light_mode: "Heller Modus"
 
 hero:
   badge: "1 Monat kostenlos, keine Kreditkarte"
