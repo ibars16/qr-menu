@@ -9,7 +9,7 @@
    Contract: the including page must already have declared, before this
    include, everything _admin_js_utils.html.twig provides (S, isMobile,
    activePanel, panelEl, getVal, setVal, apiFetch) — S in particular must
-   have productId/categoryId/menuSectionId/spicy/allergenOverrides/
+   have productId/categoryId/menuSectionId/spicy/allergenOverrides/allergenComputed/
    ingredientAllergenCache. showToast is global (see admin/base.html.twig)
    and needs no declaration. #}
 <script>
@@ -412,7 +412,7 @@
         // open panel's copy was ever true), turning one back OFF silently
         // didn't (the closed panel's copy, set true at load, was still there).
         const panel = activePanel();
-        const tags = [...panel.querySelectorAll('.tag-pill.on')].map(t => parseInt(t.dataset.tagId));
+        const tags = [...panel.querySelectorAll('.tag-pill.on:not([data-allergen-tag])')].map(t => parseInt(t.dataset.tagId));
         panel.querySelectorAll('[id="p-recommended"]:checked').forEach(cb => tags.push(parseInt(cb.dataset.tagId)));
 
         // Owner-typed free text. validateProduct() above already rejected the
@@ -569,6 +569,7 @@
     // defaults to 1 ("mínimo"); turning it off zeroes the level, since "no
     // spicy tag" and "a spicy level" would otherwise contradict each other.
     function toggleTagPill(el) {
+        if (el.dataset.allergenTag) return; // locked: lit by syncAllergenTagPills()
         const isOn = !el.classList.contains('on');
         document.querySelectorAll(`.tag-pill[data-tag-id="${el.dataset.tagId}"]`).forEach(p =>
             p.classList.toggle('on', isOn)
@@ -577,6 +578,28 @@
             S.spicy = isOn ? Math.max(S.spicy, 1) : 0;
             updateSpicyUI();
         }
+    }
+
+    // The locked "contains-…" pills (data-allergen-tag = allergen code, see
+    // _product_fields.html.twig): on exactly when that allergen is
+    // "contiene" for this dish right now — the live computed list, with
+    // this panel's own (maybe unsaved) Casos especiales layered on top, the
+    // same "override wins" rule the public menu applies
+    // (ProductEffectiveTags). "Puede contener" never lights one. Known gap:
+    // a saved override removed here but not yet saved has no computed value
+    // to fall back to until the dish is saved and reopened.
+    function syncAllergenTagPills() {
+        const presence = {};
+        (S.allergenComputed || []).forEach(e => { presence[e.code] = e.presence; });
+        (S.allergenOverrides || []).forEach(o => {
+            const a = allergenById(o.allergenId);
+            if (a) presence[a.code] = o.presence;
+        });
+        document.querySelectorAll('.tag-pill[data-allergen-tag]').forEach(p => {
+            const on = presence[p.dataset.allergenTag] === 'contains';
+            p.classList.toggle('on', on);
+            p.setAttribute('aria-checked', on ? 'true' : 'false');
+        });
     }
 
     // ── New tag, created inline from the dish editor ────────────────────────────
@@ -888,6 +911,8 @@
     }
 
     function renderAllergenComputed(list) {
+        S.allergenComputed = list || [];
+        syncAllergenTagPills();
         const html = (list && list.length)
             ? list.map(e => allergenChipHtml({ icon: e.icon, name: e.name, id: e.id }, e.presence, false, false)).join('')
             : `<span class="allergen-empty">${MSG_ALLERGEN_COMPUTED_EMPTY}</span>`;
@@ -943,6 +968,7 @@
             return a ? allergenChipHtml(a, o.presence, true) : '';
         }).join('');
         document.querySelectorAll('[id="p-allergen-overrides"]').forEach(el => el.innerHTML = html);
+        syncAllergenTagPills();
 
         // Collapsed by default even when editing a dish that already has
         // exceptions — but a badge keeps them from being silently hidden.

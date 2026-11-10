@@ -193,6 +193,7 @@ tags:
     add: 'New tag'
     new_placeholder: 'Tag name'
     create_error: "Couldn't create the tag"
+    auto_from_allergens: "Set automatically from the dish's allergens"
 
 smart_waiter:
     section_title: Recommended

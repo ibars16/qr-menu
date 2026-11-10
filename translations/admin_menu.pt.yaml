@@ -193,6 +193,7 @@ tags:
     add: 'Nova etiqueta'
     new_placeholder: 'Nome da etiqueta'
     create_error: "Não foi possível criar a etiqueta"
+    auto_from_allergens: "Marcada automaticamente de acordo com os alergénios do prato"
 
 smart_waiter:
     section_title: Recomendado

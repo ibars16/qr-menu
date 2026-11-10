@@ -30,7 +30,9 @@ use App\Repository\AllergenRepository;
  * Every other tag and every allergen goes through SmartWaiterDishSafety:
  * "labels" ("none" when there's none), grouped "allergens" ("unknown
  * (not specified by the restaurant)"), "contains-…" tags folded into the allergens and diet tags the
- * allergens contradict left out — see its class docblock.
+ * allergens contradict left out — see its class docblock. The tags are
+ * the public menu's (ProductEffectiveTags): a "contains-…" system tag only
+ * ever arrives when its allergen already is "contains".
  */
 final class MenuContextBuilder
 {
@@ -199,7 +201,14 @@ final class MenuContextBuilder
 
         $otherTags = [];
         $highlighted = [];
-        foreach ($product->getTags() as $tag) {
+        // The public menu's own tags (ProductEffectiveTags): the "contains-…"
+        // system tags come from these allergens, never from what was ticked.
+        $tags = ProductEffectiveTags::compute(
+            $product->getTags(),
+            ProductEffectiveTags::presencesFromEntries($allergenEntries),
+            $restaurant->getProductTags(),
+        );
+        foreach ($tags as $tag) {
             if ($tag->isSystem() && in_array($tag->getCode(), self::KNOWN_HIGHLIGHT_CODES, true)) {
                 $highlighted[] = $tag->getCode();
                 continue;

@@ -193,6 +193,7 @@ tags:
     add: 'Nuova etichetta'
     new_placeholder: 'Nome dell’etichetta'
     create_error: "Impossibile creare l’etichetta"
+    auto_from_allergens: "Si attiva automaticamente in base agli allergeni del piatto"
 
 smart_waiter:
     section_title: Consigliato

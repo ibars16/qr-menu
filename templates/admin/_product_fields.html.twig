@@ -354,11 +354,29 @@
                         </button>
                     </div>
                     {% for tag in genericTags %}
-                        {% set tagT = null %}
-                        {% for tr in tag.translations %}
-                            {% if tr.locale == locale %}{% set tagT = tr %}{% endif %}
-                        {% endfor %}
-                        {% if tagT %}
+                        {# Admin Panel language first, like the allergen names below:
+                           then the menu's own language, English, any name it has. #}
+                        {% set tagT = tag.getTranslation(app.request.locale) ?? tag.getTranslation(locale) ?? tag.getTranslation('en') ?? (tag.translations.first ?: null) %}
+                        {# The three "contains-…" system tags: locked, never clicked —
+                           lit by syncAllergenTagPills() (_product_js.html.twig) from the
+                           dish's live allergens ("contiene" only), the same rule the
+                           public menu applies (ProductEffectiveTags); saveProduct()
+                           ignores them. #}
+                        {% set allergenTagFor = tag.isSystem ? (constant('App\\Service\\ProductEffectiveTags::CONTAINS_TAGS')[tag.code] ?? null) : null %}
+                        {% if tagT and allergenTagFor %}
+                            <div class="tag-pill tag-pill-auto"
+                                 data-tag-id="{{ tag.id }}"
+                                 data-tag-code="{{ tag.code }}"
+                                 data-allergen-tag="{{ allergenTagFor }}"
+                                 role="checkbox"
+                                 aria-checked="false"
+                                 aria-disabled="true"
+                                 title="{{ 'tags.auto_from_allergens'|trans({}, 'admin_menu') }}"
+                                 aria-label="{{ tagT.name }} — {{ 'tags.auto_from_allergens'|trans({}, 'admin_menu') }}">
+                                <i class="ti ti-lock" aria-hidden="true"></i>
+                                {{ tag.icon }} {{ tagT.name }}
+                            </div>
+                        {% elseif tagT %}
                             <div class="tag-pill"
                                  data-tag-id="{{ tag.id }}"
                                  data-tag-code="{{ tag.code }}"

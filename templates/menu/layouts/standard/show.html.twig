@@ -816,7 +816,7 @@
         {% if catT and (category.isFixedPriceMenu ? category.hasActiveMenuDishes : category.activeProductsSorted|length > 0) %}
             <section class="cat-section {{ category.isFixedPriceMenu ? 'set-menu-section' : '' }}" id="cat-{{ category.id }}" data-section="cat-{{ category.id }}" data-type="{{ category.type ? category.type.value : '' }}">
                 {% if category.isFixedPriceMenu %}
-                    {{ setMenuMacro.section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens) }}
+                    {{ setMenuMacro.section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens, productTags) }}
                 {% else %}
                 <div class="cat-title">{{ catT.name }}<span class="count">{{ '%02d'|format(category.activeProductsSorted|length) }}</span></div>
                 <div class="cards-grid">
@@ -841,7 +841,7 @@
                                 {% set cardBadge = 'spicy' %}
                             {% endif %}
                             {% set textRow = not product.image %}
-                            <div class="dish-card{{ textRow ? ' dish-row' : '' }}" onclick="openDishModal(this)" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': pT.name}, 'menu_public', locale) }}" data-product-id="{{ product.id }}" data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}" data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
+                            <div class="dish-card{{ textRow ? ' dish-row' : '' }}" onclick="openDishModal(this)" role="button" tabindex="0" aria-label="{{ 'dish.view_detail_aria'|trans({'%name%': pT.name}, 'menu_public', locale) }}" data-product-id="{{ product.id }}" data-tags="{% for tag in productTags[product.id]|default([]) %}{{ tag.id }} {% endfor %}" data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
                                 {% if textRow %}
                                     {# No photo: a plain text row (see conversation
                                        2026-09-02) instead of a card with an empty image frame —
@@ -909,7 +909,7 @@
                                     {% if pT.description %}<p class="dish-detail-desc">{{ pT.description }}</p>{% endif %}
                                     {% if product.spicyLevel > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.spicy'|trans({}, 'menu_public', locale) }}</div><div class="spicy-row">{% for i in 1..5 %}<div class="dot {{ i <= product.spicyLevel ? 'on' : '' }}"></div>{% endfor %}<span class="spicy-txt">{% if product.spicyLevel == 1 %}{{ 'dish.spice_1'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 2 %}{{ 'dish.spice_2'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 3 %}{{ 'dish.spice_3'|trans({}, 'menu_public', locale) }}{% elseif product.spicyLevel == 4 %}{{ 'dish.spice_4'|trans({}, 'menu_public', locale) }}{% else %}{{ 'dish.spice_5'|trans({}, 'menu_public', locale) }}{% endif %}</span></div></div>{% endif %}
                                     {% set ingredientNames = ingredient_names(product, locale, restaurant.defaultLanguage) %}{% if ingredientNames|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.ingredients'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(ingredientNames|length) }}</span></div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>{% endif %}
-                                    {% if product.tags|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.tags'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(product.tags|length) }}</span></div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<span class="chip">{{ _self.chipIcon(tag.icon) }}{{ tagNames[tag.id] }}</span>{% endif %}{% endfor %}</div></div>{% endif %}
+                                    {% set dishTags = productTags[product.id]|default([]) %}{% if dishTags|length > 0 %}<div class="bsec"><div class="bsec-title">{{ 'dish.tags'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(dishTags|length) }}</span></div><div class="lbl-list">{% for tag in dishTags %}{% if tagNames[tag.id] is defined %}<span class="chip">{{ _self.chipIcon(tag.icon) }}{{ tagNames[tag.id] }}</span>{% endif %}{% endfor %}</div></div>{% endif %}
                                     {% if productAllergens[product.id]|default([])|length > 0 %}
                                         {# Flattened — no nested bordered/tinted box, same loose
                                            label+chips+disclaimer rhythm as every other .bsec here.

@@ -25,6 +25,8 @@ use App\Service\ProductTranslatorInterface;
 use App\Service\SmartWaiterDishFit;
 use App\Service\SmartWaiterDishSafety;
 use App\Service\SmartWaiterPromptBuilder;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Result;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
@@ -38,13 +40,19 @@ use Psr\Log\NullLogger;
  * a fixed-price menu's dishes are read too (extractVocabulary()).
  *
  * No kernel/DB. Fixture products are unpersisted, so ProductAllergenResolver
- * returns no entries for them (its empty-id early return); allergen entries
- * are therefore exercised on SmartWaiterDishSafety directly.
+ * returns no entries for them (its empty-id early return) — unless a test
+ * gives one allergens with withAllergens(), which hands it an id and feeds
+ * the resolver those rows as the dish's overrides. Most allergen cases are
+ * exercised on SmartWaiterDishSafety directly. Through the builder a
+ * "contains-…" tag ticked by hand no longer counts: the tags are the public
+ * menu's (ProductEffectiveTags), taken from the allergens.
  */
 final class MenuContextBuilderSmartWaiterDataTest extends TestCase
 {
     /** @var array<string, Allergen> */
     private array $allergens = [];
+    /** @var array<int, array<string, AllergenPresence>> product id => allergen code => presence, see withAllergens() */
+    private array $dishAllergens = [];
 
     protected function setUp(): void
     {
@@ -53,6 +61,7 @@ final class MenuContextBuilderSmartWaiterDataTest extends TestCase
             $allergen = new Allergen();
             $allergen->setCode($code);
             $allergen->setPosition($position++);
+            (new \ReflectionProperty(Allergen::class, 'id'))->setValue($allergen, $position);
             $t = new AllergenTranslation();
             $t->setLocale('es');
             $t->setName($name);
@@ -118,17 +127,47 @@ final class MenuContextBuilderSmartWaiterDataTest extends TestCase
         return $tag;
     }
 
+    /** @param array<string, AllergenPresence> $byCode the dish's effective allergens, as the resolver will return them */
+    private function withAllergens(Product $product, array $byCode): Product
+    {
+        $id = 1000 + count($this->dishAllergens);
+        (new \ReflectionProperty(Product::class, 'id'))->setValue($product, $id);
+        $this->dishAllergens[$id] = $byCode;
+
+        return $product;
+    }
+
+    /** A real ProductAllergenResolver whose override query returns withAllergens()'s rows. */
+    private function resolver(): ProductAllergenResolver
+    {
+        $rows = [];
+        foreach ($this->dishAllergens as $productId => $byCode) {
+            foreach ($byCode as $code => $presence) {
+                $rows[] = ['product_id' => $productId, 'allergen_id' => $this->allergens[$code]->getId(), 'presence' => $presence->value, 'note' => null];
+            }
+        }
+        $connection = $this->createStub(Connection::class);
+        $connection->method('executeQuery')->willReturnCallback(function (string $sql) use ($rows) {
+            $result = $this->createStub(Result::class);
+            $result->method('fetchAllAssociative')->willReturn(str_contains($sql, 'product_allergen_override') ? $rows : []);
+
+            return $result;
+        });
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('getConnection')->willReturn($connection);
+        $allergenRepository = $this->createStub(AllergenRepository::class);
+        $allergenRepository->method('findAllOrdered')->willReturn(array_values($this->allergens));
+
+        return new ProductAllergenResolver($em, $allergenRepository, $this->createStub(CacheItemPoolInterface::class));
+    }
+
     private function builder(): MenuContextBuilder
     {
         $allergenRepository = $this->createStub(AllergenRepository::class);
         $allergenRepository->method('findAllIndexedByCode')->willReturn($this->allergens);
 
         return new MenuContextBuilder(
-            new ProductAllergenResolver(
-                $this->createStub(EntityManagerInterface::class),
-                $this->createStub(AllergenRepository::class),
-                $this->createStub(CacheItemPoolInterface::class),
-            ),
+            $this->resolver(),
             new CurrencyConverter($this->createStub(ExchangeRateRepository::class)),
             new OwnerTextTranslationService(
                 $this->createStub(OwnerTextTranslationRepository::class),
@@ -253,13 +292,12 @@ final class MenuContextBuilderSmartWaiterDataTest extends TestCase
         self::assertSame(['Vegano'], $this->shape([$ownVegan], ['milk' => [AllergenPresence::CONTAINS]])['labels']);
     }
 
-    /** The real case: vegan + "contains nuts" tags, milk contained — through the whole builder. */
+    /** The real case: a vegan tag, milk contained — through the whole builder. */
     public function testTheVeganFourCheesePizzaReachesTheModelWithoutTheVeganLabel(): void
     {
         $restaurant = $this->restaurant();
-        $pizza = $this->dish($this->category($restaurant, 'Pizzas'), 'Pizza cuatro quesos');
+        $pizza = $this->withAllergens($this->dish($this->category($restaurant, 'Pizzas'), 'Pizza cuatro quesos'), ['milk' => AllergenPresence::CONTAINS]);
         $pizza->addTag($this->tag($restaurant, 'vegan', 'Vegano'));
-        $pizza->addTag($this->tag($restaurant, 'contains-dairy', 'Contiene lácteos'));
 
         $dish = $this->builder()->build($restaurant, 'es', 'EUR')['categories'][0]['products'][0];
 
@@ -324,9 +362,8 @@ final class MenuContextBuilderSmartWaiterDataTest extends TestCase
         $section->setLabel('Primeros');
         $section->setPosition(0);
         $menu->addMenuSection($section);
-        $setDish = $this->dish($menu, 'Sopa', 0, $section);
+        $setDish = $this->withAllergens($this->dish($menu, 'Sopa', 0, $section), ['gluten' => AllergenPresence::CONTAINS]);
         $setDish->addTag($this->tag($restaurant, 'halal', 'Halal'));
-        $setDish->addTag($this->tag($restaurant, 'contains-gluten', 'Contiene gluten'));
 
         $builder = $this->builder();
         $context = $builder->build($restaurant, 'es', 'EUR');
@@ -384,11 +421,10 @@ final class MenuContextBuilderSmartWaiterDataTest extends TestCase
     {
         $restaurant = $this->restaurant();
         $pizzas = $this->category($restaurant, 'Pizzas');
-        $escalivada = $this->dish($pizzas, 'Pizza de escalivada y butifarra de Valls', 1400);
+        $escalivada = $this->withAllergens($this->dish($pizzas, 'Pizza de escalivada y butifarra de Valls', 1400), ['gluten' => AllergenPresence::CONTAINS]);
         $escalivada->setSpicyLevel(3);
-        $escalivada->addTag($this->tag($restaurant, 'contains-gluten', 'Contiene gluten'));
         $escalivada->addTag($this->tag($restaurant, 'recommended', 'Recomendado'));
-        $this->dish($pizzas, 'Pizza cuatro quesos', 1200);
+        $this->withAllergens($this->dish($pizzas, 'Pizza cuatro quesos', 1200), []); // an id after the first one's: same order as before
 
         $context = $this->builder()->build($restaurant, 'es', 'EUR');
         self::assertSame(['recommended'], $context['categories'][0]['products'][0]['highlighted'], 'before sorting: recommended…');
@@ -408,5 +444,32 @@ final class MenuContextBuilderSmartWaiterDataTest extends TestCase
         self::assertStringNotContainsString('"allergens":"?"', $prompt);
         self::assertStringNotContainsString('"highlighted":["recommended"]', $prompt, 'nor its "recommended"');
         self::assertStringNotContainsString(SmartWaiterDishSafety::FIT_KEY, $prompt);
+    }
+
+    // ── 14. a hand-ticked "contains-…" tag no longer reaches the model ───
+
+    public function testAHandTickedContainsTagWithoutTheAllergenIsIgnored(): void
+    {
+        $restaurant = $this->restaurant();
+        $carpaccio = $this->dish($this->category($restaurant, 'Entrantes'), 'Carpaccio');
+        $carpaccio->addTag($this->tag($restaurant, 'contains-nuts', 'Contiene frutos secos'));
+        $carpaccio->addTag($this->tag($restaurant, 'vegetarian', 'Vegetariano'));
+
+        $dish = $this->builder()->build($restaurant, 'es', 'EUR')['categories'][0]['products'][0];
+
+        self::assertSame(['Vegetariano'], $dish['labels']);
+        self::assertSame(SmartWaiterDishSafety::NO_ALLERGENS, $dish['allergens'], 'no allergen invented from the tag');
+    }
+
+    public function testMayContainStaysMayContainThoughTheTagWasTicked(): void
+    {
+        $restaurant = $this->restaurant();
+        $flan = $this->withAllergens($this->dish($this->category($restaurant, 'Postres'), 'Flan'), ['milk' => AllergenPresence::MAY_CONTAIN]);
+        $flan->addTag($this->tag($restaurant, 'contains-dairy', 'Contiene lácteos'));
+
+        $dish = $this->builder()->build($restaurant, 'es', 'EUR')['categories'][0]['products'][0];
+
+        self::assertSame(['may_contain' => ['Leche']], $dish['allergens'], 'the ticked tag no longer raises it');
+        self::assertSame('none', $dish['labels']);
     }
 }

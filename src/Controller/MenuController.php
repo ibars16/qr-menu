@@ -14,6 +14,7 @@ use App\Service\CurrencyConverter;
 use App\Service\MenuPreferencesResolver;
 use App\Service\OwnerTextTranslationService;
 use App\Service\ProductAllergenResolver;
+use App\Service\ProductEffectiveTags;
 use App\Service\ProductTranslationService;
 use App\Service\TagTranslationService;
 use App\Service\TranslationDeadline;
@@ -514,6 +515,19 @@ class MenuController extends AbstractController
             $productAllergens[$productId] = $serialized;
         }
 
+        // The tags each dish shows (detail view, set menus): saved tags with
+        // the three "contains-…" system tags taken from these same allergens
+        // instead of from what was ticked — see ProductEffectiveTags.
+        $restaurantTags = $restaurant->getProductTags()->toArray();
+        $productTags = [];
+        foreach ($allProducts as $product) {
+            $productTags[$product->getId()] = ProductEffectiveTags::compute(
+                $product->getTags(),
+                array_column($productAllergens[$product->getId()] ?? [], 'presence', 'code'),
+                $restaurantTags,
+            );
+        }
+
         uasort($menuAllergensByCode, static fn ($a, $b) => $a->getPosition() <=> $b->getPosition());
         $menuAllergens = array_map(
             static fn ($allergen) => [
@@ -591,6 +605,7 @@ class MenuController extends AbstractController
             'tags'          => $tags,
             'tagNames'      => $tagNames,
             'productAllergens' => $productAllergens,
+            'productTags'   => $productTags,
             'menuAllergens' => $menuAllergens,
             'popularProductIds' => $popularProductIds,
             'layout'        => $layout,

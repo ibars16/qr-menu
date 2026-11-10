@@ -36,7 +36,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens) %}
+{% macro section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens, productTags) %}
     {%- set ltrOpen = menu_dir(locale) == 'rtl' ? '<bdi dir="ltr" class="price-ltr">' : '' %}{% set ltrClose = ltrOpen ? '</bdi>' : '' %}{% set autoOpen = ltrOpen ? '<span dir="auto">' : '' %}{% set autoClose = ltrOpen ? '</span>' : '' %}
     {% set menuT = category.getTranslation(locale) %}
     {% if not menuT %}{% set menuT = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
@@ -54,7 +54,7 @@
                 <div class="set-menu-group">
                     <div class="set-menu-group-label">{{ owner_text(entry.section.label, locale) }}</div>
                     {% for product in entry.products %}
-                        {{ _self.dish_row(product, locale, restaurant, currencyDisplay, tagNames, productAllergens) }}
+                        {{ _self.dish_row(product, locale, restaurant, currencyDisplay, tagNames, productAllergens, productTags) }}
                     {% endfor %}
                 </div>
             {% endif %}
@@ -62,7 +62,9 @@
     {% endif %}
 {% endmacro %}
 
-{% macro dish_row(product, locale, restaurant, currencyDisplay, tagNames, productAllergens) %}
+{% macro dish_row(product, locale, restaurant, currencyDisplay, tagNames, productAllergens, productTags) %}
+    {# productTags: MenuController's per-dish tags — the "contains-…" system tags come from the allergens (ProductEffectiveTags), never product.tags. #}
+    {% set dishTags = productTags[product.id]|default([]) %}
     {%- set ltrOpen = menu_dir(locale) == 'rtl' ? '<bdi dir="ltr" class="price-ltr">' : '' %}{% set ltrClose = ltrOpen ? '</bdi>' : '' %}{% set autoOpen = ltrOpen ? '<span dir="auto">' : '' %}{% set autoClose = ltrOpen ? '</span>' : '' %}
     {% set pT = product.getTranslation(locale) %}
     {% if not pT %}{% set pT = product.getTranslation(restaurant.defaultLanguage) %}{% endif %}
@@ -73,7 +75,7 @@
     {% if pT and pT.name is not empty %}
         <div class="card-wrap set-menu-row-wrap"
              onclick="flipCard(this)"
-             data-tags="{% for tag in product.tags %}{{ tag.id }} {% endfor %}"
+             data-tags="{% for tag in dishTags %}{{ tag.id }} {% endfor %}"
              data-allergens="{% for a in productAllergens[product.id]|default([]) %}{{ a.code }}:{{ a.presence }} {% endfor %}">
             <div class="card set-menu-card">
                 <div class="card-front set-menu-front">
@@ -98,8 +100,8 @@
                             {% if ingredientNames|length > 0 %}
                                 <div class="bsec"><div class="bsec-title">{{ 'dish.ingredients'|trans({}, 'menu_public', locale) }}</div><div class="ing-list">{% for name in ingredientNames %}<div class="ing">{{ name }}</div>{% endfor %}</div></div>
                             {% endif %}
-                            {% if product.tags|length > 0 %}
-                                <div class="bsec"><div class="bsec-title">{{ 'dish.tags'|trans({}, 'menu_public', locale) }}</div><div class="lbl-list">{% for tag in product.tags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>
+                            {% if dishTags|length > 0 %}
+                                <div class="bsec"><div class="bsec-title">{{ 'dish.tags'|trans({}, 'menu_public', locale) }}</div><div class="lbl-list">{% for tag in dishTags %}{% if tagNames[tag.id] is defined %}<div class="lbl lbl-g">{{ tag.icon }} {{ tagNames[tag.id] }}</div>{% endif %}{% endfor %}</div></div>
                             {% endif %}
                             {% if productAllergens[product.id]|default([])|length > 0 %}
                                 <div class="bsec"><div class="bsec-title">{{ 'dish.allergens'|trans({}, 'menu_public', locale) }}</div><div class="lbl-list">{% for a in productAllergens[product.id] %}{% set noteBtn = a.note ? '<span class="alg-note-btn" role="button" tabindex="0" aria-label="' ~ ('allergen.more_info'|trans({}, 'menu_public', locale)|e('html_attr')) ~ '" data-note="' ~ a.note|e('html_attr') ~ '" onclick="toggleAllergenNote(event, this)"><i class="ti ti-info-circle" aria-hidden="true"></i></span>' : '' %}{% if a.presence == 'free_from' %}<div class="alg alg-free_from">✓ {{ 'allergen.free_from'|trans({}, 'menu_public', locale) }} {{ a.name }}{{ noteBtn|raw }}</div>{% elseif a.presence == 'may_contain' %}<div class="alg alg-may_contain">{{ a.icon }} {{ a.name }} · {{ 'allergen.traces'|trans({}, 'menu_public', locale) }}{{ noteBtn|raw }}</div>{% else %}<div class="alg alg-contains">{{ a.icon }} {{ a.name }}{{ noteBtn|raw }}</div>{% endif %}{% endfor %}</div></div>

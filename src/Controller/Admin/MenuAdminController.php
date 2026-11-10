@@ -27,6 +27,7 @@ use App\Service\OwnerTextTranslationPruner;
 use App\Service\MenuImportLanguageNotice;
 use App\Service\MenuImportReview;
 use App\Service\ProductAllergenResolver;
+use App\Service\ProductEffectiveTags;
 use App\Service\ProductTranslationService;
 use App\Service\Upload\ClipTranscoder;
 use App\Service\Upload\UploadProfile;
@@ -1025,14 +1026,19 @@ class MenuAdminController extends AbstractController
             $this->productTranslationService->invalidateStale($product, $defaultLocale);
         }
 
-        // Tags
+        // Tags. The three "contains-…" system tags are ignored both ways —
+        // never added from the payload, an already-saved one never removed:
+        // they come from the allergens (ProductEffectiveTags), which is what
+        // the editor's locked pills show.
         if (isset($data['tags'])) {
             foreach ($product->getTags() as $tag) {
-                $product->removeTag($tag);
+                if (!ProductEffectiveTags::isAllergenTag($tag)) {
+                    $product->removeTag($tag);
+                }
             }
             foreach ($data['tags'] as $tagId) {
                 $tag = $em->getRepository(\App\Entity\ProductTag::class)->find($tagId);
-                if ($tag && $tag->getRestaurant() === $restaurant) {
+                if ($tag && $tag->getRestaurant() === $restaurant && !ProductEffectiveTags::isAllergenTag($tag)) {
                     $product->addTag($tag);
                 }
             }

@@ -687,6 +687,14 @@
 }
 .tag-pill.on { background:rgba(99,153,34,0.15); color:#7aad40; border-color:rgba(99,153,34,0.35); }
 .tag-pill:hover:not(.on) { border-color:var(--bd-2); color:var(--tx-3); }
+/* Locked "contains-…" pills, lit from the allergens (syncAllergenTagPills()).
+   Same shape and green fill as a ticked pill, but text from the AA tokens
+   (#7aad40 isn't AA on the light fill): --tx-2 off (dark 7.49:1, light
+   6.48:1 on --bg-input), --tx-1 on (dark 8.90:1, light 9.49:1 on the green
+   fill over --bg-input). */
+.tag-pill-auto, .tag-pill-auto:hover:not(.on) { cursor:default; gap:4px; color:var(--tx-2); border-color:var(--bd-2); }
+.tag-pill-auto.on { color:var(--tx-1); }
+.tag-pill-auto .ti-lock { font-size:12px; }
 .tag-pill-add { border-style:dashed; background:transparent; font-family:inherit; gap:4px; }
 /* min-width:0 + max-width:100% + the input's width:0 (flex:1 grows it back):
    otherwise the input's intrinsic width sets this box's minimum, and on a

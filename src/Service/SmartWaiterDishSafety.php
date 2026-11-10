@@ -23,6 +23,9 @@ use App\Enum\AllergenPresence;
  *   added to "allergens" as contains — it only ever raises a presence
  *   (may_contain or even an owner's free_from becomes contains), never
  *   lowers one — instead of staying a label the allergen rules wouldn't read.
+ *   MenuContextBuilder passes ProductEffectiveTags' tags, where such a tag
+ *   only exists when its allergen already is "contains", so there this is a
+ *   safety net that changes nothing.
  * - A diet system tag that the allergens contradict (CONFLICTS) is left
  *   out: e.g. "vegan" on a dish that contains milk is never stated.
  *
@@ -37,12 +40,8 @@ use App\Enum\AllergenPresence;
  */
 final class SmartWaiterDishSafety
 {
-    /** System tag code => allergen code it means "contains". "contains-nuts" is tree nuts, not peanuts. */
-    public const CONTAINS_TAGS = [
-        'contains-dairy' => 'milk',
-        'contains-nuts' => 'nuts',
-        'contains-gluten' => 'gluten',
-    ];
+    /** System tag code => allergen code it means "contains" — the one list, ProductEffectiveTags'. */
+    public const CONTAINS_TAGS = ProductEffectiveTags::CONTAINS_TAGS;
 
     /** Diet system tag code => [allergen code => presences that contradict it]. */
     public const CONFLICTS = [

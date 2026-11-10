@@ -193,6 +193,7 @@ tags:
     add: 'Neues Etikett'
     new_placeholder: 'Name des Etiketts'
     create_error: "Das Etikett konnte nicht erstellt werden"
+    auto_from_allergens: "Wird automatisch anhand der Allergene des Gerichts gesetzt"
 
 smart_waiter:
     section_title: Empfohlen

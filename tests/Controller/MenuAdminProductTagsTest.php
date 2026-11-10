@@ -5,6 +5,7 @@ namespace App\Tests\Controller;
 use App\Entity\Category;
 use App\Entity\Product;
 use App\Entity\ProductTag;
+use App\Entity\ProductTagTranslation;
 use App\Entity\Restaurant;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,6 +52,7 @@ final class MenuAdminProductTagsTest extends WebTestCase
     private Product $product;
     private ProductTag $recommendedTag;
     private ProductTag $genericTag;
+    private ProductTag $containsGlutenTag;
 
     /** @var int[] restaurant ids, not entities — tests call $em->clear(), which detaches everything created before it */
     private array $restaurantIdsToRemove = [];
@@ -88,6 +90,11 @@ final class MenuAdminProductTagsTest extends WebTestCase
         // A second, non-system tag — proves the fix isn't recommended-specific.
         $this->genericTag = new ProductTag($this->restaurant, 'vegetarian', false);
         $this->em->persist($this->genericTag);
+
+        // A "contains-…" system tag: comes from the allergens, never from the
+        // editor (ProductEffectiveTags), so saveProduct() ignores it.
+        $this->containsGlutenTag = new ProductTag($this->restaurant, 'contains-gluten', true);
+        $this->em->persist($this->containsGlutenTag);
 
         $this->em->flush();
 
@@ -186,5 +193,76 @@ final class MenuAdminProductTagsTest extends WebTestCase
 
         $this->save([$this->recommendedTag->getId()]);
         self::assertSame(['recommended'], $this->reloadTagCodes(), 'Removing one tag while keeping another must persist correctly.');
+    }
+
+    public function testAContainsTagSentByTheEditorIsNeverSaved(): void
+    {
+        $this->save([$this->containsGlutenTag->getId(), $this->genericTag->getId()]);
+
+        self::assertSame(['vegetarian'], $this->reloadTagCodes());
+    }
+
+    public function testAnAlreadySavedContainsTagIsLeftAlone(): void
+    {
+        // An old hand-ticked row (from before the tag became automatic).
+        $this->product->addTag($this->containsGlutenTag);
+        $this->em->flush();
+
+        $this->save([$this->genericTag->getId()]);
+        self::assertSame(['contains-gluten', 'vegetarian'], $this->reloadTagCodes(), 'ignored both ways: not removed either');
+
+        $this->save([]);
+        self::assertSame(['contains-gluten'], $this->reloadTagCodes(), 'the other tags still come off');
+    }
+
+    public function testTheEditorShowsTheContainsPillLocked(): void
+    {
+        foreach ([$this->containsGlutenTag, $this->genericTag] as $tag) {
+            $t = new ProductTagTranslation();
+            $t->setLocale('es');
+            $t->setName($tag === $this->genericTag ? 'Vegetariano' : 'Contiene gluten');
+            $tag->addTranslation($t);
+            $this->em->persist($t);
+        }
+        $this->em->flush();
+        $this->em->clear(); // the page reads $restaurant->getProductTags(), filled from the DB, not this in-memory restaurant
+
+        $crawler = $this->client->request('GET', '/admin/menu');
+        self::assertResponseIsSuccessful();
+
+        $locked = $crawler->filter('.tag-pill[data-tag-id="' . $this->containsGlutenTag->getId() . '"]');
+        self::assertGreaterThan(0, $locked->count());
+        $locked->each(function ($pill) {
+            self::assertSame('gluten', $pill->attr('data-allergen-tag'));
+            self::assertSame('true', $pill->attr('aria-disabled'));
+            self::assertNull($pill->attr('onclick'), 'never clicked');
+        });
+
+        $normal = $crawler->filter('.tag-pill[data-tag-id="' . $this->genericTag->getId() . '"]')->first();
+        self::assertNull($normal->attr('data-allergen-tag'), 'an owner tag stays a normal pill');
+        self::assertSame('toggleTagPill(this)', $normal->attr('onclick'));
+    }
+
+    public function testPillNamesFollowTheAdminPanelLanguage(): void
+    {
+        $this->restaurant->setAdminLocale('en');
+        foreach ([[$this->containsGlutenTag, 'Contiene gluten', 'Contains Gluten'], [$this->genericTag, 'Vegetariano', null]] as [$tag, $es, $en]) {
+            foreach (array_filter(['es' => $es, 'en' => $en]) as $locale => $name) {
+                $t = new ProductTagTranslation();
+                $t->setLocale($locale);
+                $t->setName($name);
+                $tag->addTranslation($t);
+                $this->em->persist($t);
+            }
+        }
+        $this->em->flush();
+        $this->em->clear();
+
+        $crawler = $this->client->request('GET', '/admin/menu');
+        self::assertResponseIsSuccessful();
+
+        $name = fn (ProductTag $tag) => trim($crawler->filter('.tag-pill[data-tag-id="' . $tag->getId() . '"]')->first()->text());
+        self::assertStringEndsWith('Contains Gluten', $name($this->containsGlutenTag), 'English panel: the English name');
+        self::assertStringEndsWith('Vegetariano', $name($this->genericTag), 'no English name: the menu\'s own one, never hidden');
     }
 }
