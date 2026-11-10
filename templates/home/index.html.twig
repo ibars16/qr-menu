@@ -10,166 +10,220 @@
 {% endblock %}
 
 {% block extra_stylesheets %}
-    /* Hero */
-    .hero { position: relative; padding: 88px 24px 80px; border-top: 1px solid var(--bd-1); overflow: hidden; }
-    .hero::before {
-        content: ''; position: absolute; top: -260px; left: 50%; transform: translateX(-50%);
-        width: 1000px; height: 620px; pointer-events: none; z-index: 0;
-        background: radial-gradient(ellipse at center, rgba(193,68,14,0.16) 0%, rgba(193,68,14,0.05) 40%, transparent 68%);
-        filter: blur(60px);
-    }
-    .hero-inner { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; display: flex; align-items: center; gap: 48px; }
-    .hero-copy { flex: 1; min-width: 0; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--accent-text); background: rgba(193,68,14,0.12); border: 1px solid rgba(193,68,14,0.3); padding: 6px 14px; border-radius: 999px; margin-bottom: 22px; }
-    .hero h1 { font-size: 46px; font-weight: 800; color: var(--tx-hi); letter-spacing: -1.4px; line-height: 1.12; margin-bottom: 18px; }
-    .hero h1 .grad {
-        background: var(--brand-grad); background-clip: text; -webkit-background-clip: text;
-        color: transparent; -webkit-text-fill-color: transparent;
-    }
-    .hero p { font-size: 17px; color: var(--tx-2); max-width: 480px; margin-bottom: 30px; line-height: 1.6; }
-    .hero-ctas { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .hero-note { font-size: 12px; color: var(--tx-4); margin-top: 16px; }
+    /* Home in the "Clásico claro" (maison) language of the public menu:
+       Fraunces display type, parchment surfaces, wine accent, brass
+       hairlines. Colors come from public/base.html.twig's tokens. */
 
-    /* Hero visual — a CSS mockup of the actual public menu UI (standard
-       layout), not a fabricated screenshot. Dish cards deliberately reuse
-       the public menu's ti-tools-kitchen-2 icon on a gradient panel rather
-       than inventing fake dish photos. */
-    .hero-visual { flex-shrink: 0; position: relative; width: 320px; max-width: 100%; }
+    /* Shared small pieces */
+    .eyebrow {
+        display: inline-flex; align-items: center; gap: 10px;
+        font-size: 11px; font-weight: 600; color: var(--gold-text);
+        text-transform: uppercase; letter-spacing: 0.16em;
+    }
+    .eyebrow::before, .eyebrow::after { content: ''; width: 22px; height: 1px; background: var(--gold); opacity: 0.7; }
+    .rule { width: 44px; height: 1px; background: var(--gold); border: 0; }
+
+    /* Hero */
+    .hero { position: relative; padding: 96px 24px 104px; background: var(--hero-wash); border-bottom: 1px solid var(--bd-1); overflow: hidden; }
+    .hero-inner { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; display: flex; align-items: center; gap: 72px; }
+    .hero-copy { flex: 1; min-width: 0; }
+    .hero-badge {
+        display: inline-flex; align-items: center; gap: 8px;
+        font-size: 12px; font-weight: 500; color: var(--gold-text);
+        border: 1px solid rgba(176,137,76,0.45); background: rgba(176,137,76,0.07);
+        padding: 7px 15px; border-radius: 999px; margin-bottom: 28px;
+    }
+    .hero-badge i { font-size: 14px; color: var(--gold); }
+    .hero h1 {
+        font-family: var(--font-display); font-size: 60px; font-weight: 400; color: var(--tx-hi);
+        letter-spacing: -0.012em; line-height: 1.06; margin-bottom: 26px;
+        font-variation-settings: 'opsz' 144;
+    }
+    .hero h1 .accent { font-style: italic; color: var(--accent-text); }
+    .hero .rule { margin-bottom: 24px; }
+    .hero p { font-size: 17px; color: var(--tx-2); max-width: 500px; margin-bottom: 34px; line-height: 1.7; }
+    .hero-ctas { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .hero-note { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--tx-3); margin-top: 20px; }
+    .hero-note i { color: var(--gold); font-size: 15px; }
+
+    /* Hero visual — a CSS mockup of the real public menu in its
+       "Clásico claro" theme (standard layout). Always parchment, whatever
+       the site theme: it shows the product, not the website. Dish names
+       and prices are copied from /r/david-test. */
+    .hero-visual { flex-shrink: 0; position: relative; width: 340px; max-width: 100%; }
     .hero-visual::before {
-        content: ''; position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
-        width: 340px; height: 340px; z-index: 0; pointer-events: none;
-        background: radial-gradient(circle, rgba(193,68,14,0.22) 0%, transparent 65%);
+        content: ''; position: absolute; inset: 8% -18% -6%; z-index: 0; pointer-events: none;
+        background: radial-gradient(ellipse at center, rgba(176,137,76,0.28) 0%, transparent 65%);
         filter: blur(40px);
     }
-    .menu-mockup-frame {
-        position: relative; z-index: 1;
-        background: var(--bg-elevated); border: 1px solid var(--bd-2); border-radius: 22px;
-        padding: 8px; box-shadow: 0 30px 70px -20px rgba(0,0,0,0.55);
-        transform: rotate(1.5deg);
+    .phone {
+        --m-bg: #F2EBDF; --m-surface: #FBF8F1; --m-surface-2: #E9DFCD; --m-fg: #241C17; --m-fg-2: #6D5D4E;
+        --m-accent: #7A1E28; --m-brass: #B0894C; --m-brass-text: #805E30; --m-line: rgba(36,28,23,0.09);
+        position: relative; z-index: 1; text-align: left;
+        background: #1E1714; border-radius: 40px; padding: 10px;
+        box-shadow: 0 0 0 1px rgba(176,137,76,0.35), 0 40px 80px -28px rgba(36,28,23,0.55), 0 18px 36px -18px rgba(36,28,23,0.35);
     }
-    .menu-mockup { background: var(--bg-card); border-radius: 16px; padding: 16px; overflow: hidden; }
-
-    .mockup-topbar { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
-    .mockup-pill { display: inline-flex; align-items: center; gap: 3px; font-size: 9px; font-weight: 600; color: var(--tx-2); background: var(--bg-input); border: 1px solid var(--bd-2); padding: 3px 8px; border-radius: 999px; }
-    .mockup-pill i { font-size: 8px; }
-    .mockup-restaurant { font-size: 14px; font-weight: 700; color: var(--tx-hi); letter-spacing: -0.2px; margin-bottom: 2px; }
-    .mockup-tagline { font-size: 10px; color: var(--tx-4); margin-bottom: 12px; }
-    .mockup-search { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--tx-4); background: var(--bg-input); border: 1px solid var(--bd-2); padding: 8px 12px; border-radius: 999px; margin-bottom: 14px; }
-    .mockup-search i { font-size: 12px; }
-
-    .mockup-cat { font-size: 9px; font-weight: 700; color: var(--tx-4); text-transform: uppercase; letter-spacing: 0.08em; margin: 12px 0 7px; }
-    .mockup-dish-card { background: var(--bg-subtle); border: 1px solid var(--bd-1); border-radius: 12px; overflow: hidden; margin-bottom: 8px; }
-    .mockup-dish-img {
-        aspect-ratio: 4 / 3.2; display: flex; align-items: center; justify-content: center;
-        background: linear-gradient(150deg, rgba(193,68,14,0.22), rgba(193,68,14,0.08));
+    .phone-screen { background: var(--m-bg); border-radius: 31px; overflow: hidden; height: 640px; position: relative; }
+    .phone-screen::after {
+        content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 70px; pointer-events: none;
+        background: linear-gradient(180deg, transparent, var(--m-bg));
     }
-    .mockup-dish-img i { font-size: 34px; color: #e8875f; }
-    .mockup-dish-info { padding: 8px 10px 10px; }
-    .mockup-dish-name { font-size: 10.5px; font-weight: 500; color: var(--tx-1); letter-spacing: -0.1px; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .mockup-dish-bottom { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-    .mockup-price { background: var(--brand-grad); color: #fff; font-size: 9.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
-    .mockup-more { font-size: 9px; font-weight: 500; color: var(--accent-text); border: 1px solid rgba(232,135,95,0.35); padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
-
-    .hero-qr-badge {
-        position: absolute; bottom: -14px; left: -14px; z-index: 2;
-        width: 44px; height: 44px; border-radius: 12px;
-        background: var(--brand-grad); color: #fff;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 20px; box-shadow: 0 10px 24px -8px rgba(193,68,14,0.6);
-        transform: rotate(-4deg);
+    .m-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 12px; border-bottom: 1px solid var(--m-line); background: rgba(242,235,223,0.95); }
+    .m-brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 13px; color: var(--m-fg); }
+    .m-logo { width: 22px; height: 22px; border-radius: 50%; background: var(--m-accent); color: #fff; font-family: var(--font-display); font-style: italic; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+    .m-pills { display: flex; gap: 5px; }
+    .m-pill { font-size: 8.5px; font-weight: 500; color: var(--m-fg-2); background: var(--m-surface); border: 1px solid var(--m-line); padding: 3px 7px; border-radius: 999px; display: inline-flex; align-items: center; gap: 3px; }
+    .m-pill i { font-size: 7px; }
+    .m-hero { padding: 20px 16px 18px; background: radial-gradient(120% 90% at 85% 0%, rgba(176,137,76,0.14), transparent 60%), linear-gradient(180deg, #E9DFCD, #F2EBDF); }
+    .m-name { font-family: var(--font-display); font-size: 30px; font-weight: 400; color: var(--m-fg); letter-spacing: -0.02em; line-height: 1; }
+    .m-rule { width: 26px; height: 1px; background: var(--m-brass); margin: 11px 0 9px; }
+    .m-tagline { font-family: var(--font-display); font-style: italic; font-size: 11.5px; color: var(--m-fg-2); margin-bottom: 13px; }
+    .m-cta { display: inline-flex; align-items: center; gap: 5px; background: var(--m-accent); color: #fff; font-size: 9.5px; font-weight: 500; padding: 6px 12px; border-radius: 999px; }
+    .m-cta i { font-size: 10px; }
+    .m-search { display: flex; align-items: center; gap: 6px; margin: 12px 16px 0; padding: 7px 0; font-family: var(--font-display); font-style: italic; font-size: 10.5px; color: #A99B8A; border-bottom: 1px solid var(--m-line); }
+    .m-search i { font-size: 11px; font-style: normal; }
+    .m-tabs { display: flex; gap: 12px; padding: 10px 16px 0; font-size: 9.5px; color: var(--m-fg-2); white-space: nowrap; overflow: hidden; }
+    .m-tabs span.on { color: var(--m-accent); font-weight: 500; border-bottom: 1px solid var(--m-accent); padding-bottom: 3px; }
+    .m-cat { display: flex; align-items: baseline; gap: 6px; padding: 16px 16px 8px; font-family: var(--font-display); font-size: 17px; color: var(--m-fg); }
+    .m-cat small { font-family: var(--font-body); font-size: 8px; font-weight: 600; color: var(--m-brass-text); letter-spacing: 0.06em; }
+    .m-card { margin: 0 16px 6px; background: var(--m-surface); border: 1px solid var(--m-line); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 2px rgba(36,28,23,0.04), 0 3px 10px rgba(36,28,23,0.04); }
+    .m-photo {
+        position: relative; aspect-ratio: 16 / 9;
+        background:
+            radial-gradient(circle at 50% 58%, #C9583A 0 22%, #E7C9A0 23% 30%, transparent 31%),
+            radial-gradient(circle at 50% 58%, #6B4A33 0 36%, transparent 37%),
+            linear-gradient(160deg, #3D2C22, #251A14);
     }
-    .hero-demo-link { position: relative; z-index: 2; text-align: center; margin-bottom: 16px; }
+    .m-photo::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 42% 50%, #F4EFE2 0 3%, transparent 3.5%), radial-gradient(circle at 58% 64%, #F4EFE2 0 2.6%, transparent 3%), radial-gradient(circle at 54% 47%, #4E7A2C 0 1.8%, transparent 2.2%), radial-gradient(circle at 45% 66%, #4E7A2C 0 1.6%, transparent 2%); }
+    .m-badge { position: absolute; top: 7px; left: 7px; font-size: 6.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #f6eee2; background: rgba(20,14,11,0.55); padding: 3px 6px; border-radius: 999px; }
+    .m-card-body { padding: 10px 11px 11px; }
+    .m-dish { font-family: var(--font-display); font-size: 12.5px; color: var(--m-fg); margin-bottom: 9px; }
+    .m-card-bottom { display: flex; align-items: center; justify-content: space-between; }
+    .m-price { font-family: var(--font-display); font-size: 13px; color: var(--m-fg); }
+    .m-more { display: inline-flex; align-items: center; gap: 2px; background: var(--m-accent); color: #fff; font-size: 8.5px; font-weight: 500; padding: 4px 9px; border-radius: 999px; }
+    .m-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin: 0 16px; padding: 10px 0; border-bottom: 1px solid var(--m-line); }
+    .m-row .m-dish { margin-bottom: 3px; font-size: 11.5px; }
+    .m-row-more { font-size: 8.5px; color: var(--m-accent); }
+
+    .hero-demo-link { position: relative; z-index: 2; text-align: center; margin-top: 26px; }
     .hero-demo-link a {
         display: inline-flex; align-items: center; gap: 8px;
-        font-size: 13px; font-weight: 700; color: var(--accent-text); text-decoration: none;
-        background: rgba(193,68,14,0.12); border: 1px solid rgba(193,68,14,0.3);
-        padding: 9px 18px; border-radius: 999px;
-        transition: background 0.15s, transform 0.15s;
+        font-family: var(--font-display); font-style: italic; font-size: 16px; color: var(--accent-text); text-decoration: none;
+        border-bottom: 1px solid var(--gold); padding-bottom: 3px;
+        transition: gap 0.18s, color 0.18s;
     }
-    .hero-demo-link a:hover { background: rgba(193,68,14,0.2); transform: translateY(-1px); }
-
-    /* FAQ */
-    .faq { max-width: 720px; margin: 0 auto; }
-    .faq-item { border-bottom: 1px solid var(--bd-1); padding: 4px 14px; border-radius: 10px; transition: background 0.15s; }
-    .faq-item:hover { background: var(--bg-card); }
-    .faq-item summary {
-        cursor: pointer; list-style: none;
-        display: flex; align-items: center; justify-content: space-between; gap: 16px;
-        font-size: 15px; font-weight: 600; color: var(--tx-hi);
-        padding: 14px 0;
-    }
-    .faq-item summary::-webkit-details-marker { display: none; }
-    .faq-item summary i { font-size: 13px; color: var(--tx-4); flex-shrink: 0; transition: transform 0.15s; }
-    .faq-item[open] summary i { transform: rotate(180deg); }
-    .faq-item p { font-size: 14px; color: var(--tx-3); line-height: 1.6; margin-top: 10px; padding-bottom: 16px; }
+    .hero-demo-link a i { font-style: normal; font-size: 15px; }
+    .hero-demo-link a:hover { gap: 12px; }
 
     /* Section shared */
-    .section { padding: 64px 24px; border-top: 1px solid var(--bd-1); }
-    .section-head { text-align: center; max-width: 560px; margin: 0 auto 44px; }
-    .section-eyebrow { font-size: 11px; font-weight: 600; color: var(--brand); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
-    .section-head h2 { font-size: 28px; font-weight: 700; color: var(--tx-hi); letter-spacing: -0.6px; margin-bottom: 10px; }
-    .section-head p { font-size: 15px; color: var(--tx-3); line-height: 1.5; }
+    .section { padding: 104px 24px; }
+    .section + .section { border-top: 1px solid var(--bd-1); }
+    .section-alt { background: var(--bg-subtle); }
+    .section-head { text-align: center; max-width: 620px; margin: 0 auto 60px; }
+    .section-head .eyebrow { margin-bottom: 18px; }
+    .section-head h2 { font-family: var(--font-display); font-size: 44px; font-weight: 400; color: var(--tx-hi); letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 16px; }
+    .section-head p { font-size: 16px; color: var(--tx-3); line-height: 1.65; }
 
     /* Features */
-    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 1080px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; max-width: 1120px; margin: 0 auto; }
     .feature-card {
-        background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: 14px; padding: 22px;
-        transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        position: relative; background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: 8px; padding: 28px 24px 26px;
+        box-shadow: 0 1px 2px rgba(var(--shadow-rgb),0.04), 0 3px 10px rgba(var(--shadow-rgb),0.04);
+        transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+    .feature-card::before {
+        content: ''; position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0; transition: opacity 0.25s;
     }
     .feature-card:hover {
-        border-color: rgba(193,68,14,0.4); transform: translateY(-3px);
-        box-shadow: 0 20px 40px -24px rgba(193,68,14,0.4);
+        border-color: var(--gold); transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(var(--shadow-rgb),0.05), 0 16px 34px rgba(var(--shadow-rgb),0.09);
     }
+    .feature-card:hover::before { opacity: 0.8; }
     .feature-icon {
-        width: 40px; height: 40px; border-radius: 11px; background: var(--brand-grad);
-        color: #fff; display: flex; align-items: center; justify-content: center;
-        font-size: 18px; margin-bottom: 14px;
-        box-shadow: 0 8px 16px -8px rgba(193,68,14,0.6);
+        width: 46px; height: 46px; border-radius: 50%;
+        border: 1px solid rgba(176,137,76,0.55); color: var(--accent-text);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; margin-bottom: 20px; background: var(--bg-subtle);
     }
-    .feature-card h3 { font-size: 15px; font-weight: 700; color: var(--tx-hi); margin-bottom: 6px; letter-spacing: -0.2px; }
-    .feature-card p { font-size: 13px; color: var(--tx-3); line-height: 1.5; }
+    .feature-card h3 { font-family: var(--font-display); font-size: 20px; font-weight: 500; color: var(--tx-hi); margin-bottom: 8px; letter-spacing: -0.01em; line-height: 1.2; }
+    .feature-card p { font-size: 14px; color: var(--tx-3); line-height: 1.6; }
 
     /* Steps */
-    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 900px; margin: 0 auto; }
-    .step { text-align: center; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; max-width: 1000px; margin: 0 auto; }
+    .step { text-align: center; padding: 8px 36px; }
+    .step + .step { border-left: 1px solid var(--bd-1); }
     .step-num {
-        width: 36px; height: 36px; border-radius: 50%; background: var(--brand-grad);
-        color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 14px; box-shadow: 0 10px 20px -10px rgba(193,68,14,0.6);
+        font-family: var(--font-display); font-style: italic; font-size: 52px; font-weight: 400; line-height: 1;
+        color: var(--gold); margin-bottom: 18px;
     }
-    .step h3 { font-size: 15px; font-weight: 700; color: var(--tx-hi); margin-bottom: 6px; }
-    .step p { font-size: 13px; color: var(--tx-3); line-height: 1.5; }
+    .step h3 { font-family: var(--font-display); font-size: 22px; font-weight: 500; color: var(--tx-hi); margin-bottom: 10px; letter-spacing: -0.01em; }
+    .step p { font-size: 14px; color: var(--tx-3); line-height: 1.65; }
+
+    /* FAQ */
+    .faq { max-width: 760px; margin: 0 auto; border-top: 1px solid var(--bd-2); }
+    .faq-item { border-bottom: 1px solid var(--bd-2); }
+    .faq-item summary {
+        cursor: pointer; list-style: none;
+        display: flex; align-items: center; justify-content: space-between; gap: 20px;
+        font-family: var(--font-display); font-size: 20px; font-weight: 400; color: var(--tx-hi);
+        padding: 24px 4px; transition: color 0.15s;
+    }
+    .faq-item summary:hover { color: var(--accent-text); }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary i {
+        flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--bd-2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; color: var(--accent-text); transition: transform 0.25s, border-color 0.15s;
+    }
+    .faq-item summary:hover i { border-color: var(--gold); }
+    .faq-item[open] summary i { transform: rotate(45deg); }
+    .faq-item p { font-size: 15px; color: var(--tx-3); line-height: 1.7; padding: 0 60px 26px 4px; margin-top: -6px; }
 
     /* Final CTA */
-    .cta-band { padding: 64px 24px 88px; }
+    .cta-band { padding: 0 24px 104px; }
     .cta-band-inner {
-        max-width: 720px; margin: 0 auto; text-align: center;
-        background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: 24px;
-        padding: 56px 40px; position: relative; overflow: hidden;
+        max-width: 1120px; margin: 0 auto; text-align: center;
+        background: var(--hero-wash); border: 1px solid var(--bd-1); border-radius: 8px;
+        padding: 80px 40px; position: relative; overflow: hidden;
     }
     .cta-band-inner::before {
-        content: ''; position: absolute; top: -140px; left: 50%; transform: translateX(-50%);
-        width: 520px; height: 320px; pointer-events: none;
-        background: radial-gradient(ellipse at center, rgba(193,68,14,0.22) 0%, transparent 70%);
-        filter: blur(30px);
+        content: ''; position: absolute; inset: 14px; border: 1px solid rgba(176,137,76,0.35); border-radius: 4px; pointer-events: none;
     }
     .cta-band-inner > * { position: relative; z-index: 1; }
-    .cta-band h2 { font-size: 28px; font-weight: 800; color: var(--tx-hi); letter-spacing: -0.6px; margin-bottom: 12px; }
-    .cta-band p { font-size: 14px; color: var(--tx-3); margin-bottom: 26px; }
+    .cta-band .rule { margin: 0 auto 26px; }
+    .cta-band h2 { font-family: var(--font-display); font-size: 44px; font-weight: 400; color: var(--tx-hi); letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 16px; }
+    .cta-band p { font-size: 16px; color: var(--tx-3); margin-bottom: 34px; }
 
+    @media (max-width: 1000px) {
+        .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
     @media (max-width: 900px) {
-        .hero-inner { flex-direction: column; text-align: center; }
+        .hero-inner { flex-direction: column; text-align: center; gap: 56px; }
+        .hero .rule { margin-left: auto; margin-right: auto; }
         .hero p { max-width: 100%; margin-left: auto; margin-right: auto; }
-        .hero-ctas { justify-content: center; }
-        .hero-visual { margin-top: 8px; }
+        .hero-ctas, .hero-note { justify-content: center; }
     }
     @media (max-width: 767px) {
-        .hero { padding: 48px 20px; }
-        .hero h1 { font-size: 30px; }
-        .hero p { font-size: 15px; }
-        .section { padding: 48px 20px; }
-        .features-grid { grid-template-columns: 1fr; }
-        .steps { grid-template-columns: 1fr; gap: 28px; }
+        .hero { padding: 56px 20px 64px; }
+        .hero h1 { font-size: 40px; }
+        .hero p { font-size: 16px; }
+        .hero-ctas a { width: 100%; justify-content: center; }
+        .hero-visual { width: 300px; }
+        .phone-screen { height: 560px; }
+        .section { padding: 72px 20px; }
+        .section-head { margin-bottom: 40px; }
+        .section-head h2, .cta-band h2 { font-size: 32px; }
+        .features-grid { grid-template-columns: 1fr; gap: 12px; }
+        .feature-card { padding: 22px 20px; display: grid; grid-template-columns: 46px 1fr; column-gap: 16px; }
+        .feature-icon { grid-row: span 2; margin-bottom: 0; }
+        .steps { grid-template-columns: 1fr; gap: 36px; }
+        .step { padding: 0 8px; }
+        .step + .step { border-left: 0; border-top: 1px solid var(--bd-1); padding-top: 36px; }
+        .faq-item summary { font-size: 17px; padding: 20px 2px; }
+        .faq-item p { padding-right: 8px; }
+        .cta-band { padding: 0 16px 72px; }
+        .cta-band-inner { padding: 56px 24px; }
     }
 {% endblock %}
 
@@ -178,61 +232,67 @@
         <div class="hero-inner">
             <div class="hero-copy">
                 <div class="hero-badge"><i class="ti ti-sparkles" aria-hidden="true"></i> {{ 'hero.badge'|trans({}, 'public_site', locale) }}</div>
-                <h1>{{ 'hero.title_main'|trans({}, 'public_site', locale) }}<span class="grad">{{ 'hero.title_accent'|trans({}, 'public_site', locale) }}</span></h1>
+                <h1>{{ 'hero.title_main'|trans({}, 'public_site', locale) }}<span class="accent">{{ 'hero.title_accent'|trans({}, 'public_site', locale) }}</span></h1>
+                <hr class="rule">
                 <p>{{ 'hero.subtitle'|trans({}, 'public_site', locale) }}</p>
                 <div class="hero-ctas">
                     <a href="{{ path('app_register') }}" class="btn-primary">{{ 'hero.cta_primary'|trans({}, 'public_site', locale) }}</a>
                     <a href="#funcionalidades" class="btn-secondary">{{ 'hero.cta_secondary'|trans({}, 'public_site', locale) }}</a>
                 </div>
-                <div class="hero-note">{{ 'hero.note'|trans({}, 'public_site', locale) }}</div>
+                <div class="hero-note"><i class="ti ti-shield-check" aria-hidden="true"></i> {{ 'hero.note'|trans({}, 'public_site', locale) }}</div>
             </div>
             <div class="hero-visual">
-                <div class="hero-demo-link">
-                    <a href="{{ path('menu_show', {slug: 'david-test'}) }}" target="_blank" rel="noopener">{{ 'demo.link'|trans({}, 'public_site', locale) }}</a>
-                </div>
-                <div class="menu-mockup-frame">
-                    <div class="menu-mockup">
-                        <div class="mockup-topbar">
-                            <span class="mockup-pill">{{ locales[locale].flag }} {{ locale|upper }} <i class="ti ti-chevron-down" aria-hidden="true"></i></span>
-                            <span class="mockup-pill">€ EUR <i class="ti ti-chevron-down" aria-hidden="true"></i></span>
+                <div class="phone" aria-hidden="true">
+                    <div class="phone-screen">
+                        <div class="m-header">
+                            <span class="m-brand"><span class="m-logo">D</span> David Test</span>
+                            <span class="m-pills">
+                                <span class="m-pill">{{ locales[locale].flag }} {{ locale|upper }} <i class="ti ti-chevron-down"></i></span>
+                                <span class="m-pill">€ EUR <i class="ti ti-chevron-down"></i></span>
+                            </span>
                         </div>
-                        <div class="mockup-restaurant">David Test</div>
-                        <div class="mockup-tagline">{{ 'mockup.tagline'|trans({}, 'public_site', locale) }}</div>
-                        <div class="mockup-search"><i class="ti ti-search" aria-hidden="true"></i> {{ 'mockup.search_placeholder'|trans({}, 'public_site', locale) }}</div>
+                        <div class="m-hero">
+                            <div class="m-name">David Test</div>
+                            <div class="m-rule"></div>
+                            <div class="m-tagline">Mercado propio tratado con respeto</div>
+                            <span class="m-cta"><i class="ti ti-tools-kitchen-2"></i> {{ 'mockup.tagline'|trans({}, 'public_site', locale) }}</span>
+                        </div>
+                        <div class="m-search"><i class="ti ti-search"></i> {{ 'mockup.search_placeholder'|trans({}, 'public_site', locale) }}</div>
+                        <div class="m-tabs"><span class="on">Pizzas</span><span>Carpaccios</span><span>Pasta</span><span>Pescados</span><span>Postres</span></div>
 
-                        <div class="mockup-cat">Carpaccios</div>
-                        <div class="mockup-dish-card">
-                            <div class="mockup-dish-img"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i></div>
-                            <div class="mockup-dish-info">
-                                <div class="mockup-dish-name">Carpaccio de chuleta de vaca con parmesano</div>
-                                <div class="mockup-dish-bottom">
-                                    <span class="mockup-price">19,25 €</span>
-                                    <span class="mockup-more">{{ 'mockup.view_more'|trans({}, 'public_site', locale) }}</span>
+                        <div class="m-cat">Pizzas <small>03</small></div>
+                        <div class="m-card">
+                            <div class="m-photo"><span class="m-badge">★</span></div>
+                            <div class="m-card-body">
+                                <div class="m-dish">Pizza margarita con jamón dulce</div>
+                                <div class="m-card-bottom">
+                                    <span class="m-price">11,00 €</span>
+                                    <span class="m-more">{{ 'mockup.view_more'|trans({}, 'public_site', locale) }} <i class="ti ti-chevron-right"></i></span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mockup-cat">Pasta</div>
-                        <div class="mockup-dish-card">
-                            <div class="mockup-dish-img"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i></div>
-                            <div class="mockup-dish-info">
-                                <div class="mockup-dish-name">Canelones Casa Cervelló</div>
-                                <div class="mockup-dish-bottom">
-                                    <span class="mockup-price">14,00 €</span>
-                                    <span class="mockup-more">{{ 'mockup.view_more'|trans({}, 'public_site', locale) }}</span>
-                                </div>
-                            </div>
+                        <div class="m-cat">Carpaccios <small>05</small></div>
+                        <div class="m-row">
+                            <div><div class="m-dish">Carpaccio de tomate al parmesano</div><span class="m-row-more">{{ 'mockup.view_more'|trans({}, 'public_site', locale) }} ›</span></div>
+                            <span class="m-price">19,00 €</span>
+                        </div>
+                        <div class="m-row">
+                            <div><div class="m-dish">Carpaccio de salmón</div><span class="m-row-more">{{ 'mockup.view_more'|trans({}, 'public_site', locale) }} ›</span></div>
+                            <span class="m-price">13,50 €</span>
                         </div>
                     </div>
                 </div>
-                <div class="hero-qr-badge"><i class="ti ti-qrcode" aria-hidden="true"></i></div>
+                <div class="hero-demo-link">
+                    <a href="{{ path('menu_show', {slug: 'david-test'}) }}" target="_blank" rel="noopener">{{ 'demo.link'|trans({}, 'public_site', locale) }} <i class="ti ti-arrow-up-right" aria-hidden="true"></i></a>
+                </div>
             </div>
         </div>
     </section>
 
     <section class="section" id="funcionalidades">
         <div class="section-head">
-            <div class="section-eyebrow">{{ 'features.eyebrow'|trans({}, 'public_site', locale) }}</div>
+            <div class="eyebrow">{{ 'features.eyebrow'|trans({}, 'public_site', locale) }}</div>
             <h2>{{ 'features.title'|trans({}, 'public_site', locale) }}</h2>
             <p>{{ 'features.subtitle'|trans({}, 'public_site', locale) }}</p>
         </div>
@@ -280,24 +340,24 @@
         </div>
     </section>
 
-    <section class="section">
+    <section class="section section-alt">
         <div class="section-head">
-            <div class="section-eyebrow">{{ 'steps.eyebrow'|trans({}, 'public_site', locale) }}</div>
+            <div class="eyebrow">{{ 'steps.eyebrow'|trans({}, 'public_site', locale) }}</div>
             <h2>{{ 'steps.title'|trans({}, 'public_site', locale) }}</h2>
         </div>
         <div class="steps">
             <div class="step">
-                <div class="step-num">1</div>
+                <div class="step-num">01</div>
                 <h3>{{ 'steps.step1.title'|trans({}, 'public_site', locale) }}</h3>
                 <p>{{ 'steps.step1.desc'|trans({}, 'public_site', locale) }}</p>
             </div>
             <div class="step">
-                <div class="step-num">2</div>
+                <div class="step-num">02</div>
                 <h3>{{ 'steps.step2.title'|trans({}, 'public_site', locale) }}</h3>
                 <p>{{ 'steps.step2.desc'|trans({}, 'public_site', locale) }}</p>
             </div>
             <div class="step">
-                <div class="step-num">3</div>
+                <div class="step-num">03</div>
                 <h3>{{ 'steps.step3.title'|trans({}, 'public_site', locale) }}</h3>
                 <p>{{ 'steps.step3.desc'|trans({}, 'public_site', locale) }}</p>
             </div>
@@ -306,7 +366,7 @@
 
     <section class="section">
         <div class="section-head">
-            <div class="section-eyebrow">{{ 'faq.eyebrow'|trans({}, 'public_site', locale) }}</div>
+            <div class="eyebrow">{{ 'faq.eyebrow'|trans({}, 'public_site', locale) }}</div>
             <h2>{{ 'faq.title'|trans({}, 'public_site', locale) }}</h2>
         </div>
         <div class="faq">
@@ -314,7 +374,7 @@
                 <details class="faq-item">
                     <summary>
                         {{ ('faq.q' ~ i ~ '.q')|trans({}, 'public_site', locale) }}
-                        <i class="ti ti-chevron-down" aria-hidden="true"></i>
+                        <i class="ti ti-plus" aria-hidden="true"></i>
                     </summary>
                     <p>{{ ('faq.q' ~ i ~ '.a')|trans({}, 'public_site', locale) }}</p>
                 </details>
@@ -324,6 +384,7 @@
 
     <section class="cta-band">
         <div class="cta-band-inner">
+            <hr class="rule">
             <h2>{{ 'cta.title'|trans({}, 'public_site', locale) }}</h2>
             <p>{{ 'cta.subtitle'|trans({}, 'public_site', locale) }}</p>
             <a href="{{ path('app_register') }}" class="btn-primary">{{ 'cta.button'|trans({}, 'public_site', locale) }}</a>
