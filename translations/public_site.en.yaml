@@ -28,9 +28,31 @@ hero:
   note: "No credit card required. Cancel anytime."
 
 mockup:
-  tagline: "Explore our menu"
-  search_placeholder: "Search dishes…"
   view_more: "View more"
+  restaurant_tagline: "Market produce, treated with respect"
+  device_label: "Example: how a customer sees the menu on their phone"
+  cat_pizzas: "Pizzas"
+  cat_meat: "Meat"
+  cat_pasta: "Pasta"
+  cat_desserts: "Desserts"
+  badge: "Recommended"
+  pizza:
+    name: "Ham and mozzarella pizza"
+    desc: "Sourdough base, tomato and fresh basil"
+    alt: "Ham and mozzarella pizza with basil leaves"
+  lamb:
+    name: "Lamb cutlets with hazelnuts"
+    desc: "Grilled over embers, with purée and roast vegetables"
+    alt: "Pink lamb cutlets with hazelnuts and roast vegetables"
+  cannelloni:
+    name: "Spinach and ricotta cannelloni"
+    desc: "Baked au gratin, with homemade tomato sauce"
+    alt: "Baked spinach and ricotta cannelloni on tomato sauce"
+  allergens_label: "Allergens"
+  allergen_gluten: "Gluten"
+  allergen_milk: "Milk"
+  waiter_question: "Do you have anything gluten-free?"
+  waiter_answer: "Yes: the lamb cutlets with hazelnuts are gluten-free."
 
 demo:
   link: "See a real menu"

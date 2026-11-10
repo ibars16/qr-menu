@@ -28,9 +28,31 @@ hero:
   note: "Sem cartão de crédito. Cancele quando quiser."
 
 mockup:
-  tagline: "Explore a nossa carta"
-  search_placeholder: "Procurar pratos…"
   view_more: "Ver mais"
+  restaurant_tagline: "Produto de mercado, tratado com respeito"
+  device_label: "Exemplo: assim um cliente vê a carta no telemóvel"
+  cat_pizzas: "Pizzas"
+  cat_meat: "Carnes"
+  cat_pasta: "Massas"
+  cat_desserts: "Sobremesas"
+  badge: "Recomendado"
+  pizza:
+    name: "Pizza de fiambre e mozzarella"
+    desc: "Massa-mãe, tomate e manjericão fresco"
+    alt: "Pizza de fiambre e mozzarella com folhas de manjericão"
+  lamb:
+    name: "Costeletas de borrego com avelãs"
+    desc: "Na brasa, com puré e legumes assados"
+    alt: "Costeletas de borrego rosadas com avelãs e legumes assados"
+  cannelloni:
+    name: "Canelones de espinafres e ricota"
+    desc: "Gratinados, com molho de tomate caseiro"
+    alt: "Canelones gratinados de espinafres e ricota sobre molho de tomate"
+  allergens_label: "Alergénios"
+  allergen_gluten: "Glúten"
+  allergen_milk: "Leite"
+  waiter_question: "Têm alguma coisa sem glúten?"
+  waiter_answer: "Sim: as costeletas de borrego com avelãs não têm glúten."
 
 demo:
   link: "Ver uma carta real"

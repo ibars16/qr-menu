@@ -28,9 +28,31 @@ hero:
   note: "Senza carta di credito. Annulla quando vuoi."
 
 mockup:
-  tagline: "Scopri il nostro menu"
-  search_placeholder: "Cerca piatti…"
   view_more: "Vedi di più"
+  restaurant_tagline: "Prodotti del mercato, trattati con rispetto"
+  device_label: "Esempio: come un cliente vede il menu sul cellulare"
+  cat_pizzas: "Pizze"
+  cat_meat: "Carni"
+  cat_pasta: "Pasta"
+  cat_desserts: "Dolci"
+  badge: "Consigliato"
+  pizza:
+    name: "Pizza prosciutto e mozzarella"
+    desc: "Pasta madre, pomodoro e basilico fresco"
+    alt: "Pizza prosciutto e mozzarella con foglie di basilico"
+  lamb:
+    name: "Costolette d'agnello alle nocciole"
+    desc: "Alla brace, con purè e verdure arrosto"
+    alt: "Costolette d'agnello rosate con nocciole e verdure arrosto"
+  cannelloni:
+    name: "Cannelloni ricotta e spinaci"
+    desc: "Gratinati, con salsa di pomodoro fatta in casa"
+    alt: "Cannelloni gratinati ricotta e spinaci su salsa di pomodoro"
+  allergens_label: "Allergeni"
+  allergen_gluten: "Glutine"
+  allergen_milk: "Latte"
+  waiter_question: "Avete qualcosa senza glutine?"
+  waiter_answer: "Sì: le costolette d'agnello alle nocciole sono senza glutine."
 
 demo:
   link: "Vedi un menu reale"

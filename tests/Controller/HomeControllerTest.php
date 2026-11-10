@@ -133,6 +133,8 @@ final class HomeControllerTest extends WebTestCase
         // The trial CTA is on the bar (one element for desktop and mobile), not in the ☰ menu.
         self::assertCount(1, $page->filter('.nav-links > a.nav-cta[href="/register"]'));
         self::assertCount(0, $page->filter('.nav-mobile-panel a.nav-cta'));
+        $translator = static::getContainer()->get('translator');
+        self::assertSame($translator->trans('mockup.restaurant_tagline', [], 'public_site', $locale), $page->filter('.m-tagline')->text());
     }
 
     public function testTheFeatureCardsNoLongerListAdminPanelOrSetMenus(): void
@@ -180,6 +182,65 @@ final class HomeControllerTest extends WebTestCase
         self::assertSame('Precios', $menu->eq(0)->text());
         self::assertSame('/admin/login', $menu->eq(1)->attr('href'));
         self::assertSame('Iniciar sesión', $menu->eq(1)->text());
+    }
+
+    /**
+     * The hero's phone: "La Brasa" in the maison look, with real dish photos
+     * (webp in assets/images/home, served by AssetMapper), translated dishes,
+     * and the two floating cards (allergens, AI waiter).
+     */
+    #[DataProvider('locales')]
+    public function testHeroPhoneShowsTranslatedDishesWithPhotos(string $locale): void
+    {
+        $page = $this->client->request('GET', '/?lang=' . $locale);
+        $translator = static::getContainer()->get('translator');
+        $t = static fn (string $key): string => $translator->trans($key, [], 'public_site', $locale);
+        $phone = $page->filter('.hero figure.device-stage');
+
+        self::assertSame($t('mockup.device_label'), $phone->filter('figcaption')->text());
+        self::assertSame('La Brasa', $phone->filter('.m-name')->text());
+        $images = $phone->filter('img');
+        self::assertCount(3, $images);
+        foreach ($images as $i => $img) {
+            $dish = ['pizza', 'lamb', 'cannelloni'][$i];
+            self::assertMatchesRegularExpression('#^/assets/images/home/' . $dish . '-[\w-]+\.webp$#', $img->getAttribute('src'));
+            self::assertSame($t('mockup.' . $dish . '.alt'), $img->getAttribute('alt'));
+            self::assertNotSame('', $img->getAttribute('width'));
+        }
+        self::assertSame(['', 'lazy', 'lazy'], $images->each(static fn ($img): string => (string) $img->attr('loading')), 'the first photo is not deferred');
+        self::assertSame([$t('mockup.pizza.name'), $t('mockup.lamb.name'), $t('mockup.cannelloni.name')], $phone->filter('.m-dish')->each(static fn ($d): string => $d->text()));
+        self::assertSame($locale === 'en' ? '€13.50' : '13,50 €', $phone->filter('.m-card .m-price')->text());
+
+        self::assertSame($t('mockup.pizza.name'), $phone->filter('.float-allergen-card .float-dish')->text());
+        self::assertStringContainsString($t('mockup.allergen_gluten'), $phone->filter('.float-allergen-card')->text());
+        self::assertStringContainsString($t('mockup.allergen_milk'), $phone->filter('.float-allergen-card')->text());
+        self::assertSame($t('mockup.waiter_question'), $phone->filter('.float-q')->text());
+        self::assertSame($t('mockup.waiter_answer'), $phone->filter('.float-a')->text());
+        self::assertSame($t('features.smart_waiter.title'), trim($phone->filter('.float-chat-card .float-label')->text()));
+
+        // "Ver una carta real" stays right under the phone.
+        self::assertCount(1, $page->filter('.hero-visual > figure.device-stage + .hero-demo-link a[href="/r/david-test"]'));
+    }
+
+    /** The phone follows the site theme: maison when light, "Clásico oscuro" when dark. */
+    public function testHeroPhoneHasLightAndDarkMenuThemes(): void
+    {
+        $this->client->request('GET', '/?lang=es');
+        $html = $this->client->getResponse()->getContent();
+
+        self::assertMatchesRegularExpression('/\.device \{[^}]*--m-bg: #080808;[^}]*--m-accent: #EE5B1B;/s', $html, 'dark (default): classic-dark');
+        self::assertMatchesRegularExpression('/html\.light \.device \{[^}]*--m-bg: #F2EBDF;[^}]*--m-accent: #7A1E28;/s', $html, 'light: maison');
+    }
+
+    public function testHeroPhotosAreLightWebp(): void
+    {
+        $dir = static::getContainer()->getParameter('kernel.project_dir') . '/assets/images/home';
+        foreach (['pizza' => 800, 'lamb' => 480, 'cannelloni' => 480] as $name => $width) {
+            $file = $dir . '/' . $name . '.webp';
+            self::assertFileExists($file);
+            self::assertLessThan(60 * 1024, filesize($file), $name);
+            self::assertSame($width, getimagesize($file)[0], $name);
+        }
     }
 
     public function testOtherPublicPagesLinkToTheHomePricing(): void

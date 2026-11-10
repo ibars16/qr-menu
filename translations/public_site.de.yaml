@@ -28,9 +28,31 @@ hero:
   note: "Keine Kreditkarte nötig. Jederzeit kündbar."
 
 mockup:
-  tagline: "Entdecken Sie unsere Speisekarte"
-  search_placeholder: "Gerichte suchen…"
   view_more: "Mehr ansehen"
+  restaurant_tagline: "Frisch vom Markt, mit Respekt zubereitet"
+  device_label: "Beispiel: So sieht ein Gast die Speisekarte auf dem Handy"
+  cat_pizzas: "Pizza"
+  cat_meat: "Fleisch"
+  cat_pasta: "Pasta"
+  cat_desserts: "Desserts"
+  badge: "Empfehlung"
+  pizza:
+    name: "Pizza mit Schinken und Mozzarella"
+    desc: "Sauerteig, Tomate und frisches Basilikum"
+    alt: "Pizza mit Schinken und Mozzarella und Basilikumblättern"
+  lamb:
+    name: "Lammkoteletts mit Haselnüssen"
+    desc: "Vom Grill, mit Püree und Röstgemüse"
+    alt: "Rosa Lammkoteletts mit Haselnüssen und Röstgemüse"
+  cannelloni:
+    name: "Cannelloni mit Spinat und Ricotta"
+    desc: "Überbacken, mit hausgemachter Tomatensoße"
+    alt: "Überbackene Cannelloni mit Spinat und Ricotta auf Tomatensoße"
+  allergens_label: "Allergene"
+  allergen_gluten: "Gluten"
+  allergen_milk: "Milch"
+  waiter_question: "Haben Sie etwas Glutenfreies?"
+  waiter_answer: "Ja: Die Lammkoteletts mit Haselnüssen sind glutenfrei."
 
 demo:
   link: "Echte Speisekarte ansehen"

@@ -28,9 +28,31 @@ hero:
   note: "Sin tarjeta de crédito. Cancela cuando quieras."
 
 mockup:
-  tagline: "Explora nuestra carta"
-  search_placeholder: "Buscar platos…"
   view_more: "Ver más"
+  restaurant_tagline: "Producto de mercado, tratado con respeto"
+  device_label: "Ejemplo: así ve un cliente la carta en su móvil"
+  cat_pizzas: "Pizzas"
+  cat_meat: "Carnes"
+  cat_pasta: "Pastas"
+  cat_desserts: "Postres"
+  badge: "Recomendado"
+  pizza:
+    name: "Pizza de jamón y mozzarella"
+    desc: "Masa madre, tomate y albahaca fresca"
+    alt: "Pizza de jamón y mozzarella con hojas de albahaca"
+  lamb:
+    name: "Costillas de cordero con avellanas"
+    desc: "A la brasa, con puré y verduras asadas"
+    alt: "Costillas de cordero en su punto con avellanas y verduras asadas"
+  cannelloni:
+    name: "Canelones de espinacas y ricotta"
+    desc: "Gratinados, con salsa de tomate casera"
+    alt: "Canelones gratinados de espinacas y ricotta sobre salsa de tomate"
+  allergens_label: "Alérgenos"
+  allergen_gluten: "Gluten"
+  allergen_milk: "Leche"
+  waiter_question: "¿Tenéis algo sin gluten?"
+  waiter_answer: "Sí: las costillas de cordero con avellanas no llevan gluten."
 
 demo:
   link: "Ver una carta real"

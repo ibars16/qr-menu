@@ -28,9 +28,31 @@ hero:
   note: "Sans carte bancaire. Annulez quand vous voulez."
 
 mockup:
-  tagline: "Découvrez notre carte"
-  search_placeholder: "Rechercher un plat…"
   view_more: "Voir plus"
+  restaurant_tagline: "Produits du marché, traités avec respect"
+  device_label: "Exemple : la carte telle que le client la voit sur son mobile"
+  cat_pizzas: "Pizzas"
+  cat_meat: "Viandes"
+  cat_pasta: "Pâtes"
+  cat_desserts: "Desserts"
+  badge: "Recommandé"
+  pizza:
+    name: "Pizza jambon et mozzarella"
+    desc: "Pâte au levain, tomate et basilic frais"
+    alt: "Pizza jambon et mozzarella avec des feuilles de basilic"
+  lamb:
+    name: "Côtelettes d'agneau aux noisettes"
+    desc: "À la braise, avec purée et légumes rôtis"
+    alt: "Côtelettes d'agneau rosées aux noisettes et légumes rôtis"
+  cannelloni:
+    name: "Cannellonis épinards et ricotta"
+    desc: "Gratinés, avec sauce tomate maison"
+    alt: "Cannellonis gratinés aux épinards et à la ricotta sur sauce tomate"
+  allergens_label: "Allergènes"
+  allergen_gluten: "Gluten"
+  allergen_milk: "Lait"
+  waiter_question: "Vous avez quelque chose sans gluten ?"
+  waiter_answer: "Oui : les côtelettes d'agneau aux noisettes sont sans gluten."
 
 demo:
   link: "Voir une carte réelle"
