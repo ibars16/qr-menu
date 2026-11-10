@@ -124,12 +124,12 @@ final class ThemeStructureTest extends WebTestCase
         self::assertResponseIsSuccessful();
         $html = $crawler->html();
 
-        // The structure: its shape tokens, fonts, sheet markup and the chat stepping aside.
+        // The structure: its shape tokens, fonts, sheet markup and the chat bubble.
         self::assertStringContainsString('--card-radius: 6px;', $html);
         self::assertStringContainsString('family=Fraunces', $html);
         self::assertCount(1, $crawler->filter('.dish-modal-scroll'));
         self::assertCount(1, $crawler->filter('.hero-inner > .cta-explore'));
-        self::assertCount(1, $crawler->filter('#sw-widget[data-hide-on-scroll]'));
+        self::assertCount(1, $crawler->filter('#sw-widget'));
         // The theme's own colours.
         $tokens = self::themeTokens($theme);
         self::assertStringContainsString('--accent: ' . $tokens['--accent'] . ';', $html);
