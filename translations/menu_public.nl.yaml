@@ -72,6 +72,13 @@ chat:
     send: "Verzenden"
     disclaimer: "Door AI gegenereerde antwoorden. Controleer bij een ernstige allergie altijd bij het personeel."
     error_fallback: "Sorry, ik kan nu even niet antwoorden — vraag het gerust aan ons personeel."
+    # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
+    # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
+    staff:
+        confirm: "Het is raadzaam dit vóór het bestellen bij het personeel na te vragen."
+        none_confirmed: "Geen enkel gerecht op onze kaart is bevestigd vrij van %allergens%."
+        none_confirmed_allergy: "Geen enkel gerecht op onze kaart is bevestigd als geschikt voor deze allergie."
+        and: " en "
 footer:
     visit: "Bezoek ons"
     hours: "Openingstijden"

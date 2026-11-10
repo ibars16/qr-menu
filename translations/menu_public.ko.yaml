@@ -72,6 +72,13 @@ chat:
     send: "보내기"
     disclaimer: "AI가 생성한 답변입니다. 심각한 알레르기가 있다면 직원에게 확인해 주세요."
     error_fallback: "죄송합니다, 지금은 답변드리기 어렵습니다 — 직원에게 문의해 주세요."
+    # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
+    # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
+    staff:
+        confirm: "주문 전에 직원에게 확인하시는 것이 좋습니다."
+        none_confirmed: "저희 메뉴에는 %allergens% 불포함으로 확인된 요리가 없습니다."
+        none_confirmed_allergy: "저희 메뉴에는 이 알레르기에 적합한 것으로 확인된 요리가 없습니다."
+        and: " 및 "
 footer:
     visit: "찾아오시는 길"
     hours: "영업시간"

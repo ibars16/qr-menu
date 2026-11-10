@@ -72,6 +72,13 @@ chat:
     send: "Gönder"
     disclaimer: "Yanıtlar yapay zeka tarafından oluşturulmuştur. Ciddi bir alerjiniz varsa lütfen personelle teyit edin."
     error_fallback: "Üzgünüm, şu anda yanıt vermekte sorun yaşıyorum — lütfen personelimize sorun."
+    # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
+    # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
+    staff:
+        confirm: "Sipariş vermeden önce personelle teyit edilmesi önerilir."
+        none_confirmed: "Menümüzde şunları içermediği teyit edilmiş bir yemek yok: %allergens%."
+        none_confirmed_allergy: "Menümüzde bu alerjiye uygun olduğu teyit edilmiş bir yemek yok."
+        and: " ve "
 footer:
     visit: "Bizi ziyaret edin"
     hours: "Çalışma saatleri"

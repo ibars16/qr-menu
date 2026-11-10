@@ -72,6 +72,13 @@ chat:
     send: "发送"
     disclaimer: "回答由AI生成。如有严重过敏，请务必与工作人员确认。"
     error_fallback: "抱歉，目前暂时无法回答 —— 请咨询我们的工作人员。"
+    # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
+    # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
+    staff:
+        confirm: "点餐前，建议向工作人员确认。"
+        none_confirmed: "我们菜单上没有任何菜品被确认不含%allergens%。"
+        none_confirmed_allergy: "我们菜单上没有任何菜品被确认适合这种过敏情况。"
+        and: "和"
 footer:
     visit: "到店地址"
     hours: "营业时间"

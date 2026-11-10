@@ -72,6 +72,13 @@ chat:
     send: "Kirim"
     disclaimer: "Jawaban dihasilkan oleh AI. Jika Anda memiliki alergi parah, mohon konfirmasi dengan staf."
     error_fallback: "Maaf, saat ini kami mengalami kendala menjawab — silakan tanya staf kami."
+    # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
+    # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
+    staff:
+        confirm: "Sebelum memesan, sebaiknya konfirmasi dengan staf."
+        none_confirmed: "Tidak ada hidangan di menu kami yang dipastikan bebas %allergens%."
+        none_confirmed_allergy: "Tidak ada hidangan di menu kami yang dipastikan cocok untuk alergi ini."
+        and: " dan "
 footer:
     visit: "Kunjungi kami"
     hours: "Jam buka"

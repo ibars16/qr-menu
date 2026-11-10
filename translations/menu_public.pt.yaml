@@ -72,6 +72,13 @@ chat:
     send: "Enviar"
     disclaimer: "Respostas geradas por IA. Em caso de alergia grave, confirme com a equipa."
     error_fallback: "Desculpe, não consigo responder agora — pergunte à nossa equipa."
+    # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
+    # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
+    staff:
+        confirm: "Antes de pedir, convém confirmar com os funcionários."
+        none_confirmed: "Nenhum prato do nosso menu está confirmado sem %allergens%."
+        none_confirmed_allergy: "Nenhum prato do nosso menu está confirmado como adequado para esta alergia."
+        and: " e "
 footer:
     visit: "Visite-nos"
     hours: "Horário"

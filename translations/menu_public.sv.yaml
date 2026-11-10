@@ -72,6 +72,13 @@ chat:
     send: "Skicka"
     disclaimer: "AI-genererade svar. Bekräfta med personalen vid allvarlig allergi."
     error_fallback: "Tyvärr har jag problem att svara just nu — fråga gärna vår personal."
+    # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
+    # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
+    staff:
+        confirm: "Före beställning bör detta bekräftas med personalen."
+        none_confirmed: "Ingen rätt på vår meny är bekräftad fri från %allergens%."
+        none_confirmed_allergy: "Ingen rätt på vår meny är bekräftad som lämplig vid denna allergi."
+        and: " och "
 footer:
     visit: "Besök oss"
     hours: "Öppettider"

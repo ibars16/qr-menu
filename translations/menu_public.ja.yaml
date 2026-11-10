@@ -72,6 +72,13 @@ chat:
     send: "送信"
     disclaimer: "回答はAIが生成しています。重度のアレルギーがある場合は、必ずスタッフにご確認ください。"
     error_fallback: "申し訳ございません、只今回答できません — スタッフにお尋ねください。"
+    # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
+    # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
+    staff:
+        confirm: "ご注文の前に、スタッフにご確認いただくことをおすすめします。"
+        none_confirmed: "当店のメニューには、%allergens%を含まないと確認された料理はありません。"
+        none_confirmed_allergy: "当店のメニューには、このアレルギーに対応していると確認された料理はありません。"
+        and: "と"
 footer:
     visit: "アクセス"
     hours: "営業時間"

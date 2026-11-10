@@ -74,6 +74,13 @@ chat:
     send: "إرسال"
     disclaimer: "إجابات تم إنشاؤها بالذكاء الاصطناعي. يرجى التأكيد مع الموظفين إذا كانت لديك حساسية شديدة."
     error_fallback: "عذرًا، أواجه صعوبة في الإجابة الآن — يرجى سؤال أحد أفراد الطاقم."
+    # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
+    # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
+    staff:
+        confirm: "قبل الطلب، يُستحسن التأكد من ذلك مع الموظفين."
+        none_confirmed: "لا يوجد أي طبق في قائمتنا مؤكد خلوّه من %allergens%."
+        none_confirmed_allergy: "لا يوجد أي طبق في قائمتنا مؤكد أنه مناسب لهذه الحساسية."
+        and: " و"
 footer:
     visit: "زورونا"
     hours: "ساعات العمل"

@@ -72,6 +72,13 @@ chat:
     send: "भेजें"
     disclaimer: "AI द्वारा दिए गए उत्तर। गंभीर एलर्जी होने पर कृपया स्टाफ से पुष्टि करें।"
     error_fallback: "क्षमा करें, अभी जवाब देने में समस्या हो रही है — कृपया स्टाफ से पूछें।"
+    # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
+    # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
+    staff:
+        confirm: "ऑर्डर करने से पहले, स्टाफ़ से पुष्टि कर लेना बेहतर है।"
+        none_confirmed: "हमारे मेनू में किसी भी व्यंजन के %allergens% रहित होने की पुष्टि नहीं है।"
+        none_confirmed_allergy: "हमारे मेनू में किसी भी व्यंजन के इस एलर्जी के लिए उपयुक्त होने की पुष्टि नहीं है।"
+        and: " और "
 footer:
     visit: "हमसे मिलें"
     hours: "खुलने का समय"

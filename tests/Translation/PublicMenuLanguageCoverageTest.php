@@ -10,7 +10,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * Every language a customer can pick on the public menu
  * (config/languages.php) has all of the menu's fixed texts: every
- * menu_public key the English file has (75 today), the name of every
+ * menu_public key the English file has (79 today), the name of every
  * allergen (14: config/allergens.yaml, and the rows AllergenSeeder writes
  * from it) and of every preset tag (9: config/preset_tags.yaml). Adding a
  * language without them fails here. (The admin panel's 6 locales,
@@ -51,7 +51,7 @@ final class PublicMenuLanguageCoverageTest extends KernelTestCase
     public function testTheListsHaveTheExpectedSize(): void
     {
         self::assertCount(20, self::languages());
-        self::assertCount(75, self::menuPublic('en'));
+        self::assertCount(79, self::menuPublic('en'));
         self::assertCount(14, Yaml::parseFile(self::projectDir() . '/config/allergens.yaml')['allergens']);
         self::assertCount(9, Yaml::parseFile(self::projectDir() . '/config/preset_tags.yaml')['preset_tags']);
     }

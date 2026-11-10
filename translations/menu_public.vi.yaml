@@ -72,6 +72,13 @@ chat:
     send: "Gửi"
     disclaimer: "Câu trả lời do AI tạo ra. Nếu bạn bị dị ứng nặng, vui lòng xác nhận với nhân viên."
     error_fallback: "Xin lỗi, hiện tại tôi gặp sự cố khi trả lời — vui lòng hỏi nhân viên của chúng tôi."
+    # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
+    # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
+    staff:
+        confirm: "Trước khi gọi món, nên xác nhận lại với nhân viên."
+        none_confirmed: "Không có món nào trong thực đơn của chúng tôi được xác nhận là không chứa %allergens%."
+        none_confirmed_allergy: "Không có món nào trong thực đơn của chúng tôi được xác nhận là phù hợp với dị ứng này."
+        and: " và "
 footer:
     visit: "Ghé thăm chúng tôi"
     hours: "Giờ mở cửa"
