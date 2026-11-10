@@ -27,8 +27,12 @@
                 <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
                 <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
             </button>
-            <a href="{{ path('admin_login') }}" class="nav-login">{{ 'nav.login'|trans({}, 'public_site', locale|default('es')) }}</a>
-            <a href="{{ path('app_register') }}" class="nav-cta">{{ 'nav.cta'|trans({}, 'public_site', locale|default('es')) }}</a>
+            {% if app.user %}
+                <a href="{{ path('admin_menu') }}" class="nav-cta">{{ 'nav.panel'|trans({}, 'public_site', locale|default('es')) }}</a>
+            {% else %}
+                <a href="{{ path('admin_login') }}" class="nav-login">{{ 'nav.login'|trans({}, 'public_site', locale|default('es')) }}</a>
+                <a href="{{ path('app_register') }}" class="nav-cta">{{ 'nav.cta'|trans({}, 'public_site', locale|default('es')) }}</a>
+            {% endif %}
         </div>
 
         {# Mobile controls — theme toggle stays visible next to the hamburger
@@ -52,8 +56,12 @@
                             {% endfor %}
                         </div>
                     {% endif %}
-                    <a href="{{ path('admin_login') }}" class="nav-login nav-mobile-login">{{ 'nav.login'|trans({}, 'public_site', locale|default('es')) }}</a>
-                    <a href="{{ path('app_register') }}" class="nav-cta nav-mobile-cta">{{ 'nav.cta'|trans({}, 'public_site', locale|default('es')) }}</a>
+                    {% if app.user %}
+                        <a href="{{ path('admin_menu') }}" class="nav-cta nav-mobile-cta">{{ 'nav.panel'|trans({}, 'public_site', locale|default('es')) }}</a>
+                    {% else %}
+                        <a href="{{ path('admin_login') }}" class="nav-login nav-mobile-login">{{ 'nav.login'|trans({}, 'public_site', locale|default('es')) }}</a>
+                        <a href="{{ path('app_register') }}" class="nav-cta nav-mobile-cta">{{ 'nav.cta'|trans({}, 'public_site', locale|default('es')) }}</a>
+                    {% endif %}
                 </div>
             </details>
         </div>

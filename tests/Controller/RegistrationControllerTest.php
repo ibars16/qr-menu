@@ -198,6 +198,50 @@ final class RegistrationControllerTest extends WebTestCase
         $this->em->flush();
     }
 
+    /**
+     * One submit tells everything: the taken email comes along with the
+     * other errors, the wrong fields are marked, and the taken email offers
+     * signing in / "forgot password" with the email filled in.
+     */
+    public function testTakenEmailIsReportedAlongWithOtherErrorsAndLinksToSignIn(): void
+    {
+        $existing = new User();
+        $existing->setEmail('registration-taken2-' . uniqid() . '@example.test');
+        $existing->setPassword('unused-in-tests');
+        $this->em->persist($existing);
+        $this->em->flush();
+
+        $form = $this->client->request('GET', '/register')->filter('form:not(.lang-form)')->form();
+        $form['registration_form[restaurantName]'] = 'Registration Taken2 Restaurant';
+        $form['registration_form[email]'] = $existing->getEmail();
+        $form['registration_form[password][first]'] = 'a-strong-password-1';
+        $form['registration_form[password][second]'] = 'another-password-2';
+        $page = $this->client->submit($form);
+
+        self::assertResponseIsUnprocessable();
+        self::assertSame(['Ya hay una cuenta con ese email.', 'Las contraseñas no coinciden.'], $page->filter('.errors li')->each(fn ($li) => $li->text()));
+        self::assertSame(
+            ['registration_form[email]', 'registration_form[password][first]', 'registration_form[password][second]'],
+            $page->filter('.is-invalid[aria-invalid="true"]')->each(fn ($el) => $el->attr('name')),
+        );
+        $email = $existing->getEmail();
+        self::assertSame(
+            ['/admin/login?email=' . $email, '/admin/login/recuperar?email=' . $email],
+            $page->filter('.error-actions a')->each(fn ($a) => $a->attr('href')),
+        );
+
+        $this->em->remove($this->em->find(User::class, $existing->getId()));
+        $this->em->flush();
+    }
+
+    public function testTheEmailComesFilledInFromTheLogin(): void
+    {
+        $page = $this->client->request('GET', '/register?email=someone%40example.test');
+
+        self::assertSame('someone@example.test', $page->filter('input[name="registration_form[email]"]')->attr('value'));
+        self::assertCount(0, $page->filter('.errors li'));
+    }
+
     public function testShortPasswordShowsNextToPasswordAndKeepsWhatWasTyped(): void
     {
         $crawler = $this->client->request('GET', '/register');

@@ -8,6 +8,7 @@ meta:
 nav:
   login: "Log in"
   cta: "Free 1-month trial"
+  panel: "Go to dashboard"
 
 hero:
   badge: "Free 1-month trial, no card needed"

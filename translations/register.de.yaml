@@ -35,6 +35,8 @@ error:
     email_blank: "Geben Sie Ihre E-Mail ein."
     email_invalid: "Die E-Mail ist ungültig."
     email_taken: "Mit dieser E-Mail gibt es bereits ein Konto."
+    email_taken_login: "Anmelden"
+    email_taken_forgot: "Passwort vergessen?"
     password_blank: "Geben Sie ein Passwort ein."
     password_short: "Mindestens 8 Zeichen."
     password_mismatch: "Die Passwörter stimmen nicht überein."

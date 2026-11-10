@@ -15,3 +15,20 @@ forgot: "Forgot your password?"
 no_account: "Don't have an account?"
 register: "Sign up for free"
 language: "Language"
+# A failed login (SecurityController::loginError()); too_many keeps
+# Symfony's own message from the "security" domain.
+error:
+    user_not_found:
+        title: "There's no account with this email"
+        text: "Check that %email% is spelled correctly, or create a new account."
+        action: "Create a free account"
+    bad_password:
+        title: "The password is incorrect"
+        text: "Type it again carefully: passwords are case-sensitive."
+        action: "Reset your password"
+    expired:
+        title: "This page has expired"
+        text: "For your security, please enter your details again."
+    general:
+        title: "We couldn't sign you in"
+        text: "Please try again in a few minutes."

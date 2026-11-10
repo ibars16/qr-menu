@@ -8,6 +8,7 @@ meta:
 nav:
   login: "Iniciar sesión"
   cta: "Prueba gratis 1 mes"
+  panel: "Ir al panel"
 
 hero:
   badge: "Prueba gratis 1 mes, sin tarjeta"

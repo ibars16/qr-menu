@@ -9,7 +9,11 @@
             <a href="{{ path('app_privacy') }}">{{ 'footer.privacy'|trans({}, 'public_site', locale|default('es')) }}</a>
             <a href="{{ path('app_terms') }}">{{ 'footer.terms'|trans({}, 'public_site', locale|default('es')) }}</a>
             <a href="{{ path('app_cookies') }}">{{ 'footer.cookies'|trans({}, 'public_site', locale|default('es')) }}</a>
-            <a href="{{ path('admin_login') }}">{{ 'footer.login'|trans({}, 'public_site', locale|default('es')) }}</a>
+            {% if app.user %}
+                <a href="{{ path('admin_menu') }}">{{ 'nav.panel'|trans({}, 'public_site', locale|default('es')) }}</a>
+            {% else %}
+                <a href="{{ path('admin_login') }}">{{ 'footer.login'|trans({}, 'public_site', locale|default('es')) }}</a>
+            {% endif %}
         </nav>
         <div class="footer-copy">© {{ "now"|date("Y") }} QR Menu</div>
     </div>

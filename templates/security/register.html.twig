@@ -34,6 +34,12 @@
     </ul>
 {% endmacro %}
 
+{# A field's widget, marked invalid (red border, aria-invalid) when it has errors. #}
+{% macro widget(field, attr = {}) %}
+    {%- set invalid = field.vars.errors|length > 0 -%}
+    {{- form_widget(field, { attr: attr|merge(invalid ? { class: ((attr.class ?? '') ~ ' is-invalid')|trim, 'aria-invalid': 'true' } : {}) }) -}}
+{% endmacro %}
+
 {% block body %}
     {% import _self as m %}
     {% include 'security/_top_actions.html.twig' %}
@@ -75,26 +81,26 @@
 
             <div class="field">
                 {{ form_label(form.restaurantName) }}
-                {{ form_widget(form.restaurantName, { attr: { placeholder: 'restaurant_placeholder'|trans } }) }}
+                {{ m.widget(form.restaurantName, { placeholder: 'restaurant_placeholder'|trans }) }}
                 {{ m.errors(form.restaurantName) }}
             </div>
 
             <div class="field-row">
                 <div class="field">
                     {{ form_label(form.currency) }}
-                    {{ form_widget(form.currency) }}
+                    {{ m.widget(form.currency) }}
                     {{ m.errors(form.currency) }}
                 </div>
                 <div class="field">
                     {{ form_label(form.language) }}
-                    {{ form_widget(form.language) }}
+                    {{ m.widget(form.language) }}
                     {{ m.errors(form.language) }}
                 </div>
             </div>
 
             <div class="field">
                 {{ form_label(form.adminLocale) }}
-                {{ form_widget(form.adminLocale) }}
+                {{ m.widget(form.adminLocale) }}
                 {{ m.errors(form.adminLocale) }}
                 <div class="field-help">{{ form.adminLocale.vars.help|trans }}</div>
             </div>
@@ -104,20 +110,31 @@
 
             <div class="field">
                 {{ form_label(form.email) }}
-                {{ form_widget(form.email, { attr: { placeholder: 'email_placeholder'|trans } }) }}
+                {{ m.widget(form.email, { placeholder: 'email_placeholder'|trans }) }}
                 {{ m.errors(form.email) }}
+                {# Already registered: straight to signing in (email filled in) or
+                   to "forgot password". #}
+                {% if form.email.vars.errors|filter(e => e.messageTemplate == 'error.email_taken')|length %}
+                    <div class="error-actions">
+                        <a href="{{ path('admin_login', { email: form.email.vars.value }) }}">{{ 'error.email_taken_login'|trans }}</a>
+                        <span aria-hidden="true">·</span>
+                        <a href="{{ path('admin_forgot_password', { email: form.email.vars.value }) }}">{{ 'error.email_taken_forgot'|trans }}</a>
+                    </div>
+                {% endif %}
             </div>
 
             <div class="field">
                 {{ form_label(form.password.first) }}
-                {{ form_widget(form.password.first, { attr: { placeholder: 'password_placeholder'|trans } }) }}
+                {{ m.widget(form.password.first, { placeholder: 'password_placeholder'|trans }) }}
                 {{ m.errors(form.password) }}
                 {{ m.errors(form.password.first) }}
             </div>
 
             <div class="field">
                 {{ form_label(form.password.second) }}
-                {{ form_widget(form.password.second, { attr: { placeholder: 'password_repeat_placeholder'|trans } }) }}
+                {# "No coinciden" is reported on the first field: mark this one too. #}
+                {% set mismatch = form.password.first.vars.errors|filter(e => e.messageTemplate == 'error.password_mismatch')|length > 0 %}
+                {{ m.widget(form.password.second, { placeholder: 'password_repeat_placeholder'|trans }|merge(mismatch ? { class: 'is-invalid', 'aria-invalid': 'true' } : {})) }}
                 {{ m.errors(form.password.second) }}
             </div>
 

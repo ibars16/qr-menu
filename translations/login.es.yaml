@@ -15,3 +15,20 @@ forgot: "¿Has olvidado tu contraseña?"
 no_account: "¿No tienes cuenta?"
 register: "Regístrate gratis"
 language: "Idioma"
+# A failed login (SecurityController::loginError()); too_many keeps
+# Symfony's own message from the "security" domain.
+error:
+    user_not_found:
+        title: "No hay ninguna cuenta con este email"
+        text: "Revisa que %email% esté bien escrito o crea una cuenta nueva."
+        action: "Crear una cuenta gratis"
+    bad_password:
+        title: "La contraseña no es correcta"
+        text: "Vuelve a escribirla con cuidado: distingue mayúsculas y minúsculas."
+        action: "Restablecer la contraseña"
+    expired:
+        title: "La página ha caducado"
+        text: "Por seguridad, vuelve a introducir tus datos."
+    general:
+        title: "No se ha podido iniciar sesión"
+        text: "Inténtalo de nuevo en unos minutos."

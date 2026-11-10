@@ -35,6 +35,8 @@ error:
     email_blank: "Saisissez votre e-mail."
     email_invalid: "L'e-mail n'est pas valide."
     email_taken: "Un compte existe déjà avec cet e-mail."
+    email_taken_login: "Se connecter"
+    email_taken_forgot: "Mot de passe oublié ?"
     password_blank: "Saisissez un mot de passe."
     password_short: "8 caractères minimum."
     password_mismatch: "Les mots de passe ne correspondent pas."

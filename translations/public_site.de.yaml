@@ -8,6 +8,7 @@ meta:
 nav:
   login: "Anmelden"
   cta: "1 Monat kostenlos testen"
+  panel: "Zum Dashboard"
 
 hero:
   badge: "1 Monat kostenlos, keine Kreditkarte"

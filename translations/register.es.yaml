@@ -36,6 +36,8 @@ error:
     email_blank: "Introduce tu email."
     email_invalid: "El email no es válido."
     email_taken: "Ya hay una cuenta con ese email."
+    email_taken_login: "Iniciar sesión"
+    email_taken_forgot: "¿Has olvidado tu contraseña?"
     password_blank: "Introduce una contraseña."
     password_short: "Mínimo 8 caracteres."
     password_mismatch: "Las contraseñas no coinciden."

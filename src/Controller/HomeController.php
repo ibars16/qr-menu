@@ -13,10 +13,8 @@ class HomeController extends AbstractController
     #[Route('/', name: 'app_home')]
     public function index(Request $request, PublicSiteLocaleResolver $localeResolver): Response
     {
-        if ($this->getUser()) {
-            return $this->redirectToRoute('admin_menu');
-        }
-
+        // Shown logged in too (its nav then links to the panel): the logo
+        // and "Inicio" links of the public pages all lead here.
         $locale = $localeResolver->resolveFromRequest($request);
 
         return $this->render('home/index.html.twig', [

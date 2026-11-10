@@ -58,7 +58,7 @@ final class HomeControllerTest extends WebTestCase
         self::assertStringContainsString('toujours à jour', $this->client->getResponse()->getContent());
     }
 
-    public function testLoggedInOwnerIsRedirectedToTheAdminPanel(): void
+    public function testLoggedInOwnerSeesTheLandingPageWithALinkToThePanel(): void
     {
         $restaurant = new Restaurant();
         $restaurant->setName('Home Test Restaurant');
@@ -78,9 +78,13 @@ final class HomeControllerTest extends WebTestCase
         $this->em->flush();
 
         $this->client->loginUser($owner);
-        $this->client->request('GET', '/');
+        $page = $this->client->request('GET', '/');
 
-        self::assertResponseRedirects('/admin/menu');
+        self::assertResponseIsSuccessful();
+        self::assertCount(2, $page->filter('nav.nav a[href="/admin/menu"]'));   // desktop + mobile
+        self::assertCount(1, $page->filter('.footer a[href="/admin/menu"]'));
+        self::assertCount(0, $page->filter('a[href="/admin/login"]'));
+        self::assertCount(0, $page->filter('nav.nav a[href="/register"]'));
 
         $this->em->remove($owner);
         $this->em->remove($restaurant);

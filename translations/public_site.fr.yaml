@@ -8,6 +8,7 @@ meta:
 nav:
   login: "Se connecter"
   cta: "Essai gratuit d'1 mois"
+  panel: "Aller au tableau de bord"
 
 hero:
   badge: "Essai gratuit d'1 mois, sans carte"

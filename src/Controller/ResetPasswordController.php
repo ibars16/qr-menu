@@ -65,6 +65,10 @@ class ResetPasswordController extends AbstractController
                 'constraints' => [new NotBlank(message: 'error.email_blank')],
             ])
             ->getForm();
+        // ?email= from the login's "la contraseña no es correcta".
+        if ($request->isMethod('GET')) {
+            $form->get('email')->setData((string) $request->query->get('email'));
+        }
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

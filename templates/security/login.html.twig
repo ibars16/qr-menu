@@ -190,15 +190,47 @@
         }
         .forgot-link:hover { text-decoration: underline; }
 
+        /* "¿No tienes cuenta?" — a second button, outlined in the brand
+           colour, so signing up stands out without competing with "Entrar". */
+        .signup-block { margin-top: 22px; }
+        .signup-divider {
+            display: flex; align-items: center; gap: 12px;
+            font-size: 12px; color: var(--tx-sub); margin-bottom: 14px;
+        }
+        .signup-divider::before, .signup-divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--bd-card);
+        }
+        .signup-btn {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            width: 100%; padding: 12px;
+            border: 1px solid var(--brand); border-radius: 10px;
+            background: rgba(193,68,14,0.08);
+            color: var(--accent-text); font-size: 15px; font-weight: 600;
+            text-decoration: none; letter-spacing: -0.2px;
+            transition: background 0.15s, transform 0.15s;
+        }
+        .signup-btn:hover { background: rgba(193,68,14,0.16); transform: translateY(-1px); }
+        .signup-btn .ti { transition: transform 0.15s; }
+        .signup-btn:hover .ti { transform: translateX(2px); }
+
         .error-msg {
             background: rgba(193, 68, 14, 0.12);
             border: 1px solid rgba(193, 68, 14, 0.3);
             border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 13px; color: var(--accent-text);
+            padding: 12px 14px;
+            font-size: 13px; line-height: 1.45; color: var(--tx-hi);
             margin-bottom: 20px;
-            display: flex; align-items: center; gap: 8px;
+            display: flex; align-items: flex-start; gap: 10px;
         }
+        .error-msg > .ti { font-size: 18px; flex-shrink: 0; color: var(--accent-text); margin-top: 1px; }
+        .error-title { font-weight: 600; color: var(--accent-text); }
+        .error-text  { color: var(--tx-sub); margin-top: 2px; word-break: break-word; }
+        .error-action {
+            display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+            font-weight: 600; color: var(--accent-text); text-decoration: none;
+        }
+        .error-action:hover { text-decoration: underline; }
+        .field input.is-invalid { border-color: var(--brand); }
     </style>
 {% endblock %}
 
@@ -226,14 +258,33 @@
                 </div>
             {% endfor %}
 
+            {# What went wrong and what to do about it: a link to sign up when
+               there's no account with that email, to "forgot password" when
+               the password is wrong (SecurityController::loginError()). #}
             {% if error %}
-                <div class="error-msg">
-                    <i class="ti ti-alert-circle" style="font-size:16px;flex-shrink:0" aria-hidden="true"></i>
-                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                <div class="error-msg" role="alert" id="login-error">
+                    <i class="ti ti-alert-circle" aria-hidden="true"></i>
+                    <div>
+                        {% if error_code == 'too_many' %}
+                            <div class="error-title">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                        {% else %}
+                            <div class="error-title">{{ ('error.' ~ error_code ~ '.title')|trans }}</div>
+                            <div class="error-text">{{ ('error.' ~ error_code ~ '.text')|trans({ '%email%': last_username }) }}</div>
+                        {% endif %}
+                        {% if error_code == 'user_not_found' %}
+                            <a class="error-action" href="{{ path('app_register', { email: last_username }) }}">{{ 'error.user_not_found.action'|trans }} <i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+                        {% elseif error_code == 'bad_password' %}
+                            <a class="error-action" href="{{ path('admin_forgot_password', { email: last_username }) }}">{{ 'error.bad_password.action'|trans }} <i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+                        {% endif %}
+                    </div>
                 </div>
             {% endif %}
 
-            <form method="post" class="login-form">
+            {# Never through Turbo: it would follow the failed login's redirect
+               by fetch (reading — and so consuming — the error kept in the
+               session), then this page's turbo-visit-control=reload makes it
+               reload, and the reloaded page has no error left to show. #}
+            <form method="post" class="login-form" data-turbo="false">
 
                 <div class="field">
                     <label for="email">{{ 'email'|trans }}</label>
@@ -243,7 +294,8 @@
                            value="{{ last_username }}"
                            placeholder="{{ 'email_placeholder'|trans }}"
                            autocomplete="email"
-                           autofocus
+                           {% if error_code == 'user_not_found' %}class="is-invalid" aria-invalid="true" aria-describedby="login-error"{% endif %}
+                           {% if error_code != 'bad_password' %}autofocus{% endif %}
                            required>
                 </div>
 
@@ -254,6 +306,7 @@
                            name="password"
                            placeholder="••••••••"
                            autocomplete="current-password"
+                           {% if error_code == 'bad_password' %}class="is-invalid" aria-invalid="true" aria-describedby="login-error" autofocus{% endif %}
                            required>
                 </div>
 
@@ -268,10 +321,10 @@
 
             </form>
             <a href="{{ path('admin_forgot_password') }}" class="forgot-link">{{ 'forgot'|trans }}</a>
-            <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--tx-sub)">
-                {{ 'no_account'|trans }}
-                <a href="{{ path('app_register') }}" style="color:var(--tx-label);text-decoration:none">
-                    {{ 'register'|trans }}
+            <div class="signup-block">
+                <div class="signup-divider"><span>{{ 'no_account'|trans }}</span></div>
+                <a href="{{ path('app_register') }}" class="signup-btn">
+                    {{ 'register'|trans }} <i class="ti ti-arrow-right" aria-hidden="true"></i>
                 </a>
             </div>
         </div>

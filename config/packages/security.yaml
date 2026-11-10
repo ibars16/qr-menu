@@ -1,4 +1,10 @@
 security:
+    # The login tells "no account with this email" apart from "wrong
+    # password" (SecurityController::loginError()). Symfony hides that by
+    # default against account enumeration, but /register already answers
+    # "ya hay una cuenta con ese email", and login_throttling caps guessing.
+    expose_security_errors: all
+
     password_hashers:
         App\Entity\User:
             algorithm: bcrypt

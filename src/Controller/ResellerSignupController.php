@@ -51,7 +51,8 @@ class ResellerSignupController extends AbstractController
         ]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid() && $restaurantCreator->isEmailTaken($form->get('email')->getData())) {
+        // Along with the other errors, as in RegistrationController.
+        if ($form->isSubmitted() && $form->get('email')->isValid() && $restaurantCreator->isEmailTaken((string) $form->get('email')->getData())) {
             $form->get('email')->addError(new FormError('error.email_taken', 'error.email_taken'));
         }
 

@@ -31,9 +31,15 @@ class RegistrationController extends AbstractController
             'detected_admin_locale' => $adminLocaleResolver->resolveFromRequest($request),
             'display_locale'        => $request->getLocale(),
         ]);
+        // ?email= from the login's "no hay ninguna cuenta con este email".
+        if ($request->isMethod('GET')) {
+            $form->get('email')->setData((string) $request->query->get('email'));
+        }
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid() && $restaurantCreator->isEmailTaken($form->get('email')->getData())) {
+        // Checked along with the other errors (not only once the rest is
+        // valid), so one submit tells everything that's wrong.
+        if ($form->isSubmitted() && $form->get('email')->isValid() && $restaurantCreator->isEmailTaken((string) $form->get('email')->getData())) {
             $form->get('email')->addError(new FormError('error.email_taken', 'error.email_taken'));
         }
 

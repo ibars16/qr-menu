@@ -144,6 +144,11 @@
         /* Errors of the whole form, above the first field. */
         .form-errors { margin: 0 0 14px; }
         .form-errors li { font-size: 13px; }
+        .field input.is-invalid,
+        .field select.is-invalid { border-color: var(--brand); }
+        .error-actions { margin-top: 6px; font-size: 12px; color: var(--tx-sub); display: flex; flex-wrap: wrap; gap: 6px; }
+        .error-actions a { color: var(--accent-text); font-weight: 600; text-decoration: none; }
+        .error-actions a:hover { text-decoration: underline; }
 
         .submit-btn {
             width: 100%; padding: 13px;

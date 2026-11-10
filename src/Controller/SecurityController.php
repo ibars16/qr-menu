@@ -8,25 +8,46 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\BadCredentialsException;
+use Symfony\Component\Security\Core\Exception\InvalidCsrfTokenException;
+use Symfony\Component\Security\Core\Exception\TooManyLoginAttemptsAuthenticationException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
     #[Route('/admin/login', name: 'admin_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(Request $request, AuthenticationUtils $authenticationUtils): Response
     {
         // Redirect if already logged in
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_menu');
         }
 
-        $error        = $authenticationUtils->getLastAuthenticationError();
-        $lastUsername = $authenticationUtils->getLastUsername();
+        $error = $authenticationUtils->getLastAuthenticationError();
 
         return $this->render('security/login.html.twig', [
-            'last_username' => $lastUsername,
+            // ?email= from the sign-up's "ya hay una cuenta" link.
+            'last_username' => $authenticationUtils->getLastUsername() ?: (string) $request->query->get('email'),
             'error'         => $error,
+            'error_code'    => $error ? self::loginError($error) : null,
         ]);
+    }
+
+    /**
+     * The "error.{code}" message of login.*.yaml for a failed login.
+     * too_many keeps Symfony's own message (with its minutes) instead.
+     */
+    private static function loginError(AuthenticationException $error): string
+    {
+        return match (true) {
+            $error instanceof UserNotFoundException                        => 'user_not_found',
+            $error instanceof BadCredentialsException                      => 'bad_password',
+            $error instanceof InvalidCsrfTokenException                    => 'expired',
+            $error instanceof TooManyLoginAttemptsAuthenticationException => 'too_many',
+            default                                                        => 'general',
+        };
     }
 
     /**
