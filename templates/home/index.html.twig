@@ -115,11 +115,15 @@
     .hero-demo-link a i { font-style: normal; font-size: 15px; }
     .hero-demo-link a:hover { gap: 12px; }
 
-    /* Section shared */
-    .section { padding: 104px 24px; }
+    /* Section shared. 88px, not 104px: two sections in a row add their
+       paddings, and a tinted .section-alt around short content (the steps
+       used to be one) read as an empty band above and below it. */
+    .section { padding: 88px 24px; }
     .section + .section { border-top: 1px solid var(--bd-1); }
     .section-alt { background: var(--bg-subtle); }
-    .section-head { text-align: center; max-width: 620px; margin: 0 auto 60px; }
+    .section-head { text-align: center; max-width: 620px; margin: 0 auto 52px; }
+    /* The sticky nav (public/base.html.twig) mustn't cover an anchored heading. */
+    #funcionalidades, #precios { scroll-margin-top: 72px; }
     .section-head .eyebrow { margin-bottom: 18px; }
     .section-head h2 { font-family: var(--font-display); font-size: 44px; font-weight: 400; color: var(--tx-hi); letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 16px; }
     .section-head p { font-size: 16px; color: var(--tx-3); line-height: 1.65; }
@@ -160,6 +164,74 @@
     .step h3 { font-family: var(--font-display); font-size: 22px; font-weight: 500; color: var(--tx-hi); margin-bottom: 10px; letter-spacing: -0.01em; }
     .step p { font-size: 14px; color: var(--tx-3); line-height: 1.65; }
 
+    /* Pricing — one plan; prices from app.billing_prices (same source as
+       the admin). Without JS both periods show side by side and the
+       Mensual/Anual switch stays hidden; the script below turns it on and
+       shows one period at a time (.is-enhanced). */
+    .pricing-card {
+        position: relative; max-width: 620px; margin: 0 auto; text-align: center;
+        background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: 8px;
+        padding: 40px 44px 36px;
+        box-shadow: 0 4px 8px rgba(var(--shadow-rgb),0.05), 0 16px 34px rgba(var(--shadow-rgb),0.09);
+    }
+    .pricing-card::before {
+        content: ''; position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .pricing-toggle {
+        display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 30px;
+        background: var(--bg-subtle); border: 1px solid var(--bd-2); border-radius: 999px;
+    }
+    .pricing-toggle[hidden] { display: none; }
+    .pricing-toggle button {
+        font: inherit; font-size: 14px; font-weight: 500; color: var(--tx-2);
+        background: transparent; border: 0; border-radius: 999px;
+        min-height: 40px; padding: 8px 22px; cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+    }
+    .pricing-toggle button:hover { color: var(--tx-hi); }
+    .pricing-toggle button[aria-pressed="true"] { background: var(--brand); color: var(--on-brand); }
+    .pricing-toggle button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .pricing-options { display: grid; grid-template-columns: 1fr 1fr; }
+    .pricing-option { padding: 4px 12px; }
+    .pricing-option + .pricing-option { border-left: 1px solid var(--bd-1); }
+    .pricing-option-label {
+        font-size: 11px; font-weight: 600; color: var(--gold-text);
+        text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 14px;
+    }
+    .pricing-amount { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 6px; }
+    .pricing-price {
+        font-family: var(--font-display); font-size: 44px; font-weight: 400; color: var(--tx-hi);
+        letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums;
+        font-variation-settings: 'opsz' 144;
+    }
+    .pricing-per { font-size: 15px; color: var(--tx-3); }
+    .pricing-vat { font-size: 13px; color: var(--tx-3); margin-top: 10px; }
+    .pricing-saving {
+        display: inline-flex; align-items: center; gap: 6px; margin-top: 14px;
+        font-size: 13px; font-weight: 500; color: var(--accent-text);
+        background: rgba(176,137,76,0.08); border: 1px solid rgba(176,137,76,0.55);
+        padding: 6px 13px; border-radius: 999px;
+    }
+    .pricing-saving i { font-size: 14px; }
+    .is-enhanced .pricing-options { grid-template-columns: 1fr; }
+    .is-enhanced .pricing-option { padding: 0; }
+    .is-enhanced .pricing-option:not(.is-active) { display: none; }
+    .is-enhanced .pricing-option + .pricing-option { border-left: 0; }
+    .is-enhanced .pricing-option-label { display: none; }
+    .is-enhanced .pricing-price { font-size: 60px; }
+    .pricing-card .rule { margin: 32px auto 26px; }
+    .pricing-included-title { font-family: var(--font-display); font-size: 19px; font-weight: 500; color: var(--tx-hi); margin-bottom: 16px; }
+    .pricing-list {
+        list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 28px;
+        max-width: 500px; margin: 0 auto 34px; text-align: left;
+    }
+    .pricing-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--tx-2); line-height: 1.5; }
+    .pricing-list i { flex-shrink: 0; font-size: 16px; color: var(--gold-text); margin-top: 2px; }
+    .pricing-cta { width: 100%; justify-content: center; font-size: 16px; padding: 17px 28px; }
+    .pricing-note { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 13px; color: var(--tx-3); margin-top: 16px; }
+    .pricing-note i { color: var(--gold); font-size: 15px; }
+
     /* FAQ */
     .faq { max-width: 760px; margin: 0 auto; border-top: 1px solid var(--bd-2); }
     .faq-item { border-bottom: 1px solid var(--bd-2); }
@@ -181,7 +253,7 @@
     .faq-item p { font-size: 15px; color: var(--tx-3); line-height: 1.7; padding: 0 60px 26px 4px; margin-top: -6px; }
 
     /* Final CTA */
-    .cta-band { padding: 0 24px 104px; }
+    .cta-band { padding: 0 24px 88px; }
     .cta-band-inner {
         max-width: 1120px; margin: 0 auto; text-align: center;
         background: var(--hero-wash); border: 1px solid var(--bd-1); border-radius: 8px;
@@ -211,7 +283,7 @@
         .hero-ctas a { width: 100%; justify-content: center; }
         .hero-visual { width: 300px; }
         .phone-screen { height: 560px; }
-        .section { padding: 72px 20px; }
+        .section { padding: 64px 20px; }
         .section-head { margin-bottom: 40px; }
         .section-head h2, .cta-band h2 { font-size: 32px; }
         .features-grid { grid-template-columns: 1fr; gap: 12px; }
@@ -220,14 +292,29 @@
         .steps { grid-template-columns: 1fr; gap: 36px; }
         .step { padding: 0 8px; }
         .step + .step { border-left: 0; border-top: 1px solid var(--bd-1); padding-top: 36px; }
+        .pricing-card { padding: 30px 20px 26px; }
+        .pricing-options { grid-template-columns: 1fr; }
+        .pricing-option { padding: 0; }
+        .pricing-option + .pricing-option { border-left: 0; border-top: 1px solid var(--bd-1); margin-top: 22px; padding-top: 22px; }
+        .is-enhanced .pricing-option + .pricing-option { border-top: 0; margin-top: 0; padding-top: 0; }
+        .is-enhanced .pricing-price { font-size: 50px; }
+        .pricing-list { grid-template-columns: 1fr; }
         .faq-item summary { font-size: 17px; padding: 20px 2px; }
         .faq-item p { padding-right: 8px; }
-        .cta-band { padding: 0 16px 72px; }
+        .cta-band { padding: 0 16px 64px; }
         .cta-band-inner { padding: 56px 24px; }
     }
 {% endblock %}
 
 {% block content %}
+    {# Prices: app.billing_prices (cents, VAT included) — the same source as
+       the admin's plan dialog — formatted for the home's language. #}
+    {% import 'billing/_price.html.twig' as billing_price %}
+    {% set prices = {
+        monthly: 'pricing.amount'|trans({'%price%': billing_price.amount(billing_prices.monthly, locale)}, 'public_site', locale),
+        yearly: 'pricing.amount'|trans({'%price%': billing_price.amount(billing_prices.yearly, locale)}, 'public_site', locale),
+        saving: 'pricing.amount'|trans({'%price%': billing_price.amount(billing_prices.monthly * 12 - billing_prices.yearly, locale)}, 'public_site', locale),
+    } %}
     <section class="hero">
         <div class="hero-inner">
             <div class="hero-copy">
@@ -237,7 +324,7 @@
                 <p>{{ 'hero.subtitle'|trans({}, 'public_site', locale) }}</p>
                 <div class="hero-ctas">
                     <a href="{{ path('app_register') }}" class="btn-primary">{{ 'hero.cta_primary'|trans({}, 'public_site', locale) }}</a>
-                    <a href="#funcionalidades" class="btn-secondary">{{ 'hero.cta_secondary'|trans({}, 'public_site', locale) }}</a>
+                    <a href="#precios" class="btn-secondary">{{ 'hero.cta_secondary'|trans({}, 'public_site', locale) }}</a>
                 </div>
                 <div class="hero-note"><i class="ti ti-shield-check" aria-hidden="true"></i> {{ 'hero.note'|trans({}, 'public_site', locale) }}</div>
             </div>
@@ -297,50 +384,26 @@
             <p>{{ 'features.subtitle'|trans({}, 'public_site', locale) }}</p>
         </div>
         <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon"><i class="ti ti-qrcode" aria-hidden="true"></i></div>
-                <h3>{{ 'features.qr.title'|trans({}, 'public_site', locale) }}</h3>
-                <p>{{ 'features.qr.desc'|trans({}, 'public_site', locale) }}</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="ti ti-layout-list" aria-hidden="true"></i></div>
-                <h3>{{ 'features.admin.title'|trans({}, 'public_site', locale) }}</h3>
-                <p>{{ 'features.admin.desc'|trans({}, 'public_site', locale) }}</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="ti ti-message-chatbot" aria-hidden="true"></i></div>
-                <h3>{{ 'features.smart_waiter.title'|trans({}, 'public_site', locale) }}</h3>
-                <p>{{ 'features.smart_waiter.desc'|trans({}, 'public_site', locale) }}</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
-                <h3>{{ 'features.stats.title'|trans({}, 'public_site', locale) }}</h3>
-                <p>{{ 'features.stats.desc'|trans({}, 'public_site', locale) }}</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="ti ti-language" aria-hidden="true"></i></div>
-                <h3>{{ 'features.multilang.title'|trans({}, 'public_site', locale) }}</h3>
-                <p>{{ 'features.multilang.desc'|trans({}, 'public_site', locale) }}</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="ti ti-currency-dollar" aria-hidden="true"></i></div>
-                <h3>{{ 'features.multicurrency.title'|trans({}, 'public_site', locale) }}</h3>
-                <p>{{ 'features.multicurrency.desc'|trans({}, 'public_site', locale) }}</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="ti ti-book-2" aria-hidden="true"></i></div>
-                <h3>{{ 'features.fixed_menus.title'|trans({}, 'public_site', locale) }}</h3>
-                <p>{{ 'features.fixed_menus.desc'|trans({}, 'public_site', locale) }}</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon"><i class="ti ti-palette" aria-hidden="true"></i></div>
-                <h3>{{ 'features.themes.title'|trans({}, 'public_site', locale) }}</h3>
-                <p>{{ 'features.themes.desc'|trans({}, 'public_site', locale) }}</p>
-            </div>
+            {% for feature, icon in {
+                qr: 'ti-qrcode',
+                import: 'ti-photo-scan',
+                smart_waiter: 'ti-message-chatbot',
+                allergens: 'ti-wheat-off',
+                multilang: 'ti-language',
+                multicurrency: 'ti-currency-dollar',
+                stats: 'ti-chart-bar',
+                themes: 'ti-palette',
+            } %}
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="ti {{ icon }}" aria-hidden="true"></i></div>
+                    <h3>{{ ('features.' ~ feature ~ '.title')|trans({}, 'public_site', locale) }}</h3>
+                    <p>{{ ('features.' ~ feature ~ '.desc')|trans({}, 'public_site', locale) }}</p>
+                </div>
+            {% endfor %}
         </div>
     </section>
 
-    <section class="section section-alt">
+    <section class="section">
         <div class="section-head">
             <div class="eyebrow">{{ 'steps.eyebrow'|trans({}, 'public_site', locale) }}</div>
             <h2>{{ 'steps.title'|trans({}, 'public_site', locale) }}</h2>
@@ -364,19 +427,58 @@
         </div>
     </section>
 
+    <section class="section section-alt" id="precios">
+        <div class="section-head">
+            <div class="eyebrow">{{ 'pricing.eyebrow'|trans({}, 'public_site', locale) }}</div>
+            <h2>{{ 'pricing.title'|trans({}, 'public_site', locale) }}</h2>
+            <p>{{ 'pricing.subtitle'|trans({}, 'public_site', locale) }}</p>
+        </div>
+        <div class="pricing-card" data-pricing>
+            <div class="pricing-toggle" role="group" aria-label="{{ 'pricing.period_label'|trans({}, 'public_site', locale) }}" data-pricing-toggle hidden>
+                {% for period in ['monthly', 'yearly'] %}
+                    <button type="button" data-period="{{ period }}" aria-pressed="{{ period == 'monthly' ? 'true' : 'false' }}">{{ ('pricing.' ~ period)|trans({}, 'public_site', locale) }}</button>
+                {% endfor %}
+            </div>
+            <div class="pricing-options" aria-live="polite">
+                {% for period in ['monthly', 'yearly'] %}
+                    <div class="pricing-option{{ period == 'monthly' ? ' is-active' : '' }}" data-option="{{ period }}">
+                        <div class="pricing-option-label">{{ ('pricing.' ~ period)|trans({}, 'public_site', locale) }}</div>
+                        <div class="pricing-amount">
+                            <span class="pricing-price" data-price="{{ period }}">{{ prices[period] }}</span>
+                            <span class="pricing-per">{{ (period == 'yearly' ? 'pricing.per_year' : 'pricing.per_month')|trans({}, 'public_site', locale) }}</span>
+                        </div>
+                        <div class="pricing-vat">{{ 'pricing.vat'|trans({}, 'public_site', locale) }}</div>
+                        {% if period == 'yearly' %}
+                            <div class="pricing-saving" data-saving><i class="ti ti-discount" aria-hidden="true"></i> {{ 'pricing.saving'|trans({'%saving%': prices.saving}, 'public_site', locale) }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <hr class="rule">
+            <p class="pricing-included-title">{{ 'pricing.included_title'|trans({}, 'public_site', locale) }}</p>
+            <ul class="pricing-list">
+                {% for i in 1..6 %}
+                    <li><i class="ti ti-check" aria-hidden="true"></i> {{ ('pricing.inc' ~ i)|trans({}, 'public_site', locale) }}</li>
+                {% endfor %}
+            </ul>
+            <a href="{{ path('app_register') }}" class="btn-primary pricing-cta">{{ 'pricing.cta'|trans({}, 'public_site', locale) }}</a>
+            <p class="pricing-note"><i class="ti ti-shield-check" aria-hidden="true"></i> {{ 'pricing.no_card'|trans({}, 'public_site', locale) }}</p>
+        </div>
+    </section>
+
     <section class="section">
         <div class="section-head">
             <div class="eyebrow">{{ 'faq.eyebrow'|trans({}, 'public_site', locale) }}</div>
             <h2>{{ 'faq.title'|trans({}, 'public_site', locale) }}</h2>
         </div>
         <div class="faq">
-            {% for i in 1..5 %}
+            {% for key in ['price', 'q1', 'q2', 'q3', 'q4', 'q5'] %}
                 <details class="faq-item">
                     <summary>
-                        {{ ('faq.q' ~ i ~ '.q')|trans({}, 'public_site', locale) }}
+                        {{ ('faq.' ~ key ~ '.q')|trans({}, 'public_site', locale) }}
                         <i class="ti ti-plus" aria-hidden="true"></i>
                     </summary>
-                    <p>{{ ('faq.q' ~ i ~ '.a')|trans({}, 'public_site', locale) }}</p>
+                    <p>{{ ('faq.' ~ key ~ '.a')|trans({'%monthly%': prices.monthly, '%yearly%': prices.yearly}, 'public_site', locale) }}</p>
                 </details>
             {% endfor %}
         </div>
@@ -390,4 +492,28 @@
             <a href="{{ path('app_register') }}" class="btn-primary">{{ 'cta.button'|trans({}, 'public_site', locale) }}</a>
         </div>
     </section>
+
+    <script>
+        // Mensual / Anual switch: only once this runs (no JS → both periods shown).
+        (function () {
+            var card = document.querySelector('[data-pricing]');
+            if (!card) return;
+            var toggle = card.querySelector('[data-pricing-toggle]');
+            var buttons = toggle.querySelectorAll('button[data-period]');
+            function show(period) {
+                card.querySelectorAll('[data-option]').forEach(function (el) {
+                    el.classList.toggle('is-active', el.getAttribute('data-option') === period);
+                });
+                buttons.forEach(function (b) {
+                    b.setAttribute('aria-pressed', b.getAttribute('data-period') === period ? 'true' : 'false');
+                });
+            }
+            buttons.forEach(function (b) {
+                b.addEventListener('click', function () { show(b.getAttribute('data-period')); });
+            });
+            show('monthly');
+            toggle.hidden = false;
+            card.classList.add('is-enhanced');
+        }());
+    </script>
 {% endblock %}

@@ -16,7 +16,7 @@ hero:
   title_accent: "digital y siempre actualizada"
   subtitle: "Tus clientes escanean un QR y ven la carta al instante — en su idioma, con fotos, alérgenos y precios siempre al día. Tú la editas desde un panel pensado para gestionarse en un minuto."
   cta_primary: "Prueba gratis 1 mes →"
-  cta_secondary: "Ver qué incluye"
+  cta_secondary: "Ver precios"
   note: "Sin tarjeta de crédito. Cancela cuando quieras."
 
 mockup:
@@ -41,10 +41,13 @@ faq:
     a: "No. Escanean el código QR y ven la carta directamente en el navegador del móvil."
   q4:
     q: "¿En cuántos idiomas se puede ver mi carta?"
-    a: "Se traduce automáticamente a más de 20 idiomas, sin que tengas que hacer nada."
+    a: "Se traduce automáticamente a 20 idiomas, sin que tengas que hacer nada."
   q5:
     q: "¿Qué pasa cuando termina el mes de prueba?"
-    a: "Te avisaremos con antelación antes de que cambie nada — de momento no hace falta que pienses en ello."
+    a: "Tu carta se pausa hasta que elijas un plan. No se cobra nada automáticamente, porque no te pedimos tarjeta."
+  price:
+    q: "¿Cuánto cuesta?"
+    a: "%monthly% al mes o %yearly% al año, IVA incluido. Es un solo plan con todo incluido, y el primer mes es gratis y sin tarjeta."
 
 features:
   eyebrow: "Funcionalidades"
@@ -53,24 +56,24 @@ features:
   qr:
     title: "Carta digital por QR"
     desc: "Un código QR por mesa lleva directo a tu carta, sin apps ni descargas para el cliente."
-  admin:
-    title: "Panel de administración"
-    desc: "Añade platos, categorías, fotos y precios en segundos, desde el móvil o el ordenador."
+  import:
+    title: "Importa tu carta con una foto"
+    desc: "Haz una foto de tu carta en papel: la IA la lee y la organiza en categorías y platos. Tú solo la revisas."
   smart_waiter:
-    title: "Smart Waiter (chat IA)"
+    title: "Camarero con IA"
     desc: "Tus clientes preguntan por alérgenos, ingredientes o recomendaciones y reciben respuesta al instante."
-  stats:
-    title: "Estadísticas"
-    desc: "Qué platos se miran más y cómo se usa el chat — datos útiles para tu carta, no ruido técnico."
+  allergens:
+    title: "14 alérgenos oficiales"
+    desc: "Los 14 alérgenos de declaración obligatoria en la UE, marcados en cada plato y bien visibles para tus clientes."
   multilang:
-    title: "Multi-idioma"
-    desc: "Tu carta se traduce automáticamente a más de 20 idiomas, para que cualquier cliente la entienda en el suyo."
+    title: "20 idiomas"
+    desc: "Tu carta se traduce automáticamente a 20 idiomas, para que cualquier cliente la entienda en el suyo."
   multicurrency:
     title: "Multidivisas"
     desc: "Elige la moneda de tu carta — euros, dólares y más — y todos los precios se muestran siempre correctos."
-  fixed_menus:
-    title: "Menús de precio fijo"
-    desc: "Menú del día, menú degustación — precios y estructura propios, aparte de la carta normal."
+  stats:
+    title: "Estadísticas"
+    desc: "Qué platos se miran más y cómo se usa el chat — datos útiles para tu carta, no ruido técnico."
   themes:
     title: "Temas visuales"
     desc: "Varios estilos y colores para que la carta encaje con la imagen de tu restaurante."
@@ -88,6 +91,28 @@ steps:
     title: "Comparte el QR"
     desc: "Descarga tu código QR, imprímelo en las mesas y tu carta digital ya está en marcha."
 
+pricing:
+  eyebrow: "Precios"
+  title: "Un solo plan, con todo incluido"
+  subtitle: "Empieza con un mes gratis. Después, elige pagar al mes o al año."
+  period_label: "Periodo de pago"
+  monthly: "Mensual"
+  yearly: "Anual"
+  amount: "%price% €"
+  per_month: "/mes"
+  per_year: "/año"
+  vat: "IVA incluido"
+  saving: "Ahorras %saving% frente al pago mensual"
+  included_title: "Todo incluido:"
+  inc1: "Carta digital por QR, sin apps para tus clientes"
+  inc2: "Importación de tu carta con una foto"
+  inc3: "Camarero con IA para tus clientes"
+  inc4: "14 alérgenos oficiales y 20 idiomas"
+  inc5: "Multidivisas y temas visuales"
+  inc6: "Estadísticas de tu carta"
+  cta: "Prueba gratis 1 mes"
+  no_card: "Sin tarjeta de crédito"
+
 cta:
   title: "Prueba QR Menu gratis durante 1 mes"
   subtitle: "Sin tarjeta de crédito. Configura tu carta hoy mismo."
@@ -100,3 +125,4 @@ footer:
   terms: "Términos"
   cookies: "Cookies"
   login: "Iniciar sesión"
+  pricing: "Precios"

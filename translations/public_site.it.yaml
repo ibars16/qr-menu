@@ -16,7 +16,7 @@ hero:
   title_accent: "digitale e sempre aggiornato"
   subtitle: "I tuoi clienti scansionano un QR e vedono il menu all'istante — nella loro lingua, con foto, allergeni e prezzi sempre aggiornati. Tu lo modifichi da un pannello pensato per essere gestito in un minuto."
   cta_primary: "Prova gratuita di 1 mese →"
-  cta_secondary: "Scopri cosa include"
+  cta_secondary: "Vedi i prezzi"
   note: "Senza carta di credito. Annulla quando vuoi."
 
 mockup:
@@ -41,10 +41,13 @@ faq:
     a: "No. Scansionano il codice QR e vedono il menu direttamente nel browser del cellulare."
   q4:
     q: "In quante lingue può essere mostrato il mio menu?"
-    a: "Viene tradotto automaticamente in più di 20 lingue, senza che tu debba fare nulla."
+    a: "Viene tradotto automaticamente in 20 lingue, senza che tu debba fare nulla."
   q5:
     q: "Cosa succede quando finisce il mese di prova?"
-    a: "Ti avviseremo con anticipo prima che cambi qualcosa — per ora non devi pensarci."
+    a: "Il tuo menu viene messo in pausa finché non scegli un piano. Non viene addebitato nulla automaticamente, perché non ti chiediamo la carta."
+  price:
+    q: "Quanto costa?"
+    a: "%monthly% al mese o %yearly% all'anno, IVA inclusa. Un solo piano con tutto incluso, e il primo mese è gratuito, senza carta."
 
 features:
   eyebrow: "Funzionalità"
@@ -53,24 +56,24 @@ features:
   qr:
     title: "Menu digitale tramite QR"
     desc: "Un QR code per tavolo porta direttamente al tuo menu, senza app né download per il cliente."
-  admin:
-    title: "Pannello di amministrazione"
-    desc: "Aggiungi piatti, categorie, foto e prezzi in pochi secondi, dal cellulare o dal computer."
+  import:
+    title: "Importa il menu con una foto"
+    desc: "Scatta una foto del tuo menu cartaceo: l'IA lo legge e lo organizza in categorie e piatti. Tu devi solo controllarlo."
   smart_waiter:
-    title: "Smart Waiter (chat IA)"
+    title: "Cameriere IA"
     desc: "I tuoi clienti chiedono di allergeni, ingredienti o consigli e ricevono una risposta immediata."
-  stats:
-    title: "Statistiche"
-    desc: "Quali piatti vengono visti di più e come viene usata la chat — dati utili per il tuo menu, senza rumore tecnico."
+  allergens:
+    title: "14 allergeni ufficiali"
+    desc: "I 14 allergeni a dichiarazione obbligatoria nell'UE, segnalati su ogni piatto e ben visibili ai tuoi clienti."
   multilang:
-    title: "Multilingua"
-    desc: "Il tuo menu viene tradotto automaticamente in più di 20 lingue, così ogni cliente lo capisce nella propria."
+    title: "20 lingue"
+    desc: "Il tuo menu viene tradotto automaticamente in 20 lingue, così ogni cliente lo capisce nella propria."
   multicurrency:
     title: "Multivaluta"
     desc: "Scegli la valuta del tuo menu — euro, dollari e altro — e tutti i prezzi vengono sempre mostrati correttamente."
-  fixed_menus:
-    title: "Menu a prezzo fisso"
-    desc: "Menu del giorno, menu degustazione — con prezzi e struttura propri, separati dal menu normale."
+  stats:
+    title: "Statistiche"
+    desc: "Quali piatti vengono visti di più e come viene usata la chat — dati utili per il tuo menu, senza rumore tecnico."
   themes:
     title: "Temi visivi"
     desc: "Diversi stili e colori per far combaciare il menu con l'immagine del tuo ristorante."
@@ -88,6 +91,28 @@ steps:
     title: "Condividi il QR"
     desc: "Scarica il tuo QR code, stampalo sui tavoli e il tuo menu digitale è online."
 
+pricing:
+  eyebrow: "Prezzi"
+  title: "Un solo piano, tutto incluso"
+  subtitle: "Inizia con un mese gratuito. Poi scegli se pagare al mese o all'anno."
+  period_label: "Periodo di fatturazione"
+  monthly: "Mensile"
+  yearly: "Annuale"
+  amount: "%price% €"
+  per_month: "/mese"
+  per_year: "/anno"
+  vat: "IVA inclusa"
+  saving: "Risparmi %saving% rispetto al pagamento mensile"
+  included_title: "Tutto incluso:"
+  inc1: "Menu digitale tramite QR, senza app per i tuoi clienti"
+  inc2: "Importazione del menu con una foto"
+  inc3: "Cameriere IA per i tuoi clienti"
+  inc4: "14 allergeni ufficiali e 20 lingue"
+  inc5: "Multivaluta e temi visivi"
+  inc6: "Statistiche del tuo menu"
+  cta: "Prova gratuita di 1 mese"
+  no_card: "Senza carta di credito"
+
 cta:
   title: "Prova QR Menu gratis per 1 mese"
   subtitle: "Senza carta di credito. Configura il tuo menu oggi stesso."
@@ -100,3 +125,4 @@ footer:
   terms: "Termini"
   cookies: "Cookie"
   login: "Accedi"
+  pricing: "Prezzi"

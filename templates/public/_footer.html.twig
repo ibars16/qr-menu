@@ -5,6 +5,7 @@
         </div>
         <nav class="footer-links">
             <a href="{{ path('app_home') }}">{{ 'footer.home'|trans({}, 'public_site', locale|default('es')) }}</a>
+            <a href="{{ app.request.attributes.get('_route') == 'app_home' ? '#precios' : path('app_home') ~ '#precios' }}">{{ 'footer.pricing'|trans({}, 'public_site', locale|default('es')) }}</a>
             <a href="{{ path('app_about') }}">{{ 'footer.about'|trans({}, 'public_site', locale|default('es')) }}</a>
             <a href="{{ path('app_privacy') }}">{{ 'footer.privacy'|trans({}, 'public_site', locale|default('es')) }}</a>
             <a href="{{ path('app_terms') }}">{{ 'footer.terms'|trans({}, 'public_site', locale|default('es')) }}</a>
