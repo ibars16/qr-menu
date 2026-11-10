@@ -8,13 +8,16 @@ parameters:
     # "uploads/..." — only the folder on disk moves (see when@test below).
     app.uploads_dir:        '%kernel.project_dir%/public/uploads'
 
-    # Subscription prices in euros — the ONLY place they're written. Shown
-    # in the admin (plan dialog, expired page) as a translation variable;
-    # what Stripe actually charges is the Price behind STRIPE_PRICE_* below,
-    # so keep both in sync when prices change.
+    # Platform restaurants' subscription prices, in cents, VAT included —
+    # the ONLY place they're written. Shown in the admin (plan dialog,
+    # expired page) via billing/_price.html.twig's amount() ("39,99").
+    # What Stripe actually charges is the Price behind STRIPE_PRICE_* below
+    # (tax_behavior inclusive): a price change is a new Stripe Price plus
+    # these numbers. Existing subscriptions stay on their old Price; their
+    # plan is then read from its interval (StripeBilling::planFor()).
     app.billing_prices:
-        monthly: 30
-        yearly: 300
+        monthly: 3999
+        yearly: 39999
 
     # Same for resellers (STRIPE_PRICE_RESELLER_*): the base plan, with
     # app.reseller_included_restaurants included, and each restaurant in

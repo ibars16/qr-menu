@@ -109,7 +109,7 @@
                         <form method="post" action="{{ path('admin_billing_checkout') }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('billing-checkout') }}">
                             <input type="hidden" name="plan" value="{{ plan }}">
-                            <button type="submit" class="btn btn-primary">{{ ('billing.plan_' ~ plan)|trans({'%price%': resellerPlans is not null ? price.amount(resellerPlans[plan]) : billing_prices[plan]}, 'admin_base') }}</button>
+                            <button type="submit" class="btn btn-primary">{{ ('billing.plan_' ~ plan)|trans({'%price%': resellerPlans is not null ? price.amount(resellerPlans[plan]) : price.amount(billing_prices[plan])}, 'admin_base') }}</button>
                         </form>
                     {% endfor %}
                 {% endif %}

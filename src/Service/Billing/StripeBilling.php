@@ -608,6 +608,10 @@ class StripeBilling
             }
             $price = $gateway->retrievePrice($priceId);
             $plan = $connected ? self::planOfInterval($price) : array_search($priceId, $this->priceIds, true);
+            // A price no longer configured: as in planFor().
+            if (!is_string($plan) && self::isDirectRestaurantSubscription($subscription)) {
+                $plan = self::planOfInterval($price);
+            }
             if (is_string($plan)) {
                 return ['plan' => $plan, 'date' => (int) $phase['start_date'], 'amount' => (int) $price['unit_amount']];
             }
@@ -858,7 +862,26 @@ class StripeBilling
             }
         }
 
+        // A restaurant's own subscription on a price no longer configured
+        // (our prices changed, Stripe keeps it on the old one): its plan is
+        // the price's interval.
+        if (self::isDirectRestaurantSubscription($subscription)) {
+            return self::planOfInterval($subscription['items']['data'][0]['price'] ?? []);
+        }
+
         return null;
+    }
+
+    /**
+     * A platform restaurant's subscription (restaurant_id in its metadata),
+     * not a reseller's.
+     *
+     * @param array<string, mixed> $subscription
+     */
+    private static function isDirectRestaurantSubscription(array $subscription): bool
+    {
+        return (int) ($subscription['metadata']['restaurant_id'] ?? 0) > 0
+            && (int) ($subscription['metadata']['reseller_id'] ?? 0) === 0;
     }
 
     /** @param array<string, mixed> $price */

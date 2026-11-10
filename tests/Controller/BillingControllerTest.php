@@ -113,8 +113,36 @@ final class BillingControllerTest extends WebTestCase
         self::assertSelectorTextSame('.billing-strip:not(.is-renewal) .billing-strip-action', 'Elegir plan →');
         self::assertSelectorExists('.header-icons a[aria-label="Cerrar sesión"]');
         self::assertCount(2, $crawler->filter('.billing-dialog form[action="/admin/billing/checkout"]'));
-        self::assertStringContainsString('Mensual · 30 €/mes', $crawler->filter('.billing-dialog')->text());
-        self::assertStringContainsString('Anual · 300 €/año', $crawler->filter('.billing-dialog')->text());
+        self::assertStringContainsString('Mensual · 39,99 €/mes', $crawler->filter('.billing-dialog')->text());
+        self::assertStringContainsString('Anual · 399,99 €/año', $crawler->filter('.billing-dialog')->text());
+    }
+
+    public function testChoosePlanDialogAndExpiredPageShowPricesInEnglish(): void
+    {
+        $this->managed()->setAdminLocale('en');
+        $this->em->flush();
+        $this->client->loginUser($this->owner);
+
+        $crawler = $this->client->request('GET', '/admin/menu');
+        self::assertStringContainsString('Monthly · €39.99/month', $crawler->filter('.billing-dialog')->text());
+        self::assertStringContainsString('Yearly · €399.99/year', $crawler->filter('.billing-dialog')->text());
+
+        $this->expire();
+        $crawler = $this->client->request('GET', '/admin/menu');
+        self::assertResponseStatusCodeSame(403);
+        self::assertCount(1, $crawler->selectButton('Monthly · €39.99/month'));
+        self::assertCount(1, $crawler->selectButton('Yearly · €399.99/year'));
+    }
+
+    public function testExpiredPageShowsPlatformPrices(): void
+    {
+        $this->expire();
+        $this->client->loginUser($this->owner);
+        $crawler = $this->client->request('GET', '/admin/menu');
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertCount(1, $crawler->selectButton('Mensual · 39,99 €/mes'));
+        self::assertCount(1, $crawler->selectButton('Anual · 399,99 €/año'));
     }
 
     public function testOwnerWithLiveSubscriptionGetsScreenLinkAndNoDialog(): void
@@ -162,7 +190,7 @@ final class BillingControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(403);
         self::assertCount(2, $crawler->filter('.plans form[action="/admin/billing/checkout"]'));
 
-        $this->client->submit($crawler->selectButton('Mensual · 30 €/mes')->form());
+        $this->client->submit($crawler->selectButton('Mensual · 39,99 €/mes')->form());
 
         self::assertResponseStatusCodeSame(303);
         self::assertArrayNotHasKey('trial_end', FakeStripeGateway::$checkoutParams[0]['subscription_data']);
@@ -505,14 +533,14 @@ final class BillingControllerTest extends WebTestCase
     // ── Subscription screen (/admin/billing) ────────────────────────────────
 
     /**
-     * A live Stripe subscription with a card, prices of 30 € / 300 €.
+     * A live Stripe subscription with a card, prices of 39,99 € / 399,99 €.
      * $status 'trialing' ends the trial on $periodEnd.
      */
     private function stripeSubscription(string $status = 'active', string $periodEnd = '+20 days'): void
     {
         $this->linkSubscription();
-        FakeStripeGateway::price('price_test_monthly', 3000, 'month');
-        FakeStripeGateway::price('price_test_yearly', 30000, 'year');
+        FakeStripeGateway::price('price_test_monthly', 3999, 'month');
+        FakeStripeGateway::price('price_test_yearly', 39999, 'year');
         FakeStripeGateway::subscription('sub_live', $this->restaurant->getId(), 'price_test_monthly');
         $end = (new \DateTimeImmutable('today ' . $periodEnd, new \DateTimeZone('UTC')))->getTimestamp();
         FakeStripeGateway::$objects['sub_live']['status'] = $status;
@@ -584,24 +612,39 @@ final class BillingControllerTest extends WebTestCase
     {
         $this->stripeSubscription();
         FakeStripeGateway::$invoices = [
-            ['created' => strtotime('2026-10-01 10:00 UTC'), 'total' => 3000, 'currency' => 'eur', 'status' => 'paid', 'hosted_invoice_url' => 'https://invoice.stripe.test/1', 'invoice_pdf' => null],
-            ['created' => strtotime('2026-10-02 10:00 UTC'), 'total' => 3000, 'currency' => 'eur', 'status' => 'draft', 'hosted_invoice_url' => null, 'invoice_pdf' => null],
+            ['created' => strtotime('2026-10-01 10:00 UTC'), 'total' => 3999, 'currency' => 'eur', 'status' => 'paid', 'hosted_invoice_url' => 'https://invoice.stripe.test/1', 'invoice_pdf' => null],
+            ['created' => strtotime('2026-10-02 10:00 UTC'), 'total' => 3999, 'currency' => 'eur', 'status' => 'draft', 'hosted_invoice_url' => null, 'invoice_pdf' => null],
         ];
 
         $crawler = $this->screen();
 
-        self::assertSame('Mensual · 30,00 €/mes', $crawler->filter('#billing-plan')->text());
+        self::assertSame('Mensual · 39,99 €/mes', $crawler->filter('#billing-plan')->text());
         self::assertSame('Activa', $crawler->filter('#billing-status')->text());
-        self::assertSame('30,00 € el ' . self::day('+20 days'), $crawler->filter('#billing-next-charge')->text());
+        self::assertSame('39,99 € el ' . self::day('+20 days'), $crawler->filter('#billing-next-charge')->text());
         self::assertSame('Visa •••• 4242 · caduca 04/30', $crawler->filter('#billing-card')->text());
         self::assertSame('Pasar a anual', $crawler->filter('form[action="/admin/billing/plan"] button')->text());
-        self::assertStringContainsString('al terminar el periodo actual, el ' . self::day('+20 days') . '. Ese día se cobrarán 300,00 €.', $crawler->filter('form[action="/admin/billing/plan"]')->attr('data-confirm'));
+        self::assertStringContainsString('al terminar el periodo actual, el ' . self::day('+20 days') . '. Ese día se cobrarán 399,99 €.', $crawler->filter('form[action="/admin/billing/plan"]')->attr('data-confirm'));
         self::assertStringContainsString('Seguirá activa hasta el ' . $this->managed()->getPaidUntil()->format('d/m/Y') . ' y no se renovará.', $crawler->filter('form[action="/admin/billing/cancel"]')->attr('data-confirm'));
         self::assertCount(1, $crawler->filter('.invoice-list li'), 'drafts left out');
         self::assertStringContainsString('01/10/2026', $crawler->filter('.invoice-list li')->text());
         self::assertStringContainsString('Pagada', $crawler->filter('.invoice-list li')->text());
         self::assertSame('https://invoice.stripe.test/1', $crawler->filter('.invoice-list a')->attr('href'));
         self::assertSelectorNotExists('.billing-dialog');
+    }
+
+    /** Still on the old 30 € price: the screen knows the plan and offers the current yearly price. */
+    public function testScreenWithSubscriptionOnOldPrice(): void
+    {
+        $this->stripeSubscription();
+        FakeStripeGateway::price('price_old_monthly', 3000, 'month');
+        FakeStripeGateway::$objects['sub_live']['items']['data'][0]['price'] = FakeStripeGateway::$objects['price_old_monthly'];
+
+        $crawler = $this->screen();
+
+        self::assertSame('Mensual · 30,00 €/mes', $crawler->filter('#billing-plan')->text());
+        self::assertSame('30,00 € el ' . self::day('+20 days'), $crawler->filter('#billing-next-charge')->text());
+        self::assertSame('Pasar a anual', $crawler->filter('form[action="/admin/billing/plan"] button')->text());
+        self::assertStringContainsString('Ese día se cobrarán 399,99 €.', $crawler->filter('form[action="/admin/billing/plan"]')->attr('data-confirm'));
     }
 
     public function testInvoiceFailureDoesNotBreakScreen(): void
@@ -632,7 +675,7 @@ final class BillingControllerTest extends WebTestCase
     {
         $this->stripeSubscription('trialing', '+20 days');
         $crawler = $this->screen();
-        self::assertStringContainsString('ahora, sin cargo. El primer cobro será de 300,00 € el ' . self::day('+20 days'), $crawler->filter('form[action="/admin/billing/plan"]')->attr('data-confirm'));
+        self::assertStringContainsString('ahora, sin cargo. El primer cobro será de 399,99 € el ' . self::day('+20 days'), $crawler->filter('form[action="/admin/billing/plan"]')->attr('data-confirm'));
 
         $this->post('/admin/billing/plan', ['plan' => 'yearly']);
 
@@ -642,7 +685,7 @@ final class BillingControllerTest extends WebTestCase
         self::assertSame('none', $params['proration_behavior']);
         self::assertSame(FakeStripeGateway::$objects['sub_live']['trial_end'], $params['trial_end']);
         self::assertSame(Restaurant::PLAN_YEARLY, $this->managed()->getPlan());
-        self::assertSame('Anual · 300,00 €/año', $this->screen()->filter('#billing-plan')->text());
+        self::assertSame('Anual · 399,99 €/año', $this->screen()->filter('#billing-plan')->text());
     }
 
     public function testChangePlanWithPaidPeriodIsScheduledAtPeriodEndAndCanBeUndone(): void
@@ -664,8 +707,8 @@ final class BillingControllerTest extends WebTestCase
         self::assertSame(Restaurant::PLAN_MONTHLY, $this->managed()->getPlan(), 'still monthly until the period ends');
 
         $crawler = $this->screen();
-        self::assertSame('Pasará al plan anual el ' . self::day('+20 days') . ' (300,00 €).', $crawler->filter('#billing-pending-change')->text());
-        self::assertSame('300,00 € el ' . self::day('+20 days'), $crawler->filter('#billing-next-charge')->text());
+        self::assertSame('Pasará al plan anual el ' . self::day('+20 days') . ' (399,99 €).', $crawler->filter('#billing-pending-change')->text());
+        self::assertSame('399,99 € el ' . self::day('+20 days'), $crawler->filter('#billing-next-charge')->text());
         self::assertSelectorNotExists('form[action="/admin/billing/plan"]');
         self::assertStringContainsString('Se anulará el cambio de plan programado.', $crawler->filter('form[action="/admin/billing/cancel"]')->attr('data-confirm'));
 

@@ -65,7 +65,7 @@ final class StripeWebhookControllerTest extends WebTestCase
     public function testBadSignatureIsRejectedAndChangesNothing(): void
     {
         FakeStripeGateway::subscription('sub_1', $this->restaurant->getId(), 'price_test_monthly');
-        FakeStripeGateway::invoice('in_1', 'sub_1', strtotime('+40 days'), 3000, time());
+        FakeStripeGateway::invoice('in_1', 'sub_1', strtotime('+40 days'), 3999, time());
 
         $this->post('invoice.paid', 'in_1', 'whsec_wrong');
 
@@ -76,6 +76,26 @@ final class StripeWebhookControllerTest extends WebTestCase
     public function testPaidInvoiceIsApplied(): void
     {
         FakeStripeGateway::subscription('sub_1', $this->restaurant->getId(), 'price_test_monthly');
+        FakeStripeGateway::invoice('in_1', 'sub_1', strtotime('+40 days'), 3999, time());
+
+        $this->post('invoice.paid', 'in_1');
+
+        self::assertResponseIsSuccessful();
+        $restaurant = $this->reloaded();
+        self::assertSame(Restaurant::PLAN_MONTHLY, $restaurant->getPlan());
+        self::assertSame(gmdate('Y-m-d', strtotime('+40 days')), $restaurant->getPaidUntil()->format('Y-m-d'));
+        self::assertSame('sub_1', $restaurant->getStripeSubscriptionId());
+    }
+
+    /**
+     * A subscription still on a price that's no longer STRIPE_PRICE_* (our
+     * prices changed; Stripe keeps it on the old one): its plan comes from
+     * the price's interval, and the paid invoice still extends paidUntil.
+     */
+    public function testPaidInvoiceOnOldPriceIsApplied(): void
+    {
+        FakeStripeGateway::price('price_old_monthly', 3000, 'month');
+        FakeStripeGateway::subscription('sub_1', $this->restaurant->getId(), 'price_old_monthly');
         FakeStripeGateway::invoice('in_1', 'sub_1', strtotime('+40 days'), 3000, time());
 
         $this->post('invoice.paid', 'in_1');
@@ -87,10 +107,24 @@ final class StripeWebhookControllerTest extends WebTestCase
         self::assertSame('sub_1', $restaurant->getStripeSubscriptionId());
     }
 
+    public function testPaidInvoiceOnOldYearlyPriceIsApplied(): void
+    {
+        FakeStripeGateway::price('price_old_yearly', 30000, 'year');
+        FakeStripeGateway::subscription('sub_1', $this->restaurant->getId(), 'price_old_yearly');
+        FakeStripeGateway::invoice('in_1', 'sub_1', strtotime('+400 days'), 30000, time());
+
+        $this->post('invoice.paid', 'in_1');
+
+        self::assertResponseIsSuccessful();
+        $restaurant = $this->reloaded();
+        self::assertSame(Restaurant::PLAN_YEARLY, $restaurant->getPlan());
+        self::assertSame(gmdate('Y-m-d', strtotime('+400 days')), $restaurant->getPaidUntil()->format('Y-m-d'));
+    }
+
     public function testRepeatedEventIsHarmless(): void
     {
         FakeStripeGateway::subscription('sub_1', $this->restaurant->getId(), 'price_test_yearly');
-        FakeStripeGateway::invoice('in_1', 'sub_1', strtotime('+400 days'), 30000, time());
+        FakeStripeGateway::invoice('in_1', 'sub_1', strtotime('+400 days'), 39999, time());
 
         $this->post('invoice.paid', 'in_1');
         $this->post('invoice.paid', 'in_1');
