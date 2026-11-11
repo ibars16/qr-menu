@@ -7,6 +7,7 @@ use App\Entity\MenuImportPage;
 use App\Entity\Restaurant;
 use App\Enum\MenuImportBatchStatus;
 use App\Service\BatchProcessingTriggerInterface;
+use App\Service\DishPhoto\AiPhotoBatch;
 use App\Service\MenuImportLanguageNotice;
 use App\Service\Upload\UploadProfile;
 use App\Service\Upload\UploadValidationError;
@@ -157,7 +158,7 @@ class MenuImportController extends AbstractController
     }
 
     #[Route('/{id}/complete', name: 'complete', methods: ['GET'])]
-    public function complete(MenuImportBatch $batch, EntityManagerInterface $em): Response
+    public function complete(MenuImportBatch $batch, EntityManagerInterface $em, AiPhotoBatch $aiPhotoBatch): Response
     {
         $this->assertOwner($batch);
 
@@ -180,6 +181,9 @@ class MenuImportController extends AbstractController
             'productsCreated' => $productsCreated,
             'failedPageCount' => count($failedPages),
             'totalPageCount' => $batch->getPages()->count(),
+            // "Crear sus fotos con IA": this import's dishes still without a
+            // photo, unless the owner already chose "Dejarlo" for it.
+            'aiPhotoRemaining' => $batch->getAiPhotosStatus() === MenuImportBatch::AI_PHOTOS_DISMISSED ? 0 : $aiPhotoBatch->pendingCount($batch),
         ]);
     }
 

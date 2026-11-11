@@ -205,6 +205,9 @@ upload:
     hint: Arrasta ou clica para enviar uma foto ou um clipe
     limits: 'Foto: JPEG, PNG ou WebP (máx. 8 MB, mín. 400×400 px) · Vídeo: MP4 (máx. 60 MB)'
     change: Alterar
+    delete: 'Eliminar foto'
+    confirm_delete: 'Eliminar a foto deste prato? Esta ação não pode ser anulada.'
+    deleted: 'Foto eliminada.'
 
 clip:
     duration_warning: 'Este vídeo dura mais de 6 s — ao guardar será cortado para os primeiros 6 segundos.'
@@ -252,3 +255,40 @@ search:
     aria: 'Pesquisar pratos e categorias'
     clear: 'Limpar a pesquisa'
     no_results: 'Não há pratos correspondentes'
+
+ai_photo:
+    generate: 'Gerar com IA'
+    generating: 'A criar a foto…'
+    another: 'Outra'
+    discard: 'Descartar'
+    pending: 'Foto criada com IA. Será aplicada ao guardar.'
+    saved: 'Foto criada com IA e guardada no prato.'
+    trial_remaining: 'Fotos com IA no período experimental: restam %count% de %limit%.'
+    choose_plan: 'Escolher plano'
+    error:
+        name_required: 'Escreva primeiro o nome do prato.'
+        trial_limit: 'Escolha um plano para criar mais fotos com IA.'
+        rate_limited: 'Criou demasiadas fotos seguidas. Aguarde um pouco e tente novamente.'
+        refused: 'Não foi possível criar uma foto para este prato. Experimente alterar a descrição ou carregue a sua.'
+        timeout: 'Está a demorar demasiado, tente novamente.'
+        unavailable: 'De momento não é possível criar a foto, tente daqui a alguns minutos.'
+        not_configured: 'De momento não é possível criar a foto, tente daqui a alguns minutos.'
+        draft_expired: 'A foto criada com IA expirou. Gere-a novamente.'
+    batch:
+        offer_singular: '%count% prato não tem foto'
+        offer_plural: '%count% pratos não têm foto'
+        button: 'Criar as fotos com IA'
+        trial: 'Período experimental: restam %count% fotos com IA. Escolha um plano para criar mais.'
+        progress: 'A criar as fotos…'
+        count: '%done% de %total%'
+        close_hint: 'Pode fechar esta janela: o processo continua em Cardápio.'
+        skipped_singular: '%count% prato ignorado (não foi possível criar a foto)'
+        skipped_plural: '%count% pratos ignorados (não foi possível criar as fotos)'
+        done: 'Fotos criadas.'
+        retry: 'Tentar novamente'
+        view_menu: 'Ver o meu cardápio'
+    notice:
+        text_singular: 'Fotos com IA a meio: falta %count% prato.'
+        text_plural: 'Fotos com IA a meio: faltam %count% pratos.'
+        continue: 'Continuar'
+        dismiss: 'Deixar assim'

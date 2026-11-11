@@ -205,6 +205,9 @@ upload:
     hint: Drag or click to upload a photo or a clip
     limits: 'Photo: JPEG, PNG or WebP (max 8 MB, min 400×400 px) · Video: MP4 (max 60 MB)'
     change: Change
+    delete: 'Remove photo'
+    confirm_delete: 'Remove this dish''s photo? This can''t be undone.'
+    deleted: 'Photo removed.'
 
 clip:
     duration_warning: 'This video is longer than 6s — it will be trimmed to its first 6 seconds when you save.'
@@ -252,3 +255,40 @@ search:
     aria: 'Search dishes and categories'
     clear: 'Clear search'
     no_results: 'No matching dishes'
+
+ai_photo:
+    generate: 'Generate with AI'
+    generating: 'Creating photo…'
+    another: 'Another'
+    discard: 'Discard'
+    pending: 'Photo created with AI. It will be applied when you save.'
+    saved: 'AI photo created and saved to the dish.'
+    trial_remaining: 'AI photos on your trial: %count% of %limit% left.'
+    choose_plan: 'Choose plan'
+    error:
+        name_required: 'Type the dish name first.'
+        trial_limit: 'Choose a plan to create more AI photos.'
+        rate_limited: 'You''ve created a lot of photos in a row. Wait a little and try again.'
+        refused: 'We couldn''t create a photo for this dish. Try changing the description or upload your own.'
+        timeout: 'It''s taking too long, please try again.'
+        unavailable: 'The photo can''t be created right now, try again in a few minutes.'
+        not_configured: 'The photo can''t be created right now, try again in a few minutes.'
+        draft_expired: 'The AI photo has expired. Please generate it again.'
+    batch:
+        offer_singular: '%count% dish has no photo'
+        offer_plural: '%count% dishes have no photo'
+        button: 'Create their photos with AI'
+        trial: 'Trial: %count% AI photos left. Choose a plan to create more.'
+        progress: 'Creating photos…'
+        count: '%done% of %total%'
+        close_hint: 'You can close this window: you''ll continue from Menu.'
+        skipped_singular: '%count% dish skipped (its photo couldn''t be created)'
+        skipped_plural: '%count% dishes skipped (their photos couldn''t be created)'
+        done: 'Photos created.'
+        retry: 'Retry'
+        view_menu: 'View my menu'
+    notice:
+        text_singular: 'AI photos half done: %count% dish left.'
+        text_plural: 'AI photos half done: %count% dishes left.'
+        continue: 'Continue'
+        dismiss: 'Leave it'

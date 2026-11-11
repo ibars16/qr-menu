@@ -205,6 +205,9 @@ upload:
     hint: Trascina o clicca per caricare una foto o una clip
     limits: 'Foto: JPEG, PNG o WebP (max 8 MB, min 400×400 px) · Video: MP4 (max 60 MB)'
     change: Cambia
+    delete: 'Elimina foto'
+    confirm_delete: 'Eliminare la foto di questo piatto? L''operazione non si può annullare.'
+    deleted: 'Foto eliminata.'
 
 clip:
     duration_warning: 'Questo video dura più di 6 s — al salvataggio verrà tagliato ai primi 6 secondi.'
@@ -252,3 +255,40 @@ search:
     aria: 'Cerca piatti e categorie'
     clear: 'Cancella la ricerca'
     no_results: 'Nessun piatto corrispondente'
+
+ai_photo:
+    generate: 'Genera con l''IA'
+    generating: 'Creazione della foto…'
+    another: 'Un''altra'
+    discard: 'Scarta'
+    pending: 'Foto creata con l''IA. Verrà applicata al salvataggio.'
+    saved: 'Foto creata con l''IA e salvata nel piatto.'
+    trial_remaining: 'Foto IA della prova: te ne restano %count% su %limit%.'
+    choose_plan: 'Scegli un piano'
+    error:
+        name_required: 'Scrivi prima il nome del piatto.'
+        trial_limit: 'Scegli un piano per creare altre foto con l''IA.'
+        rate_limited: 'Hai creato molte foto di seguito. Aspetta un po’ e riprova.'
+        refused: 'Non siamo riusciti a creare una foto per questo piatto. Prova a cambiare la descrizione o carica la tua.'
+        timeout: 'Ci sta mettendo troppo, riprova.'
+        unavailable: 'Al momento non è possibile creare la foto, riprova tra qualche minuto.'
+        not_configured: 'Al momento non è possibile creare la foto, riprova tra qualche minuto.'
+        draft_expired: 'La foto creata con l''IA è scaduta. Generala di nuovo.'
+    batch:
+        offer_singular: '%count% piatto non ha la foto'
+        offer_plural: '%count% piatti non hanno la foto'
+        button: 'Crea le loro foto con l''IA'
+        trial: 'Prova: ti restano %count% foto IA. Scegli un piano per crearne altre.'
+        progress: 'Creazione delle foto…'
+        count: '%done% di %total%'
+        close_hint: 'Puoi chiudere questa finestra: continuerai da Menu.'
+        skipped_singular: '%count% piatto saltato (non è stato possibile crearne la foto)'
+        skipped_plural: '%count% piatti saltati (non è stato possibile crearne le foto)'
+        done: 'Foto create.'
+        retry: 'Riprova'
+        view_menu: 'Vedi il mio menù'
+    notice:
+        text_singular: 'Foto IA a metà: manca %count% piatto.'
+        text_plural: 'Foto IA a metà: mancano %count% piatti.'
+        continue: 'Continua'
+        dismiss: 'Lascia così'

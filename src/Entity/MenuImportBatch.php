@@ -30,6 +30,15 @@ class MenuImportBatch
     /** languageNotice: translated, nothing left. */
     public const NOTICE_TRANSLATED  = 'translated';
 
+    /** aiPhotosStatus: "Crear sus fotos con IA" started; dishes may be left (resumable from Carta). */
+    public const AI_PHOTOS_RUNNING   = 'running';
+    /** aiPhotosStatus: stopped by Gemini being unavailable (429/5xx) — "Reintentar". */
+    public const AI_PHOTOS_PAUSED    = 'paused';
+    /** aiPhotosStatus: "Dejarlo" — the Carta notice is gone for this import. */
+    public const AI_PHOTOS_DISMISSED = 'dismissed';
+    /** aiPhotosStatus: nothing left to generate. */
+    public const AI_PHOTOS_DONE      = 'done';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -52,6 +61,14 @@ class MenuImportBatch
     /** null (no notice) or one of the NOTICE_* constants. */
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $languageNotice = null;
+
+    /** null (never started) or one of the AI_PHOTOS_* constants. */
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $aiPhotosStatus = null;
+
+    /** @var int[] Product ids the AI couldn't make a photo for (refused / failed): never retried by the batch. */
+    #[ORM\Column(type: 'json', options: ['default' => '[]'])]
+    private array $aiPhotosSkipped = [];
 
     #[ORM\OneToMany(mappedBy: 'batch', targetEntity: MenuImportPage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['position' => 'ASC'])]
@@ -124,5 +141,28 @@ class MenuImportBatch
     public function setLanguageNotice(?string $languageNotice): void
     {
         $this->languageNotice = $languageNotice;
+    }
+
+    public function getAiPhotosStatus(): ?string
+    {
+        return $this->aiPhotosStatus;
+    }
+
+    public function setAiPhotosStatus(?string $aiPhotosStatus): void
+    {
+        $this->aiPhotosStatus = $aiPhotosStatus;
+    }
+
+    /** @return int[] */
+    public function getAiPhotosSkipped(): array
+    {
+        return $this->aiPhotosSkipped;
+    }
+
+    public function addAiPhotosSkipped(int $productId): void
+    {
+        if (!in_array($productId, $this->aiPhotosSkipped, true)) {
+            $this->aiPhotosSkipped[] = $productId;
+        }
     }
 }

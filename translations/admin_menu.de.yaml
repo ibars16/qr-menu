@@ -205,6 +205,9 @@ upload:
     hint: Klicke oder ziehe ein Foto oder einen Clip hierher
     limits: 'Foto: JPEG, PNG oder WebP (max. 8 MB, min. 400×400 px) · Video: MP4 (max. 60 MB)'
     change: Ändern
+    delete: 'Foto entfernen'
+    confirm_delete: 'Foto dieses Gerichts entfernen? Das kann nicht rückgängig gemacht werden.'
+    deleted: 'Foto entfernt.'
 
 clip:
     duration_warning: 'Dieses Video ist länger als 6 s — beim Speichern wird es auf die ersten 6 Sekunden gekürzt.'
@@ -252,3 +255,40 @@ search:
     aria: 'Gerichte und Kategorien suchen'
     clear: 'Suche löschen'
     no_results: 'Keine passenden Gerichte'
+
+ai_photo:
+    generate: 'Mit KI erstellen'
+    generating: 'Foto wird erstellt…'
+    another: 'Neues'
+    discard: 'Verwerfen'
+    pending: 'Mit KI erstelltes Foto. Es wird beim Speichern übernommen.'
+    saved: 'KI-Foto erstellt und beim Gericht gespeichert.'
+    trial_remaining: 'KI-Fotos im Testzeitraum: noch %count% von %limit%.'
+    choose_plan: 'Tarif wählen'
+    error:
+        name_required: 'Gib zuerst den Namen des Gerichts ein.'
+        trial_limit: 'Wähle einen Tarif, um weitere KI-Fotos zu erstellen.'
+        rate_limited: 'Du hast viele Fotos hintereinander erstellt. Warte kurz und versuche es erneut.'
+        refused: 'Für dieses Gericht konnten wir kein Foto erstellen. Ändere die Beschreibung oder lade ein eigenes hoch.'
+        timeout: 'Das dauert zu lange, bitte versuche es erneut.'
+        unavailable: 'Das Foto kann gerade nicht erstellt werden, versuche es in ein paar Minuten erneut.'
+        not_configured: 'Das Foto kann gerade nicht erstellt werden, versuche es in ein paar Minuten erneut.'
+        draft_expired: 'Das KI-Foto ist abgelaufen. Erstelle es bitte neu.'
+    batch:
+        offer_singular: '%count% Gericht hat kein Foto'
+        offer_plural: '%count% Gerichte haben kein Foto'
+        button: 'Ihre Fotos mit KI erstellen'
+        trial: 'Testzeitraum: noch %count% KI-Fotos. Wähle einen Tarif, um mehr zu erstellen.'
+        progress: 'Fotos werden erstellt…'
+        count: '%done% von %total%'
+        close_hint: 'Du kannst dieses Fenster schließen: Es geht unter Speisekarte weiter.'
+        skipped_singular: '%count% Gericht übersprungen (Foto konnte nicht erstellt werden)'
+        skipped_plural: '%count% Gerichte übersprungen (Fotos konnten nicht erstellt werden)'
+        done: 'Fotos erstellt.'
+        retry: 'Erneut versuchen'
+        view_menu: 'Meine Speisekarte ansehen'
+    notice:
+        text_singular: 'KI-Fotos halb fertig: noch %count% Gericht.'
+        text_plural: 'KI-Fotos halb fertig: noch %count% Gerichte.'
+        continue: 'Fortsetzen'
+        dismiss: 'So lassen'

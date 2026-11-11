@@ -23,6 +23,7 @@ use App\Service\AllergenBackfill\AllergenReviewQueue;
 use App\Service\AllergenBackfill\IngredientAllergenBackfill;
 use App\Service\CartaReorder;
 use App\Service\CategoryTranslationService;
+use App\Service\DishPhoto\AiPhotoBatch;
 use App\Service\OwnerTextTranslationPruner;
 use App\Service\MenuImportLanguageNotice;
 use App\Service\MenuImportReview;
@@ -30,6 +31,7 @@ use App\Service\ProductAllergenResolver;
 use App\Service\ProductEffectiveTags;
 use App\Service\ProductTranslationService;
 use App\Service\Upload\ClipTranscoder;
+use App\Service\Upload\ProductImageReplacer;
 use App\Service\Upload\UploadProfile;
 use App\Service\Upload\UploadValidationError;
 use App\Service\Upload\UploadValidator;
@@ -57,6 +59,7 @@ class MenuAdminController extends AbstractController
         private readonly OwnerTextTranslationPruner $ownerTextPruner,
         private readonly UploadValidator $uploadValidator,
         private readonly ClipTranscoder $clipTranscoder,
+        private readonly ProductImageReplacer $imageReplacer,
         private readonly string $kernelEnvironment,
     ) {
     }
@@ -141,7 +144,7 @@ class MenuAdminController extends AbstractController
     // ── Main view ────────────────────────────────────────────────────────────
 
     #[Route('/menu', name: 'menu')]
-    public function menu(MenuImportLanguageNotice $importLanguageNotice): Response
+    public function menu(MenuImportLanguageNotice $importLanguageNotice, AiPhotoBatch $aiPhotoBatch): Response
     {
         $restaurant = $this->restaurant();
         $languages  = require $this->getParameter('kernel.project_dir') . '/config/languages.php';
@@ -202,6 +205,8 @@ class MenuAdminController extends AbstractController
                 'language'  => LanguageChangeController::languageName($n['batch']->getDetectedLanguage(), $restaurant->getAdminLocale()),
                 'main'      => LanguageChangeController::languageName($restaurant->getDefaultLanguage(), $restaurant->getAdminLocale()),
             ], $importLanguageNotice->noticesFor($restaurant)),
+            // "Fotos con IA a medias": imports whose AI photos were started and left.
+            'aiPhotoNotices' => $aiPhotoBatch->noticesFor($restaurant),
         ]);
     }
 
@@ -597,51 +602,34 @@ class MenuAdminController extends AbstractController
 
         $newFilename = $result->safeFilename;
 
-        $uploadDir = $this->getParameter('app.uploads_dir') . '/products';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
         try {
-            $file->move($uploadDir, $newFilename);
+            $file->move($this->imageReplacer->productsDir(), $newFilename);
         } catch (FileException) {
             return $this->json(['error' => $this->translator->trans('error.image_upload_failed', domain: 'admin_menu')], 500);
         }
 
-        // Old file is orphaned on disk once the column no longer points to
-        // it — clean it up now that the new one is safely in place.
-        $oldImage = $product->getImage();
-        if ($oldImage) {
-            $oldPath = $uploadDir . '/' . $oldImage;
-            if (is_file($oldPath)) {
-                unlink($oldPath);
-            }
-        }
-
-        // A manually chosen photo always wins over a previous clip's
-        // auto-generated poster — image and videoClip must never point at
-        // unrelated media (see Product::$videoClip's docblock). This is
-        // the one place that invariant is actually enforced: the editor's
-        // single media control (see _product_js.html.twig) only ever
-        // calls this endpoint for a real photo pick, but the invariant
-        // holds here regardless of the caller.
-        $oldClip = $product->getVideoClip();
-        if ($oldClip) {
-            $oldClipPath = $uploadDir . '/' . $oldClip;
-            if (is_file($oldClipPath)) {
-                unlink($oldClipPath);
-            }
-            $product->setVideoClip(null);
-            $product->setVideoFocus(null, null);
-            $product->setVideoZoom(null);
-            $product->setVideoDimensions(null, null);
-        }
-
-        $product->setImage($newFilename);
-        $product->getCategory()->getRestaurant()->bumpMenuContentVersion();
+        // Old photo deleted, any clip dropped (a chosen photo always wins —
+        // see ProductImageReplacer), imageSource back to null: the owner's own.
+        $this->imageReplacer->replace($product, $newFilename);
         $em->flush();
 
         return $this->json(['image' => $newFilename, 'videoClip' => $product->getVideoClip()]);
+    }
+
+    /**
+     * The editor's "Eliminar foto": the dish is left with no photo and no
+     * clip, files deleted (ProductImageReplacer::remove()). Immediate, like
+     * an AI photo — not held until Guardar.
+     */
+    #[Route('/products/{id}/image/delete', name: 'product_image_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function deleteProductImage(Product $product, EntityManagerInterface $em): JsonResponse
+    {
+        $this->assertOwner($product->getCategory()->getRestaurant());
+
+        $this->imageReplacer->remove($product);
+        $em->flush();
+
+        return $this->json(['image' => null, 'videoClip' => null]);
     }
 
     /**
@@ -725,6 +713,8 @@ class MenuAdminController extends AbstractController
 
         $product->setVideoClip($newFilename);
         $product->setImage($posterFilename);
+        // The clip's own poster, not an AI photo any more.
+        $product->setImageSource(null);
         // Null dimensions just mean the carta falls back to plain cover.
         $product->setVideoDimensions(...($this->clipTranscoder->probeDimensions($newPath) ?? [null, null]));
         $product->getCategory()->getRestaurant()->bumpMenuContentVersion();

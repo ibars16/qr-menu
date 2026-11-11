@@ -205,6 +205,9 @@ upload:
     hint: Arrastra o pulsa para subir una foto o un clip
     limits: 'Foto: JPEG, PNG o WebP (máx. 8 MB, mín. 400×400 px) · Vídeo: MP4 (máx. 60 MB)'
     change: Cambiar
+    delete: 'Eliminar foto'
+    confirm_delete: '¿Eliminar la foto de este plato? No se puede deshacer.'
+    deleted: 'Foto eliminada.'
 
 clip:
     duration_warning: 'Este vídeo dura más de 6 s — al guardar se recortará a los primeros 6 segundos.'
@@ -252,3 +255,40 @@ search:
     aria: 'Buscar platos y categorías'
     clear: 'Borrar la búsqueda'
     no_results: 'No hay platos que coincidan'
+
+ai_photo:
+    generate: 'Generar con IA'
+    generating: 'Creando foto…'
+    another: 'Otra'
+    discard: 'Descartar'
+    pending: 'Foto creada con IA. Se aplicará al guardar.'
+    saved: 'Foto creada con IA y guardada en el plato.'
+    trial_remaining: 'Fotos con IA en la prueba: te quedan %count% de %limit%.'
+    choose_plan: 'Elegir plan'
+    error:
+        name_required: 'Escribe primero el nombre del plato.'
+        trial_limit: 'Elige un plan para crear más fotos con IA.'
+        rate_limited: 'Has creado muchas fotos seguidas. Espera un poco y vuelve a intentarlo.'
+        refused: 'No hemos podido crear una foto para este plato. Prueba a cambiar la descripción o sube una tuya.'
+        timeout: 'Está tardando demasiado, inténtalo de nuevo.'
+        unavailable: 'Ahora mismo no se puede crear la foto, prueba en unos minutos.'
+        not_configured: 'Ahora mismo no se puede crear la foto, prueba en unos minutos.'
+        draft_expired: 'La foto creada con IA ha caducado. Vuelve a generarla.'
+    batch:
+        offer_singular: '%count% plato no tiene foto'
+        offer_plural: '%count% platos no tienen foto'
+        button: 'Crear sus fotos con IA'
+        trial: 'Prueba: te quedan %count% fotos con IA. Elige un plan para crear más.'
+        progress: 'Creando fotos…'
+        count: '%done% de %total%'
+        close_hint: 'Puedes cerrar esta ventana: seguirás desde Carta.'
+        skipped_singular: '%count% plato saltado (no se pudo crear su foto)'
+        skipped_plural: '%count% platos saltados (no se pudo crear su foto)'
+        done: 'Fotos creadas.'
+        retry: 'Reintentar'
+        view_menu: 'Ver mi carta'
+    notice:
+        text_singular: 'Fotos con IA a medias: falta %count% plato.'
+        text_plural: 'Fotos con IA a medias: faltan %count% platos.'
+        continue: 'Continuar'
+        dismiss: 'Dejarlo'

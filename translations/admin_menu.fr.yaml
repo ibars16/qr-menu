@@ -205,6 +205,9 @@ upload:
     hint: Cliquez ou glissez une photo ou un clip ici
     limits: 'Photo : JPEG, PNG ou WebP (8 Mo max, 400×400 px min) · Vidéo : MP4 (60 Mo max)'
     change: Changer
+    delete: 'Supprimer la photo'
+    confirm_delete: 'Supprimer la photo de ce plat ? Cette action est irréversible.'
+    deleted: 'Photo supprimée.'
 
 clip:
     duration_warning: 'Cette vidéo dépasse 6 s — elle sera coupée à ses 6 premières secondes à l''enregistrement.'
@@ -252,3 +255,40 @@ search:
     aria: 'Rechercher des plats et des catégories'
     clear: 'Effacer la recherche'
     no_results: 'Aucun plat ne correspond'
+
+ai_photo:
+    generate: 'Générer avec l''IA'
+    generating: 'Création de la photo…'
+    another: 'Une autre'
+    discard: 'Supprimer'
+    pending: 'Photo créée avec l''IA. Elle sera appliquée à l''enregistrement.'
+    saved: 'Photo créée par IA et enregistrée sur le plat.'
+    trial_remaining: 'Photos IA de l''essai : il vous en reste %count% sur %limit%.'
+    choose_plan: 'Choisir une formule'
+    error:
+        name_required: 'Saisissez d''abord le nom du plat.'
+        trial_limit: 'Choisissez une formule pour créer plus de photos avec l''IA.'
+        rate_limited: 'Vous avez créé beaucoup de photos à la suite. Patientez un peu et réessayez.'
+        refused: 'Nous n''avons pas pu créer de photo pour ce plat. Modifiez la description ou importez la vôtre.'
+        timeout: 'Cela prend trop de temps, réessayez.'
+        unavailable: 'Impossible de créer la photo pour l''instant, réessayez dans quelques minutes.'
+        not_configured: 'Impossible de créer la photo pour l''instant, réessayez dans quelques minutes.'
+        draft_expired: 'La photo créée avec l''IA a expiré. Générez-la à nouveau.'
+    batch:
+        offer_singular: '%count% plat n''a pas de photo'
+        offer_plural: '%count% plats n''ont pas de photo'
+        button: 'Créer leurs photos avec l''IA'
+        trial: 'Essai : il vous reste %count% photos IA. Choisissez une formule pour en créer plus.'
+        progress: 'Création des photos…'
+        count: '%done% sur %total%'
+        close_hint: 'Vous pouvez fermer cette fenêtre : vous reprendrez depuis Carte.'
+        skipped_singular: '%count% plat ignoré (sa photo n''a pas pu être créée)'
+        skipped_plural: '%count% plats ignorés (leurs photos n''ont pas pu être créées)'
+        done: 'Photos créées.'
+        retry: 'Réessayer'
+        view_menu: 'Voir ma carte'
+    notice:
+        text_singular: 'Photos IA à moitié faites : il reste %count% plat.'
+        text_plural: 'Photos IA à moitié faites : il reste %count% plats.'
+        continue: 'Continuer'
+        dismiss: 'Laisser ainsi'

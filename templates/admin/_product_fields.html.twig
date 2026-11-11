@@ -225,16 +225,60 @@
                 {# Below the photo/clip, not over it — only shown once there's
                    media (previewMedia()/renderProductMedia() reveal it), the
                    dropzone's own hint is the call to action until then. #}
-                <button type="button" class="btn img-upload-change-btn" style="display:none"
-                        onclick="document.getElementById('p-img-input').click()">
-                    <i class="ti ti-pencil" aria-hidden="true"></i> {{ 'upload.change'|trans({}, 'admin_menu') }}
-                </button>
+                <div class="img-upload-actions">
+                    <button type="button" class="btn img-upload-change-btn" style="display:none"
+                            onclick="document.getElementById('p-img-input').click()">
+                        <i class="ti ti-pencil" aria-hidden="true"></i> {{ 'upload.change'|trans({}, 'admin_menu') }}
+                    </button>
+                    {# "Eliminar foto": the dish is left with no photo/clip —
+                       at once if it was saved (ProductMedia.remove()). #}
+                    <button type="button" class="btn img-upload-delete-btn" style="display:none"
+                            onclick="ProductMedia.remove()">
+                        <i class="ti ti-trash" aria-hidden="true"></i> {{ 'upload.delete'|trans({}, 'admin_menu') }}
+                    </button>
+                    {# "Generar con IA" — a draft from the dish's name and
+                       description; the dish only gets it on Guardar (see
+                       AiPhoto in _product_js.html.twig, DishPhotoController).
+                       Not shown without GEMINI_IMAGE_API_KEY (ai_photo_available). #}
+                    {% set aiPhotoAvailable = ai_photo_available() %}
+                    {% if aiPhotoAvailable %}
+                    <button type="button" class="btn ai-photo-btn" onclick="AiPhoto.generate()">
+                        <i class="ti ti-sparkles" aria-hidden="true"></i>
+                        <span class="ai-photo-btn-label">{{ 'ai_photo.generate'|trans({}, 'admin_menu') }}</span>
+                    </button>
+                    {% endif %}
+                </div>
+                {% if aiPhotoAvailable %}
+                <div class="ai-photo-pending" hidden>
+                    <i class="ti ti-sparkles" aria-hidden="true"></i>
+                    <span class="ai-photo-pending-text">{{ 'ai_photo.pending'|trans({}, 'admin_menu') }}</span>
+                    <span class="ai-photo-pending-actions">
+                        <button type="button" class="btn btn-sm" onclick="AiPhoto.generate()">
+                            <i class="ti ti-refresh" aria-hidden="true"></i> {{ 'ai_photo.another'|trans({}, 'admin_menu') }}
+                        </button>
+                        <button type="button" class="btn btn-sm ai-photo-discard-btn" onclick="AiPhoto.discard()">
+                            <i class="ti ti-x" aria-hidden="true"></i> {{ 'ai_photo.discard'|trans({}, 'admin_menu') }}
+                        </button>
+                    </span>
+                </div>
+                {% set aiTrialRemaining = ai_photo_trial_remaining() %}
+                <p class="ai-photo-trial"{% if aiTrialRemaining is null %} hidden{% endif %}>
+                    {{ 'ai_photo.trial_remaining'|trans({'%count%': aiTrialRemaining ?? 0, '%limit%': constant('App\\Service\\DishPhoto\\DishPhotoQuota::TRIAL_LIMIT')}, 'admin_menu') }}
+                </p>
+                {% endif %}
                 {# A failed photo/clip upload, pinned here (not only a toast) —
                    the dish itself was already saved and the editor stays
                    open; see saveProduct() in _product_js.html.twig. #}
                 <p class="field-error" id="media-upload-error">
                     <i class="ti ti-alert-triangle" aria-hidden="true"></i> <span class="media-upload-error-text"></span>
                 </p>
+                {# Trial limit reached: the plan dialog, when this user can open
+                   it (BillingUI only exists for an owner who pays by card). #}
+                {% if aiPhotoAvailable %}
+                <button type="button" class="btn btn-primary ai-photo-plan-btn" hidden onclick="BillingUI.open()">
+                    {{ 'ai_photo.choose_plan'|trans({}, 'admin_menu') }}
+                </button>
+                {% endif %}
                 <p class="clip-trim-notice"><i class="ti ti-scissors" aria-hidden="true"></i> {{ 'clip.trim_notice'|trans({}, 'admin_menu') }}</p>
                 <input type="file"
                        id="p-img-input"

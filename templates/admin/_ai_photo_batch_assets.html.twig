@@ -1,0 +1,116 @@
+{# CSS + JS for _ai_photo_batch.html.twig — include once per page that shows one or more boxes. #}
+<style>
+    /* All text from the AA tokens, on --bg-input: --tx-1 (dark 10.84:1,
+       light 10.99:1), --tx-2 (7.49:1 / 6.48:1), --err-text (7.91:1 /
+       5.76:1, see _styles_tokens). Buttons are the standard .btn /
+       .btn-primary. The bar is decorative: the count next to it says it. */
+    .ai-batch {
+        background:var(--bg-input); border:1px solid var(--bd-2); border-radius:var(--r-md);
+        padding:var(--sp-3) var(--sp-4); margin-bottom:var(--sp-5);
+        font-size:var(--fs-base); line-height:var(--lh-body); color:var(--tx-1); text-align:left;
+    }
+    .ai-batch-text { display:flex; align-items:flex-start; gap:var(--sp-2); }
+    .ai-batch-text i { font-size:16px; flex-shrink:0; margin-top:2px; }
+    .ai-batch-trial, .ai-batch-hint, .ai-batch-skipped { margin:6px 0 0; font-size:var(--fs-sm); color:var(--tx-2); }
+    .ai-batch-error { margin:var(--sp-2) 0 0; font-size:var(--fs-sm); color:var(--err-text); display:flex; gap:6px; align-items:flex-start; }
+    .ai-batch-done { margin:var(--sp-2) 0 0; color:var(--tx-1); }
+    .ai-batch-done i { color:#7aad40; }
+    .ai-batch [hidden] { display:none !important; }
+    .ai-batch-actions { display:flex; flex-wrap:wrap; gap:var(--sp-2); margin-top:var(--sp-3); }
+    .ai-batch-actions form { margin:0; }
+    .ai-batch-progress { display:none; margin-top:var(--sp-3); }
+    .ai-batch[data-state="working"] .ai-batch-progress { display:block; }
+    .ai-batch[data-state="working"] .ai-batch-actions,
+    .ai-batch[data-state="done"] .ai-batch-actions,
+    .ai-batch[data-state="working"] .ai-batch-trial { display:none; }
+    .ai-batch-progress-label { display:flex; justify-content:space-between; gap:var(--sp-2); font-size:var(--fs-sm); }
+    .ai-batch-count { font-variant-numeric:tabular-nums; color:var(--tx-2); }
+    .ai-batch-bar { height:6px; margin-top:6px; border-radius:3px; background:var(--bd-2); overflow:hidden; }
+    .ai-batch-bar span { display:block; height:100%; background:var(--brand); transition:width 0.3s; }
+    @media (prefers-reduced-motion: reduce) { .ai-batch-bar span { transition:none; } }
+    @media (max-width: 767px) {
+        .ai-batch { padding:var(--sp-2) var(--sp-3); margin-bottom:var(--sp-3); }
+        .ai-batch-actions .btn { min-height:44px; }
+    }
+</style>
+<script>
+    // One dish per request (DishPhotoController::importStep) until done. A
+    // network/CSRF hiccup is retried once after 3 s; a stop the server
+    // reports (Gemini down, the brake, the trial limit) shows its message.
+    (() => {
+        const T = {{ {
+            count: 'ai_photo.batch.count'|trans({'%done%': '__DONE__', '%total%': '__TOTAL__'}, 'admin_menu'),
+            skippedOne: 'ai_photo.batch.skipped_singular'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
+            skippedMany: 'ai_photo.batch.skipped_plural'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
+            unavailable: 'ai_photo.error.unavailable'|trans({}, 'admin_menu'),
+        }|json_encode|raw }};
+        const canChoosePlan = typeof BillingUI !== 'undefined';
+
+        document.querySelectorAll('.ai-batch').forEach(box => {
+            const $ = sel => box.querySelector(sel);
+            const total = parseInt(box.dataset.total, 10) || 0;
+            const errorBox = $('.ai-batch-error'), errorText = $('.ai-batch-error-text');
+            const plan = $('.ai-batch-plan');
+            if (!canChoosePlan) plan.hidden = true;
+            let retried = false;
+
+            const showSkipped = n => {
+                const el = $('.ai-batch-skipped');
+                el.hidden = !n;
+                if (n) el.textContent = (n === 1 ? T.skippedOne : T.skippedMany).replace('__COUNT__', n);
+            };
+            const progress = remaining => {
+                const done = Math.max(0, total - remaining);
+                $('.ai-batch-count').textContent = T.count.replace('__DONE__', done).replace('__TOTAL__', total);
+                $('.ai-batch-bar span').style.width = (total ? Math.round(done / total * 100) : 100) + '%';
+            };
+            const stop = (message, reason) => {
+                box.dataset.state = 'stopped';
+                errorText.textContent = message;
+                errorBox.hidden = false;
+                $('.ai-batch-start').hidden = true;
+                const limit = reason === 'trial_limit';
+                $('.ai-batch-retry').hidden = limit;
+                plan.hidden = !(limit && canChoosePlan);
+            };
+
+            const step = async () => {
+                box.dataset.state = 'working';
+                errorBox.hidden = true;
+                let result;
+                try {
+                    const response = await fetch(box.dataset.stepUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ _token: box.dataset.token }),
+                    });
+                    result = await response.json();
+                } catch (e) {
+                    result = { error: true };
+                }
+
+                if (result.error) {
+                    if (!retried) { retried = true; setTimeout(step, 3000); return; }
+                    retried = false;
+                    return stop(T.unavailable, null);
+                }
+                retried = false;
+                progress(result.remaining);
+                showSkipped(result.skipped);
+
+                if (result.stopped) return stop(result.message, result.stopped);
+                if (result.done) {
+                    // Carta: reload to show the new photos. Complete page: say it's done.
+                    if (box.dataset.variant === 'notice') { window.location.reload(); return; }
+                    box.dataset.state = 'done';
+                    $('.ai-batch-done').hidden = false;
+                    return;
+                }
+                step();
+            };
+
+            $('.ai-batch-start').addEventListener('click', step);
+            $('.ai-batch-retry').addEventListener('click', step);
+        });
+    })();
+</script>

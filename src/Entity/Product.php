@@ -14,6 +14,8 @@ class Product
 {
     use TimestampableTrait;
 
+    public const IMAGE_SOURCE_AI = 'ai';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -49,6 +51,14 @@ class Product
      */
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $videoClip = null;
+
+    /**
+     * Where $image came from: IMAGE_SOURCE_AI (generated, see
+     * App\Service\DishPhoto) or null (the owner's own photo / a clip's
+     * poster / no photo). Internal only — never shown on the public menu.
+     */
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $imageSource = null;
 
     /**
      * Framing of $videoClip inside the fixed card/detail box, as CSS
@@ -313,6 +323,16 @@ class Product
     public function setImage(?string $image): void
     {
         $this->image = $image;
+    }
+
+    public function getImageSource(): ?string
+    {
+        return $this->imageSource;
+    }
+
+    public function setImageSource(?string $imageSource): void
+    {
+        $this->imageSource = $imageSource;
     }
 
     public function getVideoClip(): ?string

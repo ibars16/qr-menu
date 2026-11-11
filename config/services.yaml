@@ -7,6 +7,17 @@ parameters:
     # menu-imports/). Public URLs and the paths stored in the DB stay
     # "uploads/..." — only the folder on disk moves (see when@test below).
     app.uploads_dir:        '%kernel.project_dir%/public/uploads'
+    # AI dish photos waiting for the owner to save the dish (DishPhotoStorage):
+    # never public, deleted after a day.
+    app.ai_photo_drafts_dir: '%kernel.project_dir%/var/ai_photo_drafts'
+
+    # Model for AI dish photos (GeminiDishImageGenerator) — change it here
+    # or with GEMINI_IMAGE_MODEL, nothing else.
+    env(GEMINI_IMAGE_MODEL): 'gemini-3.1-flash-lite-image'
+    # Their own key, set in .env.local — never GEMINI_API_KEY (text: translations,
+    # Smart Waiter, menu import). Empty → AI photos aren't offered anywhere
+    # (DishPhotoAvailability).
+    env(GEMINI_IMAGE_API_KEY): ''
 
     # Platform restaurants' subscription prices, in cents, VAT included —
     # the ONLY place they're written. Shown in the admin (plan dialog,
@@ -207,6 +218,21 @@ services:
     App\Service\BatchProcessingTriggerInterface:
         alias: App\Service\ProcessSpawningBatchProcessingTrigger
 
+    # AI dish photos: the provider is this alias, nothing else depends on
+    # Gemini. An OpenAI (gpt-image) implementation of the same interface
+    # would only need its own entry here.
+    App\Service\DishPhoto\GeminiDishImageGenerator:
+        arguments:
+            $apiKey: '%env(GEMINI_IMAGE_API_KEY)%'
+            $model: '%env(GEMINI_IMAGE_MODEL)%'
+
+    App\Service\DishPhoto\DishPhotoAvailability:
+        arguments:
+            $imageApiKey: '%env(GEMINI_IMAGE_API_KEY)%'
+
+    App\Service\DishPhoto\DishImageGeneratorInterface:
+        alias: App\Service\DishPhoto\GeminiDishImageGenerator
+
     App\Service\Upload\ContentModerationInterface:
         alias: App\Service\Upload\NullContentModeration
 
@@ -249,6 +275,7 @@ services:
 when@test:
     parameters:
         app.uploads_dir: '%kernel.project_dir%/var/test-uploads'
+        app.ai_photo_drafts_dir: '%kernel.project_dir%/var/test-ai_photo_drafts'
         # A sender, so account emails (AccountMailer) are actually built in
         # tests — MAILER_DSN is null://null there, nothing leaves.
         mailer_from_email: 'no-reply@example.test'
@@ -258,3 +285,17 @@ when@test:
         App\Tests\Support\FakeStripeGateway: ~
         App\Service\Billing\StripeGatewayInterface:
             alias: App\Tests\Support\FakeStripeGateway
+
+        # Nor any AI image provider: every test gets the fake, always.
+        App\Tests\Support\FakeDishImageGenerator:
+            public: true
+        App\Service\DishPhoto\DishImageGeneratorInterface:
+            alias: App\Tests\Support\FakeDishImageGenerator
+        # Kept (never called) only so DishPhotoApiKeysTest can check it gets
+        # GEMINI_IMAGE_API_KEY and not the text key.
+        App\Service\DishPhoto\GeminiDishImageGenerator:
+            public: true
+            autowire: true
+            arguments:
+                $apiKey: '%env(GEMINI_IMAGE_API_KEY)%'
+                $model: '%env(GEMINI_IMAGE_MODEL)%'

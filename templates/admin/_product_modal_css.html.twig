@@ -647,6 +647,81 @@
     .img-upload-change-btn { min-height:48px; }
 }
 
+/* "Cambiar" + "Generar con IA" side by side under the box (wrapping on a
+   narrow phone). Same size for both: the AI one is an equal alternative
+   to picking a photo, not a secondary link. */
+.img-upload-actions { display:flex; flex-wrap:wrap; gap:var(--sp-2); margin-top:10px; }
+.img-upload-actions .img-upload-change-btn { margin-top:0; }
+/* "Eliminar foto": quiet like "Cambiar" until hovered/focused, then the
+   shared error red (--err-text/--err-border: AA on --bg-input in both themes). */
+.img-upload-delete-btn:hover, .img-upload-delete-btn:focus-visible { color:var(--err-text); border-color:var(--err-border); }
+/* "Generar con IA": the eye-catcher of the photo box. White text on a
+   brand → magenta → violet gradient, the same in both themes — every stop
+   passes AA with white: #C1440E 5.12:1, #9B2C7A 6.92:1, #7A3BB8 6.68:1.
+   A sheen sweeps across every few seconds (and keeps going, faster, while
+   generating); none of it with prefers-reduced-motion. */
+.ai-photo-btn {
+    position:relative; overflow:hidden; isolation:isolate;
+    display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
+    padding:11px 18px; min-height:44px;
+    font-size:var(--fs-md); font-weight:600; letter-spacing:0.01em;
+    color:#fff; border:0; border-radius:var(--r-pill);
+    background:linear-gradient(110deg, #C1440E 0%, #9B2C7A 55%, #7A3BB8 100%);
+    box-shadow:0 4px 14px -4px rgba(155,44,122,0.55), 0 0 0 1px rgba(255,255,255,0.08) inset;
+    transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.ai-photo-btn .ti { font-size:18px; }
+.ai-photo-btn::after {
+    content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+    background:linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.28) 50%, transparent 65%);
+    transform:translateX(-120%);
+    animation:ai-photo-sheen 3.2s ease-in-out 1s infinite;
+}
+.ai-photo-btn:hover:not([disabled]) {
+    color:#fff; transform:translateY(-1px); filter:brightness(1.06);
+    box-shadow:0 8px 22px -6px rgba(155,44,122,0.7), 0 0 0 1px rgba(255,255,255,0.12) inset;
+}
+.ai-photo-btn:active:not([disabled]) { transform:translateY(0); }
+.ai-photo-btn:focus-visible { outline:2px solid #fff; outline-offset:2px; box-shadow:0 0 0 4px #7A3BB8; }
+/* color again: .btn:hover's --tx-hi (#111 in light) would otherwise win while generating. */
+.ai-photo-btn[disabled], .ai-photo-btn[disabled]:hover { color:#fff; opacity:0.8; cursor:progress; }
+.ai-photo-btn[disabled]::after { animation-duration:1.1s; animation-delay:0s; }
+.ai-photo-btn[disabled] .ti { animation:ai-photo-twinkle 1.1s ease-in-out infinite; }
+@keyframes ai-photo-sheen {
+    0%   { transform:translateX(-120%); }
+    45%, 100% { transform:translateX(120%); }
+}
+@keyframes ai-photo-twinkle {
+    0%, 100% { transform:scale(1) rotate(0); opacity:1; }
+    50%      { transform:scale(1.2) rotate(15deg); opacity:0.75; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ai-photo-btn, .ai-photo-btn::after, .ai-photo-btn[disabled] .ti { animation:none; transition:none; }
+    .ai-photo-btn::after { display:none; }
+    .ai-photo-btn:hover:not([disabled]) { transform:none; }
+}
+/* Text from the AA tokens only: --tx-1 on --bg-input (dark 10.84:1, light
+   10.99:1), --tx-2 on the modal/sheet's --bg-card (dark 7.93:1, light 7.14:1). */
+.ai-photo-pending {
+    display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-2);
+    margin-top:10px; padding:var(--sp-2) var(--sp-3);
+    background:var(--bg-input); border:1px solid var(--bd-2); border-radius:var(--r-md);
+    font-size:var(--fs-sm); color:var(--tx-1);
+}
+.ai-photo-pending[hidden] { display:none; }
+.ai-photo-pending-text { flex:1 1 180px; }
+.ai-photo-pending-actions { display:flex; gap:6px; }
+.ai-photo-pending .btn { padding:6px 10px; min-height:36px; font-size:var(--fs-sm); }
+.ai-photo-pending .btn[hidden] { display:none; }
+.ai-photo-trial { margin-top:6px; font-size:var(--fs-sm); color:var(--tx-2); }
+.ai-photo-trial[hidden], .ai-photo-plan-btn[hidden] { display:none; }
+.ai-photo-plan-btn { margin-top:var(--sp-2); }
+
+@media (max-width: 767px) {
+    .ai-photo-btn { min-height:48px; }
+    .ai-photo-pending .btn { min-height:44px; }
+}
+
 /* Spicy */
 .chili {
     display: inline-block; line-height: 1;

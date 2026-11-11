@@ -11,3 +11,20 @@ framework:
             policy: sliding_window
             limit: 10
             interval: '1 hour'
+
+        # Dish photos generated with AI (App\Service\DishPhoto\DishPhotoQuota):
+        # a technical brake against loops and repeated clicks, for every
+        # restaurant (paying ones have no other limit). Per restaurant: 60 an
+        # hour, 300 a day; per dish: 10 an hour.
+        ai_photo_hour:
+            policy: sliding_window
+            limit: 60
+            interval: '1 hour'
+        ai_photo_day:
+            policy: sliding_window
+            limit: 300
+            interval: '1 day'
+        ai_photo_dish:
+            policy: sliding_window
+            limit: 10
+            interval: '1 hour'

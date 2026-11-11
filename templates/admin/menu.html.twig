@@ -444,6 +444,11 @@
             </div>
         {% endfor %}
 
+        {# An import's AI photos started and left half done (AiPhotoBatch): "Continuar" / "Dejarlo". #}
+        {% for notice in aiPhotoNotices %}
+            {% include 'admin/_ai_photo_batch.html.twig' with {batch: notice.batch, remaining: notice.remaining, variant: 'notice'} %}
+        {% endfor %}
+
         {# Above the photo banner: dishes customers can't see at all matter more than dishes without a picture. #}
         {% if notOnMenuCount > 0 %}
             <button type="button" class="info-banner" id="not-on-menu-banner" aria-pressed="false" onclick="highlightNotOnMenu(this)">
@@ -669,6 +674,9 @@
 {% endblock %}
 
 {% block javascripts %}
+    {% if aiPhotoNotices is not empty %}
+        {% include 'admin/_ai_photo_batch_assets.html.twig' %}
+    {% endif %}
     <script>
         const MENU_IMPORT_URL        = "{{ path('admin_menu_import_new') }}";
         const MSG_NEW_CATEGORY       = "{{ 'modal.category.new_title'|trans({}, 'admin_menu')|e('js') }}";
@@ -702,6 +710,13 @@
             // Clip framing (object-position %) — see initClipFraming() in
             // _product_js.html.twig and Product::$videoFocusX/Y.
             clipFocus: { x: 50, y: 50, zoom: 50 },
+            // Unsaved AI photo draft (AiPhoto in _product_js.html.twig) and the
+            // dish's saved media "Descartar" goes back to.
+            aiPhotoToken: null,
+            savedMedia: { image: null, clip: null },
+            // The saved dish's media changed in the editor (AI photo applied
+            // at once, "Eliminar foto"): closing reloads the list.
+            mediaChanged: false,
         };
     </script>
     {% include 'admin/_admin_js_utils.html.twig' %}

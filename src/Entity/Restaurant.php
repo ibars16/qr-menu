@@ -130,6 +130,15 @@ class Restaurant
     #[ORM\Column]
     private int $menuContentVersion = 1;
 
+    /**
+     * Dish photos generated with AI so far (every generation, saved or not:
+     * each one costs). Capped at DishPhotoQuota::TRIAL_LIMIT while plan is
+     * null (free trial, reseller's restaurant awaiting payment). Only ever
+     * moved by DishPhotoQuota's atomic UPDATEs, never through this entity.
+     */
+    #[ORM\Column(options: ['default' => 0])]
+    private int $aiPhotoCount = 0;
+
     /** Billed through a reseller: active while the reseller is and its own paidUntil (set by the reseller in /partners) hasn't passed — see isExpired(). Never billed through Stripe on its own. */
     #[ORM\ManyToOne(targetEntity: Reseller::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
@@ -378,6 +387,11 @@ class Restaurant
     public function bumpMenuContentVersion(): void
     {
         $this->menuContentVersion++;
+    }
+
+    public function getAiPhotoCount(): int
+    {
+        return $this->aiPhotoCount;
     }
 
     private const TRIAL_DAYS = 30;

@@ -26,6 +26,15 @@
     const MSG_CLIP_TOO_LONG = "{{ 'error.clip_duration_too_long'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_CLIP_PROCESSING = "{{ 'clip.processing'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_CLIP_TRIMMED = "{{ 'clip.trimmed'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_GENERATE = "{{ 'ai_photo.generate'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_GENERATING = "{{ 'ai_photo.generating'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_PENDING = "{{ 'ai_photo.pending'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_SAVED = "{{ 'ai_photo.saved'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_PHOTO_CONFIRM_DELETE = "{{ 'upload.confirm_delete'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_PHOTO_DELETED = "{{ 'upload.deleted'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_NAME_REQUIRED = "{{ 'ai_photo.error.name_required'|trans({}, 'admin_menu')|e('js') }}";
+    // %count% filled in by AiPhoto.showTrial().
+    const MSG_AI_PHOTO_TRIAL = "{{ 'ai_photo.trial_remaining'|trans({'%limit%': constant('App\\Service\\DishPhoto\\DishPhotoQuota::TRIAL_LIMIT')}, 'admin_menu')|e('js') }}";
     const MSG_NEW_PRODUCT        = "{{ 'modal.product.new_title'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_EDIT_PRODUCT       = "{{ 'modal.product.edit_title'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_ERROR_LOADING_PRODUCT = "{{ 'js.error_loading_product'|trans({}, 'admin_menu')|e('js') }}";
@@ -147,6 +156,8 @@
                 }
                 // A saved clip with no zoom yet keeps its old full-cover look.
                 S.clipFocus = { x: data.videoFocusX ?? 50, y: data.videoFocusY ?? 50, zoom: data.videoZoom ?? 100 };
+                // What "Descartar" on an AI draft goes back to.
+                S.savedMedia = { image: data.image, clip: data.videoClip };
                 renderProductMedia(data.image, data.videoClip);
 
                 document.querySelectorAll('.tag-pill').forEach(p =>
@@ -177,9 +188,13 @@
             else            document.getElementById('desktop-product-modal').classList.add('open');
         },
         closeProduct() {
+            // An AI photo or "Eliminar foto" already changed the saved dish:
+            // the list behind needs the new thumbnail even without Guardar.
+            const reload = S.mediaChanged;
             document.getElementById('mobile-product-sheet').classList.remove('open');
             document.getElementById('desktop-product-modal').classList.remove('open');
             resetProduct();
+            if (reload) setTimeout(() => location.reload(), 300);
         },
         _setProductTitle(t) {
             document.getElementById('product-modal-title').textContent = t;
@@ -485,6 +500,11 @@
         } else if (mediaFile) {
             const imgData = await uploadProductImage(data.id, mediaFile);
             mediaError = imgData.error ?? null;
+        } else if (S.aiPhotoToken) {
+            // Only now does the AI draft become the dish's photo.
+            const aiData = await applyAiPhoto(data.id, S.aiPhotoToken);
+            mediaError = aiData.error ?? null;
+            if (!mediaError) AiPhoto.forget();
         }
 
         // The dish itself IS saved at this point — only its media failed.
@@ -1304,8 +1324,7 @@
         img.onload = () => { img.classList.add('loaded'); area.classList.remove('loading'); };
         img.src = src;
         area.querySelector('.img-upload-hint').style.display = 'none';
-        const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
-        if (changeBtn) changeBtn.style.display = '';
+        area.closest('.field').querySelectorAll('.img-upload-change-btn, .img-upload-delete-btn').forEach(b => { b.style.display = ''; });
     }
 
     // Mirrors showImageInArea() but for a <video> — muted/loop/autoplay so
@@ -1356,8 +1375,7 @@
             zoom.classList.add('show');
             zoom.querySelector('input').value = S.clipFocus.zoom;
         }
-        const changeBtn = field.querySelector('.img-upload-change-btn');
-        if (changeBtn) changeBtn.style.display = '';
+        field.querySelectorAll('.img-upload-change-btn, .img-upload-delete-btn').forEach(b => { b.style.display = ''; });
     }
 
     function applyClipFit(video) {
@@ -1449,6 +1467,8 @@
         if (!input.files?.length) return;
         const file = input.files[0];
         showMediaError(null);
+        // A picked file replaces an unsaved AI draft: one choice at a time.
+        AiPhoto.forget();
 
         if (file.type.startsWith('video/')) {
             const src = URL.createObjectURL(file);
@@ -1472,8 +1492,7 @@
             } else {
                 clearMediaPreview(area);
                 area.querySelector('.img-upload-hint').style.display = '';
-                const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
-                if (changeBtn) changeBtn.style.display = 'none';
+                area.closest('.field').querySelectorAll('.img-upload-change-btn, .img-upload-delete-btn').forEach(b => { b.style.display = 'none'; });
             }
         });
     }
@@ -1510,6 +1529,159 @@
             return { error: MSG_UNEXPECTED_ERROR };
         }
     }
+
+    // Puts an AI draft (AiPhoto below) on the saved dish — same response
+    // shape and error handling as uploadProductImage().
+    async function applyAiPhoto(productId, token) {
+        try {
+            const res  = await fetch(`/admin/products/${productId}/image/ai`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }),
+            });
+            const data = await res.json();
+            if (!res.ok) return { error: data?.error || MSG_UNEXPECTED_ERROR };
+            return data;
+        } catch (e) {
+            return { error: MSG_UNEXPECTED_ERROR };
+        }
+    }
+
+    // ── "Generar con IA" (Foto tab) ───────────────────────────────────────────
+    // From the name/description typed in the form. A dish that already
+    // exists gets it AT ONCE (applyAiPhoto() right after generating), so a
+    // paid-for photo is never lost by closing without Guardar. A dish not
+    // created yet has no id to put it on: it stays a draft (S.aiPhotoToken)
+    // until saveProduct() → applyAiPhoto(). Every generation counts on the
+    // trial (DishPhotoQuota) — "Otra" too — so the button is locked while
+    // one is running.
+    const AiPhoto = {
+        busy: false,
+
+        async generate() {
+            if (this.busy) return;
+            const name = getVal('p-name');
+            if (!name) {
+                showMediaError(MSG_AI_PHOTO_NAME_REQUIRED);
+                showToast(MSG_AI_PHOTO_NAME_REQUIRED, 'error');
+                return;
+            }
+            showMediaError(null);
+            this.showPlanButton(false);
+            this.setBusy(true);
+
+            let res = null, data = null;
+            try {
+                res = await fetch('/admin/products/ai-photo/generate', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description: getVal('p-desc') || null, productId: S.productId }),
+                });
+                data = await res.json();
+            } catch (e) {
+                data = null;
+            }
+            this.setBusy(false);
+            if (data && 'trialRemaining' in data) this.showTrial(data.trialRemaining);
+
+            if (!res?.ok || !data?.token) {
+                const message = data?.error || MSG_UNEXPECTED_ERROR;
+                showMediaError(message);
+                showToast(message, 'error');
+                if (data?.reason === 'trial_limit') this.showPlanButton(true);
+                return;
+            }
+
+            // The AI photo is now the choice: drop any picked-but-unsaved file.
+            document.querySelectorAll('[id="p-img-input"]').forEach(el => { el.value = ''; });
+            S.aiPhotoToken = data.token;
+            document.querySelectorAll('[id="img-upload-area"]').forEach(area => showImageInArea(area, data.preview));
+
+            if (!S.productId) {
+                this.showPending('draft');
+                return;
+            }
+
+            // Existing dish: saved now. If that fails the draft stays and
+            // Guardar retries it (saveProduct()).
+            this.setBusy(true);
+            const applied = await applyAiPhoto(S.productId, data.token);
+            this.setBusy(false);
+            if (applied.error) {
+                this.showPending('draft');
+                showMediaError(applied.error);
+                showToast(applied.error, 'error');
+                return;
+            }
+            S.aiPhotoToken = null;
+            S.savedMedia = { image: applied.image, clip: null };
+            S.mediaChanged = true;
+            this.showPending('saved');
+            showToast(MSG_AI_PHOTO_SAVED, 'success');
+        },
+
+        // 'draft': "se aplicará al guardar" + Otra/Descartar; 'saved': already
+        // on the dish, only Otra (Eliminar foto is the way back).
+        showPending(mode) {
+            document.querySelectorAll('.ai-photo-pending').forEach(el => {
+                el.hidden = false;
+                el.querySelector('.ai-photo-pending-text').textContent = mode === 'saved' ? MSG_AI_PHOTO_SAVED : MSG_AI_PHOTO_PENDING;
+                el.querySelectorAll('.ai-photo-discard-btn').forEach(b => { b.hidden = mode === 'saved'; });
+            });
+        },
+
+        // "Descartar" (drafts only): back to the dish's saved photo/clip (or the empty box).
+        discard() {
+            this.forget();
+            renderProductMedia(S.savedMedia?.image ?? null, S.savedMedia?.clip ?? null);
+        },
+
+        forget() {
+            S.aiPhotoToken = null;
+            document.querySelectorAll('.ai-photo-pending').forEach(el => { el.hidden = true; });
+        },
+
+        setBusy(busy) {
+            this.busy = busy;
+            document.querySelectorAll('.ai-photo-btn, .ai-photo-pending .btn').forEach(b => { b.disabled = busy; });
+            document.querySelectorAll('.ai-photo-btn-label').forEach(l => { l.textContent = busy ? MSG_AI_PHOTO_GENERATING : MSG_AI_PHOTO_GENERATE; });
+            document.querySelectorAll('[id="img-upload-area"]').forEach(area => area.classList.toggle('loading', busy));
+        },
+
+        // null: no cap (paid plan) — the line stays hidden.
+        showTrial(remaining) {
+            document.querySelectorAll('.ai-photo-trial').forEach(el => {
+                el.hidden = remaining === null;
+                if (remaining !== null) el.textContent = MSG_AI_PHOTO_TRIAL.replace('%count%', remaining);
+            });
+        },
+
+        // Only where the plan dialog exists (an owner who pays by card).
+        showPlanButton(show) {
+            const canChoose = typeof BillingUI !== 'undefined';
+            document.querySelectorAll('.ai-photo-plan-btn').forEach(b => { b.hidden = !(show && canChoose); });
+        },
+    };
+
+    // ── "Eliminar foto" ───────────────────────────────────────────────────────
+    // The dish ends with no photo or clip. Saved media is deleted on the
+    // server at once (after a confirm — there's no undo); a picked file or
+    // an AI draft not saved yet is just dropped here.
+    const ProductMedia = {
+        async remove() {
+            const hasSaved = S.productId && (S.savedMedia?.image || S.savedMedia?.clip);
+            if (hasSaved) {
+                if (!confirm(MSG_PHOTO_CONFIRM_DELETE)) return;
+                const data = await apiFetch(`/admin/products/${S.productId}/image/delete`);
+                // apiFetch() has already toasted it.
+                if (data.error) return;
+                S.savedMedia = { image: null, clip: null };
+                S.mediaChanged = true;
+                showToast(MSG_PHOTO_DELETED, 'success');
+            }
+            document.querySelectorAll('[id="p-img-input"]').forEach(el => { el.value = ''; });
+            showMediaError(null);
+            AiPhoto.forget();
+            renderProductMedia(null, null);
+        },
+    };
 
     async function uploadProductClip(productId, file) {
         const formData = new FormData();
@@ -1598,8 +1770,7 @@
             clearMediaPreview(area);
             const hint = area.querySelector('.img-upload-hint');
             if (hint) hint.style.display = '';
-            const changeBtn = area.closest('.field').querySelector('.img-upload-change-btn');
-            if (changeBtn) changeBtn.style.display = 'none';
+            area.closest('.field').querySelectorAll('.img-upload-change-btn, .img-upload-delete-btn').forEach(b => { b.style.display = 'none'; });
         });
         // Clear any picked-but-not-yet-uploaded file too — otherwise it
         // stays in the <input> and saveProduct() would silently attach the
@@ -1607,6 +1778,10 @@
         document.querySelectorAll('[id="p-img-input"]').forEach(el => { el.value = ''; });
         S.clipFocus = { x: 50, y: 50, zoom: CLIP_DEFAULT_ZOOM };
         showMediaError(null);
+        AiPhoto.forget();
+        AiPhoto.showPlanButton(false);
+        S.savedMedia = { image: null, clip: null };
+        S.mediaChanged = false;
         S.productId=null; S.categoryId=null; S.menuSectionId=null; S.spicy=0;
         // Reset steps visibility
         ['product-modal-steps','product-sheet-steps'].forEach(id => {

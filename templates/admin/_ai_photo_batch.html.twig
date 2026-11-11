@@ -1,0 +1,75 @@
+{# templates/admin/_ai_photo_batch.html.twig
+
+   "Crear sus fotos con IA" for one import's dishes without a photo
+   (App\Service\DishPhoto\AiPhotoBatch). Two places, same box and JS:
+   - variant 'offer': the import's complete page;
+   - variant 'notice': Carta, for an import started and left half done
+     (closing the window just leaves it there, "Continuar" picks it up).
+
+   The browser does the waiting: one dish per POST to
+   DishPhotoController::importStep() until done — like the language change.
+   A refused dish is skipped server side; Gemini down / the brake / the
+   trial limit stop the run with the server's message.
+
+   Params: batch (MenuImportBatch), remaining (int), variant ('offer'|'notice').
+   Include _ai_photo_batch_assets.html.twig once per page for its CSS/JS. #}
+{% set trialRemaining = ai_photo_trial_remaining() %}
+{% set limitReached = trialRemaining is not null and trialRemaining == 0 %}
+<div class="ai-batch" role="status"
+     data-step-url="{{ path('admin_menu_import_photos_step', {id: batch.id}) }}"
+     data-token="{{ csrf_token('import_photos_' ~ batch.id) }}"
+     data-total="{{ remaining }}"
+     data-variant="{{ variant }}"
+     data-state="{{ limitReached ? 'stopped' : 'idle' }}">
+    <div class="ai-batch-text">
+        <i class="ti ti-sparkles" aria-hidden="true"></i>
+        <span class="ai-batch-message">
+            {% if variant == 'notice' %}
+                {{ (remaining == 1 ? 'ai_photo.notice.text_singular' : 'ai_photo.notice.text_plural')|trans({'%count%': remaining}, 'admin_menu') }}
+            {% else %}
+                {{ (remaining == 1 ? 'ai_photo.batch.offer_singular' : 'ai_photo.batch.offer_plural')|trans({'%count%': remaining}, 'admin_menu') }}
+            {% endif %}
+        </span>
+    </div>
+
+    {% if trialRemaining is not null and not limitReached %}
+        <p class="ai-batch-trial">{{ 'ai_photo.batch.trial'|trans({'%count%': trialRemaining}, 'admin_menu') }}</p>
+    {% endif %}
+
+    <div class="ai-batch-progress" aria-live="polite">
+        <div class="ai-batch-progress-label">
+            <span>{{ 'ai_photo.batch.progress'|trans({}, 'admin_menu') }}</span>
+            <span class="ai-batch-count">{{ 'ai_photo.batch.count'|trans({'%done%': 0, '%total%': remaining}, 'admin_menu') }}</span>
+        </div>
+        <div class="ai-batch-bar" aria-hidden="true"><span style="width:0%"></span></div>
+        <p class="ai-batch-hint">{{ 'ai_photo.batch.close_hint'|trans({}, 'admin_menu') }}</p>
+    </div>
+
+    <p class="ai-batch-skipped" hidden></p>
+    <p class="ai-batch-error"{% if not limitReached %} hidden{% endif %}>
+        <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+        <span class="ai-batch-error-text">{{ limitReached ? 'ai_photo.error.trial_limit'|trans({}, 'admin_menu') : '' }}</span>
+    </p>
+    <p class="ai-batch-done" hidden>
+        <i class="ti ti-check" aria-hidden="true"></i> {{ 'ai_photo.batch.done'|trans({}, 'admin_menu') }}
+    </p>
+
+    <div class="ai-batch-actions">
+        <button type="button" class="btn btn-primary ai-batch-start"{% if limitReached %} hidden{% endif %}>
+            <i class="ti ti-sparkles" aria-hidden="true"></i>
+            {{ (variant == 'notice' ? 'ai_photo.notice.continue' : 'ai_photo.batch.button')|trans({}, 'admin_menu') }}
+        </button>
+        <button type="button" class="btn ai-batch-retry" hidden>
+            <i class="ti ti-refresh" aria-hidden="true"></i> {{ 'ai_photo.batch.retry'|trans({}, 'admin_menu') }}
+        </button>
+        <button type="button" class="btn btn-primary ai-batch-plan"{% if not limitReached %} hidden{% endif %} onclick="BillingUI.open()">
+            {{ 'ai_photo.choose_plan'|trans({}, 'admin_menu') }}
+        </button>
+        {% if variant == 'notice' %}
+            <form method="post" action="{{ path('admin_menu_import_photos_dismiss', {id: batch.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('import_photos_' ~ batch.id) }}">
+                <button type="submit" class="btn">{{ 'ai_photo.notice.dismiss'|trans({}, 'admin_menu') }}</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
