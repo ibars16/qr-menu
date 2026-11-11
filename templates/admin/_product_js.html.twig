@@ -34,7 +34,8 @@
     const MSG_PHOTO_DELETED = "{{ 'upload.deleted'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_AI_PHOTO_NAME_REQUIRED = "{{ 'ai_photo.error.name_required'|trans({}, 'admin_menu')|e('js') }}";
     // %count% filled in by AiPhoto.showTrial().
-    const MSG_AI_PHOTO_TRIAL = "{{ 'ai_photo.trial_remaining'|trans({'%limit%': constant('App\\Service\\DishPhoto\\DishPhotoQuota::TRIAL_LIMIT')}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_TRIAL = "{{ 'ai_photo.trial_remaining'|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_TRIAL_USED = "{{ 'ai_photo.trial_used'|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu')|e('js') }}";
     const MSG_NEW_PRODUCT        = "{{ 'modal.product.new_title'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_EDIT_PRODUCT       = "{{ 'modal.product.edit_title'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_ERROR_LOADING_PRODUCT = "{{ 'js.error_loading_product'|trans({}, 'admin_menu')|e('js') }}";
@@ -1552,12 +1553,14 @@
     // created yet has no id to put it on: it stays a draft (S.aiPhotoToken)
     // until saveProduct() → applyAiPhoto(). Every generation counts on the
     // trial (DishPhotoQuota) — "Otra" too — so the button is locked while
-    // one is running.
+    // one is running. Trial used up (exhausted, also rendered server side):
+    // "Generar con IA" and "Otra" stay off, "Ya has usado…" + "Elegir plan".
     const AiPhoto = {
         busy: false,
+        exhausted: !!document.querySelector('.ai-photo-btn.is-exhausted'),
 
         async generate() {
-            if (this.busy) return;
+            if (this.busy || this.exhausted) return;
             const name = getVal('p-name');
             if (!name) {
                 showMediaError(MSG_AI_PHOTO_NAME_REQUIRED);
@@ -1582,10 +1585,11 @@
             if (data && 'trialRemaining' in data) this.showTrial(data.trialRemaining);
 
             if (!res?.ok || !data?.token) {
+                // Trial used up: showTrial(0) above already says so, with "Elegir plan".
+                if (data?.reason === 'trial_limit') return;
                 const message = data?.error || MSG_UNEXPECTED_ERROR;
                 showMediaError(message);
                 showToast(message, 'error');
-                if (data?.reason === 'trial_limit') this.showPlanButton(true);
                 return;
             }
 
@@ -1640,17 +1644,23 @@
 
         setBusy(busy) {
             this.busy = busy;
-            document.querySelectorAll('.ai-photo-btn, .ai-photo-pending .btn').forEach(b => { b.disabled = busy; });
+            document.querySelectorAll('.ai-photo-btn, .ai-photo-another-btn').forEach(b => { b.disabled = busy || this.exhausted; });
+            document.querySelectorAll('.ai-photo-discard-btn').forEach(b => { b.disabled = busy; });
             document.querySelectorAll('.ai-photo-btn-label').forEach(l => { l.textContent = busy ? MSG_AI_PHOTO_GENERATING : MSG_AI_PHOTO_GENERATE; });
             document.querySelectorAll('[id="img-upload-area"]').forEach(area => area.classList.toggle('loading', busy));
         },
 
-        // null: no cap (paid plan) — the line stays hidden.
+        // null: no cap (paid plan) — the line stays hidden. 0: used up.
         showTrial(remaining) {
+            this.exhausted = remaining === 0;
             document.querySelectorAll('.ai-photo-trial').forEach(el => {
                 el.hidden = remaining === null;
-                if (remaining !== null) el.textContent = MSG_AI_PHOTO_TRIAL.replace('%count%', remaining);
+                el.classList.toggle('is-used', this.exhausted);
+                if (remaining !== null) el.textContent = this.exhausted ? MSG_AI_PHOTO_TRIAL_USED : MSG_AI_PHOTO_TRIAL.replace('%count%', remaining);
             });
+            document.querySelectorAll('.ai-photo-btn').forEach(b => { b.classList.toggle('is-exhausted', this.exhausted); });
+            this.setBusy(this.busy);
+            this.showPlanButton(this.exhausted);
         },
 
         // Only where the plan dialog exists (an owner who pays by card).
@@ -1659,6 +1669,8 @@
             document.querySelectorAll('.ai-photo-plan-btn').forEach(b => { b.hidden = !(show && canChoose); });
         },
     };
+
+    AiPhoto.showPlanButton(AiPhoto.exhausted);
 
     // ── "Eliminar foto" ───────────────────────────────────────────────────────
     // The dish ends with no photo or clip. Saved media is deleted on the
@@ -1779,7 +1791,7 @@
         S.clipFocus = { x: 50, y: 50, zoom: CLIP_DEFAULT_ZOOM };
         showMediaError(null);
         AiPhoto.forget();
-        AiPhoto.showPlanButton(false);
+        AiPhoto.showPlanButton(AiPhoto.exhausted);
         S.savedMedia = { image: null, clip: null };
         S.mediaChanged = false;
         S.productId=null; S.categoryId=null; S.menuSectionId=null; S.spicy=0;

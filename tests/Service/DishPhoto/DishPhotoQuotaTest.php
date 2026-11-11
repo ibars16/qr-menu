@@ -52,13 +52,15 @@ final class DishPhotoQuotaTest extends KernelTestCase
         return $restaurant;
     }
 
-    public function testTrialReservesTwoThenRefusesAndRefundsGiveOneBack(): void
+    public function testTrialReservesThreeThenRefusesAndRefundsGiveOneBack(): void
     {
+        self::assertSame(3, DishPhotoQuota::TRIAL_LIMIT);
         $restaurant = $this->restaurant();
 
         self::assertSame(DishPhotoQuotaResult::Reserved, $this->quota->reserve($restaurant, 'a'));
         self::assertSame(DishPhotoQuotaResult::Reserved, $this->quota->reserve($restaurant, 'b'));
-        self::assertSame(DishPhotoQuotaResult::TrialLimit, $this->quota->reserve($restaurant, 'c'));
+        self::assertSame(DishPhotoQuotaResult::Reserved, $this->quota->reserve($restaurant, 'c'));
+        self::assertSame(DishPhotoQuotaResult::TrialLimit, $this->quota->reserve($restaurant, 'x'));
         self::assertSame(0, $this->quota->trialRemaining($restaurant));
 
         $this->quota->refund($restaurant);
@@ -76,10 +78,11 @@ final class DishPhotoQuotaTest extends KernelTestCase
 
         self::assertNull($restaurant->getPlan());
         self::assertTrue(DishPhotoQuota::isLimited($restaurant));
-        self::assertSame(2, $this->quota->trialRemaining($restaurant));
+        self::assertSame(3, $this->quota->trialRemaining($restaurant));
         $this->quota->reserve($restaurant, 'a');
         $this->quota->reserve($restaurant, 'b');
-        self::assertSame(DishPhotoQuotaResult::TrialLimit, $this->quota->reserve($restaurant, 'c'));
+        $this->quota->reserve($restaurant, 'c');
+        self::assertSame(DishPhotoQuotaResult::TrialLimit, $this->quota->reserve($restaurant, 'x'));
     }
 
     public function testAPaidPlanHasNoCapButStillCounts(): void
@@ -109,6 +112,6 @@ final class DishPhotoQuotaTest extends KernelTestCase
         $restaurant = $this->restaurant();
         $this->quota->refund($restaurant);
 
-        self::assertSame(2, $this->quota->trialRemaining($restaurant));
+        self::assertSame(3, $this->quota->trialRemaining($restaurant));
     }
 }

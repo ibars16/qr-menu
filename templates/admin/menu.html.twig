@@ -444,9 +444,9 @@
             </div>
         {% endfor %}
 
-        {# An import's AI photos started and left half done (AiPhotoBatch): "Continuar" / "Dejarlo". #}
+        {# An import's AI photos left half done, or left by the trial once paid (AiPhotoBatch::noticesFor()). #}
         {% for notice in aiPhotoNotices %}
-            {% include 'admin/_ai_photo_batch.html.twig' with {batch: notice.batch, remaining: notice.remaining, variant: 'notice'} %}
+            {% include 'admin/_ai_photo_batch.html.twig' with {batch: notice.batch, remaining: notice.remaining, variant: 'notice', kind: notice.kind} %}
         {% endfor %}
 
         {# Above the photo banner: dishes customers can't see at all matter more than dishes without a picture. #}

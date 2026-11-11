@@ -38,6 +38,12 @@ class MenuImportBatch
     public const AI_PHOTOS_DISMISSED = 'dismissed';
     /** aiPhotosStatus: nothing left to generate. */
     public const AI_PHOTOS_DONE      = 'done';
+    /**
+     * aiPhotosStatus: imported on the free trial and left with dishes
+     * without a photo (the trial's sample photos made, or already spent).
+     * Once the restaurant pays, Carta offers the rest (AiPhotoBatch::noticesFor()).
+     */
+    public const AI_PHOTOS_TRIAL     = 'trial';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

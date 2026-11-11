@@ -687,6 +687,14 @@
 .ai-photo-btn[disabled], .ai-photo-btn[disabled]:hover { color:#fff; opacity:0.8; cursor:progress; }
 .ai-photo-btn[disabled]::after { animation-duration:1.1s; animation-delay:0s; }
 .ai-photo-btn[disabled] .ti { animation:ai-photo-twinkle 1.1s ease-in-out infinite; }
+/* Trial used up: off, not "generating" — no gradient, sheen or twinkle.
+   --tx-2 on --bg-input; a disabled control is exempt from AA, still legible. */
+.ai-photo-btn.is-exhausted, .ai-photo-btn.is-exhausted:hover {
+    background:var(--bg-input); color:var(--tx-2); box-shadow:0 0 0 1px var(--bd-2) inset;
+    opacity:1; cursor:not-allowed; filter:none; transform:none;
+}
+.ai-photo-btn.is-exhausted::after { display:none; }
+.ai-photo-btn.is-exhausted .ti { animation:none; }
 @keyframes ai-photo-sheen {
     0%   { transform:translateX(-120%); }
     45%, 100% { transform:translateX(120%); }
@@ -714,6 +722,8 @@
 .ai-photo-pending .btn { padding:6px 10px; min-height:36px; font-size:var(--fs-sm); }
 .ai-photo-pending .btn[hidden] { display:none; }
 .ai-photo-trial { margin-top:6px; font-size:var(--fs-sm); color:var(--tx-2); }
+/* Trial used up: the message is the thing to read — --tx-1 (AA, see above). */
+.ai-photo-trial.is-used { color:var(--tx-1); }
 .ai-photo-trial[hidden], .ai-photo-plan-btn[hidden] { display:none; }
 .ai-photo-plan-btn { margin-top:var(--sp-2); }
 

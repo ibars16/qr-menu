@@ -241,8 +241,11 @@
                        AiPhoto in _product_js.html.twig, DishPhotoController).
                        Not shown without GEMINI_IMAGE_API_KEY (ai_photo_available). #}
                     {% set aiPhotoAvailable = ai_photo_available() %}
+                    {# Trial (plan null): photos left of ai_photo_trial_limit(); 0 → button off. #}
+                    {% set aiTrialRemaining = ai_photo_trial_remaining() %}
+                    {% set aiTrialUsed = aiTrialRemaining is not null and aiTrialRemaining == 0 %}
                     {% if aiPhotoAvailable %}
-                    <button type="button" class="btn ai-photo-btn" onclick="AiPhoto.generate()">
+                    <button type="button" class="btn ai-photo-btn{% if aiTrialUsed %} is-exhausted{% endif %}" onclick="AiPhoto.generate()"{% if aiTrialUsed %} disabled{% endif %}>
                         <i class="ti ti-sparkles" aria-hidden="true"></i>
                         <span class="ai-photo-btn-label">{{ 'ai_photo.generate'|trans({}, 'admin_menu') }}</span>
                     </button>
@@ -253,7 +256,7 @@
                     <i class="ti ti-sparkles" aria-hidden="true"></i>
                     <span class="ai-photo-pending-text">{{ 'ai_photo.pending'|trans({}, 'admin_menu') }}</span>
                     <span class="ai-photo-pending-actions">
-                        <button type="button" class="btn btn-sm" onclick="AiPhoto.generate()">
+                        <button type="button" class="btn btn-sm ai-photo-another-btn" onclick="AiPhoto.generate()">
                             <i class="ti ti-refresh" aria-hidden="true"></i> {{ 'ai_photo.another'|trans({}, 'admin_menu') }}
                         </button>
                         <button type="button" class="btn btn-sm ai-photo-discard-btn" onclick="AiPhoto.discard()">
@@ -261,9 +264,12 @@
                         </button>
                     </span>
                 </div>
-                {% set aiTrialRemaining = ai_photo_trial_remaining() %}
-                <p class="ai-photo-trial"{% if aiTrialRemaining is null %} hidden{% endif %}>
-                    {{ 'ai_photo.trial_remaining'|trans({'%count%': aiTrialRemaining ?? 0, '%limit%': constant('App\\Service\\DishPhoto\\DishPhotoQuota::TRIAL_LIMIT')}, 'admin_menu') }}
+                <p class="ai-photo-trial{% if aiTrialUsed %} is-used{% endif %}"{% if aiTrialRemaining is null %} hidden{% endif %}>
+                    {% if aiTrialUsed %}
+                        {{ 'ai_photo.trial_used'|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu') }}
+                    {% else %}
+                        {{ 'ai_photo.trial_remaining'|trans({'%count%': aiTrialRemaining ?? 0, '%limit%': ai_photo_trial_limit()}, 'admin_menu') }}
+                    {% endif %}
                 </p>
                 {% endif %}
                 {# A failed photo/clip upload, pinned here (not only a toast) —
@@ -275,7 +281,7 @@
                 {# Trial limit reached: the plan dialog, when this user can open
                    it (BillingUI only exists for an owner who pays by card). #}
                 {% if aiPhotoAvailable %}
-                <button type="button" class="btn btn-primary ai-photo-plan-btn" hidden onclick="BillingUI.open()">
+                <button type="button" class="btn btn-primary ai-photo-plan-btn"{% if not aiTrialUsed %} hidden{% endif %} onclick="BillingUI.open()">
                     {{ 'ai_photo.choose_plan'|trans({}, 'admin_menu') }}
                 </button>
                 {% endif %}

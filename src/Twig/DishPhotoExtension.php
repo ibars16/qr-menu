@@ -12,6 +12,7 @@ use Twig\TwigFunction;
 /**
  * ai_photo_available(): false without GEMINI_IMAGE_API_KEY — the editor hides "Generar con IA".
  * ai_photo_trial_remaining(): AI dish photos left on the current restaurant's trial; null when it has no cap (paid plan) or no restaurant.
+ * ai_photo_trial_limit(): the trial's photos in total (DishPhotoQuota::TRIAL_LIMIT, the one place it's set).
  */
 class DishPhotoExtension extends AbstractExtension
 {
@@ -27,6 +28,7 @@ class DishPhotoExtension extends AbstractExtension
         return [
             new TwigFunction('ai_photo_available', $this->availability->isAvailable(...)),
             new TwigFunction('ai_photo_trial_remaining', $this->trialRemaining(...)),
+            new TwigFunction('ai_photo_trial_limit', static fn (): int => DishPhotoQuota::TRIAL_LIMIT),
         ];
     }
 

@@ -63,7 +63,7 @@
                 <div class="import-complete-stat"><span class="n">{{ categoriesCreated }}</span><span class="l">{{ 'complete.stat_categories'|trans({}, 'admin_menu_import') }}</span></div>
                 <div class="import-complete-stat"><span class="n">{{ productsCreated }}</span><span class="l">{{ 'complete.stat_products'|trans({}, 'admin_menu_import') }}</span></div>
             </div>
-            {% if aiPhotoRemaining > 0 %}
+            {% if aiPhotoBox %}
                 {% include 'admin/_ai_photo_batch.html.twig' with {batch: batch, remaining: aiPhotoRemaining, variant: 'offer'} %}
             {% endif %}
             <a href="{{ path('admin_menu') }}" class="btn btn-primary">
@@ -83,7 +83,7 @@
 {% endblock %}
 
 {% block javascripts %}
-    {% if batch.status.value == 'ready_for_review' and aiPhotoRemaining > 0 %}
+    {% if batch.status.value == 'ready_for_review' and aiPhotoBox %}
         {% include 'admin/_ai_photo_batch_assets.html.twig' %}
     {% endif %}
 {% endblock %}

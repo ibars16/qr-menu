@@ -23,7 +23,8 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
  */
 class DishPhotoQuota
 {
-    public const TRIAL_LIMIT = 2;
+    /** AI photos a trial restaurant gets in total (editor and every import together). The only place it's set. */
+    public const TRIAL_LIMIT = 3;
 
     public function __construct(
         private readonly Connection $connection,

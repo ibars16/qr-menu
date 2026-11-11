@@ -8,6 +8,7 @@ use App\Entity\Restaurant;
 use App\Enum\MenuImportBatchStatus;
 use App\Service\BatchProcessingTriggerInterface;
 use App\Service\DishPhoto\AiPhotoBatch;
+use App\Service\DishPhoto\DishPhotoQuota;
 use App\Service\MenuImportLanguageNotice;
 use App\Service\Upload\UploadProfile;
 use App\Service\Upload\UploadValidationError;
@@ -158,7 +159,7 @@ class MenuImportController extends AbstractController
     }
 
     #[Route('/{id}/complete', name: 'complete', methods: ['GET'])]
-    public function complete(MenuImportBatch $batch, EntityManagerInterface $em, AiPhotoBatch $aiPhotoBatch): Response
+    public function complete(MenuImportBatch $batch, EntityManagerInterface $em, AiPhotoBatch $aiPhotoBatch, DishPhotoQuota $quota): Response
     {
         $this->assertOwner($batch);
 
@@ -175,15 +176,24 @@ class MenuImportController extends AbstractController
             static fn (MenuImportPage $p) => $p->getStatus()->value === 'failed'
         );
 
+        // "Crear sus fotos con IA": this import's dishes still without a
+        // photo, unless the owner already chose "Dejarlo" for it. On the
+        // trial the import is remembered, so Carta offers the rest once paid.
+        $aiPhotoRemaining = $batch->getAiPhotosStatus() === MenuImportBatch::AI_PHOTOS_DISMISSED ? 0 : $aiPhotoBatch->pendingCount($batch);
+        if ($aiPhotoRemaining > 0 && $batch->getStatus() === MenuImportBatchStatus::READY_FOR_REVIEW) {
+            $aiPhotoBatch->markTrial($batch);
+        }
+
         return $this->render('admin/menu_import_complete.html.twig', [
             'batch' => $batch,
             'categoriesCreated' => $categoriesCreated,
             'productsCreated' => $productsCreated,
             'failedPageCount' => count($failedPages),
             'totalPageCount' => $batch->getPages()->count(),
-            // "Crear sus fotos con IA": this import's dishes still without a
-            // photo, unless the owner already chose "Dejarlo" for it.
-            'aiPhotoRemaining' => $batch->getAiPhotosStatus() === MenuImportBatch::AI_PHOTOS_DISMISSED ? 0 : $aiPhotoBatch->pendingCount($batch),
+            'aiPhotoRemaining' => $aiPhotoRemaining,
+            // Also with nothing left to do while the trial's photos are used
+            // up: "Ya has usado tus 3 fotos con IA gratis" after every import.
+            'aiPhotoBox' => $aiPhotoRemaining > 0 || ($aiPhotoBatch->isAvailable() && $quota->trialRemaining($batch->getRestaurant()) === 0),
         ]);
     }
 

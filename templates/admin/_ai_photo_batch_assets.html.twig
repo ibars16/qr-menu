@@ -12,6 +12,8 @@
     .ai-batch-text { display:flex; align-items:flex-start; gap:var(--sp-2); }
     .ai-batch-text i { font-size:16px; flex-shrink:0; margin-top:2px; }
     .ai-batch-trial, .ai-batch-hint, .ai-batch-skipped { margin:6px 0 0; font-size:var(--fs-sm); color:var(--tx-2); }
+    .ai-batch:not([data-state="idle"]) .ai-batch-trial { display:none; }
+    .ai-batch-plan-text { margin:var(--sp-2) 0 0; color:var(--tx-1); }
     .ai-batch-error { margin:var(--sp-2) 0 0; font-size:var(--fs-sm); color:var(--err-text); display:flex; gap:6px; align-items:flex-start; }
     .ai-batch-done { margin:var(--sp-2) 0 0; color:var(--tx-1); }
     .ai-batch-done i { color:#7aad40; }
@@ -21,8 +23,7 @@
     .ai-batch-progress { display:none; margin-top:var(--sp-3); }
     .ai-batch[data-state="working"] .ai-batch-progress { display:block; }
     .ai-batch[data-state="working"] .ai-batch-actions,
-    .ai-batch[data-state="done"] .ai-batch-actions,
-    .ai-batch[data-state="working"] .ai-batch-trial { display:none; }
+    .ai-batch[data-state="done"] .ai-batch-actions { display:none; }
     .ai-batch-progress-label { display:flex; justify-content:space-between; gap:var(--sp-2); font-size:var(--fs-sm); }
     .ai-batch-count { font-variant-numeric:tabular-nums; color:var(--tx-2); }
     .ai-batch-bar { height:6px; margin-top:6px; border-radius:3px; background:var(--bd-2); overflow:hidden; }
@@ -36,19 +37,25 @@
 <script>
     // One dish per request (DishPhotoController::importStep) until done. A
     // network/CSRF hiccup is retried once after 3 s; a stop the server
-    // reports (Gemini down, the brake, the trial limit) shows its message.
+    // reports (Gemini down, the brake) shows its message. On the trial the
+    // server ends the run when its photos are used up (trialEnded): then
+    // "¿Te gustan? Elige un plan…" and, if the plan dialog is on the page,
+    // "Elegir plan".
     (() => {
         const T = {{ {
             count: 'ai_photo.batch.count'|trans({'%done%': '__DONE__', '%total%': '__TOTAL__'}, 'admin_menu'),
             skippedOne: 'ai_photo.batch.skipped_singular'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
             skippedMany: 'ai_photo.batch.skipped_plural'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
             unavailable: 'ai_photo.error.unavailable'|trans({}, 'admin_menu'),
+            trialEndOne: 'ai_photo.batch.trial_end_singular'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
+            trialEndMany: 'ai_photo.batch.trial_end_plural'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
         }|json_encode|raw }};
         const canChoosePlan = typeof BillingUI !== 'undefined';
 
         document.querySelectorAll('.ai-batch').forEach(box => {
             const $ = sel => box.querySelector(sel);
             const total = parseInt(box.dataset.total, 10) || 0;
+            const trial = box.dataset.trial === '1';
             const errorBox = $('.ai-batch-error'), errorText = $('.ai-batch-error-text');
             const plan = $('.ai-batch-plan');
             if (!canChoosePlan) plan.hidden = true;
@@ -59,19 +66,29 @@
                 el.hidden = !n;
                 if (n) el.textContent = (n === 1 ? T.skippedOne : T.skippedMany).replace('__COUNT__', n);
             };
-            const progress = remaining => {
-                const done = Math.max(0, total - remaining);
+            // Trial: the run is the photos the trial has left, not every dish.
+            const progress = (remaining, trialRemaining) => {
+                const left = trial && trialRemaining != null ? Math.min(trialRemaining, remaining) : remaining;
+                const done = Math.max(0, total - left);
                 $('.ai-batch-count').textContent = T.count.replace('__DONE__', done).replace('__TOTAL__', total);
                 $('.ai-batch-bar span').style.width = (total ? Math.round(done / total * 100) : 100) + '%';
             };
-            const stop = (message, reason) => {
+            const stop = message => {
                 box.dataset.state = 'stopped';
                 errorText.textContent = message;
                 errorBox.hidden = false;
                 $('.ai-batch-start').hidden = true;
-                const limit = reason === 'trial_limit';
-                $('.ai-batch-retry').hidden = limit;
-                plan.hidden = !(limit && canChoosePlan);
+                $('.ai-batch-retry').hidden = false;
+                plan.hidden = true;
+            };
+            const trialEnded = remaining => {
+                box.dataset.state = 'stopped';
+                const text = $('.ai-batch-plan-text');
+                text.textContent = (remaining === 1 ? T.trialEndOne : T.trialEndMany).replace('__COUNT__', remaining);
+                text.hidden = false;
+                $('.ai-batch-start').hidden = true;
+                $('.ai-batch-retry').hidden = true;
+                plan.hidden = !canChoosePlan;
             };
 
             const step = async () => {
@@ -92,13 +109,14 @@
                 if (result.error) {
                     if (!retried) { retried = true; setTimeout(step, 3000); return; }
                     retried = false;
-                    return stop(T.unavailable, null);
+                    return stop(T.unavailable);
                 }
                 retried = false;
-                progress(result.remaining);
+                progress(result.remaining, result.trialRemaining);
                 showSkipped(result.skipped);
 
-                if (result.stopped) return stop(result.message, result.stopped);
+                if (result.stopped) return stop(result.message);
+                if (result.trialEnded) return trialEnded(result.remaining);
                 if (result.done) {
                     // Carta: reload to show the new photos. Complete page: say it's done.
                     if (box.dataset.variant === 'notice') { window.location.reload(); return; }
