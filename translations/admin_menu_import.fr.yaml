@@ -53,4 +53,5 @@ complete:
     button_continue: Voir mon menu
     title_failed: Nous n'avons pas pu lire votre menu
     subtitle_failed: Aucune de vos photos n'a pu être traitée. Vérifiez qu'il s'agit de photos claires et bien éclairées d'un menu, puis réessayez.
+    subtitle_failed_temporary: 'Le service de lecture des menus est saturé en ce moment. Votre photo est correcte : réessayez dans quelques minutes.'
     button_retry: Réessayer

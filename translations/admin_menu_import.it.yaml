@@ -53,4 +53,5 @@ complete:
     button_continue: Vedi il mio menù
     title_failed: Non siamo riusciti a leggere il tuo menù
     subtitle_failed: Nessuna delle tue foto è stata elaborata. Controlla che siano foto chiare e ben illuminate di un menù, poi riprova.
+    subtitle_failed_temporary: 'Il servizio di lettura dei menù è sovraccarico in questo momento. La tua foto va bene: riprova tra qualche minuto.'
     button_retry: Riprova

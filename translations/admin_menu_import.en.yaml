@@ -53,4 +53,5 @@ complete:
     button_continue: View my menu
     title_failed: We couldn't read your menu
     subtitle_failed: None of your photos could be processed. Please check they're clear, well-lit photos of a menu and try again.
+    subtitle_failed_temporary: 'The menu-reading service is overloaded right now. Your photo is fine: please try again in a few minutes.'
     button_retry: Try again

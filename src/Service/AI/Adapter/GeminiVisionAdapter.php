@@ -79,11 +79,11 @@ final class GeminiVisionAdapter implements MenuVisionAnalyzer
         $latencyMs = (int) round((microtime(true) - $started) * 1000);
 
         if ($status === 429) {
-            throw new AIProviderException($this->id, AIFailureReason::RATE_LIMITED, 'Gemini vision rate limited / quota exceeded');
+            throw new AIProviderException($this->id, AIFailureReason::RATE_LIMITED, 'Gemini vision rate limited / quota exceeded', null, $status);
         }
         if ($status >= 400) {
             $msg = $body['error']['message'] ?? ('HTTP ' . $status);
-            throw new AIProviderException($this->id, AIFailureReason::HTTP_ERROR, 'Gemini vision error: ' . $msg);
+            throw new AIProviderException($this->id, AIFailureReason::HTTP_ERROR, 'Gemini vision error: ' . $msg, null, $status);
         }
 
         $text = $body['candidates'][0]['content']['parts'][0]['text'] ?? null;

@@ -53,4 +53,5 @@ complete:
     button_continue: Ver mi menú
     title_failed: No pudimos leer tu menú
     subtitle_failed: No se pudo procesar ninguna de tus fotos. Comprueba que sean fotos claras y bien iluminadas de un menú, e inténtalo de nuevo.
+    subtitle_failed_temporary: 'El servicio de lectura de menús está saturado en este momento. Tu foto está bien: inténtalo de nuevo en unos minutos.'
     button_retry: Intentar de nuevo

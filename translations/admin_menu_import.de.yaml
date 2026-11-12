@@ -53,4 +53,5 @@ complete:
     button_continue: Speisekarte ansehen
     title_failed: Wir konnten deine Speisekarte nicht lesen
     subtitle_failed: Keines deiner Fotos konnte verarbeitet werden. Bitte prüfe, ob es sich um klare, gut beleuchtete Fotos einer Speisekarte handelt, und versuche es erneut.
+    subtitle_failed_temporary: 'Der Dienst zum Lesen von Speisekarten ist gerade überlastet. Dein Foto ist in Ordnung: Versuche es in ein paar Minuten erneut.'
     button_retry: Erneut versuchen

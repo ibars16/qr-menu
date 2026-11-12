@@ -53,4 +53,5 @@ complete:
     button_continue: Ver a minha ementa
     title_failed: Não conseguimos ler a sua ementa
     subtitle_failed: Nenhuma das suas fotos pôde ser processada. Verifique se são fotos nítidas e bem iluminadas de uma ementa, e tente novamente.
+    subtitle_failed_temporary: 'O serviço de leitura de ementas está sobrecarregado neste momento. A sua fotografia está bem: tente novamente dentro de alguns minutos.'
     button_retry: Tentar novamente

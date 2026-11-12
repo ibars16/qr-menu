@@ -197,6 +197,9 @@ class MenuImportController extends AbstractController
             'published' => $productsVisible > 0,
             'productsHidden' => $productsCreated - $productsVisible,
             'failedPageCount' => count($failedPages),
+            // Every failed photo failed only because the AI service was
+            // saturated: say so instead of blaming the photos.
+            'temporaryFailure' => $failedPages !== [] && array_filter($failedPages, static fn (MenuImportPage $p) => !$p->isTemporaryFailure()) === [],
             'totalPageCount' => $batch->getPages()->count(),
             'aiPhotoRemaining' => $aiPhotoRemaining,
             // Also with nothing left to do while the trial's photos are used

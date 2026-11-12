@@ -4,9 +4,11 @@ namespace App\Service;
 
 use App\Entity\MenuImportPage;
 use App\Enum\MenuImportPageStatus;
+use App\Service\AI\AIFailureReason;
 use App\Service\AI\AIProviderException;
 use App\Service\AI\AIProviderFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Mime\MimeTypes;
 
 /**
@@ -20,12 +22,30 @@ use Symfony\Component\Mime\MimeTypes;
  */
 final class MenuImportExtractionService
 {
+    /**
+     * Seconds to wait before the 2nd and the 3rd attempt (so at most 3
+     * attempts per provider), only after a temporary failure — Google
+     * "high demand" (503), rate limit (429), timeout or network error.
+     * Those answers process nothing, so they cost nothing; a malformed
+     * answer is never retried. After a timeout (where Google may have
+     * worked, and charged), at most one more attempt.
+     */
+    private const RETRY_WAITS = [3, 8];
+
+    /**
+     * Prefix of a page's errorMessage when it failed only for a temporary
+     * reason: the end screen then says "saturated, your photo is fine"
+     * instead of blaming the photo (MenuImportPage::isTemporaryFailure()).
+     */
+    public const TEMPORARY_FAILURE_PREFIX = 'Temporary: ';
+
     public function __construct(
         private readonly AIProviderFactory $providerFactory,
         private readonly MenuVisionPromptBuilder $promptBuilder,
         private readonly EntityManagerInterface $em,
         private readonly string $projectDir,
         private readonly string $uploadsDir,
+        private readonly ClockInterface $clock,
     ) {}
 
     public function analyzePage(MenuImportPage $page): void
@@ -54,24 +74,50 @@ final class MenuImportExtractionService
         $lastError = null;
 
         foreach ($providers as $provider) {
-            try {
-                $result = $provider->analyzeMenuPage($imageBytes, $mimeType, $instructions);
+            $attempt = 1;
+            $maxAttempts = count(self::RETRY_WAITS) + 1;
 
-                $page->setExtractedData($result->data);
-                $page->setDetectedLocale(is_string($result->data['detected_language'] ?? null) ? $result->data['detected_language'] : null);
-                $page->setStatus(MenuImportPageStatus::EXTRACTED);
-                $page->setErrorMessage(null);
-                $this->em->flush();
+            while (true) {
+                try {
+                    $result = $provider->analyzeMenuPage($imageBytes, $mimeType, $instructions);
 
-                return;
-            } catch (AIProviderException $e) {
-                $lastError = $e;
-                continue;
+                    $page->setExtractedData($result->data);
+                    $page->setDetectedLocale(is_string($result->data['detected_language'] ?? null) ? $result->data['detected_language'] : null);
+                    $page->setStatus(MenuImportPageStatus::EXTRACTED);
+                    $page->setErrorMessage(null);
+                    $this->em->flush();
+
+                    return;
+                } catch (AIProviderException $e) {
+                    $lastError = $e;
+                    if (!self::isTemporary($e)) {
+                        break;
+                    }
+                    if ($e->reason === AIFailureReason::TIMEOUT) {
+                        $maxAttempts = min($maxAttempts, $attempt + 1);
+                    }
+                    if ($attempt >= $maxAttempts) {
+                        break;
+                    }
+                    $this->clock->sleep(self::RETRY_WAITS[$attempt - 1]);
+                    $attempt++;
+                }
             }
         }
 
         $page->setStatus(MenuImportPageStatus::FAILED);
-        $page->setErrorMessage($lastError?->getMessage() ?? 'No vision-capable AI provider is currently configured.');
+        $message = $lastError?->getMessage() ?? 'No vision-capable AI provider is currently configured.';
+        $page->setErrorMessage($lastError !== null && self::isTemporary($lastError) ? self::TEMPORARY_FAILURE_PREFIX . $message : $message);
         $this->em->flush();
+    }
+
+    /** Google overloaded or briefly unreachable — worth trying again later. */
+    private static function isTemporary(AIProviderException $e): bool
+    {
+        return match ($e->reason) {
+            AIFailureReason::TIMEOUT, AIFailureReason::RATE_LIMITED, AIFailureReason::NETWORK_ERROR => true,
+            AIFailureReason::HTTP_ERROR => in_array($e->httpStatus, [429, 503], true),
+            default => false,
+        };
     }
 }

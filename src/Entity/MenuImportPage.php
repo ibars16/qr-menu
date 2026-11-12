@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Entity\Trait\TimestampableTrait;
 use App\Enum\MenuImportPageStatus;
+use App\Service\MenuImportExtractionService;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -114,6 +115,17 @@ class MenuImportPage
     public function setErrorMessage(?string $errorMessage): void
     {
         $this->errorMessage = $errorMessage;
+    }
+
+    /**
+     * Failed only because the AI service was saturated or unreachable (see
+     * MenuImportExtractionService::TEMPORARY_FAILURE_PREFIX) — the photo
+     * itself may be perfectly fine.
+     */
+    public function isTemporaryFailure(): bool
+    {
+        return $this->status === MenuImportPageStatus::FAILED
+            && str_starts_with((string) $this->errorMessage, MenuImportExtractionService::TEMPORARY_FAILURE_PREFIX);
     }
 
     public function getExtractedData(): ?array
