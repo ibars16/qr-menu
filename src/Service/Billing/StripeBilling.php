@@ -16,7 +16,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  *
  * Resellers pay the same way (the same fields, PaidPeriodTrait), with two
  * lines: the base plan (quantity 1) and, only while there are any, the
- * restaurants in use over the included ones (quantity = how many). The
+ * restaurants in use over the included ones (quantity = how many). Only
+ * restaurants paid at least once count ("Pendiente de pago" ones don't,
+ * resellerBilledRestaurants()). The
  * customer and the subscription carry reseller_id instead of restaurant_id.
  *
  * A reseller's restaurant whose reseller can charge it (Stripe Connect,
@@ -182,16 +184,25 @@ class StripeBilling
         ]);
     }
 
-    /** The reseller's restaurants in use (not archived) over the included ones. */
-    public function resellerExtraQuantity(Reseller $reseller): int
+    /**
+     * The reseller's restaurants it's billed for: in use (not archived) and
+     * paid at least once (lastPaidAt, by hand or by card). One awaiting its
+     * first payment ("Pendiente de pago") doesn't count yet, so a sign-up
+     * through the /alta link never raises the reseller's invoice on its own.
+     */
+    public function resellerBilledRestaurants(Reseller $reseller): int
     {
-        $inUse = (int) $this->em->getRepository(Restaurant::class)->createQueryBuilder('r')
+        return (int) $this->em->getRepository(Restaurant::class)->createQueryBuilder('r')
             ->select('COUNT(r.id)')
-            ->where('r.reseller = :reseller')->andWhere('r.archivedAt IS NULL')
+            ->where('r.reseller = :reseller')->andWhere('r.archivedAt IS NULL')->andWhere('r.lastPaidAt IS NOT NULL')
             ->setParameter('reseller', $reseller)
             ->getQuery()->getSingleScalarResult();
+    }
 
-        return max(0, $inUse - $this->includedRestaurants);
+    /** resellerBilledRestaurants() over the included ones. */
+    public function resellerExtraQuantity(Reseller $reseller): int
+    {
+        return max(0, $this->resellerBilledRestaurants($reseller) - $this->includedRestaurants);
     }
 
     /**
@@ -332,7 +343,8 @@ class StripeBilling
     }
 
     /**
-     * After a restaurant is created, archived or restored: sets the extra
+     * After a restaurant is created, archived, restored or paid for the
+     * first time (resellerBilledRestaurants()): sets the extra
      * line to the count (not +1/-1, so a missed update is fixed by the next
      * one), prorated on the next invoice. Added when it's needed, removed
      * when it drops to 0. Nothing to do without a live subscription.
@@ -791,8 +803,15 @@ class StripeBilling
             ? self::utcDate((int) ($invoice['status_transitions']['paid_at'] ?? time()))
             : null;
 
+        $firstPayment = $restaurant instanceof Restaurant && $restaurant->getLastPaidAt() === null && $paidAt !== null;
         $restaurant->applyStripePeriod(self::utcDate($periodEnd), $plan, $paidAt);
         $this->em->flush();
+
+        // A reseller's restaurant paid for the first time now counts on its
+        // reseller's invoice.
+        if ($firstPayment && ($reseller = $restaurant->getReseller()) !== null) {
+            $this->syncResellerExtrasOrLog($reseller);
+        }
 
         // A reseller paying again: its restaurants' card payments resume now.
         if ($restaurant instanceof Reseller) {

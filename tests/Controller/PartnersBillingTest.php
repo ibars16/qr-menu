@@ -72,6 +72,7 @@ final class PartnersBillingTest extends WebTestCase
     }
 
     /** @return list<Restaurant> */
+    /** $count + $archived restaurants, each already paid once (so they count on the invoice). */
     private function restaurants(int $count, int $archived = 0): array
     {
         $created = [];
@@ -80,6 +81,7 @@ final class PartnersBillingTest extends WebTestCase
             $restaurant->setName('Partners Billing Test ' . $i);
             $restaurant->setSlug('partners-billing-test-' . uniqid());
             $restaurant->setReseller($this->em->find(Reseller::class, $this->reseller->getId()));
+            $restaurant->markPaid(Restaurant::PLAN_MONTHLY);
             if ($i >= $count) {
                 $restaurant->archive();
             }
@@ -278,7 +280,17 @@ final class PartnersBillingTest extends WebTestCase
         $new = $this->em->getRepository(Restaurant::class)->findOneBy(['name' => 'Partners Billing Test New']);
         $new->setSlug('partners-billing-test-' . uniqid());
         $this->em->flush();
-        self::assertSame([['price' => self::EXTRA_MONTHLY, 'quantity' => 1]], self::itemUpdates()[0]);
+        // Awaiting its first payment: not on the invoice yet.
+        self::assertSame([], self::itemUpdates());
+
+        // Its first payment adds it; a second one changes nothing.
+        foreach (['monthly', 'yearly'] as $plan) {
+            $crawler = $this->client->request('GET', '/partners');
+            $button = $crawler->filter('button.register-payment[data-action="/partners/restaurantes/' . $new->getId() . '/pago"]');
+            $this->client->request('POST', $button->attr('data-action'), ['_token' => $button->attr('data-token'), 'plan' => $plan]);
+            self::assertResponseRedirects('/partners');
+        }
+        self::assertSame([[['price' => self::EXTRA_MONTHLY, 'quantity' => 1]]], self::itemUpdates());
 
         $id = $restaurants[0]->getId();
         $crawler = $this->client->request('GET', '/partners');

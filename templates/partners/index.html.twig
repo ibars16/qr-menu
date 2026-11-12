@@ -35,9 +35,9 @@
         <div class="toolbar">
             <div class="count" id="restaurant-count">
                 {%- if extra > 0 -%}
-                    {{ 'count.extra'|trans({'%total%': active|length, '%extra%': extra}, 'partners')|raw }}
+                    {{ 'count.extra'|trans({'%total%': billed, '%extra%': extra}, 'partners')|raw }}
                 {%- else -%}
-                    {{ 'count.included'|trans({'%total%': active|length, '%included%': included}, 'partners')|raw }}
+                    {{ 'count.included'|trans({'%total%': billed, '%included%': included}, 'partners')|raw }}
                 {%- endif -%}
             </div>
             <button type="button" class="btn btn-primary" id="new-restaurant" onclick="NewRestaurantUI.open()" {{ expired ? 'disabled' }}>

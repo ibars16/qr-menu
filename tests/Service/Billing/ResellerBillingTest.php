@@ -13,7 +13,8 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 /**
  * StripeBilling for a reseller, against FakeStripeGateway: checkout with
  * the base line and, only when needed, the extra line (restaurants in use
- * over 5, archived ones not counted, no trial); the extra line kept to the
+ * and paid at least once over 5, archived and never-paid ones not counted,
+ * no trial); the extra line kept to the
  * count; the webhook-side sync finding the reseller by reseller_id.
  */
 final class ResellerBillingTest extends KernelTestCase
@@ -62,14 +63,21 @@ final class ResellerBillingTest extends KernelTestCase
         parent::tearDown();
     }
 
-    private function restaurants(int $count, int $archived = 0): void
+    /**
+     * $count paid ones in use, then $archived (paid, archived), then
+     * $pending in use but never paid ("Pendiente de pago").
+     */
+    private function restaurants(int $count, int $archived = 0, int $pending = 0): void
     {
-        for ($i = 0; $i < $count + $archived; $i++) {
+        for ($i = 0; $i < $count + $archived + $pending; $i++) {
             $restaurant = new Restaurant();
             $restaurant->setName('Reseller Billing Test ' . $i);
             $restaurant->setSlug('reseller-billing-test-' . uniqid());
             $restaurant->setReseller($this->reseller);
-            if ($i >= $count) {
+            if ($i < $count + $archived) {
+                $restaurant->markPaid('monthly');
+            }
+            if ($i >= $count && $i < $count + $archived) {
                 $restaurant->archive();
             }
             $this->em->persist($restaurant);
@@ -131,6 +139,20 @@ final class ResellerBillingTest extends KernelTestCase
             ['price' => self::BASE_YEARLY, 'quantity' => 1],
             ['price' => self::EXTRA_YEARLY, 'quantity' => 3],
         ], FakeStripeGateway::$checkoutParams[0]['line_items']);
+    }
+
+    public function testRestaurantsAwaitingFirstPaymentDontCount(): void
+    {
+        $this->restaurants(5, pending: 4);
+        self::assertSame(5, $this->billing->resellerBilledRestaurants($this->reseller));
+        self::assertSame(0, $this->billing->resellerExtraQuantity($this->reseller));
+
+        $this->billing->startResellerCheckout($this->reseller, $this->user, 'monthly', 'https://ok', 'https://back');
+        self::assertSame([['price' => self::BASE_MONTHLY, 'quantity' => 1]], FakeStripeGateway::$checkoutParams[0]['line_items']);
+
+        $this->live(extra: 2);
+        $this->billing->syncResellerExtras($this->reloaded());
+        self::assertSame([['id' => 'si_extra_sub_r', 'deleted' => true]], self::itemUpdates()[0]['items']);
     }
 
     public function testCheckoutReusesCustomer(): void

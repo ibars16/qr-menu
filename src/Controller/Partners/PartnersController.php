@@ -141,8 +141,13 @@ class PartnersController extends AbstractController
         }
 
         if (!$this->reseller()->isExpired() && !$restaurant->isArchived()) {
+            $firstPayment = $restaurant->getLastPaidAt() === null;
             $restaurant->markPaid($plan);
             $this->em->flush();
+            // Paid for the first time: now it counts on the reseller's invoice.
+            if ($firstPayment) {
+                $this->billing->syncResellerExtrasOrLog($this->reseller());
+            }
             $this->addFlash('success', $this->translator->trans('flash.paid', [
                 '%name%' => $restaurant->getName(),
                 '%date%' => $restaurant->getPaidUntil()->format('d/m/Y'),
@@ -269,7 +274,9 @@ class PartnersController extends AbstractController
             'archived' => $archived,
             'owners'   => $owners,
             'included' => $this->includedRestaurants,
-            'extra'    => max(0, count($active) - $this->includedRestaurants),
+            // What it's billed for: in use and paid at least once.
+            'billed'   => $billed = $this->billing->resellerBilledRestaurants($reseller),
+            'extra'    => max(0, $billed - $this->includedRestaurants),
             'dialog'   => $dialog,
             'company'  => $company + ['values' => ['name' => $reseller->getName(), 'email' => (string) $reseller->getContactEmail()]],
             // Shown as the empty field's placeholder: what its restaurants see then.

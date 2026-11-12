@@ -1,12 +1,12 @@
 {# "Elegir plan" for a reseller: the owners' dialog (admin/_billing_dialog)
    posting to PartnersBillingController::checkout(), each plan as a card
    (partners/_plan_option.html.twig) with the reseller's prices
-   (app.reseller_prices). On the panel, `active` (its restaurants in use)
-   adds what the reseller would pay today. #}
+   (app.reseller_prices). On the panel, `billed` (its restaurants in use
+   and paid at least once) adds what the reseller would pay today. #}
 {% include 'admin/_billing_dialog.html.twig' with {
     checkout_route: 'partners_billing_checkout',
     checkout_token_id: 'partners-billing-checkout',
     plan_option_template: 'partners/_plan_option.html.twig',
     plan_note: 'billing.note'|trans({}, 'partners'),
-    restaurants_in_use: active is defined ? active|length : null,
+    restaurants_in_use: billed is defined ? billed : null,
 } %}

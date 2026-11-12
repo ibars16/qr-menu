@@ -359,21 +359,24 @@ final class PartnersControllerTest extends WebTestCase
         self::assertStringContainsString($this->owner->getEmail(), $row->text());
         self::assertCount(1, $row->filter('a[href="/r/' . $this->restaurant->getSlug() . '"]'));
         self::assertSame('/admin/menu?_switch_user=' . $this->owner->getEmail(), $row->filter('a.enter')->attr('href'));
-        self::assertSelectorTextSame('#restaurant-count', 'Restaurantes: 1 de 5 incluidos');
+        // Never paid yet: not on the reseller's invoice.
+        self::assertSelectorTextSame('#restaurant-count', 'Restaurantes: 0 de 5 incluidos');
         self::assertSelectorNotExists('#account-inactive');
     }
 
     public function testCountShowsExtraOverFive(): void
     {
-        for ($i = 0; $i < 6; $i++) {
-            $this->restaurant('Partners Test Extra ' . $i, $this->reseller);
+        for ($i = 0; $i < 7; $i++) {
+            $this->restaurant('Partners Test Extra ' . $i, $this->reseller)->markPaid(Restaurant::PLAN_MONTHLY);
         }
         $archived = $this->restaurant('Partners Test Archived', $this->reseller);
+        $archived->markPaid(Restaurant::PLAN_MONTHLY);
         $archived->archive();
         $this->em->flush();
 
         $this->panel();
 
+        // The 7 paid ones; the Bistro (never paid) and the archived one don't count.
         self::assertSelectorTextSame('#restaurant-count', 'Restaurantes: 7 · 2 extra');
     }
 
@@ -473,6 +476,8 @@ final class PartnersControllerTest extends WebTestCase
 
         $this->client->followRedirect();
         self::assertSelectorTextSame('.flash-success', 'Pago registrado: Partners Test Bistro queda activo hasta el ' . $expected . '.');
+        // Paid now: on the reseller's invoice.
+        self::assertSelectorTextSame('#restaurant-count', 'Restaurantes: 1 de 5 incluidos');
     }
 
     public function testRegisterPaymentRejectsUnknownPlan(): void
@@ -501,8 +506,8 @@ final class PartnersControllerTest extends WebTestCase
         $crawler = $this->client->followRedirect();
         // Never paid: pending, not "vencido".
         self::assertSame('⚪ Pendiente de pago', $this->row($crawler, 'Partners Test Bistro')->filter('.status')->text());
-        // Still counted: deactivating isn't archiving.
-        self::assertSelectorTextSame('#restaurant-count', 'Restaurantes: 1 de 5 incluidos');
+        // Never paid: not counted.
+        self::assertSelectorTextSame('#restaurant-count', 'Restaurantes: 0 de 5 incluidos');
 
         $this->client->request('GET', '/r/' . $restaurant->getSlug() . '?lang=es');
         self::assertResponseStatusCodeSame(503);
@@ -576,7 +581,8 @@ final class PartnersControllerTest extends WebTestCase
 
         $this->client->followRedirect();
         self::assertSelectorTextSame('.flash-success', 'Partners Test New Place creado. Entra para preparar su carta. Se activará cuando pague.');
-        self::assertSelectorTextSame('#restaurant-count', 'Restaurantes: 2 de 5 incluidos');
+        // Neither has been paid yet: nothing on the reseller's invoice.
+        self::assertSelectorTextSame('#restaurant-count', 'Restaurantes: 0 de 5 incluidos');
     }
 
     public function testCreateRestaurantSlugIsUnique(): void

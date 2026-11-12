@@ -14,8 +14,8 @@ use Symfony\Component\DomCrawler\Crawler;
 /**
  * A reseller's customer signup link (/alta/{code}): the /register form with
  * "Alta con {empresa}" and nothing of ours with a price; the restaurant
- * belongs to the reseller, starts with 30 days, counts for the extra line
- * and its owner lands in the panel. Unknown code or expired reseller: "not
+ * belongs to the reseller, starts awaiting its first payment (so it isn't
+ * on the reseller's extra line yet) and its owner lands in the panel. Unknown code or expired reseller: "not
  * available", nothing created. Also /register, now translated.
  */
 final class ResellerSignupTest extends WebTestCase
@@ -133,7 +133,7 @@ final class ResellerSignupTest extends WebTestCase
         self::assertSame($restaurant->getId(), $user->getRestaurant()?->getId());
     }
 
-    public function testSignupCountsForTheExtraLine(): void
+    public function testSignupDoesNotCountUntilPaid(): void
     {
         FakeStripeGateway::price(self::BASE_MONTHLY, 4000, 'month');
         FakeStripeGateway::price(self::EXTRA_MONTHLY, 600, 'month');
@@ -147,16 +147,17 @@ final class ResellerSignupTest extends WebTestCase
             $restaurant->setName('Reseller Signup Test Existing ' . $i);
             $restaurant->setSlug('reseller-signup-test-existing-' . uniqid());
             $restaurant->setReseller($reseller);
+            $restaurant->markPaid(Restaurant::PLAN_MONTHLY);
             $this->em->persist($restaurant);
         }
         $this->em->flush();
 
         $this->submit($this->client->request('GET', $this->path()), 'Reseller Signup Test Sixth', 'reseller-signup-test-sixth-' . uniqid() . '@example.test');
 
+        // The sixth is awaiting its first payment: the reseller's invoice stays the same.
         self::assertResponseRedirects();
         $updates = array_values(array_filter(FakeStripeGateway::$calls, static fn (array $call): bool => $call[0] === 'updateSubscription' && isset($call[2]['items'])));
-        self::assertCount(1, $updates);
-        self::assertSame([['price' => self::EXTRA_MONTHLY, 'quantity' => 1]], $updates[0][2]['items']);
+        self::assertSame([], $updates);
     }
 
     public function testStripeFailureStillCreatesTheRestaurant(): void

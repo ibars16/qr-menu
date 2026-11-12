@@ -414,6 +414,48 @@ final class ResellerRestaurantCardTest extends WebTestCase
         self::assertSame(['retrieveInvoice', $this->account()], FakeStripeGateway::$accountLog[0]);
     }
 
+    public function testFirstCardPaymentAddsItToTheResellersExtraLine(): void
+    {
+        // The reseller pays its own plan with 5 restaurants already paid;
+        // this one (never paid) isn't on its invoice yet.
+        FakeStripeGateway::price('price_test_reseller_monthly', 4000, 'month');
+        FakeStripeGateway::price('price_test_reseller_extra_monthly', 600, 'month');
+        FakeStripeGateway::resellerSubscription('sub_card_reseller', $this->reseller->getId(), 'price_test_reseller_monthly', 'price_test_reseller_extra_monthly', 0, 'cus_card_reseller');
+        $reseller = $this->em->find(Reseller::class, $this->reseller->getId());
+        $reseller->setStripeCustomerId('cus_card_reseller');
+        $reseller->setStripeSubscriptionId('sub_card_reseller');
+        for ($i = 0; $i < 5; $i++) {
+            $paid = new Restaurant();
+            $paid->setName('Card Test Paid ' . $i);
+            $paid->setSlug('card-test-paid-' . uniqid());
+            $paid->setReseller($reseller);
+            $paid->markPaid(Restaurant::PLAN_MONTHLY);
+            $this->em->persist($paid);
+        }
+        $this->em->flush();
+        $this->subscribed();
+        $extraUpdates = static fn (): array => array_values(array_filter(
+            FakeStripeGateway::$calls,
+            static fn (array $call): bool => $call[0] === 'updateSubscription' && $call[1] === 'sub_card_reseller',
+        ));
+
+        // A 0 € invoice isn't a payment: still not counted.
+        FakeStripeGateway::invoice('in_card_zero', 'sub_card', strtotime('+30 days'), 0, time());
+        $this->postEvent('invoice.paid', 'in_card_zero', $this->account());
+        self::assertSame([], $extraUpdates());
+
+        FakeStripeGateway::invoice('in_card_1', 'sub_card', strtotime('+30 days'), 2500, time());
+        $this->postEvent('invoice.paid', 'in_card_1', $this->account());
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $extraUpdates());
+        self::assertSame([['price' => 'price_test_reseller_extra_monthly', 'quantity' => 1]], $extraUpdates()[0][2]['items']);
+
+        // Its next payments change nothing.
+        FakeStripeGateway::invoice('in_card_2', 'sub_card', strtotime('+60 days'), 2500, time());
+        $this->postEvent('invoice.paid', 'in_card_2', $this->account());
+        self::assertCount(1, $extraUpdates());
+    }
+
     public function testCheckoutCompletedFromResellerAccount(): void
     {
         $restaurant = $this->reloaded();
