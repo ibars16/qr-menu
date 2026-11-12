@@ -77,7 +77,7 @@ billing:
     plan_yearly: "Annuale · %price% €/anno"
     cancel: "Annulla"
     go_to_payment: "Vai al pagamento"
-    inc_ai_photos: "Foto IA dei tuoi piatti, illimitate"
+    inc_ai_photos: "Foto IA dei tuoi piatti"
     close_aria: "Chiudi"
     staff_expired: "Chiedi al titolare di rinnovare l'abbonamento"
     error: "Impossibile collegarsi a Stripe. Riprova."

@@ -241,11 +241,17 @@
                        AiPhoto in _product_js.html.twig, DishPhotoController).
                        Not shown without GEMINI_IMAGE_API_KEY (ai_photo_available). #}
                     {% set aiPhotoAvailable = ai_photo_available() %}
-                    {# Trial (plan null): photos left of ai_photo_trial_limit(); 0 → button off. #}
+                    {# Not paid yet: photos left of ai_photo_trial_limit(); 0 → button off
+                       (with a card set: "cuando empiece tu plan", no "Elegir plan").
+                       Paid: no counter; only once this month's are used up, the
+                       monthly message and the button off. #}
                     {% set aiTrialRemaining = ai_photo_trial_remaining() %}
                     {% set aiTrialUsed = aiTrialRemaining is not null and aiTrialRemaining == 0 %}
+                    {% set aiCardPending = ai_photo_card_pending() %}
+                    {% set aiMonthlyLimit = ai_photo_monthly_limit_message() %}
+                    {% set aiExhausted = aiTrialUsed or aiMonthlyLimit is not null %}
                     {% if aiPhotoAvailable %}
-                    <button type="button" class="btn ai-photo-btn{% if aiTrialUsed %} is-exhausted{% endif %}" onclick="AiPhoto.generate()"{% if aiTrialUsed %} disabled{% endif %}>
+                    <button type="button" class="btn ai-photo-btn{% if aiExhausted %} is-exhausted{% endif %}" onclick="AiPhoto.generate()"{% if aiExhausted %} disabled{% endif %}>
                         <i class="ti ti-sparkles" aria-hidden="true"></i>
                         <span class="ai-photo-btn-label">{{ 'ai_photo.generate'|trans({}, 'admin_menu') }}</span>
                     </button>
@@ -264,9 +270,11 @@
                         </button>
                     </span>
                 </div>
-                <p class="ai-photo-trial{% if aiTrialUsed %} is-used{% endif %}"{% if aiTrialRemaining is null %} hidden{% endif %}>
-                    {% if aiTrialUsed %}
-                        {{ 'ai_photo.trial_used'|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu') }}
+                <p class="ai-photo-trial{% if aiExhausted %} is-used{% endif %}{% if aiMonthlyLimit is not null %} is-monthly{% endif %}"{% if aiTrialRemaining is null and aiMonthlyLimit is null %} hidden{% endif %}>
+                    {% if aiMonthlyLimit is not null %}
+                        {{ aiMonthlyLimit }}
+                    {% elseif aiTrialUsed %}
+                        {{ (aiCardPending ? 'ai_photo.trial_used_card' : 'ai_photo.trial_used')|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu') }}
                     {% else %}
                         {{ 'ai_photo.trial_remaining'|trans({'%count%': aiTrialRemaining ?? 0, '%limit%': ai_photo_trial_limit()}, 'admin_menu') }}
                     {% endif %}
@@ -278,10 +286,10 @@
                 <p class="field-error" id="media-upload-error">
                     <i class="ti ti-alert-triangle" aria-hidden="true"></i> <span class="media-upload-error-text"></span>
                 </p>
-                {# Trial limit reached: the plan dialog, when this user can open
-                   it (BillingUI only exists for an owner who pays by card). #}
+                {# Trial limit reached, no card yet: the plan dialog, when this user
+                   can open it (BillingUI only exists for an owner who pays by card). #}
                 {% if aiPhotoAvailable %}
-                <button type="button" class="btn btn-primary ai-photo-plan-btn"{% if not aiTrialUsed %} hidden{% endif %} onclick="BillingUI.open()">
+                <button type="button" class="btn btn-primary ai-photo-plan-btn"{% if not aiTrialUsed or aiCardPending %} hidden{% endif %} onclick="BillingUI.open()">
                     {{ 'ai_photo.choose_plan'|trans({}, 'admin_menu') }}
                 </button>
                 {% endif %}

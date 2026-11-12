@@ -97,7 +97,38 @@ trait AiPhotoTestFixtures
         }
     }
 
-    /** A restaurant on its free trial (plan null), or on a paid plan with $paid. */
+    /**
+     * Not paid yet but a card is set: what coming back from Checkout during
+     * the trial leaves (plan and subscription set, Stripe has charged 0 €).
+     */
+    private function setCardPending(Restaurant $restaurant): void
+    {
+        $this->em->getConnection()->executeStatement(
+            "UPDATE restaurant SET plan = 'monthly', stripe_subscription_id = ? WHERE id = ?",
+            ['sub_test_' . uniqid(), $restaurant->getId()],
+        );
+        $this->em->refresh($restaurant);
+    }
+
+    /** This month's DishPhotoQuota::MONTHLY_LIMIT already used. */
+    private function useUpMonth(Restaurant $restaurant, ?string $month = null): void
+    {
+        $this->em->getConnection()->executeStatement(
+            'UPDATE restaurant SET ai_photo_month = ?, ai_photo_month_count = ? WHERE id = ?',
+            [$month ?? date('Y-m-01'), \App\Service\DishPhoto\DishPhotoQuota::MONTHLY_LIMIT, $restaurant->getId()],
+        );
+    }
+
+    /** The monthly limit's message as the Spanish panel says it this month. */
+    private static function monthlyLimitMessage(): string
+    {
+        $months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        $next = (int) (new \DateTimeImmutable('first day of next month'))->format('n');
+
+        return 'Has llegado al límite de fotos con IA de este mes. Se renueva el 1 de ' . $months[$next - 1] . '.';
+    }
+
+    /** A restaurant on its free trial (never paid), or one that has paid with $paid. */
     private function restaurant(bool $paid = false): Restaurant
     {
         $restaurant = new Restaurant();

@@ -77,7 +77,7 @@ billing:
     plan_yearly: "Jährlich · %price% €/Jahr"
     cancel: "Abbrechen"
     go_to_payment: "Zur Zahlung"
-    inc_ai_photos: "Unbegrenzte KI-Fotos deiner Gerichte"
+    inc_ai_photos: "KI-Fotos deiner Gerichte"
     close_aria: "Schließen"
     staff_expired: "Bitten Sie den Inhaber, das Abonnement zu verlängern"
     error: "Verbindung zu Stripe fehlgeschlagen. Bitte versuchen Sie es erneut."

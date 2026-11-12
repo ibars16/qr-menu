@@ -69,6 +69,7 @@
             unavailable: 'ai_photo.error.unavailable'|trans({}, 'admin_menu'),
             trialEndOne: 'ai_photo.batch.trial_end_singular'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
             trialEndMany: 'ai_photo.batch.trial_end_plural'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
+            trialEndCard: 'ai_photo.trial_used_card'|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu'),
             createdOne: 'ai_photo.batch.created_singular'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
             createdMany: 'ai_photo.batch.created_plural'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
             leftOne: 'ai_photo.batch.offer_singular'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
@@ -80,9 +81,11 @@
             const $ = sel => box.querySelector(sel);
             const total = parseInt(box.dataset.total, 10) || 0;
             const trial = box.dataset.trial === '1';
+            // A card set but not charged yet: no "Elegir plan", "cuando empiece tu plan" instead.
+            const cardPending = box.dataset.cardPending === '1';
             const errorBox = $('.ai-batch-error'), errorText = $('.ai-batch-error-text');
             const plan = $('.ai-batch-plan');
-            if (!canChoosePlan) plan.hidden = true;
+            if (!canChoosePlan || cardPending) plan.hidden = true;
             let retried = false;
             let created = 0;
 
@@ -123,11 +126,11 @@
             const trialEnded = remaining => {
                 box.dataset.state = 'stopped';
                 const text = $('.ai-batch-plan-text');
-                text.textContent = (remaining === 1 ? T.trialEndOne : T.trialEndMany).replace('__COUNT__', remaining);
+                text.textContent = cardPending ? T.trialEndCard : (remaining === 1 ? T.trialEndOne : T.trialEndMany).replace('__COUNT__', remaining);
                 text.hidden = false;
                 $('.ai-batch-start').hidden = true;
                 $('.ai-batch-retry').hidden = true;
-                plan.hidden = !canChoosePlan;
+                plan.hidden = !canChoosePlan || cardPending;
             };
 
             const step = async () => {

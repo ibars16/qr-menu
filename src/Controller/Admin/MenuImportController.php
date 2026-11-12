@@ -200,7 +200,7 @@ class MenuImportController extends AbstractController
             'totalPageCount' => $batch->getPages()->count(),
             'aiPhotoRemaining' => $aiPhotoRemaining,
             // Also with nothing left to do while the trial's photos are used
-            // up: "Ya has usado tus 3 fotos con IA gratis" after every import.
+            // up: "Ya has usado tus 2 fotos con IA gratis" after every import.
             'aiPhotoBox' => $aiPhotoRemaining > 0 || ($aiPhotoBatch->isAvailable() && $quota->trialRemaining($batch->getRestaurant()) === 0),
         ]);
     }

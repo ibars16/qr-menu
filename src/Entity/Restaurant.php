@@ -132,12 +132,25 @@ class Restaurant
 
     /**
      * Dish photos generated with AI so far (every generation, saved or not:
-     * each one costs). Capped at DishPhotoQuota::TRIAL_LIMIT while plan is
-     * null (free trial, reseller's restaurant awaiting payment). Only ever
-     * moved by DishPhotoQuota's atomic UPDATEs, never through this entity.
+     * each one costs). Capped at DishPhotoQuota::TRIAL_LIMIT until the first
+     * real payment (lastPaidAt null: free trial, card set but not charged
+     * yet, reseller's restaurant awaiting payment). Only ever moved by
+     * DishPhotoQuota's atomic UPDATEs, never through this entity.
      */
     #[ORM\Column(options: ['default' => 0])]
     private int $aiPhotoCount = 0;
+
+    /**
+     * Once paid: AI photos generated in the calendar month starting on
+     * $aiPhotoMonth (its 1st), capped at DishPhotoQuota::MONTHLY_LIMIT. A new
+     * month restarts the count in the same UPDATE that reserves. Only ever
+     * moved by DishPhotoQuota, never through this entity.
+     */
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $aiPhotoMonth = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $aiPhotoMonthCount = 0;
 
     /** Billed through a reseller: active while the reseller is and its own paidUntil (set by the reseller in /partners) hasn't passed — see isExpired(). Never billed through Stripe on its own. */
     #[ORM\ManyToOne(targetEntity: Reseller::class)]

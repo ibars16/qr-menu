@@ -17,7 +17,8 @@ use Random\Randomizer;
  * aiPhotosStatus 'running' and Carta offers "Continuar".
  *
  * Per dish: refused / timed out → skipped for good (aiPhotosSkipped), next
- * dish; provider down (429/5xx/network/no key) or the brake → 'paused',
+ * dish; provider down (429/5xx/network/no key), the brake or the paid
+ * monthly limit → 'paused',
  * "Reintentar".
  *
  * Free trial (DishPhotoQuota::isLimited()): only the photos the trial has
@@ -113,10 +114,10 @@ class AiPhotoBatch
                     $generated = true;
                     array_splice($pending, $index, 1);
                 } catch (DishPhotoException $e) {
-                    if ($e->reason === DishPhotoException::REASON_TRIAL_LIMIT) {
+                    if ($e->isTrialOver()) {
                         // Spent elsewhere (the editor) meanwhile: the trial run is over.
                         $trialEnded = true;
-                    } elseif ($e->isProviderDown() || $e->reason === DishPhotoException::REASON_RATE_LIMITED) {
+                    } elseif ($e->isProviderDown() || in_array($e->reason, [DishPhotoException::REASON_RATE_LIMITED, DishPhotoException::REASON_MONTHLY_LIMIT], true)) {
                         $batch->setAiPhotosStatus(MenuImportBatch::AI_PHOTOS_PAUSED);
                         $stopped = $e->reason;
                     } else {

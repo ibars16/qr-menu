@@ -7,6 +7,7 @@ use App\Entity\Product;
 use App\Entity\Restaurant;
 use App\Service\DishPhoto\AiPhotoBatch;
 use App\Service\DishPhoto\DishImageFailure;
+use App\Service\DishPhoto\DishPhotoQuota;
 use App\Tests\Support\AiPhotoTestFixtures;
 use App\Tests\Support\FakeDishImageGenerator;
 use Random\Engine\Mt19937;
@@ -259,55 +260,53 @@ final class AiPhotoBatchTest extends WebTestCase
         $this->em->flush();
     }
 
-    private function spendTrial(Restaurant $restaurant, int $photos = 3): void
+    private function spendTrial(Restaurant $restaurant, int $photos = DishPhotoQuota::TRIAL_LIMIT): void
     {
         $this->em->getConnection()->executeStatement('UPDATE restaurant SET ai_photo_count = ? WHERE id = ?', [$photos, $restaurant->getId()]);
     }
 
-    public function testTheTrialMakesThreeSamplesAcrossCategoriesAndStops(): void
+    public function testTheTrialMakesTwoSamplesAcrossCategoriesAndStops(): void
     {
         [$restaurant, $batch, $many, $only] = $this->trialImportInTwoCategories();
 
         $crawler = $this->client->request('GET', '/admin/menu/import/' . $batch->getId() . '/complete');
         $box = $crawler->filter('.ai-batch');
         self::assertStringContainsString('5 platos no tienen foto', $box->filter('.ai-batch-message')->text());
-        self::assertSame('Te quedan 3 de 3 fotos con IA gratis.', trim($box->filter('.ai-batch-trial')->text()));
-        self::assertSame('Tu prueba gratuita incluye 3 fotos con IA', trim($box->filter('.ai-batch-trial-title')->text()));
+        self::assertSame('Te quedan 2 de 2 fotos con IA gratis.', trim($box->filter('.ai-batch-trial')->text()));
+        self::assertSame('Tu prueba gratuita incluye 2 fotos con IA', trim($box->filter('.ai-batch-trial-title')->text()));
         self::assertSame('/admin/billing', parse_url((string) $box->filter('.ai-batch-trial-plan')->attr('href'), PHP_URL_PATH));
-        self::assertStringContainsString('ilimitadas en todos tus platos, elige un plan', $box->filter('.ai-batch-trial-explain')->text());
-        self::assertSame('Crear 3 fotos de ejemplo', trim($box->filter('.ai-batch-start')->text()));
-        self::assertSame('3', $box->attr('data-total'));
+        self::assertSame('La prueba sigue siendo gratis. Con un plan tendrás más fotos con IA cada mes.', trim($box->filter('.ai-batch-trial-explain')->text()));
+        self::assertSame('Crear 2 fotos de ejemplo', trim($box->filter('.ai-batch-start')->text()));
+        self::assertSame('2', $box->attr('data-total'));
         $token = $box->attr('data-token');
 
-        foreach ([2, 1] as $trialLeft) {
-            $result = $this->step($batch, $token);
-            self::assertTrue($result['generated']);
-            self::assertFalse($result['done']);
-            self::assertSame($trialLeft, $result['trialRemaining']);
-        }
+        $result = $this->step($batch, $token);
+        self::assertTrue($result['generated']);
+        self::assertFalse($result['done']);
+        self::assertSame(1, $result['trialRemaining']);
         $last = $this->step($batch, $token);
         self::assertTrue($last['generated']);
         self::assertTrue($last['done']);
         self::assertTrue($last['trialEnded']);
-        self::assertSame(2, $last['remaining']);
+        self::assertSame(3, $last['remaining']);
         self::assertSame(0, $last['trialRemaining']);
 
         self::assertNotNull($this->reload($only)->getImage(), 'the other category gets one');
         $withPhoto = array_filter($many, fn (Product $p) => $this->reload($p)->getImage() !== null);
-        self::assertCount(2, $withPhoto);
+        self::assertCount(1, $withPhoto);
         self::assertSame(MenuImportBatch::AI_PHOTOS_TRIAL, $this->batch($batch)->getAiPhotosStatus());
 
         $again = $this->step($batch, $token);
         self::assertFalse($again['generated'], 'and it stops there');
         self::assertTrue($again['trialEnded']);
-        self::assertCount(3, FakeDishImageGenerator::$prompts);
-        self::assertSame(3, $this->aiPhotoCount($restaurant));
+        self::assertCount(2, FakeDishImageGenerator::$prompts);
+        self::assertSame(2, $this->aiPhotoCount($restaurant));
 
         $crawler = $this->client->request('GET', '/admin/menu');
         self::assertCount(0, $crawler->filter('.ai-batch'), 'no Carta notice while on the trial');
     }
 
-    public function testOneSpentInTheEditorLeavesTwoForTheImport(): void
+    public function testOneSpentInTheEditorLeavesOneForTheImport(): void
     {
         [$restaurant, $batch] = $this->trialImportInTwoCategories();
         $this->client->request('POST', '/admin/products/ai-photo/generate', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode(['name' => 'Gazpacho']));
@@ -315,17 +314,15 @@ final class AiPhotoBatchTest extends WebTestCase
 
         $crawler = $this->client->request('GET', '/admin/menu/import/' . $batch->getId() . '/complete');
         $box = $crawler->filter('.ai-batch');
-        self::assertSame('Te quedan 2 de 3 fotos con IA gratis.', trim($box->filter('.ai-batch-trial')->text()));
-        self::assertSame('Crear 2 fotos de ejemplo', trim($box->filter('.ai-batch-start')->text()));
-        self::assertSame('2', $box->attr('data-total'));
+        self::assertSame('Te quedan 1 de 2 fotos con IA gratis.', trim($box->filter('.ai-batch-trial')->text()));
+        self::assertSame('Crear 1 foto de ejemplo', trim($box->filter('.ai-batch-start')->text()));
+        self::assertSame('1', $box->attr('data-total'));
 
-        $token = $box->attr('data-token');
-        self::assertFalse($this->step($batch, $token)['done']);
-        $last = $this->step($batch, $token);
+        $last = $this->step($batch, $box->attr('data-token'));
         self::assertTrue($last['trialEnded']);
-        self::assertSame(3, $last['remaining']);
-        self::assertSame(3, $this->aiPhotoCount($restaurant));
-        self::assertCount(3, FakeDishImageGenerator::$prompts, '1 in the editor + 2 in the import');
+        self::assertSame(4, $last['remaining']);
+        self::assertSame(2, $this->aiPhotoCount($restaurant));
+        self::assertCount(2, FakeDishImageGenerator::$prompts, '1 in the editor + 1 in the import');
     }
 
     public function testALaterImportWithoutFreePhotosOnlySaysChooseAPlan(): void
@@ -349,7 +346,7 @@ final class AiPhotoBatchTest extends WebTestCase
         self::assertSame('stopped', $box->attr('data-state'));
         self::assertNotNull($box->filter('.ai-batch-start')->attr('hidden'), 'no button');
         self::assertCount(0, $box->filter('.ai-batch-trial'), 'no counter');
-        self::assertSame('Ya has usado tus 3 fotos con IA gratis. Elige un plan para crear las fotos de los 2 platos que faltan.', trim($box->filter('.ai-batch-plan-text')->text()));
+        self::assertSame('Ya has usado tus 2 fotos con IA gratis. Elige un plan para crear las fotos de los 2 platos que faltan.', trim($box->filter('.ai-batch-plan-text')->text()));
         self::assertNull($box->filter('.ai-batch-plan')->attr('hidden'));
 
         // Every dish already with a photo: still the message, without the count.
@@ -358,8 +355,8 @@ final class AiPhotoBatchTest extends WebTestCase
         $crawler = $this->client->request('GET', '/admin/menu/import/' . $third->getId() . '/complete');
         $box = $crawler->filter('.ai-batch');
         self::assertCount(0, $box->filter('.ai-batch-message'));
-        self::assertSame('Ya has usado tus 3 fotos con IA gratis. Elige un plan para crear más.', trim($box->filter('.ai-batch-plan-text')->text()));
-        self::assertCount(3, FakeDishImageGenerator::$prompts);
+        self::assertSame('Ya has usado tus 2 fotos con IA gratis. Elige un plan para crear más.', trim($box->filter('.ai-batch-plan-text')->text()));
+        self::assertCount(2, FakeDishImageGenerator::$prompts);
     }
 
     public function testAPaidPlanShowsNoCounter(): void
@@ -398,7 +395,7 @@ final class AiPhotoBatchTest extends WebTestCase
         self::assertSame('stopped', $box->attr('data-state'));
         self::assertNotNull($box->filter('.ai-batch-start')->attr('hidden'), 'no run offered');
         self::assertNull($box->filter('.ai-batch-plan-text')->attr('hidden'));
-        self::assertSame('Ya has usado tus 3 fotos con IA gratis. Elige un plan para crear las fotos de los 5 platos que faltan.', trim($box->filter('.ai-batch-plan-text')->text()));
+        self::assertSame('Ya has usado tus 2 fotos con IA gratis. Elige un plan para crear las fotos de los 5 platos que faltan.', trim($box->filter('.ai-batch-plan-text')->text()));
         self::assertNull($box->filter('.ai-batch-plan')->attr('hidden'));
 
         $result = $this->step($batch, $box->attr('data-token'));
@@ -412,7 +409,7 @@ final class AiPhotoBatchTest extends WebTestCase
     {
         [$restaurant, $batch, $many, $only] = $this->trialImportInTwoCategories();
         $token = $this->token($batch);
-        foreach (range(1, 3) as $i) {
+        foreach (range(1, DishPhotoQuota::TRIAL_LIMIT) as $i) {
             $this->step($batch, $token);
         }
 
@@ -420,9 +417,9 @@ final class AiPhotoBatchTest extends WebTestCase
         $crawler = $this->client->request('GET', '/admin/menu');
         $notice = $crawler->filter('.ai-batch[data-variant="notice"]');
         self::assertCount(1, $notice);
-        self::assertStringContainsString('2 platos sin foto de tu carta importada', $notice->filter('.ai-batch-message')->text());
+        self::assertStringContainsString('3 platos sin foto de tu carta importada', $notice->filter('.ai-batch-message')->text());
         self::assertSame('Crear sus fotos con IA', trim($notice->filter('.ai-batch-start')->text()));
-        self::assertSame('2', $notice->attr('data-total'));
+        self::assertSame('3', $notice->attr('data-total'));
         self::assertCount(0, $notice->filter('.ai-batch-trial'), 'no counter once paid');
         self::assertCount(1, $notice->filter('form'), '"Dejarlo"');
 
@@ -438,6 +435,53 @@ final class AiPhotoBatchTest extends WebTestCase
         }
         self::assertSame(MenuImportBatch::AI_PHOTOS_DONE, $this->batch($batch)->getAiPhotosStatus());
         self::assertCount(0, $this->client->request('GET', '/admin/menu')->filter('.ai-batch'));
+    }
+
+    public function testWithACardSetButNotChargedItNeverSaysChooseAPlan(): void
+    {
+        [$restaurant, $batch] = $this->trialImportInTwoCategories();
+        $this->setCardPending($restaurant);
+
+        $crawler = $this->client->request('GET', '/admin/menu/import/' . $batch->getId() . '/complete');
+        $box = $crawler->filter('.ai-batch');
+        self::assertSame('1', $box->attr('data-card-pending'));
+        self::assertSame('Te quedan 2 de 2 fotos con IA gratis.', trim($box->filter('.ai-batch-trial')->text()));
+        self::assertSame('Tendrás más fotos cuando empiece tu plan.', trim($box->filter('.ai-batch-trial-explain')->text()));
+        self::assertCount(0, $box->filter('.ai-batch-trial-plan'), 'no "Elegir plan" link');
+        self::assertSame('Crear 2 fotos de ejemplo', trim($box->filter('.ai-batch-start')->text()));
+
+        $this->spendTrial($restaurant);
+        $crawler = $this->client->request('GET', '/admin/menu/import/' . $batch->getId() . '/complete');
+        $box = $crawler->filter('.ai-batch');
+        self::assertSame('Ya has usado tus 2 fotos con IA gratis. Tendrás más fotos cuando empiece tu plan.', trim($box->filter('.ai-batch-plan-text')->text()));
+        self::assertNotNull($box->filter('.ai-batch-plan')->attr('hidden'), 'no "Elegir plan" button');
+        self::assertNotNull($box->filter('.ai-batch-start')->attr('hidden'));
+
+        $result = $this->step($batch, $box->attr('data-token'));
+        self::assertTrue($result['trialEnded']);
+        self::assertSame([], FakeDishImageGenerator::$prompts);
+    }
+
+    public function testPaidWithThisMonthsPhotosUsedUpOffersNoRun(): void
+    {
+        [$restaurant, $batch] = $this->importWithDishes(3);
+        $this->useUpMonth($restaurant);
+
+        $crawler = $this->client->request('GET', '/admin/menu/import/' . $batch->getId() . '/complete');
+        $box = $crawler->filter('.ai-batch');
+        self::assertSame('stopped', $box->attr('data-state'));
+        self::assertCount(0, $box->filter('.ai-batch-trial'), 'no counter');
+        self::assertNull($box->filter('.ai-batch-error')->attr('hidden'));
+        self::assertSame(self::monthlyLimitMessage(), trim($box->filter('.ai-batch-error-text')->text()));
+        self::assertNotNull($box->filter('.ai-batch-start')->attr('hidden'));
+        self::assertNotNull($box->filter('.ai-batch-plan')->attr('hidden'));
+
+        $result = $this->step($batch, $box->attr('data-token'));
+        self::assertFalse($result['generated']);
+        self::assertSame('monthly_limit', $result['stopped']);
+        self::assertSame(self::monthlyLimitMessage(), $result['message']);
+        self::assertSame([], FakeDishImageGenerator::$prompts);
+        self::assertSame(MenuImportBatch::AI_PHOTOS_PAUSED, $this->batch($batch)->getAiPhotosStatus());
     }
 
     public function testAfterPayingTheNoticeAlsoComesWhenTheTrialRunNeverHappened(): void

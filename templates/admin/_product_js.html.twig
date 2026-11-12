@@ -35,7 +35,9 @@
     const MSG_AI_PHOTO_NAME_REQUIRED = "{{ 'ai_photo.error.name_required'|trans({}, 'admin_menu')|e('js') }}";
     // %count% filled in by AiPhoto.showTrial().
     const MSG_AI_PHOTO_TRIAL = "{{ 'ai_photo.trial_remaining'|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu')|e('js') }}";
-    const MSG_AI_PHOTO_TRIAL_USED = "{{ 'ai_photo.trial_used'|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu')|e('js') }}";
+    // A card set but not charged yet: "cuando empiece tu plan", never "Elegir plan".
+    const AI_PHOTO_CARD_PENDING = {{ ai_photo_card_pending() ? 'true' : 'false' }};
+    const MSG_AI_PHOTO_TRIAL_USED = "{{ (ai_photo_card_pending() ? 'ai_photo.trial_used_card' : 'ai_photo.trial_used')|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu')|e('js') }}";
     const MSG_NEW_PRODUCT        = "{{ 'modal.product.new_title'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_EDIT_PRODUCT       = "{{ 'modal.product.edit_title'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_ERROR_LOADING_PRODUCT = "{{ 'js.error_loading_product'|trans({}, 'admin_menu')|e('js') }}";
@@ -1596,8 +1598,10 @@
             if (data && 'trialRemaining' in data) this.showTrial(data.trialRemaining);
 
             if (!res?.ok || !data?.token) {
-                // Trial used up: showTrial(0) above already says so, with "Elegir plan".
-                if (data?.reason === 'trial_limit') return;
+                // Trial used up: showTrial(0) above already says so (with "Elegir plan" when there's no card yet).
+                if (data?.reason === 'trial_limit' || data?.reason === 'card_pending') return;
+                // Paid, this month's used up: say so where the counter would be, button off.
+                if (data?.reason === 'monthly_limit') return this.showMonthlyLimit(data.error);
                 const message = data?.error || MSG_UNEXPECTED_ERROR;
                 showMediaError(message);
                 showToast(message, 'error');
@@ -1674,14 +1678,29 @@
             this.showPlanButton(this.exhausted);
         },
 
-        // Only where the plan dialog exists (an owner who pays by card).
+        // Paid and this month's photos used up: "…Se renueva el 1 de <mes>.", no plan button.
+        showMonthlyLimit(message) {
+            this.exhausted = true;
+            document.querySelectorAll('.ai-photo-trial').forEach(el => {
+                el.hidden = false;
+                el.classList.add('is-used', 'is-monthly');
+                el.textContent = message;
+            });
+            document.querySelectorAll('.ai-photo-btn').forEach(b => { b.classList.add('is-exhausted'); });
+            this.setBusy(this.busy);
+            this.showPlanButton(false);
+        },
+
+        // Only where the plan dialog exists (an owner who pays by card) and
+        // no card is set yet (with one, the plan just hasn't started).
         showPlanButton(show) {
-            const canChoose = typeof BillingUI !== 'undefined';
+            const canChoose = typeof BillingUI !== 'undefined' && !AI_PHOTO_CARD_PENDING;
             document.querySelectorAll('.ai-photo-plan-btn').forEach(b => { b.hidden = !(show && canChoose); });
         },
     };
 
-    AiPhoto.showPlanButton(AiPhoto.exhausted);
+    // The monthly limit is no reason to choose a plan: only the trial's.
+    AiPhoto.showPlanButton(AiPhoto.exhausted && !document.querySelector('.ai-photo-trial.is-monthly'));
 
     // ── "Eliminar foto" ───────────────────────────────────────────────────────
     // The dish ends with no photo or clip. Saved media is deleted on the
@@ -1802,7 +1821,8 @@
         S.clipFocus = { x: 50, y: 50, zoom: CLIP_DEFAULT_ZOOM };
         showMediaError(null);
         AiPhoto.forget();
-        AiPhoto.showPlanButton(AiPhoto.exhausted);
+        // The monthly limit is no reason to choose a plan: only the trial's.
+    AiPhoto.showPlanButton(AiPhoto.exhausted && !document.querySelector('.ai-photo-trial.is-monthly'));
         S.savedMedia = { image: null, clip: null };
         S.mediaChanged = false;
         S.productId=null; S.categoryId=null; S.menuSectionId=null; S.spicy=0;

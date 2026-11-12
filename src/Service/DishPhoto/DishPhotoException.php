@@ -10,6 +10,10 @@ final class DishPhotoException extends \RuntimeException
 {
     public const REASON_TRIAL_LIMIT = 'trial_limit';
     public const REASON_RATE_LIMITED = 'rate_limited';
+    /** Not paid yet, card set, trial photos used up: more once the plan starts. */
+    public const REASON_CARD_PENDING = 'card_pending';
+    /** Paid, this month's photos used up: renews on the 1st (its message takes %month%). */
+    public const REASON_MONTHLY_LIMIT = 'monthly_limit';
 
     public function __construct(public readonly string $reason, ?\Throwable $previous = null)
     {
@@ -19,6 +23,12 @@ final class DishPhotoException extends \RuntimeException
     public static function fromFailure(DishImageGenerationException $e): self
     {
         return new self($e->failure->value, $e);
+    }
+
+    /** One of the caps (DishPhotoQuota) — not a provider problem; the trial ones end a trial run. */
+    public function isTrialOver(): bool
+    {
+        return in_array($this->reason, [self::REASON_TRIAL_LIMIT, self::REASON_CARD_PENDING], true);
     }
 
     /** Gemini itself is unavailable or not set up: the batch pauses ("Reintentar") instead of skipping the dish. */

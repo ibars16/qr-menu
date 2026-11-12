@@ -77,7 +77,7 @@ billing:
     plan_yearly: "Yearly · €%price%/year"
     cancel: "Cancel"
     go_to_payment: "Go to payment"
-    inc_ai_photos: "Unlimited AI photos of your dishes"
+    inc_ai_photos: "AI photos of your dishes"
     close_aria: "Close"
     staff_expired: "Ask the owner to renew the subscription"
     error: "Could not connect to Stripe. Please try again."

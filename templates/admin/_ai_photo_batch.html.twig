@@ -7,11 +7,15 @@
      done: "Continuar" picks it up) or 'imported' (left by the free trial,
      shown once the restaurant pays).
 
-   Free trial (plan null): "Te quedan X de 3 fotos con IA gratis" and
-   "Crear X fotos de ejemplo" — only the photos the trial has left, on
+   Not paid yet (DishPhotoQuota::isLimited()): "Te quedan X de 2 fotos con
+   IA gratis" and "Crear X fotos de ejemplo" — only the photos left, on
    random dishes; then "¿Te gustan? Elige un plan…". With none left there's
-   no run at all, just "Ya has usado tus 3 fotos con IA gratis…" — also with
+   no run at all, just "Ya has usado tus 2 fotos con IA gratis…" — also with
    remaining 0 (complete page only: an import with every dish photographed).
+   A card set but not charged yet: never "Elige un plan" — "Tendrás más
+   fotos cuando empiece tu plan" instead.
+   Paid: no counter; this month's photos used up → the monthly message
+   ("…Se renueva el 1 de <mes>"), no run.
 
    The browser does the waiting: one dish per POST to
    DishPhotoController::importStep() until done — like the language change.
@@ -26,13 +30,16 @@
 {% set trial = trialRemaining is not null %}
 {% set trialUsed = trial and trialRemaining == 0 %}
 {% set total = trial ? min(trialRemaining, remaining) : remaining %}
+{% set cardPending = ai_photo_card_pending() %}
+{% set monthlyLimit = not trial and remaining > 0 ? ai_photo_monthly_limit_message() : null %}
 <div class="ai-batch" role="status"
      data-step-url="{{ path('admin_menu_import_photos_step', {id: batch.id}) }}"
      data-token="{{ csrf_token('import_photos_' ~ batch.id) }}"
      data-total="{{ total }}"
      data-variant="{{ variant }}"
      data-trial="{{ trial ? '1' : '0' }}"
-     data-state="{{ trialUsed ? 'stopped' : 'idle' }}">
+     data-card-pending="{{ cardPending ? '1' : '0' }}"
+     data-state="{{ trialUsed or monthlyLimit is not null ? 'stopped' : 'idle' }}">
     {% if remaining > 0 %}
     <div class="ai-batch-text">
         <i class="ti ti-sparkles" aria-hidden="true"></i>
@@ -55,11 +62,13 @@
                 <i class="ti ti-gift" aria-hidden="true"></i>
                 {{ 'ai_photo.batch.trial_title'|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu') }}
             </p>
-            <p class="ai-batch-trial-explain">{{ 'ai_photo.batch.trial_explain'|trans({}, 'admin_menu') }}</p>
+            <p class="ai-batch-trial-explain">{{ (cardPending ? 'ai_photo.card_pending' : 'ai_photo.batch.trial_explain')|trans({}, 'admin_menu') }}</p>
             <p class="ai-batch-trial">{{ 'ai_photo.trial_remaining'|trans({'%count%': trialRemaining, '%limit%': ai_photo_trial_limit()}, 'admin_menu') }}</p>
+            {% if not cardPending %}
             <a class="ai-batch-trial-plan" href="{{ path('admin_billing_index') }}">
                 {{ 'ai_photo.choose_plan'|trans({}, 'admin_menu') }} <i class="ti ti-arrow-right" aria-hidden="true"></i>
             </a>
+            {% endif %}
         </div>
     {% endif %}
 
@@ -73,9 +82,9 @@
     </div>
 
     <p class="ai-batch-skipped" hidden></p>
-    <p class="ai-batch-error" hidden>
+    <p class="ai-batch-error"{% if monthlyLimit is null %} hidden{% endif %}>
         <i class="ti ti-alert-triangle" aria-hidden="true"></i>
-        <span class="ai-batch-error-text"></span>
+        <span class="ai-batch-error-text">{{ monthlyLimit }}</span>
     </p>
     <p class="ai-batch-done" hidden>
         <i class="ti ti-check" aria-hidden="true"></i> {{ 'ai_photo.batch.done'|trans({}, 'admin_menu') }}
@@ -87,7 +96,9 @@
     </p>
     {# The trial is over for this import: choose a plan for the rest. #}
     <p class="ai-batch-plan-text"{% if not trialUsed %} hidden{% endif %}>
-        {% if trialUsed and remaining == 0 %}
+        {% if trialUsed and cardPending %}
+            {{ 'ai_photo.trial_used_card'|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu') }}
+        {% elseif trialUsed and remaining == 0 %}
             {{ 'ai_photo.trial_used'|trans({'%limit%': ai_photo_trial_limit()}, 'admin_menu') }}
         {% elseif trialUsed %}
             {{ (remaining == 1 ? 'ai_photo.batch.trial_used_singular' : 'ai_photo.batch.trial_used_plural')|trans({'%count%': remaining, '%limit%': ai_photo_trial_limit()}, 'admin_menu') }}
@@ -95,7 +106,7 @@
     </p>
 
     <div class="ai-batch-actions">
-        <button type="button" class="btn btn-primary ai-batch-start"{% if trialUsed %} hidden{% endif %}>
+        <button type="button" class="btn btn-primary ai-batch-start"{% if trialUsed or monthlyLimit is not null %} hidden{% endif %}>
             <i class="ti ti-sparkles" aria-hidden="true"></i>
             {% if trial %}
                 {{ (total == 1 ? 'ai_photo.batch.trial_button_singular' : 'ai_photo.batch.trial_button_plural')|trans({'%count%': total}, 'admin_menu') }}
@@ -108,7 +119,7 @@
         <button type="button" class="btn ai-batch-retry" hidden>
             <i class="ti ti-refresh" aria-hidden="true"></i> {{ 'ai_photo.batch.retry'|trans({}, 'admin_menu') }}
         </button>
-        <button type="button" class="btn btn-primary ai-batch-plan"{% if not trialUsed %} hidden{% endif %} onclick="BillingUI.open()">
+        <button type="button" class="btn btn-primary ai-batch-plan"{% if not trialUsed or cardPending %} hidden{% endif %} onclick="BillingUI.open()">
             {{ 'ai_photo.choose_plan'|trans({}, 'admin_menu') }}
         </button>
         {% if variant == 'notice' %}

@@ -118,7 +118,8 @@ final class BillingControllerTest extends WebTestCase
         self::assertStringContainsString('Anual · 399,99 €/año', $crawler->filter('.billing-dialog')->text());
         self::assertCount(7, $crawler->filter('#billing-modal .plan-included li'), 'the home\'s 6 + AI photos');
         self::assertStringContainsString('Camarero con IA para tus clientes', $crawler->filter('#billing-modal .plan-included')->text());
-        self::assertStringContainsString('Fotos de tus platos con IA, ilimitadas', $crawler->filter('#billing-modal .plan-included')->text());
+        self::assertStringContainsString('Fotos de tus platos con IA', $crawler->filter('#billing-modal .plan-included')->text());
+        self::assertStringNotContainsString('ilimitad', $crawler->filter('#billing-modal .plan-included')->text(), 'no limit or "unlimited" in the plan list');
     }
 
     public function testChoosePlanDialogAndExpiredPageShowPricesInEnglish(): void
@@ -130,7 +131,8 @@ final class BillingControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/admin/menu');
         self::assertStringContainsString('Monthly · €39.99/month', $crawler->filter('.billing-dialog')->text());
         self::assertStringContainsString('Yearly · €399.99/year', $crawler->filter('.billing-dialog')->text());
-        self::assertStringContainsString('Unlimited AI photos of your dishes', $crawler->filter('#billing-modal .plan-included')->text());
+        self::assertStringContainsString('AI photos of your dishes', $crawler->filter('#billing-modal .plan-included')->text());
+        self::assertStringNotContainsString('Unlimited', $crawler->filter('#billing-modal .plan-included')->text());
 
         $this->expire();
         $crawler = $this->client->request('GET', '/admin/menu');

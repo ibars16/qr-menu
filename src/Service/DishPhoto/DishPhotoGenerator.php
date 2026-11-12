@@ -64,6 +64,8 @@ class DishPhotoGenerator
         match ($this->quota->reserve($restaurant, $dishKey)) {
             DishPhotoQuotaResult::Reserved => null,
             DishPhotoQuotaResult::TrialLimit => throw new DishPhotoException(DishPhotoException::REASON_TRIAL_LIMIT),
+            DishPhotoQuotaResult::CardPending => throw new DishPhotoException(DishPhotoException::REASON_CARD_PENDING),
+            DishPhotoQuotaResult::MonthlyLimit => throw new DishPhotoException(DishPhotoException::REASON_MONTHLY_LIMIT),
             DishPhotoQuotaResult::RateLimited => throw new DishPhotoException(DishPhotoException::REASON_RATE_LIMITED),
         };
 

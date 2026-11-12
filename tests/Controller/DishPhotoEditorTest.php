@@ -16,7 +16,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * "Generar con IA" in the dish editor (DishPhotoController): drafts, the
- * trial limit of 3, refunds on failure, applying on save. The provider is
+ * free limit of 2 before paying (also with a card set), 150 a month once
+ * paid, refunds on failure, applying on save. The provider is
  * always FakeDishImageGenerator — never a real AI.
  */
 final class DishPhotoEditorTest extends WebTestCase
@@ -52,23 +53,84 @@ final class DishPhotoEditorTest extends WebTestCase
         return json_decode($this->client->getResponse()->getContent(), true) ?? [];
     }
 
-    public function testTrialGetsThreePhotosThenTheChoosePlanMessage(): void
+    public function testTrialGetsTwoPhotosThenTheChoosePlanMessage(): void
     {
         $restaurant = $this->restaurant();
         $this->client->loginUser($this->owner($restaurant));
 
         $first = $this->generate(['name' => 'Tortilla de patatas', 'description' => 'Con cebolla']);
         self::assertResponseIsSuccessful();
-        self::assertSame(2, $first['trialRemaining']);
+        self::assertSame(1, $first['trialRemaining']);
+        self::assertSame(0, $this->generate(['name' => 'Gazpacho'])['trialRemaining']);
+
+        $third = $this->generate(['name' => 'Croquetas']);
+        self::assertResponseStatusCodeSame(402);
+        self::assertSame('trial_limit', $third['reason']);
+        self::assertSame(0, $third['trialRemaining']);
+        self::assertSame(2, $this->aiPhotoCount($restaurant));
+        self::assertCount(2, FakeDishImageGenerator::$prompts, 'the third never reaches the AI');
+    }
+
+    /** Point 1 of the review: setting a card during the trial (Stripe charged nothing yet) doesn't lift the limit. */
+    public function testACardSetButNotChargedStillGetsOnlyTwo(): void
+    {
+        $restaurant = $this->restaurant();
+        $this->setCardPending($restaurant);
+        $this->client->loginUser($this->owner($restaurant));
+        $this->dish($this->category($restaurant), 'Ensalada');
+
         self::assertSame(1, $this->generate(['name' => 'Gazpacho'])['trialRemaining']);
         self::assertSame(0, $this->generate(['name' => 'Salmorejo'])['trialRemaining']);
-
-        $fourth = $this->generate(['name' => 'Croquetas']);
+        $third = $this->generate(['name' => 'Pisto']);
         self::assertResponseStatusCodeSame(402);
-        self::assertSame('trial_limit', $fourth['reason']);
-        self::assertSame(0, $fourth['trialRemaining']);
-        self::assertSame(3, $this->aiPhotoCount($restaurant));
-        self::assertCount(3, FakeDishImageGenerator::$prompts, 'the fourth never reaches the AI');
+        self::assertSame('card_pending', $third['reason']);
+        self::assertSame('Ya has usado tus 2 fotos con IA gratis. Tendrás más fotos cuando empiece tu plan.', $third['error']);
+        self::assertCount(2, FakeDishImageGenerator::$prompts);
+
+        $crawler = $this->client->request('GET', '/admin/menu');
+        self::assertNotNull($crawler->filter('.ai-photo-btn')->first()->attr('disabled'));
+        self::assertSame('Ya has usado tus 2 fotos con IA gratis. Tendrás más fotos cuando empiece tu plan.', trim($crawler->filter('.ai-photo-trial')->first()->text()));
+        self::assertNotNull($crawler->filter('.ai-photo-plan-btn')->first()->attr('hidden'), 'never "Elegir plan" with a card set');
+    }
+
+    public function testPaidHasNoCounterUntilThisMonthsPhotosAreUsedUp(): void
+    {
+        $restaurant = $this->restaurant(paid: true);
+        $this->client->loginUser($this->owner($restaurant));
+        $this->dish($this->category($restaurant), 'Ensalada');
+
+        $crawler = $this->client->request('GET', '/admin/menu');
+        self::assertNotNull($crawler->filter('.ai-photo-trial')->first()->attr('hidden'), 'no counter');
+        self::assertNull($crawler->filter('.ai-photo-btn')->first()->attr('disabled'));
+
+        $this->useUpMonth($restaurant);
+        $data = $this->generate(['name' => 'Gazpacho']);
+        self::assertResponseStatusCodeSame(429);
+        self::assertSame('monthly_limit', $data['reason']);
+        self::assertSame(self::monthlyLimitMessage(), $data['error']);
+        self::assertSame([], FakeDishImageGenerator::$prompts, 'never reaches the AI');
+
+        $crawler = $this->client->request('GET', '/admin/menu');
+        $line = $crawler->filter('.ai-photo-trial')->first();
+        self::assertNull($line->attr('hidden'));
+        self::assertSame(self::monthlyLimitMessage(), trim($line->text()));
+        self::assertNotNull($crawler->filter('.ai-photo-btn')->first()->attr('disabled'), 'button off');
+        self::assertNotNull($crawler->filter('.ai-photo-plan-btn')->first()->attr('hidden'), 'no "Elegir plan"');
+    }
+
+    public function testLastMonthsUsedUpCountDoesNotStopThisMonth(): void
+    {
+        $restaurant = $this->restaurant(paid: true);
+        $this->client->loginUser($this->owner($restaurant));
+        $this->useUpMonth($restaurant, (new \DateTimeImmutable('first day of last month'))->format('Y-m-01'));
+
+        $this->generate(['name' => 'Gazpacho']);
+        self::assertResponseIsSuccessful();
+        self::assertSame(
+            ['ai_photo_month' => date('Y-m-01'), 'ai_photo_month_count' => 1],
+            $this->em->getConnection()->fetchAssociative('SELECT ai_photo_month, ai_photo_month_count FROM restaurant WHERE id = ?', [$restaurant->getId()]),
+            'a new month starts again at 1',
+        );
     }
 
     public function testOnceUsedUpTheEditorButtonIsOffWithTheChoosePlanMessage(): void
@@ -76,7 +138,7 @@ final class DishPhotoEditorTest extends WebTestCase
         $restaurant = $this->restaurant();
         $this->client->loginUser($this->owner($restaurant));
         $this->dish($this->category($restaurant), 'Ensalada');
-        foreach (['Gazpacho', 'Salmorejo', 'Pisto'] as $name) {
+        foreach (['Gazpacho', 'Salmorejo'] as $name) {
             $this->generate(['name' => $name]);
         }
 
@@ -86,7 +148,7 @@ final class DishPhotoEditorTest extends WebTestCase
         self::assertStringContainsString('is-exhausted', $button->attr('class'));
         $line = $crawler->filter('.ai-photo-trial')->first();
         self::assertNull($line->attr('hidden'));
-        self::assertSame('Ya has usado tus 3 fotos con IA gratis. Elige un plan para crear más.', trim($line->text()));
+        self::assertSame('Ya has usado tus 2 fotos con IA gratis. Elige un plan para crear más.', trim($line->text()));
         self::assertNull($crawler->filter('.ai-photo-plan-btn')->first()->attr('hidden'), '"Elegir plan" (the JS hides it without the plan dialog)');
     }
 
@@ -117,7 +179,7 @@ final class DishPhotoEditorTest extends WebTestCase
             self::assertResponseStatusCodeSame($status);
             self::assertSame($reason, $data['reason']);
             self::assertSame($message, $data['error']);
-            self::assertSame(3, $data['trialRemaining'], 'nothing spent');
+            self::assertSame(2, $data['trialRemaining'], 'nothing spent');
         }
         self::assertSame(0, $this->aiPhotoCount($restaurant));
     }
@@ -336,7 +398,7 @@ final class DishPhotoEditorTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertGreaterThan(0, $crawler->filter('.ai-photo-btn')->count());
         self::assertGreaterThan(0, $crawler->filter('.img-upload-delete-btn')->count(), '"Eliminar foto" is there too');
-        self::assertSame('Te quedan 3 de 3 fotos con IA gratis.', trim($crawler->filter('.ai-photo-trial')->first()->text()));
+        self::assertSame('Te quedan 2 de 2 fotos con IA gratis.', trim($crawler->filter('.ai-photo-trial')->first()->text()));
         self::assertNull($crawler->filter('.ai-photo-btn')->first()->attr('disabled'));
         self::assertNotNull($crawler->filter('.ai-photo-plan-btn')->first()->attr('hidden'));
 

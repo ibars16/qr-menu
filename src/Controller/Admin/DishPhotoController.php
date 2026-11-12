@@ -7,6 +7,7 @@ use App\Entity\Product;
 use App\Entity\Restaurant;
 use App\Service\DishPhoto\AiPhotoBatch;
 use App\Service\DishPhoto\DishPhotoException;
+use App\Service\DishPhoto\DishPhotoMessages;
 use App\Service\DishPhoto\DishPhotoGenerator;
 use App\Service\DishPhoto\DishPhotoQuota;
 use App\Service\DishPhoto\DishPhotoStorage;
@@ -43,6 +44,7 @@ class DishPhotoController extends AbstractController
         private readonly DishPhotoStorage $storage,
         private readonly ProductImageReplacer $replacer,
         private readonly AiPhotoBatch $batch,
+        private readonly DishPhotoMessages $messages,
         private readonly TranslatorInterface $translator,
         private readonly EntityManagerInterface $em,
     ) {
@@ -129,7 +131,7 @@ class DishPhotoController extends AbstractController
         $result = $this->batch->step($importBatch);
 
         return $this->json($result + [
-            'message' => $result['stopped'] !== null ? $this->trans('ai_photo.error.' . $result['stopped']) : null,
+            'message' => $result['stopped'] !== null ? $this->messages->forReason($result['stopped']) : null,
             'trialRemaining' => $this->quota->trialRemaining($restaurant),
         ]);
     }
@@ -148,15 +150,15 @@ class DishPhotoController extends AbstractController
     private function failure(DishPhotoException $e, Restaurant $restaurant): JsonResponse
     {
         $status = match ($e->reason) {
-            DishPhotoException::REASON_TRIAL_LIMIT => Response::HTTP_PAYMENT_REQUIRED,
-            DishPhotoException::REASON_RATE_LIMITED => Response::HTTP_TOO_MANY_REQUESTS,
+            DishPhotoException::REASON_TRIAL_LIMIT, DishPhotoException::REASON_CARD_PENDING => Response::HTTP_PAYMENT_REQUIRED,
+            DishPhotoException::REASON_RATE_LIMITED, DishPhotoException::REASON_MONTHLY_LIMIT => Response::HTTP_TOO_MANY_REQUESTS,
             'timeout' => Response::HTTP_GATEWAY_TIMEOUT,
             'unavailable', 'not_configured' => Response::HTTP_SERVICE_UNAVAILABLE,
             default => Response::HTTP_UNPROCESSABLE_ENTITY,
         };
 
         return $this->json([
-            'error' => $this->trans('ai_photo.error.' . $e->reason),
+            'error' => $this->messages->forReason($e->reason),
             'reason' => $e->reason,
             'trialRemaining' => $this->quota->trialRemaining($restaurant),
         ], $status);
