@@ -114,7 +114,7 @@ preset_tags:
       fr: Contient des produits laitiers
       de: Enthält Milchprodukte
       it: Contiene latticini
-      pt: Contém laticínios
+      pt: Contém lacticínios
       nl: Bevat zuivel
       ru: Содержит молочные продукты
       zh: 含乳制品
@@ -140,7 +140,7 @@ preset_tags:
       fr: Contient des noix
       de: Enthält Nüsse
       it: Contiene frutta secca
-      pt: Contém nozes
+      pt: Contém frutos de casca rija
       nl: Bevat noten
       ru: Содержит орехи
       zh: 含坚果
@@ -226,7 +226,7 @@ preset_tags:
       fr: Notre recommandation
       de: Unsere Empfehlung
       it: Il nostro consiglio
-      pt: Nossa recomendação
+      pt: A nossa recomendação
       nl: Onze aanbeveling
       ru: Наша рекомендация
       zh: 我们的推荐

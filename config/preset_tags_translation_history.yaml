@@ -32,3 +32,65 @@ history:
       pl: Polecane przez szefa kuchni
       sv: Kockens rekommendation
       no: Kokkens anbefaling
+    - en: Our Recommendation
+      es: Nuestra recomendación
+      fr: Notre recommandation
+      de: Unsere Empfehlung
+      it: Il nostro consiglio
+      pt: Nossa recomendação
+      nl: Onze aanbeveling
+      ru: Наша рекомендация
+      zh: 我们的推荐
+      ja: 私たちのおすすめ
+      ko: 우리의 추천
+      th: คำแนะนำของเรา
+      ar: توصيتنا
+      hi: हमारी सिफारिश
+      tr: Önerimiz
+      vi: Đề xuất của chúng tôi
+      id: Rekomendasi Kami
+      pl: Nasza rekomendacja
+      sv: Vår rekommendation
+      no: Vår anbefaling
+  contains-dairy:
+    - en: Contains Dairy
+      es: Contiene lácteos
+      fr: Contient des produits laitiers
+      de: Enthält Milchprodukte
+      it: Contiene latticini
+      pt: Contém laticínios
+      nl: Bevat zuivel
+      ru: Содержит молочные продукты
+      zh: 含乳制品
+      ja: 乳製品含有
+      ko: 유제품 포함
+      th: มีผลิตภัณฑ์นม
+      ar: يحتوي على منتجات الألبان
+      hi: डेयरी उत्पाद शामिल
+      tr: Süt Ürünü İçerir
+      vi: Có sữa
+      id: Mengandung Susu
+      pl: Zawiera nabiał
+      sv: Innehåller mejeriprodukter
+      no: Inneholder meieri
+  contains-nuts:
+    - en: Contains Nuts
+      es: Contiene frutos secos
+      fr: Contient des noix
+      de: Enthält Nüsse
+      it: Contiene frutta secca
+      pt: Contém nozes
+      nl: Bevat noten
+      ru: Содержит орехи
+      zh: 含坚果
+      ja: ナッツ含有
+      ko: 견과류 포함
+      th: มีถั่ว
+      ar: يحتوي على مكسرات
+      hi: मेवे शामिल
+      tr: Fındık/Fıstık İçerir
+      vi: Có hạt
+      id: Mengandung Kacang
+      pl: Zawiera orzechy
+      sv: Innehåller nötter
+      no: Inneholder nøtter
