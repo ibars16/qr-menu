@@ -892,6 +892,17 @@
         _suppressAllergenComputeTrigger = false;
     }
 
+    // Any user/DB text interpolated into an HTML string (innerHTML) goes
+    // through this — ingredient names are owner/staff-typed free text.
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // Reads the currently-visible panel's selection back into [{value, name}]
     // for submission — the backend interprets the r:/g:/new: value prefix.
     function collectIngredients() {
@@ -928,7 +939,7 @@
             ? `<span class="achip-remove" onclick="removeAllergenOverride(${a.id})" role="button" tabindex="0" aria-label="${MSG_ALLERGEN_REMOVE}"><i class="ti ti-x" style="font-size:11px"></i></span>`
             : '';
         const suffix = showPresence ? ` · ${label}` : '';
-        return `<span class="achip achip-${presence}">${a.icon} ${a.name}${suffix}${remove}</span>`;
+        return `<span class="achip achip-${presence}">${escapeHtml(a.icon)} ${escapeHtml(a.name)}${suffix}${remove}</span>`;
     }
 
     function renderAllergenComputed(list) {
@@ -1038,7 +1049,7 @@
         return ALLERGENS.map(a => {
             const state = stateByAllergen[a.id] || '';
             return `<span class="allergen-pill" data-state="${state}" data-allergen-id="${a.id}"
-                onclick="cycleIngredientAllergen(${ingredientId}, ${a.id}, this)">${a.icon} ${a.name}</span>`;
+                onclick="cycleIngredientAllergen(${ingredientId}, ${a.id}, this)">${escapeHtml(a.icon)} ${escapeHtml(a.name)}</span>`;
         }).join('');
     }
 
@@ -1073,11 +1084,11 @@
 
         const html = restaurantItems.map(item => {
             if (item.value.startsWith('new:')) {
-                return `<div class="allergen-ing-card"><div class="allergen-ing-name">${item.name}</div><p class="allergen-hint" style="margin-top:0">${MSG_ALLERGEN_NEW_INGREDIENT_HINT}</p></div>`;
+                return `<div class="allergen-ing-card"><div class="allergen-ing-name">${escapeHtml(item.name)}</div><p class="allergen-hint" style="margin-top:0">${MSG_ALLERGEN_NEW_INGREDIENT_HINT}</p></div>`;
             }
             const id = parseInt(item.value.slice(2));
             const grid = ingredientAllergenPillGrid(id, S.ingredientAllergenCache[id]);
-            return `<div class="allergen-ing-card"><div class="allergen-ing-name">${item.name}</div><div class="allergen-pill-grid">${grid}</div></div>`;
+            return `<div class="allergen-ing-card"><div class="allergen-ing-name">${escapeHtml(item.name)}</div><div class="allergen-pill-grid">${grid}</div></div>`;
         }).join('');
 
         document.querySelectorAll('[id="p-private-ingredient-allergens"]').forEach(el => el.innerHTML = html);
