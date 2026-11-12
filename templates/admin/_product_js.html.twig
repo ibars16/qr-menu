@@ -1632,6 +1632,10 @@
             S.aiPhotoToken = null;
             S.savedMedia = { image: applied.image, clip: null };
             S.mediaChanged = true;
+            // Applying moved the draft file: its preview URL is gone (404,
+            // blank box if the browser hadn't loaded it yet) — show the
+            // dish's own copy instead.
+            renderProductMedia(applied.image, null);
             this.showPending('saved');
             showToast(MSG_AI_PHOTO_SAVED, 'success');
         },
