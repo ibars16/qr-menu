@@ -682,7 +682,7 @@ final class PartnersControllerTest extends WebTestCase
         self::assertCount(0, $crawler->filter('a[href="/admin/logout"]'));
         self::assertCount(0, $crawler->filter('a[href*="/platform"]'));
 
-        // A second request still works (SwitchUserMarker keeps the session).
+        // A second request still works (the switched session isn't logged out).
         $this->client->request('GET', '/admin/settings');
         self::assertResponseIsSuccessful();
 

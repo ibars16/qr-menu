@@ -94,7 +94,7 @@ final class SyncResellerBillingCommandTest extends WebTestCase
         $this->em->flush();
     }
 
-    private function runCommand(array $options = []): CommandTester
+    private function runSync(array $options = []): CommandTester
     {
         $tester = new CommandTester((new Application(static::$kernel))->find('app:resellers:sync-billing'));
         $tester->execute($options);
@@ -118,7 +118,7 @@ final class SyncResellerBillingCommandTest extends WebTestCase
         $this->restaurant('Sync Billing Test Manual', null);
         $this->expire();
 
-        $tester = $this->runCommand();
+        $tester = $this->runSync();
 
         $tester->assertCommandIsSuccessful();
         self::assertSame([['sub_sync_card', ['pause_collection' => ['behavior' => 'void']]]], self::updates());
@@ -126,7 +126,7 @@ final class SyncResellerBillingCommandTest extends WebTestCase
         self::assertStringContainsString('Sync Billing Test Agency (vencido) · Sync Billing Test Card: pausado', $tester->getDisplay());
 
         // Again: already paused, nothing sent.
-        $this->runCommand();
+        $this->runSync();
         self::assertCount(1, self::updates());
     }
 
@@ -134,13 +134,13 @@ final class SyncResellerBillingCommandTest extends WebTestCase
     {
         $this->restaurant('Sync Billing Test Covered', 'sub_sync_covered', 'today +5 days', paused: true);
 
-        $tester = $this->runCommand();
+        $tester = $this->runSync();
 
         $tester->assertCommandIsSuccessful();
         self::assertSame([['sub_sync_covered', ['pause_collection' => '']]], self::updates());
         self::assertStringContainsString('(al día) · Sync Billing Test Covered: reanudado', $tester->getDisplay());
 
-        $this->runCommand();
+        $this->runSync();
         self::assertCount(1, self::updates(), 'already resumed');
     }
 
@@ -151,7 +151,7 @@ final class SyncResellerBillingCommandTest extends WebTestCase
         FakeStripeGateway::invoice('in_sync_lapsed', 'sub_sync_lapsed', $periodEnd, 1200, time());
         FakeStripeGateway::$objects['sub_sync_lapsed']['latest_invoice'] = 'in_sync_lapsed';
 
-        $this->runCommand()->assertCommandIsSuccessful();
+        $this->runSync()->assertCommandIsSuccessful();
 
         self::assertSame([['sub_sync_lapsed', [
             'pause_collection'     => '',
@@ -169,7 +169,7 @@ final class SyncResellerBillingCommandTest extends WebTestCase
         $this->restaurant('Sync Billing Test Dry', 'sub_sync_dry');
         $this->expire();
 
-        $tester = $this->runCommand(['--dry-run' => true]);
+        $tester = $this->runSync(['--dry-run' => true]);
 
         $tester->assertCommandIsSuccessful();
         self::assertSame([], self::updates());
@@ -183,7 +183,7 @@ final class SyncResellerBillingCommandTest extends WebTestCase
         FakeStripeGateway::$objects['sub_sync_ended']['status'] = 'canceled';
         $this->expire();
 
-        $this->runCommand()->assertCommandIsSuccessful();
+        $this->runSync()->assertCommandIsSuccessful();
         self::assertSame([], self::updates());
     }
 
@@ -193,12 +193,12 @@ final class SyncResellerBillingCommandTest extends WebTestCase
         $this->expire();
 
         FakeStripeGateway::$fail = true;
-        $tester = $this->runCommand();
+        $tester = $this->runSync();
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
         self::assertStringContainsString('Sync Billing Test Failing: ERROR', $tester->getDisplay());
 
         FakeStripeGateway::$fail = false;
-        $this->runCommand()->assertCommandIsSuccessful();
+        $this->runSync()->assertCommandIsSuccessful();
         self::assertSame([['sub_sync_failing', ['pause_collection' => ['behavior' => 'void']]]], self::updates());
     }
 
@@ -210,7 +210,7 @@ final class SyncResellerBillingCommandTest extends WebTestCase
         $reseller->deactivateNow();
         $this->em->flush();
 
-        $this->runCommand()->assertCommandIsSuccessful();
+        $this->runSync()->assertCommandIsSuccessful();
         self::assertSame([], self::updates());
     }
 

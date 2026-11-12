@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -500,13 +501,23 @@ final class BillingControllerTest extends WebTestCase
         return static::getContainer()->get('security.token_storage')->getToken()?->getRoleNames() ?? [];
     }
 
-    public function testPreviousAdminMarkerOnlyOnSessionTokenAndGoneAfterExit(): void
+    /**
+     * Since Symfony 8.1 the switched session keeps the owner's own roles
+     * (no ROLE_PREVIOUS_ADMIN marker anywhere), survives further requests,
+     * and exiting brings the super-admin back.
+     */
+    public function testSwitchedSessionKeepsOwnerRolesAndExitRestoresSuperAdmin(): void
     {
         $this->openPayLinkAsSuperAdmin();
-        self::assertContains('ROLE_PREVIOUS_ADMIN', $this->tokenRoles());
+        self::assertInstanceOf(SwitchUserToken::class, static::getContainer()->get('security.token_storage')->getToken());
+        self::assertEqualsCanonicalizing([User::ROLE_OWNER, 'ROLE_USER'], $this->tokenRoles());
 
         $this->em->clear();
         self::assertSame([User::ROLE_OWNER, 'ROLE_USER'], $this->em->find(User::class, $this->owner->getId())->getRoles());
+
+        $this->client->request('GET', '/admin/settings');
+        self::assertResponseIsSuccessful();
+        self::assertInstanceOf(SwitchUserToken::class, static::getContainer()->get('security.token_storage')->getToken());
 
         $this->client->request('GET', '/platform?_switch_user=_exit');
         $this->client->followRedirect();
