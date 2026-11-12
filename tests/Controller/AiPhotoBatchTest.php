@@ -93,6 +93,32 @@ final class AiPhotoBatchTest extends WebTestCase
         self::assertStringContainsString('Crear sus fotos con IA', $crawler->filter('.ai-batch-start')->text());
     }
 
+    /** First carta (MenuImportAssembler publishes it): "ya está publicada" + the one-time "Revisa tu carta". */
+    public function testTheCompletePageAsksToReviewAPublishedCarta(): void
+    {
+        [, $batch, $dishes] = $this->importWithDishes(2);
+        $dishes[0]->setActive(true);
+        $dishes[1]->setActive(false);
+        $this->em->flush();
+
+        $crawler = $this->client->request('GET', '/admin/menu/import/' . $batch->getId() . '/complete');
+
+        self::assertSame('Tu carta ya está publicada', trim($crawler->filter('.import-complete-title')->text()));
+        self::assertStringContainsString('Revisa tu carta', $crawler->filter('.import-review-notice')->text());
+        self::assertStringContainsString('1 plato sin precio se ha quedado oculto', $crawler->filter('.import-review-notice')->text());
+    }
+
+    public function testTheCompletePageOfAHiddenImportKeepsItsText(): void
+    {
+        [, $batch] = $this->importWithDishes(1);
+        $this->em->createQuery('UPDATE App\Entity\Product p SET p.active = false WHERE p.importBatch = :b')->setParameter('b', $batch)->execute();
+
+        $crawler = $this->client->request('GET', '/admin/menu/import/' . $batch->getId() . '/complete');
+
+        self::assertSame('Tu menú está listo para revisar', trim($crawler->filter('.import-complete-title')->text()));
+        self::assertCount(0, $crawler->filter('.import-review-notice'));
+    }
+
     public function testOnlyThisImportsDishesWithoutPhotoOneByOne(): void
     {
         [$restaurant, $batch, $dishes] = $this->importWithDishes(2);
@@ -246,6 +272,9 @@ final class AiPhotoBatchTest extends WebTestCase
         $box = $crawler->filter('.ai-batch');
         self::assertStringContainsString('5 platos no tienen foto', $box->filter('.ai-batch-message')->text());
         self::assertSame('Te quedan 3 de 3 fotos con IA gratis.', trim($box->filter('.ai-batch-trial')->text()));
+        self::assertSame('Tu prueba gratuita incluye 3 fotos con IA', trim($box->filter('.ai-batch-trial-title')->text()));
+        self::assertSame('/admin/billing', parse_url((string) $box->filter('.ai-batch-trial-plan')->attr('href'), PHP_URL_PATH));
+        self::assertStringContainsString('ilimitadas en todos tus platos, elige un plan', $box->filter('.ai-batch-trial-explain')->text());
         self::assertSame('Crear 3 fotos de ejemplo', trim($box->filter('.ai-batch-start')->text()));
         self::assertSame('3', $box->attr('data-total'));
         $token = $box->attr('data-token');

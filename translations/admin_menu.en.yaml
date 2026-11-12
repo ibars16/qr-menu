@@ -281,6 +281,8 @@ ai_photo:
         button: 'Create their photos with AI'
         trial_button_singular: 'Create %count% sample photo'
         trial_button_plural: 'Create %count% sample photos'
+        trial_title: 'Your free trial includes %limit% AI photos'
+        trial_explain: 'Your trial stays free. For unlimited AI photos across all your dishes, choose a plan.'
         trial_end_singular: 'Like it? Choose a plan and create the photo for the dish that''s left.'
         trial_end_plural: 'Like them? Choose a plan and create the photos for the %count% dishes that are left.'
         trial_used_singular: 'You''ve used your %limit% free AI photos. Choose a plan to create the photo for the dish that''s left.'
@@ -291,6 +293,8 @@ ai_photo:
         skipped_singular: '%count% dish skipped (its photo couldn''t be created)'
         skipped_plural: '%count% dishes skipped (their photos couldn''t be created)'
         done: 'Photos created.'
+        created_singular: 'We''ve created %count% AI photo. It''s already on your menu.'
+        created_plural: 'We''ve created %count% AI photos. They''re already on your menu.'
         retry: 'Retry'
         view_menu: 'View my menu'
     notice:

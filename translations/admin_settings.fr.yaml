@@ -49,6 +49,7 @@ action:
     save_section: Enregistrer la section
 
 hint:
+    drop_image: "Touchez pour choisir ou glissez une image ici."
     logo_format: 'PNG ou JPG, 2 Mo max.'
     hero_image_format: 'PNG, JPG ou WebP, %max_mb% Mo max. (min. %min%x%min% px, max. %max%x%max% px ; recommandé : %recommended% px de large ou plus)'
     hero_image: "Affichée en bandeau photo en haut de la carte publique, pour tous les thèmes."

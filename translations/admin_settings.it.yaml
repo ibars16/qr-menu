@@ -49,6 +49,7 @@ action:
     save_section: Salva sezione
 
 hint:
+    drop_image: "Tocca per scegliere o trascina qui un'immagine."
     logo_format: 'PNG o JPG, max. 2 MB'
     hero_image_format: 'PNG, JPG o WebP, max. %max_mb% MB (min. %min%x%min% px, max. %max%x%max% px; consigliato: %recommended% px di larghezza o più)'
     hero_image: "Mostrata come fascia fotografica nella copertina del menu pubblico, in tutti i temi."

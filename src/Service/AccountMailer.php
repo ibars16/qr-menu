@@ -14,7 +14,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * The account emails: welcome (the three sign-ups only — /register,
  * /alta/{code}, /partners/registro; never staff, restaurants a reseller
- * creates or app:create-admin-user) and "change your password".
+ * creates or app:create-admin-user), "confirma tu email" and "change your
+ * password". A self sign-up still to confirm its email
+ * (User::$emailConfirmationPending) gets the confirmation button in its
+ * welcome email; "Reenviar" in the panel sends confirm on its own.
  *
  * Sent in the user's panel language: the restaurant's for owners and
  * staff, the reseller's for resellers, Spanish for anyone else (the
@@ -35,6 +38,7 @@ final class AccountMailer
         private readonly UrlGeneratorInterface $urls,
         private readonly AdminLocaleResolver $locales,
         private readonly LoggerInterface $logger,
+        private readonly EmailConfirmation $emailConfirmation,
         #[Autowire('%mailer_from_email%')]
         private readonly string $fromEmail,
     ) {}
@@ -45,6 +49,15 @@ final class AccountMailer
         $this->send($user, 'welcome', $locale, 'emails/welcome.html.twig', [
             'loginUrl' => $this->urls->generate('admin_login', [], UrlGeneratorInterface::ABSOLUTE_URL),
             'accountEmail' => $user->getEmail(), // not 'email': reserved by TemplatedEmail
+            'confirmUrl' => $user->isEmailConfirmationPending() ? $this->emailConfirmation->url($user) : null,
+        ]);
+    }
+
+    public function sendEmailConfirmation(User $user): void
+    {
+        $locale = $this->localeFor($user);
+        $this->send($user, 'confirm', $locale, 'emails/confirm_email.html.twig', [
+            'confirmUrl' => $this->emailConfirmation->url($user),
         ]);
     }
 

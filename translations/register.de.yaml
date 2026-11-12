@@ -48,3 +48,9 @@ unavailable:
     title: "Link nicht verfügbar"
     heading: "Dieser Link ist nicht verfügbar"
     text: "Bitten Sie die Person, die ihn Ihnen geschickt hat, um einen neuen Link."
+email_confirmed:
+    title: "E-Mail bestätigt"
+    text: "Danke. Deine Karte ist jetzt für deine Gäste sichtbar."
+    invalid_title: "Ungültiger Link"
+    invalid_text: "Der Link ist abgelaufen oder nicht korrekt. Melde dich in deinem Panel an und tippe auf „Erneut senden“, um einen neuen zu erhalten."
+    login: "Zu meinem Panel"

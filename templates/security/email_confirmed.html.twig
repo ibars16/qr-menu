@@ -1,0 +1,11 @@
+{% extends 'security/_reset_layout.html.twig' %}
+{# The link from "Confirma tu email" opened while logged out (or as someone
+   else): EmailConfirmationController::confirm(). #}
+
+{% block heading %}{{ (confirmed ? 'email_confirmed.title' : 'email_confirmed.invalid_title')|trans({}, 'register', locale) }}{% endblock %}
+{% block sub %}{{ (confirmed ? 'email_confirmed.text' : 'email_confirmed.invalid_text')|trans({}, 'register', locale) }}{% endblock %}
+{% block form %}
+    <a href="{{ path('admin_login') }}" class="submit-btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none;">
+        {{ 'email_confirmed.login'|trans({}, 'register', locale) }}
+    </a>
+{% endblock %}

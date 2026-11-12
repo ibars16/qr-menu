@@ -44,6 +44,18 @@
                             {% endfor %}
                         </div>
                         {% if plan_note is defined %}<p class="plan-note">{{ plan_note }}</p>{% endif %}
+                        {# What the plan includes: the home's "Todo incluido" list (public_site
+                           pricing.inc1-6, same 6 locales as the panel) plus the AI photos.
+                           Owners only: the reseller's panel passes its own plan_option_template. #}
+                        {% if plan_option_template is not defined %}
+                            <p class="plan-included-title">{{ 'pricing.included_title'|trans({}, 'public_site') }}</p>
+                            <ul class="plan-included">
+                                {% for i in 1..6 %}
+                                    <li><i class="ti ti-check" aria-hidden="true"></i> {{ ('pricing.inc' ~ i)|trans({}, 'public_site') }}</li>
+                                {% endfor %}
+                                <li><i class="ti ti-check" aria-hidden="true"></i> {{ 'billing.inc_ai_photos'|trans({}, 'admin_base') }}</li>
+                            </ul>
+                        {% endif %}
                     </div>
                     <div class="panel-footer">
                         <button type="button" class="btn" onclick="BillingUI.close()">{{ 'billing.cancel'|trans({}, 'admin_base') }}</button>

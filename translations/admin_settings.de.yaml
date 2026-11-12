@@ -49,6 +49,7 @@ action:
     save_section: Abschnitt speichern
 
 hint:
+    drop_image: "Tippe zum Auswählen oder ziehe ein Bild hierher."
     logo_format: 'PNG oder JPG, max. 2 MB'
     hero_image_format: 'PNG, JPG oder WebP, max. %max_mb% MB (mind. %min%x%min% px, max. %max%x%max% px; empfohlen: %recommended% px Breite oder mehr)'
     hero_image: "Wird in jedem Design als Fotoband im Kopfbereich der öffentlichen Speisekarte angezeigt."

@@ -53,11 +53,14 @@ class RegistrationController extends AbstractController
                 $data['currency'],
                 $data['language'],
                 $adminLocaleResolver->resolve($data['adminLocale']),
+                confirmEmail: true,
             );
             $accountMailer->sendWelcome($user);
 
-            // Log in automatically
-            return $security->login($user, 'form_login', 'main');
+            // Log in automatically, then the optional "Personaliza tu restaurante".
+            $security->login($user, 'form_login', 'main');
+
+            return $this->redirectToRoute('admin_onboarding');
         }
 
         return $this->render('security/register.html.twig', [

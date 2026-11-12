@@ -39,6 +39,12 @@ status:
         failed: Fallida
 
 complete:
+    title_published: 'Tu carta ya está publicada'
+    subtitle_published: 'Hemos añadido tus platos y ya son visibles para tus clientes.'
+    review_title: 'Revisa tu carta'
+    review_text: 'Échale un vistazo para comprobar que todo está bien: nombres, precios, descripciones y alérgenos. Puedes cambiar cualquier plato desde Carta.'
+    review_hidden_singular: '%count% plato sin precio se ha quedado oculto hasta que le pongas uno.'
+    review_hidden_plural: '%count% platos sin precio se han quedado ocultos hasta que les pongas uno.'
     title_success: Tu menú está listo para revisar
     subtitle_success: Hemos añadido tus platos al menú, ocultos para los clientes hasta que los revises.
     subtitle_partial_failure: ' No pudimos leer %failed% de tus %total% fotos — puedes volver a subirlas por separado.'

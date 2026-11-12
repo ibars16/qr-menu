@@ -39,6 +39,12 @@ status:
         failed: Fehlgeschlagen
 
 complete:
+    title_published: 'Deine Karte ist online'
+    subtitle_published: 'Wir haben deine Gerichte hinzugefügt und deine Gäste können sie schon sehen.'
+    review_title: 'Prüfe deine Karte'
+    review_text: 'Schau einmal drüber, ob alles stimmt: Namen, Preise, Beschreibungen und Allergene. Jedes Gericht kannst du unter Speisekarte ändern.'
+    review_hidden_singular: '%count% Gericht ohne Preis bleibt verborgen, bis du ihm einen gibst.'
+    review_hidden_plural: '%count% Gerichte ohne Preis bleiben verborgen, bis du ihnen einen gibst.'
     title_success: Deine Speisekarte ist bereit zur Überprüfung
     subtitle_success: Wir haben deine Gerichte zur Speisekarte hinzugefügt — für Kunden unsichtbar, bis du sie überprüfst.
     subtitle_partial_failure: ' Wir konnten %failed% von %total% Fotos nicht lesen — du kannst diese separat erneut hochladen.'

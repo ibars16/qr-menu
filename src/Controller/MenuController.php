@@ -67,6 +67,21 @@ class MenuController extends AbstractController
         return sprintf('menu_v%d_r%d_%s', $restaurant->getMenuContentVersion(), $restaurant->getId(), $locale);
     }
 
+    /**
+     * A self sign-up whose owner hasn't confirmed the email yet
+     * (Restaurant::isAwaitingEmailConfirmation()): hidden from customers
+     * like an expired one, but its own team still sees it ("Ver mi carta").
+     */
+    private function hiddenUntilEmailConfirmed(\App\Entity\Restaurant $restaurant): bool
+    {
+        if (!$restaurant->isAwaitingEmailConfirmation()) {
+            return false;
+        }
+        $user = $this->getUser();
+
+        return !($user instanceof \App\Entity\User && $user->getRestaurant()?->getId() === $restaurant->getId());
+    }
+
     #[Route('/r/{slug}', name: 'menu_show')]
     public function show(
         string $slug,
@@ -90,7 +105,7 @@ class MenuController extends AbstractController
 
         // Expired subscription (Restaurant::isExpired()): a plain page with
         // just the name, and nothing below runs — no translation or AI work.
-        if ($restaurant->isExpired()) {
+        if ($restaurant->isExpired() || $this->hiddenUntilEmailConfirmed($restaurant)) {
             return $this->render('menu/unavailable.html.twig', [
                 'restaurant' => $restaurant,
                 'locale'     => $this->resolveLocale($restaurant, $request, $menuPreferencesResolver),
@@ -143,7 +158,7 @@ class MenuController extends AbstractController
         if (!$restaurant) {
             return $this->json(['ok' => false], 404);
         }
-        if ($restaurant->isExpired()) {
+        if ($restaurant->isExpired() || $this->hiddenUntilEmailConfirmed($restaurant)) {
             return $this->json(['ok' => false], 503);
         }
 
@@ -200,7 +215,7 @@ class MenuController extends AbstractController
         if (!$restaurant) {
             return $this->json(['ok' => false], 404);
         }
-        if ($restaurant->isExpired()) {
+        if ($restaurant->isExpired() || $this->hiddenUntilEmailConfirmed($restaurant)) {
             return $this->json(['ok' => false], 503);
         }
 

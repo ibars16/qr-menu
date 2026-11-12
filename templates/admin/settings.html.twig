@@ -7,6 +7,25 @@
     <style>
         .settings-wrap { max-width: 600px; }
 
+        /* Mobile only: Equipo left the bottom bar (base.html.twig) and lives here.
+           --tx-1 on --bg-card (dark #ccc/#141414, light #333/#fafafa) and the
+           chevron in --tx-2: AA in both modes. */
+        .settings-team-link { display: none; }
+        @media (max-width: 767px) {
+            .settings-team-link {
+                display: flex; align-items: center; gap: var(--sp-3); min-height: 52px;
+                padding: var(--sp-3) var(--sp-4); margin-bottom: var(--sp-4);
+                background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg);
+                box-shadow: var(--shadow-sm); color: var(--tx-1); font-size: var(--fs-md); font-weight: 500;
+                text-decoration: none; -webkit-tap-highlight-color: transparent;
+            }
+            .settings-team-link:active { background: var(--bg-input); }
+            .settings-team-link:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+            .settings-team-link > i:first-child { font-size: 20px; }
+            .settings-team-link span { flex: 1; }
+            .settings-team-link .ti-chevron-right { font-size: 18px; color: var(--tx-2); }
+        }
+
         .settings-section {
             background: var(--bg-card);
             border: 1px solid var(--bd-1);
@@ -140,6 +159,13 @@
         .logo-area {
             display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap;
         }
+        /* Drop an image on the area (_image_drop): dashed --bd-2, --brand while
+           dragging over; the hint is --tx-3 like the other .field-hint (AA). */
+        .logo-area[data-drop-input] {
+            padding: var(--sp-3); border: 1px dashed var(--bd-2); border-radius: var(--r-md);
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .logo-area.is-drop-over { border-color: var(--brand); background: var(--bg-input); }
         .logo-preview {
             width: 72px; height: 72px; border-radius: var(--r-lg);
             background: var(--bg-input); border: 1px solid var(--bd-2);
@@ -296,6 +322,13 @@
 {% block body %}
 {% import _self as fieldErr %}
     <div class="settings-wrap">
+        {% if is_granted('ROLE_OWNER') %}
+            <a href="{{ path('admin_users') }}" class="settings-team-link">
+                <i class="ti ti-users" aria-hidden="true"></i>
+                <span>{{ 'bottom_nav.users'|trans({}, 'admin_base') }}</span>
+                <i class="ti ti-chevron-right" aria-hidden="true"></i>
+            </a>
+        {% endif %}
 
         <form method="post" enctype="multipart/form-data">
             <input type="hidden" name="_token" value="{{ csrf_token('admin_settings') }}">
@@ -483,7 +516,7 @@
                     {# Logo #}
                     <div class="field">
                         <label>{{ 'field.logo'|trans({}, 'admin_settings') }}</label>
-                        <div class="logo-area">
+                        <div class="logo-area" data-drop-input="logo-input">
                             <div class="logo-preview" id="logo-preview">
                                 {% if restaurant.logo %}
                                     <img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}"
@@ -514,6 +547,7 @@
                                     <input type="hidden" name="removeLogoFlag" id="remove-logo-input" value="0">
                                 {% endif %}
                                 <span class="field-hint">{{ 'hint.logo_format'|trans({}, 'admin_settings') }}</span>
+                                <span class="field-hint">{{ 'hint.drop_image'|trans({}, 'admin_settings') }}</span>
                             </div>
                         </div>
                     </div>
@@ -524,7 +558,7 @@
                        .hero-photo-band (menu/layouts/standard/show.html.twig). #}
                     <div class="field">
                         <label>{{ 'field.hero_image'|trans({}, 'admin_settings') }}</label>
-                        <div class="logo-area">
+                        <div class="logo-area" data-drop-input="hero-image-input">
                             <div class="logo-preview hero-image-preview" id="hero-image-preview">
                                 {% if restaurant.heroImage %}
                                     <img src="{{ asset('uploads/heroes/' ~ restaurant.heroImage) }}"
@@ -553,6 +587,7 @@
                                 {% endif %}
                                 <span class="field-hint">{{ 'hint.hero_image_format'|trans({'%max_mb%': heroImageMaxMegabytes, '%min%': heroImageMinDimension, '%max%': heroImageMaxDimension, '%recommended%': heroImageRecommendedWidth}, 'admin_settings') }}</span>
                                 <span class="field-hint">{{ 'hint.hero_image'|trans({}, 'admin_settings') }}</span>
+                                <span class="field-hint">{{ 'hint.drop_image'|trans({}, 'admin_settings') }}</span>
                             </div>
                         </div>
 
@@ -948,4 +983,5 @@
             navigator.clipboard.writeText(url).then(() => showToast(MSG_URL_COPIED, 'success'));
         }
     </script>
+    {% include 'admin/_image_drop.html.twig' %}
 {% endblock %}

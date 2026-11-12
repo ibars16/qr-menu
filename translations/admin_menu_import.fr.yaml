@@ -39,6 +39,12 @@ status:
         failed: Échec
 
 complete:
+    title_published: 'Votre carte est en ligne'
+    subtitle_published: 'Nous avons ajouté vos plats et vos clients peuvent déjà les voir.'
+    review_title: 'Vérifiez votre carte'
+    review_text: 'Jetez-y un œil pour vérifier que tout est correct : noms, prix, descriptions et allergènes. Vous pouvez modifier n''importe quel plat depuis Carte.'
+    review_hidden_singular: '%count% plat sans prix reste masqué jusqu''à ce que vous lui en donniez un.'
+    review_hidden_plural: '%count% plats sans prix restent masqués jusqu''à ce que vous leur en donniez un.'
     title_success: Votre menu est prêt à être vérifié
     subtitle_success: Nous avons ajouté vos plats au menu, masqués aux clients jusqu'à ce que vous les vérifiiez.
     subtitle_partial_failure: ' Nous n''avons pas pu lire %failed% de vos %total% photos — vous pouvez essayer de les téléverser à nouveau séparément.'

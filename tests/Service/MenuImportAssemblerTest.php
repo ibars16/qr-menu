@@ -52,6 +52,60 @@ final class MenuImportAssemblerTest extends KernelTestCase
         parent::tearDown();
     }
 
+    /** One extracted page: category "Primeros" with a priced dish and one without a price. */
+    private function makeVisibilityBatch(Restaurant $restaurant, string $category): MenuImportBatch
+    {
+        $batch = new MenuImportBatch($restaurant);
+        $this->em->persist($batch);
+        $page = new MenuImportPage($batch, 'test.jpg', 0, hash('sha256', uniqid()));
+        $page->setStatus(MenuImportPageStatus::EXTRACTED);
+        $page->setDetectedLocale('es');
+        $dish = fn (string $name, ?float $price) => [
+            'name' => $name, 'name_uncertain' => false, 'description' => null, 'description_uncertain' => false,
+            'price' => $price, 'price_uncertain' => false, 'supplement_price' => null, 'recommended' => false,
+            'ingredients' => [], 'dietary_markers' => [],
+        ];
+        $page->setExtractedData(['detected_language' => 'es', 'categories' => [
+            ['name' => $category, 'products' => [$dish('Sopa ' . $category, 8.5), $dish('Plato del día ' . $category, null)]],
+        ]]);
+        $this->em->persist($page);
+        $batch->addPage($page);
+        $this->em->flush();
+
+        return $batch;
+    }
+
+    public function testFirstCartaIsPublishedExceptDishesWithoutPrice(): void
+    {
+        $restaurant = new Restaurant();
+        $restaurant->setName('Test Restaurant');
+        $restaurant->setSlug('test-first-carta-' . uniqid());
+        $restaurant->setCurrency('EUR');
+        $restaurant->setDefaultLanguage('es');
+        $this->em->persist($restaurant);
+
+        /** @var MenuImportAssembler $assembler */
+        $assembler = self::getContainer()->get(MenuImportAssembler::class);
+
+        // First carta: visible at once, still pending review.
+        $first = $this->makeVisibilityBatch($restaurant, 'Primeros');
+        $assembler->assemble($first);
+        $products = $this->em->getRepository(Product::class)->findBy(['importBatch' => $first], ['id' => 'ASC']);
+        self::assertCount(2, $products);
+        self::assertTrue($products[0]->isActive(), 'priced dish is published');
+        self::assertTrue($products[0]->isNeedsReview());
+        self::assertTrue($products[0]->getCategory()->isActive(), 'its new category too');
+        self::assertFalse($products[1]->isActive(), 'no price: never shown as 0');
+
+        // A later import adds to a live carta: everything hidden.
+        $second = $this->makeVisibilityBatch($restaurant, 'Postres');
+        $assembler->assemble($second);
+        $later = $this->em->getRepository(Product::class)->findBy(['importBatch' => $second], ['id' => 'ASC']);
+        self::assertCount(2, $later);
+        self::assertFalse($later[0]->isActive());
+        self::assertFalse($later[0]->getCategory()->isActive());
+    }
+
     public function testNoquisCaserosConSalsaDeQuesoParmesano(): void
     {
         $restaurant = new Restaurant();

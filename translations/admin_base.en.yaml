@@ -41,6 +41,7 @@ bottom_nav:
     qr: QR
     users: Team
     settings: Config
+    plan: Plan
 
 subscription_expired: "Your subscription expired on %date%"
 reseller_inactive: "This restaurant isn't active"
@@ -76,11 +77,19 @@ billing:
     plan_yearly: "Yearly · €%price%/year"
     cancel: "Cancel"
     go_to_payment: "Go to payment"
+    inc_ai_photos: "Unlimited AI photos of your dishes"
     close_aria: "Close"
     staff_expired: "Ask the owner to renew the subscription"
     error: "Could not connect to Stripe. Please try again."
     checkout_no_charge_until: "No charge until %date%"
 
 header:
+    view_menu_short: "View menu"
     subscription_aria: "Subscription"
     logout_aria: "Log out"
+email_confirmation:
+    banner: "Confirm your email so your customers can see your menu. We've sent a link to %email%."
+    resend: "Resend"
+    sent: "We've sent another link to %email%."
+    wait: "Wait a minute before asking for another link."
+    done: "Email confirmed: your menu is now visible to your customers."

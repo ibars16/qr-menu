@@ -147,6 +147,7 @@ final class PartnersBillingTest extends WebTestCase
         self::assertSame('/partners/billing/checkout', $form->attr('action'));
 
         $cards = $crawler->filter('#billing-modal .plan-option');
+        self::assertCount(0, $crawler->filter('.plan-included'), 'reseller panel: no owner list');
         self::assertSame(['monthly', 'yearly'], $cards->filter('input[name="plan"]')->each(fn (Crawler $i) => $i->attr('value')));
         $monthly = $cards->eq(0);
         self::assertSame('Mensual', $monthly->filter('.plan-name')->text());

@@ -5,9 +5,16 @@ welcome:
     button: "Accedi al tuo pannello"
     login_with: "Accedi con questa email: %email%"
     forgot: "Se dimentichi la password, usa «Password dimenticata?» nella schermata di accesso."
+    confirm_intro: "Conferma la tua email per pubblicare il tuo menù: fino ad allora solo tu puoi vederlo."
 reset:
     subject: "Cambia la tua password"
     intro: "Abbiamo ricevuto una richiesta per cambiare la password del tuo account."
     button: "Cambia password"
     expiry: "Il link scade tra 1 ora e si può usare una sola volta."
     ignore: "Se non l'hai richiesto tu, ignora questa email: la tua password non cambia."
+confirm:
+    subject: "Conferma la tua email"
+    intro: "Conferma che questa è la tua email perché i tuoi clienti possano vedere il tuo menù."
+    button: "Conferma la mia email"
+    expiry: "Il link scade tra 7 giorni. Se scade, chiedine uno nuovo dal tuo pannello."
+    ignore: "Se non hai creato tu questo account, ignora questa email."

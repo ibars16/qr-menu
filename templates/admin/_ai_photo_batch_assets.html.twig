@@ -12,11 +12,31 @@
     .ai-batch-text { display:flex; align-items:flex-start; gap:var(--sp-2); }
     .ai-batch-text i { font-size:16px; flex-shrink:0; margin-top:2px; }
     .ai-batch-trial, .ai-batch-hint, .ai-batch-skipped { margin:6px 0 0; font-size:var(--fs-sm); color:var(--tx-2); }
-    .ai-batch:not([data-state="idle"]) .ai-batch-trial { display:none; }
+    .ai-batch:not([data-state="idle"]) .ai-batch-trial-box { display:none; }
+    /* Trial: framed in the brand colour so "gratis / elige un plan" is read.
+       Same background as the box, so text keeps the --tx-1/--tx-2 ratios. */
+    .ai-batch-trial-box { margin-top:var(--sp-3); padding:var(--sp-2) var(--sp-3); border:1px solid var(--brand); border-radius:var(--r-md); }
+    .ai-batch-trial-title { margin:0; font-weight:600; color:var(--tx-1); display:flex; align-items:center; gap:6px; }
+    .ai-batch-trial-title i { color:var(--brand); font-size:18px; flex-shrink:0; }
+    .ai-batch-trial-explain { margin:4px 0 0; color:var(--tx-1); }
+    .ai-batch-trial-box .ai-batch-trial { margin-top:4px; }
+    /* --tx-1 underlined, not --brand: brand text on --bg-input isn't AA. */
+    .ai-batch-trial-plan { display:inline-flex; align-items:center; gap:4px; margin-top:var(--sp-2); font-weight:600; color:var(--tx-1); text-decoration:underline; text-underline-offset:3px; min-height:32px; }
+    .ai-batch-trial-plan:hover { text-decoration-thickness:2px; }
+    @media (max-width: 767px) { .ai-batch-trial-plan { min-height:44px; } }
+    /* Import complete page: the card is centred, so is the box. */
+    .ai-batch[data-variant="offer"] { text-align:center; }
+    .ai-batch[data-variant="offer"] .ai-batch-text,
+    .ai-batch[data-variant="offer"] .ai-batch-trial-title,
+    .ai-batch[data-variant="offer"] .ai-batch-error,
+    .ai-batch[data-variant="offer"] .ai-batch-actions { justify-content:center; }
     .ai-batch-plan-text { margin:var(--sp-2) 0 0; color:var(--tx-1); }
     .ai-batch-error { margin:var(--sp-2) 0 0; font-size:var(--fs-sm); color:var(--err-text); display:flex; gap:6px; align-items:flex-start; }
     .ai-batch-done { margin:var(--sp-2) 0 0; color:var(--tx-1); }
     .ai-batch-done i { color:#7aad40; }
+    .ai-batch-created { margin:var(--sp-3) 0 0; font-weight:600; color:var(--tx-1); display:flex; align-items:center; gap:6px; }
+    .ai-batch-created i { color:#7aad40; font-size:18px; flex-shrink:0; }
+    .ai-batch[data-variant="offer"] .ai-batch-created { justify-content:center; }
     .ai-batch [hidden] { display:none !important; }
     .ai-batch-actions { display:flex; flex-wrap:wrap; gap:var(--sp-2); margin-top:var(--sp-3); }
     .ai-batch-actions form { margin:0; }
@@ -49,6 +69,10 @@
             unavailable: 'ai_photo.error.unavailable'|trans({}, 'admin_menu'),
             trialEndOne: 'ai_photo.batch.trial_end_singular'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
             trialEndMany: 'ai_photo.batch.trial_end_plural'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
+            createdOne: 'ai_photo.batch.created_singular'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
+            createdMany: 'ai_photo.batch.created_plural'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
+            leftOne: 'ai_photo.batch.offer_singular'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
+            leftMany: 'ai_photo.batch.offer_plural'|trans({'%count%': '__COUNT__'}, 'admin_menu'),
         }|json_encode|raw }};
         const canChoosePlan = typeof BillingUI !== 'undefined';
 
@@ -60,6 +84,21 @@
             const plan = $('.ai-batch-plan');
             if (!canChoosePlan) plan.hidden = true;
             let retried = false;
+            let created = 0;
+
+            // The run is over: say how many photos it made, and — complete page —
+            // bring "N platos no tienen foto" up to date.
+            const showCreated = remaining => {
+                if (created > 0) {
+                    $('.ai-batch-created-text').textContent = (created === 1 ? T.createdOne : T.createdMany).replace('__COUNT__', created);
+                    $('.ai-batch-created').hidden = false;
+                    $('.ai-batch-done').hidden = true;
+                }
+                const message = $('.ai-batch-message');
+                if (message && box.dataset.variant === 'offer' && remaining > 0) {
+                    message.textContent = (remaining === 1 ? T.leftOne : T.leftMany).replace('__COUNT__', remaining);
+                }
+            };
 
             const showSkipped = n => {
                 const el = $('.ai-batch-skipped');
@@ -112,17 +151,18 @@
                     return stop(T.unavailable);
                 }
                 retried = false;
+                if (result.generated) created++;
                 progress(result.remaining, result.trialRemaining);
                 showSkipped(result.skipped);
 
-                if (result.stopped) return stop(result.message);
-                if (result.trialEnded) return trialEnded(result.remaining);
+                if (result.stopped) { showCreated(result.remaining); return stop(result.message); }
+                if (result.trialEnded) { trialEnded(result.remaining); return showCreated(result.remaining); }
                 if (result.done) {
                     // Carta: reload to show the new photos. Complete page: say it's done.
                     if (box.dataset.variant === 'notice') { window.location.reload(); return; }
                     box.dataset.state = 'done';
                     $('.ai-batch-done').hidden = false;
-                    return;
+                    return showCreated(result.remaining);
                 }
                 step();
             };

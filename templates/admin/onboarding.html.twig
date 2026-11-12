@@ -1,0 +1,132 @@
+{% extends 'admin/base.html.twig' %}
+{# "Personaliza tu restaurante" — OnboardingController: optional step right
+   after a self sign-up. Text colours from the AA tokens (--tx-1/--tx-2/--tx-3,
+   --err-text), same pairs as Configuración. #}
+{% trans_default_domain 'admin_onboarding' %}
+
+{% block title %}{{ 'title'|trans }}{% endblock %}
+{% block page_title %}{{ 'title'|trans }}{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .onb-card {
+            max-width: 600px; background: var(--bg-card); border: 1px solid var(--bd-1);
+            border-radius: var(--r-lg); box-shadow: var(--shadow-sm); padding: var(--sp-5);
+        }
+        .onb-heading { font-size: var(--fs-xl, 20px); font-weight: 600; color: var(--tx-hi); margin: 0 0 var(--sp-2); }
+        .onb-intro { color: var(--tx-2); line-height: var(--lh-body); margin: 0 0 var(--sp-5); }
+        .onb-form { display: flex; flex-direction: column; gap: var(--sp-5); }
+        .field { display: flex; flex-direction: column; gap: var(--sp-2); }
+        .field label { font-size: var(--fs-base); font-weight: 500; color: var(--tx-1); }
+        .field .optional { font-weight: 400; color: var(--tx-2); }
+        .field textarea {
+            background: var(--bg-input); border: 1px solid var(--bd-2); color: var(--tx-hi);
+            font: inherit; font-size: var(--fs-lg); padding: var(--sp-3) var(--sp-4);
+            border-radius: var(--r-md); width: 100%; resize: vertical; min-height: 84px;
+        }
+        .field textarea:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+        .field textarea.error { border-color: var(--err-border); }
+        .field-hint { font-size: var(--fs-sm); color: var(--tx-3); line-height: var(--lh-body); }
+        .field-error { font-size: var(--fs-sm); color: var(--err-text); line-height: var(--lh-body); }
+        /* Drop zone: drag an image onto the row (or "Elegir imagen"). Dashed
+           --bd-2, --brand while dragging over; text stays --tx-2 (AA). */
+        .onb-upload {
+            display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;
+            padding: var(--sp-3); border: 1px dashed var(--bd-2); border-radius: var(--r-md);
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .onb-upload.is-drop-over { border-color: var(--brand); background: var(--bg-input); }
+        .onb-drop-hint { font-size: var(--fs-sm); color: var(--tx-2); }
+        .onb-preview {
+            width: 72px; height: 72px; border-radius: var(--r-md); border: 1px solid var(--bd-2);
+            background: var(--bg-input); overflow: hidden; display: flex; align-items: center; justify-content: center;
+            color: var(--tx-3); font-size: 24px; flex-shrink: 0;
+        }
+        .onb-preview.is-wide { width: 128px; }
+        .onb-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .onb-file { position: absolute; width: 1px; height: 1px; opacity: 0; }
+        .onb-file:focus-visible + .btn { outline: 2px solid var(--brand); outline-offset: 2px; }
+        .onb-file-name { font-size: var(--fs-sm); color: var(--tx-2); word-break: break-all; }
+        .onb-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; align-items: center; margin-top: var(--sp-2); }
+        .onb-later { font-size: var(--fs-sm); color: var(--tx-2); margin: 0; }
+        @media (max-width: 767px) {
+            .onb-card { padding: var(--sp-4); }
+            .onb-actions .btn { flex: 1; justify-content: center; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="onb-card">
+        <h2 class="onb-heading">{{ 'heading'|trans({'%name%': restaurant.name}) }}</h2>
+        <p class="onb-intro">{{ 'intro'|trans }}</p>
+
+        {% if errors.upload is defined %}
+            <div class="flash flash-error" role="alert"><i class="ti ti-alert-circle" aria-hidden="true"></i> {{ errors.upload }}</div>
+        {% endif %}
+        {% if errors|length > 0 and errors.upload is not defined %}
+            <div class="flash flash-warning" role="alert"><i class="ti ti-alert-triangle" aria-hidden="true"></i> {{ 'files_again'|trans }}</div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="onb-form" novalidate>
+            <input type="hidden" name="_token" value="{{ csrf_token('admin_onboarding') }}">
+
+            <div class="field">
+                <label for="onb-tagline">{{ 'tagline'|trans }} <span class="optional">{{ 'optional'|trans }}</span></label>
+                <textarea id="onb-tagline" name="tagline" maxlength="{{ taglineMax }}" rows="2"
+                          placeholder="{{ 'field.tagline_placeholder'|trans({}, 'admin_settings') }}"
+                          {% if errors.tagline is defined %}class="error" aria-invalid="true" aria-describedby="onb-tagline-error"{% endif %}>{{ tagline }}</textarea>
+                {% if errors.tagline is defined %}<span class="field-error" id="onb-tagline-error">{{ errors.tagline }}</span>{% endif %}
+                <span class="field-hint">{{ 'hint.tagline'|trans({}, 'admin_settings') }}</span>
+            </div>
+
+            {% for f in [
+                {name: 'logo', label: 'logo'|trans, hint: 'hint.logo_format'|trans({}, 'admin_settings'), icon: 'ti-photo', current: restaurant.logo ? asset('uploads/logos/' ~ restaurant.logo) : null, wide: false},
+                {name: 'heroImage', label: 'hero_image'|trans, hint: 'hint.hero_image'|trans({}, 'admin_settings'), icon: 'ti-panorama-horizontal', current: restaurant.heroImage ? asset('uploads/heroes/' ~ restaurant.heroImage) : null, wide: true},
+            ] %}
+                <div class="field">
+                    <label for="onb-{{ f.name }}">{{ f.label }} <span class="optional">{{ 'optional'|trans }}</span></label>
+                    <div class="onb-upload" data-drop-input="onb-{{ f.name }}">
+                        <div class="onb-preview{{ f.wide ? ' is-wide' }}" id="onb-{{ f.name }}-preview" aria-hidden="true">
+                            {% if f.current %}<img src="{{ f.current }}" alt="">{% else %}<i class="ti {{ f.icon }}"></i>{% endif %}
+                        </div>
+                        <input type="file" id="onb-{{ f.name }}" name="{{ f.name }}" class="onb-file" accept="image/jpeg,image/png,image/webp"
+                               {% if errors[f.name] is defined %}aria-invalid="true" aria-describedby="onb-{{ f.name }}-error"{% endif %}>
+                        <label for="onb-{{ f.name }}" class="btn"><i class="ti ti-upload" aria-hidden="true"></i> {{ 'choose'|trans }}</label>
+                        <span class="onb-file-name" id="onb-{{ f.name }}-name"><span class="onb-drop-hint">{{ 'drop_hint'|trans }}</span></span>
+                    </div>
+                    {% if errors[f.name] is defined %}<span class="field-error" id="onb-{{ f.name }}-error">{{ errors[f.name] }}</span>{% endif %}
+                    <span class="field-hint">{{ f.hint }}</span>
+                </div>
+            {% endfor %}
+
+            <div class="onb-actions">
+                <button type="submit" class="btn btn-primary">{{ 'save'|trans }}</button>
+                <a href="{{ path('admin_menu') }}" class="btn">{{ 'skip'|trans }}</a>
+            </div>
+            <p class="onb-later">{{ 'later'|trans }}</p>
+        </form>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        // Preview of the picked file (nothing is uploaded until "Guardar").
+        document.querySelectorAll('.onb-file').forEach(input => {
+            input.addEventListener('change', () => {
+                const file = input.files && input.files[0];
+                if (!file) return;
+                document.getElementById(input.id + '-name').textContent = file.name;
+                const preview = document.getElementById(input.id + '-preview');
+                if (file && file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.alt = '';
+                    img.src = URL.createObjectURL(file);
+                    preview.replaceChildren(img);
+                }
+            });
+        });
+
+    </script>
+    {% include 'admin/_image_drop.html.twig' %}
+{% endblock %}

@@ -48,3 +48,9 @@ unavailable:
     title: "Link unavailable"
     heading: "This link is not available"
     text: "Ask whoever sent it to you for a new link."
+email_confirmed:
+    title: "Email confirmed"
+    text: "Thank you. Your menu is now visible to your customers."
+    invalid_title: "Invalid link"
+    invalid_text: "The link has expired or isn't right. Sign in to your panel and press “Resend” to get a new one."
+    login: "Go to my panel"

@@ -281,6 +281,8 @@ ai_photo:
         button: 'Crear sus fotos con IA'
         trial_button_singular: 'Crear %count% foto de ejemplo'
         trial_button_plural: 'Crear %count% fotos de ejemplo'
+        trial_title: 'Tu prueba gratuita incluye %limit% fotos con IA'
+        trial_explain: 'La prueba sigue siendo gratis. Para tener fotos con IA ilimitadas en todos tus platos, elige un plan.'
         trial_end_singular: '¿Te gusta? Elige un plan y crea la foto del plato que falta.'
         trial_end_plural: '¿Te gustan? Elige un plan y crea las fotos de los %count% platos que faltan.'
         trial_used_singular: 'Ya has usado tus %limit% fotos con IA gratis. Elige un plan para crear la foto del plato que falta.'
@@ -291,6 +293,8 @@ ai_photo:
         skipped_singular: '%count% plato saltado (no se pudo crear su foto)'
         skipped_plural: '%count% platos saltados (no se pudo crear su foto)'
         done: 'Fotos creadas.'
+        created_singular: 'Hemos creado %count% foto con IA. Ya está en tu carta.'
+        created_plural: 'Hemos creado %count% fotos con IA. Ya están en tu carta.'
         retry: 'Reintentar'
         view_menu: 'Ver mi carta'
     notice:

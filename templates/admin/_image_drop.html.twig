@@ -1,0 +1,33 @@
+{# Drag & drop of one image onto an upload area: any element with
+   data-drop-input="<file input id>". The dropped image becomes that input's
+   file and a 'change' event fires, so the page's own preview / checks run
+   exactly as with "Elegir". .is-drop-over while dragging (the page styles it).
+   A file dropped elsewhere on the page doesn't open in the tab.
+   Used by Configuración (settings.html.twig) and "Personaliza tu restaurante"
+   (onboarding.html.twig). Include once per page. #}
+<script>
+    (() => {
+        document.querySelectorAll('[data-drop-input]').forEach(zone => {
+            const input = document.getElementById(zone.dataset.dropInput);
+            if (!input) return;
+            let depth = 0;
+            zone.addEventListener('dragenter', e => { e.preventDefault(); depth++; zone.classList.add('is-drop-over'); });
+            zone.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+            zone.addEventListener('dragleave', () => { if (--depth <= 0) { depth = 0; zone.classList.remove('is-drop-over'); } });
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                depth = 0;
+                zone.classList.remove('is-drop-over');
+                const file = [...(e.dataTransfer.files || [])].find(f => f.type.startsWith('image/'));
+                if (!file) return;
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                input.files = dt.files;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+        });
+        ['dragover', 'drop'].forEach(type => window.addEventListener(type, e => {
+            if (!(e.target instanceof Element) || !e.target.closest('[data-drop-input]')) e.preventDefault();
+        }));
+    })();
+</script>

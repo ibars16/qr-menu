@@ -5,9 +5,16 @@ welcome:
     button: "Accéder à votre espace"
     login_with: "Vous vous connectez avec cet e-mail : %email%"
     forgot: "Si vous oubliez votre mot de passe, utilisez « Mot de passe oublié ? » sur l'écran de connexion."
+    confirm_intro: "Confirmez votre email pour publier votre carte : d'ici là, vous seul pouvez la voir."
 reset:
     subject: "Changez votre mot de passe"
     intro: "Nous avons reçu une demande de changement du mot de passe de votre compte."
     button: "Changer le mot de passe"
     expiry: "Le lien expire dans 1 heure et ne peut être utilisé qu'une seule fois."
     ignore: "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail : votre mot de passe ne change pas."
+confirm:
+    subject: "Confirmez votre email"
+    intro: "Confirmez qu'il s'agit bien de votre email pour que vos clients puissent voir votre carte."
+    button: "Confirmer mon email"
+    expiry: "Le lien expire dans 7 jours. S'il expire, demandez-en un nouveau depuis votre espace."
+    ignore: "Si vous n'avez pas créé ce compte, ignorez cet email."

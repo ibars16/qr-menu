@@ -16,12 +16,12 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * Manual trigger for Phase 3 assembly — real and permanent, same reasoning
  * as AnalyzeMenuImportPageCommand: the Messenger worker question is still
  * deliberately deferred, so this is how a batch actually gets assembled for
- * now. Everything it creates stays active=false, needsReview=true — see
+ * now. Everything it creates is needsReview=true and hidden (active=false), except a restaurant's first carta, published at once — see
  * MenuImportAssembler's class docblock.
  */
 #[AsCommand(
     name: 'app:menu-import:assemble-batch',
-    description: 'Builds real (inactive, needs-review) Category/Product/Ingredient rows from a batch\'s already-extracted pages. Never publishes anything.',
+    description: 'Builds real (inactive, needs-review) Category/Product/Ingredient rows from a batch\'s already-extracted pages. Publishes only a restaurant\'s first carta.',
 )]
 final class AssembleMenuImportBatchCommand extends Command
 {
@@ -63,7 +63,7 @@ final class AssembleMenuImportBatchCommand extends Command
                 ['Tags assigned', $result->tagsAssigned],
             ]
         );
-        $io->note('Everything created is active=false, needsReview=true — invisible to the public menu and Smart Waiter until a later review step confirms it.');
+        $io->note('Everything created is needsReview=true; hidden (active=false) unless it is the restaurant\'s first carta (then visible, except dishes without a price).');
 
         return Command::SUCCESS;
     }

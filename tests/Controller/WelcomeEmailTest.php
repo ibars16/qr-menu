@@ -216,7 +216,7 @@ final class WelcomeEmailTest extends WebTestCase
         $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
         self::assertNotNull($user, 'the account exists');
         self::assertInstanceOf(Restaurant::class, $user->getRestaurant());
-        self::assertResponseRedirects('/admin/menu', message: 'and the new owner is logged in as usual');
+        self::assertResponseRedirects('/admin/bienvenida', message: 'and the new owner is logged in as usual (then the optional step)');
         self::assertSame(1, $failing->calls, 'the welcome email was attempted — and failed');
     }
 }

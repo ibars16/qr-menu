@@ -48,3 +48,9 @@ unavailable:
     title: "Lien indisponible"
     heading: "Ce lien n'est pas disponible"
     text: "Demandez un nouveau lien à la personne qui vous l'a envoyé."
+email_confirmed:
+    title: "Email confirmé"
+    text: "Merci. Votre carte est maintenant visible par vos clients."
+    invalid_title: "Lien non valide"
+    invalid_text: "Le lien a expiré ou n'est pas correct. Connectez-vous et appuyez sur « Renvoyer » pour en recevoir un autre."
+    login: "Accéder à mon espace"

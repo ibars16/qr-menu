@@ -281,6 +281,8 @@ ai_photo:
         button: 'Ihre Fotos mit KI erstellen'
         trial_button_singular: '%count% Beispielfoto erstellen'
         trial_button_plural: '%count% Beispielfotos erstellen'
+        trial_title: 'Dein kostenloser Test enthält %limit% KI-Fotos'
+        trial_explain: 'Der Test bleibt kostenlos. Für unbegrenzte KI-Fotos für alle deine Gerichte wähle einen Tarif.'
         trial_end_singular: 'Gefällt es dir? Wähle einen Tarif und erstelle das Foto für das restliche Gericht.'
         trial_end_plural: 'Gefallen sie dir? Wähle einen Tarif und erstelle die Fotos für die restlichen %count% Gerichte.'
         trial_used_singular: 'Du hast deine %limit% kostenlosen KI-Fotos verbraucht. Wähle einen Tarif, um das Foto für das restliche Gericht zu erstellen.'
@@ -291,6 +293,8 @@ ai_photo:
         skipped_singular: '%count% Gericht übersprungen (Foto konnte nicht erstellt werden)'
         skipped_plural: '%count% Gerichte übersprungen (Fotos konnten nicht erstellt werden)'
         done: 'Fotos erstellt.'
+        created_singular: 'Wir haben %count% KI-Foto erstellt. Es ist schon in deiner Karte.'
+        created_plural: 'Wir haben %count% KI-Fotos erstellt. Sie sind schon in deiner Karte.'
         retry: 'Erneut versuchen'
         view_menu: 'Meine Speisekarte ansehen'
     notice:

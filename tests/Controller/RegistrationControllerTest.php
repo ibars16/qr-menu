@@ -148,6 +148,7 @@ final class RegistrationControllerTest extends WebTestCase
         $this->em->clear();
         $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
         self::assertSame('it', $user->getRestaurant()->getDefaultLanguage());
+        self::assertSame('maison', $user->getRestaurant()->getTheme(), 'new restaurants start on the light theme');
     }
 
     public function testAnUnknownMenuLanguageIsRejected(): void

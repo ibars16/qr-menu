@@ -41,6 +41,7 @@ bottom_nav:
     qr: QR
     users: Equipo
     settings: Config
+    plan: Plan
 
 subscription_expired: "Tu suscripción venció el %date%"
 reseller_inactive: "Este restaurante no está activo"
@@ -76,11 +77,19 @@ billing:
     plan_yearly: "Anual · %price% €/año"
     cancel: "Cancelar"
     go_to_payment: "Ir al pago"
+    inc_ai_photos: "Fotos de tus platos con IA, ilimitadas"
     close_aria: "Cerrar"
     staff_expired: "Pide al propietario que renueve la suscripción"
     error: "No se pudo conectar con Stripe. Inténtalo de nuevo."
     checkout_no_charge_until: "Sin cargo hasta el %date%"
 
 header:
+    view_menu_short: "Ver carta"
     subscription_aria: "Suscripción"
     logout_aria: "Cerrar sesión"
+email_confirmation:
+    banner: "Confirma tu email para que tus clientes vean tu carta. Te hemos enviado un enlace a %email%."
+    resend: "Reenviar"
+    sent: "Te hemos enviado otro enlace a %email%."
+    wait: "Espera un minuto antes de pedir otro enlace."
+    done: "Email confirmado: tu carta ya es visible para tus clientes."

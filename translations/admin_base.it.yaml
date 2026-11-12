@@ -41,6 +41,7 @@ bottom_nav:
     qr: QR
     users: Team
     settings: Config
+    plan: Piano
 
 subscription_expired: "Il tuo abbonamento è scaduto il %date%"
 reseller_inactive: "Questo ristorante non è attivo"
@@ -76,11 +77,19 @@ billing:
     plan_yearly: "Annuale · %price% €/anno"
     cancel: "Annulla"
     go_to_payment: "Vai al pagamento"
+    inc_ai_photos: "Foto IA dei tuoi piatti, illimitate"
     close_aria: "Chiudi"
     staff_expired: "Chiedi al titolare di rinnovare l'abbonamento"
     error: "Impossibile collegarsi a Stripe. Riprova."
     checkout_no_charge_until: "Nessun addebito fino al %date%"
 
 header:
+    view_menu_short: "Vedi menù"
     subscription_aria: "Abbonamento"
     logout_aria: "Esci"
+email_confirmation:
+    banner: "Conferma la tua email perché i tuoi clienti vedano il tuo menù. Abbiamo inviato un link a %email%."
+    resend: "Invia di nuovo"
+    sent: "Abbiamo inviato un altro link a %email%."
+    wait: "Aspetta un minuto prima di chiedere un altro link."
+    done: "Email confermata: il tuo menù ora è visibile ai tuoi clienti."

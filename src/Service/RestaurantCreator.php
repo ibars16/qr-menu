@@ -29,7 +29,12 @@ class RestaurantCreator
         return $this->em->getRepository(User::class)->findOneBy(['email' => $email]) !== null;
     }
 
-    /** @return User the new owner (ROLE_OWNER), linked to the new restaurant */
+    /**
+     * @param bool $confirmEmail a self sign-up (/register, /alta/{code}): the
+     *   owner must confirm the email before the public menu is shown
+     *   (User::$emailConfirmationPending, EmailConfirmation)
+     * @return User the new owner (ROLE_OWNER), linked to the new restaurant
+     */
     public function create(
         string $name,
         string $email,
@@ -38,6 +43,7 @@ class RestaurantCreator
         string $language,
         string $adminLocale,
         ?Reseller $reseller = null,
+        bool $confirmEmail = false,
     ): User {
         $restaurant = new Restaurant();
         $restaurant->setName($name);
@@ -53,6 +59,9 @@ class RestaurantCreator
         $restaurant->setDefaultLanguage($language);
         $restaurant->setAdminLocale($adminLocale);
         $restaurant->setPrimaryColor('#C1440E');
+        // New restaurants start on the light theme ("Clásico claro"); the
+        // entity's own default (classic-dark) stays for existing rows.
+        $restaurant->setTheme('maison');
         $restaurant->setReseller($reseller);
         // No free trial for a reseller's restaurant: off until it's paid
         // (Restaurant::isAwaitingFirstPayment()). Ours keep their 30 days.
@@ -67,6 +76,8 @@ class RestaurantCreator
         $user->setRoles([User::ROLE_OWNER]);
         $user->setPassword($this->hasher->hashPassword($user, $plainPassword));
         $user->setRestaurant($restaurant);
+        $user->setEmailConfirmationPending($confirmEmail);
+        $restaurant->getUsers()->add($user);
 
         $this->em->persist($user);
         $this->em->flush();

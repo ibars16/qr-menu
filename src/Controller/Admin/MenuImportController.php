@@ -171,6 +171,12 @@ class MenuImportController extends AbstractController
             'SELECT COUNT(*) FROM product WHERE import_batch_id = ?',
             [$batch->getId()]
         );
+        // First carta: published at once (MenuImportAssembler); dishes left
+        // hidden there are the ones without a readable price.
+        $productsVisible = (int) $em->getConnection()->fetchOne(
+            'SELECT COUNT(*) FROM product WHERE import_batch_id = ? AND active = true',
+            [$batch->getId()]
+        );
         $failedPages = array_filter(
             $batch->getPages()->toArray(),
             static fn (MenuImportPage $p) => $p->getStatus()->value === 'failed'
@@ -188,6 +194,8 @@ class MenuImportController extends AbstractController
             'batch' => $batch,
             'categoriesCreated' => $categoriesCreated,
             'productsCreated' => $productsCreated,
+            'published' => $productsVisible > 0,
+            'productsHidden' => $productsCreated - $productsVisible,
             'failedPageCount' => count($failedPages),
             'totalPageCount' => $batch->getPages()->count(),
             'aiPhotoRemaining' => $aiPhotoRemaining,

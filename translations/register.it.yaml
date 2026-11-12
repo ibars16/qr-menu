@@ -48,3 +48,9 @@ unavailable:
     title: "Link non disponibile"
     heading: "Questo link non è disponibile"
     text: "Chiedi un nuovo link a chi te l'ha inviato."
+email_confirmed:
+    title: "Email confermata"
+    text: "Grazie. Il tuo menù ora è visibile ai tuoi clienti."
+    invalid_title: "Link non valido"
+    invalid_text: "Il link è scaduto o non è corretto. Entra nel tuo pannello e premi «Invia di nuovo» per riceverne un altro."
+    login: "Vai al mio pannello"

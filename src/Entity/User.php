@@ -55,6 +55,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(nullable: true)]
     private ?Restaurant $restaurant = null;
 
+    /**
+     * A self sign-up (/register, /alta/{code}) that hasn't clicked the link
+     * in its email yet (EmailConfirmation). While true the panel works but
+     * the restaurant's public menu stays hidden (Restaurant::isAwaitingEmailConfirmation()).
+     * False for everyone else: staff, resellers, restaurants a reseller or
+     * the platform creates, and every account from before this existed.
+     */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $emailConfirmationPending = false;
+
     /** The reseller this user logs in for (ROLE_RESELLER); null for everyone else. */
     #[ORM\ManyToOne(targetEntity: Reseller::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
@@ -133,6 +143,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getFullName(): string
     {
         return trim(($this->firstName ?? '') . ' ' . ($this->lastName ?? ''));
+    }
+
+    public function isEmailConfirmationPending(): bool
+    {
+        return $this->emailConfirmationPending;
+    }
+
+    public function setEmailConfirmationPending(bool $pending): void
+    {
+        $this->emailConfirmationPending = $pending;
     }
 
     public function getRestaurant(): ?Restaurant

@@ -5,9 +5,16 @@ welcome:
     button: "Entrar no seu painel"
     login_with: "Entra com este email: %email%"
     forgot: "Se se esquecer da palavra-passe, use «Esqueceu-se da palavra-passe?» no ecrã de entrada."
+    confirm_intro: "Confirme o seu email para publicar a sua carta: até lá só você a pode ver."
 reset:
     subject: "Altere a sua palavra-passe"
     intro: "Recebemos um pedido para alterar a palavra-passe da sua conta."
     button: "Alterar palavra-passe"
     expiry: "A ligação expira em 1 hora e só pode ser usada uma vez."
     ignore: "Se não foi você que fez o pedido, ignore este email: a sua palavra-passe não muda."
+confirm:
+    subject: "Confirme o seu email"
+    intro: "Confirme que este é o seu email para que os seus clientes possam ver a sua carta."
+    button: "Confirmar o meu email"
+    expiry: "O link expira em 7 dias. Se expirar, peça outro no seu painel."
+    ignore: "Se não foi você que criou esta conta, ignore este email."

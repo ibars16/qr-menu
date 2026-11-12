@@ -42,6 +42,18 @@
         .import-complete-sub { font-size: 14px; color: var(--tx-6); line-height: 1.6; margin-bottom: 24px; max-width: 34rem; margin-left: auto; margin-right: auto; }
         .import-complete-stats { display: flex; justify-content: center; gap: 24px; margin-bottom: 26px; }
         .import-complete-stat .n { display: block; font-size: 26px; font-weight: 600; color: var(--tx-hi); font-variant-numeric: tabular-nums; }
+        /* "Revisa tu carta": --bg-input with a brand border, text --tx-1 /
+           --tx-2 — AA in both modes (same pairs as .ai-batch). */
+        .import-review-notice {
+            display: flex; gap: var(--sp-3); align-items: flex-start; text-align: left;
+            background: var(--bg-input); border: 1px solid var(--brand); border-radius: var(--r-md);
+            padding: var(--sp-3) var(--sp-4); margin: 0 0 var(--sp-5);
+            font-size: var(--fs-base); line-height: var(--lh-body); color: var(--tx-2);
+        }
+        .import-review-notice > i { font-size: 20px; color: var(--brand); flex-shrink: 0; margin-top: 1px; }
+        .import-review-notice p { margin: 0; }
+        .import-review-notice p + p { margin-top: 4px; }
+        .import-review-notice-title { font-weight: 600; color: var(--tx-1); }
         .import-complete-stat .l { font-size: 11px; color: var(--tx-7); text-transform: uppercase; letter-spacing: 0.05em; }
     </style>
 {% endblock %}
@@ -52,9 +64,9 @@
             <div class="import-complete-icon is-success">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
             </div>
-            <div class="import-complete-title">{{ 'complete.title_success'|trans({}, 'admin_menu_import') }}</div>
+            <div class="import-complete-title">{{ (published ? 'complete.title_published' : 'complete.title_success')|trans({}, 'admin_menu_import') }}</div>
             <div class="import-complete-sub">
-                {{ 'complete.subtitle_success'|trans({}, 'admin_menu_import') }}
+                {{ (published ? 'complete.subtitle_published' : 'complete.subtitle_success')|trans({}, 'admin_menu_import') }}
                 {% if failedPageCount > 0 %}
                     {{ 'complete.subtitle_partial_failure'|trans({'%failed%': failedPageCount, '%total%': totalPageCount}, 'admin_menu_import') }}
                 {% endif %}
@@ -63,6 +75,19 @@
                 <div class="import-complete-stat"><span class="n">{{ categoriesCreated }}</span><span class="l">{{ 'complete.stat_categories'|trans({}, 'admin_menu_import') }}</span></div>
                 <div class="import-complete-stat"><span class="n">{{ productsCreated }}</span><span class="l">{{ 'complete.stat_products'|trans({}, 'admin_menu_import') }}</span></div>
             </div>
+            {# First carta, published at once: ask once to check it (MenuImportAssembler). #}
+            {% if published %}
+                <div class="import-review-notice" role="note">
+                    <i class="ti ti-checklist" aria-hidden="true"></i>
+                    <div>
+                        <p class="import-review-notice-title">{{ 'complete.review_title'|trans({}, 'admin_menu_import') }}</p>
+                        <p>{{ 'complete.review_text'|trans({}, 'admin_menu_import') }}</p>
+                        {% if productsHidden > 0 %}
+                            <p>{{ (productsHidden == 1 ? 'complete.review_hidden_singular' : 'complete.review_hidden_plural')|trans({'%count%': productsHidden}, 'admin_menu_import') }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
             {% if aiPhotoBox %}
                 {% include 'admin/_ai_photo_batch.html.twig' with {batch: batch, remaining: aiPhotoRemaining, variant: 'offer'} %}
             {% endif %}

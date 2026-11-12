@@ -49,6 +49,7 @@ action:
     save_section: Guardar apartado
 
 hint:
+    drop_image: "Toca para elegir o arrastra aquí una imagen."
     logo_format: 'PNG o JPG, máx. 2 MB'
     hero_image_format: 'PNG, JPG o WebP, máx. %max_mb% MB (mín. %min%x%min% px, máx. %max%x%max% px; recomendado: %recommended% px de ancho o más)'
     hero_image: "Se muestra como franja de fotografía en la portada de la carta pública, en todos los temas."

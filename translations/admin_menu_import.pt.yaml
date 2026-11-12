@@ -39,6 +39,12 @@ status:
         failed: Falhou
 
 complete:
+    title_published: 'A sua carta já está publicada'
+    subtitle_published: 'Adicionámos os seus pratos e os seus clientes já os podem ver.'
+    review_title: 'Reveja a sua carta'
+    review_text: 'Dê uma vista de olhos para confirmar que está tudo bem: nomes, preços, descrições e alergénios. Pode alterar qualquer prato em Cardápio.'
+    review_hidden_singular: '%count% prato sem preço fica oculto até lhe dar um.'
+    review_hidden_plural: '%count% pratos sem preço ficam ocultos até lhes dar um.'
     title_success: O seu menu está pronto para revisão
     subtitle_success: Adicionámos os seus pratos ao menu, ocultos dos clientes até os rever.
     subtitle_partial_failure: ' Não conseguimos ler %failed% das suas %total% fotos — pode tentar carregá-las novamente em separado.'

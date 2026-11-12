@@ -361,7 +361,7 @@ class SettingsController extends AbstractController
         ];
     }
 
-    private function logoErrorKey(UploadValidationError $error): string
+    public static function logoErrorKey(UploadValidationError $error): string
     {
         return match ($error) {
             UploadValidationError::UnsupportedType => 'flash.logo_unsupported_type',
@@ -372,7 +372,7 @@ class SettingsController extends AbstractController
         };
     }
 
-    private function heroImageErrorKey(UploadValidationError $error): string
+    public static function heroImageErrorKey(UploadValidationError $error): string
     {
         return match ($error) {
             UploadValidationError::UnsupportedType => 'flash.hero_image_unsupported_type',
@@ -390,7 +390,7 @@ class SettingsController extends AbstractController
      * hardcoded here or in the translation string, so it can't drift out of
      * sync with the profile's actual limit.
      */
-    private function heroImageErrorParams(UploadValidationError $error): array
+    public static function heroImageErrorParams(UploadValidationError $error): array
     {
         return match ($error) {
             UploadValidationError::DimensionsTooSmall => ['%min%' => UploadValidator::minDimension(UploadProfile::HeroImage)],

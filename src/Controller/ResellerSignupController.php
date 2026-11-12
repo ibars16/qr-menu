@@ -67,11 +67,15 @@ class ResellerSignupController extends AbstractController
                 $data['language'],
                 $adminLocaleResolver->resolve($data['adminLocale']),
                 $reseller,
+                confirmEmail: true,
             );
             $billing->syncResellerExtrasOrLog($reseller);
             $accountMailer->sendWelcome($user);
 
-            return $security->login($user, 'form_login', 'main');
+            // Logged in, then the optional "Personaliza tu restaurante".
+            $security->login($user, 'form_login', 'main');
+
+            return $this->redirectToRoute('admin_onboarding');
         }
 
         return $this->render('security/register.html.twig', [

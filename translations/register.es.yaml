@@ -49,3 +49,9 @@ unavailable:
     title: "Enlace no disponible"
     heading: "Este enlace no está disponible"
     text: "Pide un enlace nuevo a quien te lo envió."
+email_confirmed:
+    title: "Email confirmado"
+    text: "Gracias. Tu carta ya es visible para tus clientes."
+    invalid_title: "Enlace no válido"
+    invalid_text: "El enlace ha caducado o no es correcto. Entra en tu panel y pulsa «Reenviar» para recibir otro."
+    login: "Entrar en mi panel"

@@ -5,9 +5,16 @@ welcome:
     button: "Zu Ihrem Dashboard"
     login_with: "Sie melden sich mit dieser E-Mail-Adresse an: %email%"
     forgot: "Wenn Sie Ihr Passwort vergessen, nutzen Sie „Passwort vergessen?“ auf der Anmeldeseite."
+    confirm_intro: "Bestätige deine E-Mail, um deine Karte zu veröffentlichen: bis dahin siehst nur du sie."
 reset:
     subject: "Ändern Sie Ihr Passwort"
     intro: "Wir haben eine Anfrage erhalten, das Passwort Ihres Kontos zu ändern."
     button: "Passwort ändern"
     expiry: "Der Link läuft nach 1 Stunde ab und kann nur einmal verwendet werden."
     ignore: "Wenn Sie das nicht angefordert haben, ignorieren Sie diese E-Mail: Ihr Passwort bleibt unverändert."
+confirm:
+    subject: "Bestätige deine E-Mail"
+    intro: "Bestätige, dass das deine E-Mail ist, damit deine Gäste deine Karte sehen können."
+    button: "Meine E-Mail bestätigen"
+    expiry: "Der Link ist 7 Tage gültig. Danach kannst du in deinem Panel einen neuen anfordern."
+    ignore: "Wenn du dieses Konto nicht erstellt hast, ignoriere diese E-Mail."

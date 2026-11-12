@@ -108,13 +108,17 @@ final class BillingControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextSame('.trial-choose', 'Elegir plan');
         self::assertSelectorExists('.sidebar-footer a.nav-item[href="/admin/billing"]');
-        self::assertSelectorExists('.header-icons a[href="/admin/billing"][aria-label="Suscripción"]');
+        self::assertSelectorTextContains('.bottom-nav a.bottom-nav-tab[href="/admin/billing"]', 'Plan');
+        self::assertSelectorNotExists('.header-icons a[href="/admin/billing"]');
         self::assertSelectorTextSame('body > a.billing-strip[href="/admin/billing"] .billing-strip-text', $crawler->filter('.trial-badge')->text());
         self::assertSelectorTextSame('.billing-strip:not(.is-renewal) .billing-strip-action', 'Elegir plan →');
         self::assertSelectorExists('.header-icons a[aria-label="Cerrar sesión"]');
         self::assertCount(2, $crawler->filter('.billing-dialog form[action="/admin/billing/checkout"]'));
         self::assertStringContainsString('Mensual · 39,99 €/mes', $crawler->filter('.billing-dialog')->text());
         self::assertStringContainsString('Anual · 399,99 €/año', $crawler->filter('.billing-dialog')->text());
+        self::assertCount(7, $crawler->filter('#billing-modal .plan-included li'), 'the home\'s 6 + AI photos');
+        self::assertStringContainsString('Camarero con IA para tus clientes', $crawler->filter('#billing-modal .plan-included')->text());
+        self::assertStringContainsString('Fotos de tus platos con IA, ilimitadas', $crawler->filter('#billing-modal .plan-included')->text());
     }
 
     public function testChoosePlanDialogAndExpiredPageShowPricesInEnglish(): void
@@ -126,6 +130,7 @@ final class BillingControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/admin/menu');
         self::assertStringContainsString('Monthly · €39.99/month', $crawler->filter('.billing-dialog')->text());
         self::assertStringContainsString('Yearly · €399.99/year', $crawler->filter('.billing-dialog')->text());
+        self::assertStringContainsString('Unlimited AI photos of your dishes', $crawler->filter('#billing-modal .plan-included')->text());
 
         $this->expire();
         $crawler = $this->client->request('GET', '/admin/menu');
@@ -153,7 +158,7 @@ final class BillingControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/admin/menu');
 
         self::assertSelectorNotExists('.billing-dialog');
-        self::assertCount(2, $crawler->filter('.sidebar-footer a[href="/admin/billing"], .header-icons a[href="/admin/billing"]'));
+        self::assertCount(2, $crawler->filter('.sidebar-footer a[href="/admin/billing"], .bottom-nav a[href="/admin/billing"]'));
         self::assertCount(0, $crawler->filter('form[action="/admin/billing/portal"]'));
     }
 
@@ -952,7 +957,8 @@ final class BillingControllerTest extends WebTestCase
 
         self::assertSelectorTextSame('body > a.billing-strip.is-renewal[href="/admin/billing"] .billing-strip-text', 'Tu suscripción vence en 3 días');
         self::assertSelectorTextSame('.billing-strip .billing-strip-action', 'Renovar →');
-        self::assertSelectorExists('.header-icons a[href="/admin/billing"][aria-label="Suscripción"]');
+        self::assertSelectorTextContains('.bottom-nav a.bottom-nav-tab[href="/admin/billing"]', 'Plan');
+        self::assertSelectorNotExists('.header-icons a[href="/admin/billing"]');
     }
 
     public function testNoMobileStripWithoutNotice(): void
@@ -961,7 +967,8 @@ final class BillingControllerTest extends WebTestCase
         $this->renewalNotice($this->owner);
 
         self::assertSelectorNotExists('.billing-strip');
-        self::assertSelectorExists('.header-icons a[href="/admin/billing"][aria-label="Suscripción"]');
+        self::assertSelectorTextContains('.bottom-nav a.bottom-nav-tab[href="/admin/billing"]', 'Plan');
+        self::assertSelectorNotExists('.header-icons a[href="/admin/billing"]');
     }
 
     public function testStaffInTrialGetsNoMobileStrip(): void

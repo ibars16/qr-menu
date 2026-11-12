@@ -20,7 +20,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  * Only page navigations (GET, not XHR/JSON) are redirected, and only away
  * from screens that aren't part of building the carta: Carta itself, the
  * AI import, the product/ingredient endpoints it calls, billing (paying
- * must always work), the language-change screen and login/logout pass.
+ * must always work), the language-change screen, the optional step right
+ * after signing up (OnboardingController) and login/logout pass.
  */
 class EmptyMenuRedirect implements EventSubscriberInterface
 {
@@ -31,6 +32,7 @@ class EmptyMenuRedirect implements EventSubscriberInterface
         'admin_product_',
         'admin_ingredients_',
         'admin_language_change',
+        'admin_onboarding',    // "Personaliza tu restaurante", right after signing up
         'admin_login',
         'admin_logout',
         'admin_forgot_password',

@@ -37,7 +37,7 @@ class SmartWaiterController extends AbstractController
         if (!$restaurant) {
             throw $this->createNotFoundException('Restaurante no encontrado.');
         }
-        if ($restaurant->isExpired()) {
+        if ($restaurant->isExpired() || ($restaurant->isAwaitingEmailConfirmation() && !$this->isOwnTeam($restaurant))) {
             return $this->json(['error' => 'unavailable'], 503);
         }
 
@@ -93,5 +93,13 @@ class SmartWaiterController extends AbstractController
         $cache->save($item);
 
         return true;
+    }
+
+    /** Logged in for this restaurant: may use Smart Waiter on its still-hidden menu (MenuController). */
+    private function isOwnTeam(\App\Entity\Restaurant $restaurant): bool
+    {
+        $user = $this->getUser();
+
+        return $user instanceof \App\Entity\User && $user->getRestaurant()?->getId() === $restaurant->getId();
     }
 }

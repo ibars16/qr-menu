@@ -561,6 +561,22 @@ class Restaurant
         $this->categories->removeElement($category);
     }
 
+    /**
+     * Signed up by itself and its owner hasn't confirmed the email yet: the
+     * public menu (and Smart Waiter) stay hidden from customers — the owner
+     * can still preview it while logged in (MenuController).
+     */
+    public function isAwaitingEmailConfirmation(): bool
+    {
+        foreach ($this->users as $user) {
+            if ($user->isEmailConfirmationPending()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function getUsers(): Collection
     {
         return $this->users;

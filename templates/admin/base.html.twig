@@ -151,9 +151,43 @@
         }
         .theme-toggle-btn:hover { color: var(--tx-hi); border-color: var(--tx-6); }
         @media (min-width: 768px) { .theme-toggle-btn { display: none; } }
-        @media (max-width: 767px) { .theme-toggle-btn { width: 40px; height: 40px; } }
+        .header-view-menu { display: none; }
+        @media (max-width: 767px) {
+            .main-header-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .header-view-menu {
+                display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px;
+                border-radius: 10px; background: #C1440E; color: #fff; font-size: 14px; font-weight: 600;
+                text-decoration: none; white-space: nowrap; flex-shrink: 0;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .header-view-menu i { font-size: 18px; }
+            .header-view-menu:active { background: #A33A0C; }
+            .header-view-menu:focus-visible { outline: 2px solid var(--tx-hi); outline-offset: 2px; }
+        }
         /* Mobile header icons (subscription, theme, logout) — each one a .theme-toggle-btn. */
         .header-icons { display: flex; align-items: center; gap: 6px; }
+        /* Mobile: outlined, no grey fill. Icon --tx-1 on --bg-nav: dark #ccc/#111
+           11.3:1, light #333/#fff 12.6:1; on the pressed fill (--bg-input)
+           10.6:1 / 11.2:1 — AA either way. */
+        @media (max-width: 767px) {
+            .header-icons { gap: 8px; }
+            .theme-toggle-btn {
+                width: 40px; height: 40px; border-radius: 10px;
+                border: 1px solid var(--bd-2); background: transparent;
+                color: var(--tx-1); font-size: 20px; line-height: 1;
+                -webkit-tap-highlight-color: transparent;
+                transition: background-color 0.15s, border-color 0.15s;
+            }
+            .theme-toggle-btn i {
+                display: block; width: 20px; height: 20px; font-size: 20px; line-height: 20px; text-align: center;
+                -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+            }
+            html.light .theme-toggle-btn .theme-icon-dark { display: none; }
+            html:not(.light) .theme-toggle-btn .theme-icon-light { display: none; }
+            .theme-toggle-btn:hover { color: var(--tx-1); border-color: var(--bd-2); }
+            .theme-toggle-btn:active { background: var(--bg-input); border-color: var(--tx-6); }
+            .theme-toggle-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+        }
 
         /* Mobile only: the trial / "vence pronto" notice as a bar stuck to
            the top of the page (in the flow, so nothing sits under it), the
@@ -202,6 +236,16 @@
         }
         .plan-option:has(input:checked) { border-color: var(--brand); }
         .plan-option input { accent-color: var(--brand); }
+        .email-confirm-banner { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2) var(--sp-3); }
+        .email-confirm-text { flex: 1; min-width: 12rem; }
+        .email-confirm-banner form { margin: 0; }
+        @media (max-width: 767px) { .email-confirm-banner .btn { min-height: 44px; } }
+        /* --tx-1 / --tx-2 on the dialog background; the tick is decorative. */
+        .plan-included-title { margin: var(--sp-4) 0 var(--sp-2); font-size: var(--fs-md); font-weight: 600; color: var(--tx-1); }
+        .plan-included { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2) var(--sp-4); }
+        .plan-included li { display: flex; align-items: flex-start; gap: var(--sp-2); font-size: var(--fs-base); line-height: var(--lh-body); color: var(--tx-2); }
+        .plan-included i { flex-shrink: 0; font-size: 16px; margin-top: 2px; color: #7aad40; }
+        @media (max-width: 767px) { .plan-included { grid-template-columns: 1fr; } }
     </style>
     {% block stylesheets %}{% endblock %}
     {{ importmap('admin') }}
@@ -360,9 +404,13 @@
             <div class="main-header-top">
                 <div class="main-header-title">{% block page_title %}{% endblock %}</div>
                 <div class="header-icons">
-                    {% if is_granted('ROLE_OWNER') and app.user.restaurant %}
-                        <a href="{{ path('admin_billing_index') }}" class="theme-toggle-btn" aria-label="{{ 'header.subscription_aria'|trans({}, 'admin_base') }}">
-                            <i class="ti ti-credit-card" aria-hidden="true"></i>
+                    {# Mobile: the sidebar's "Ver mi carta" is hidden, so it lives here on
+                       every screen — a filled brand pill, #fff on #C1440E 5.0:1 (AA). #}
+                    {% if app.user.restaurant %}
+                        <a href="{{ path('menu_show', {slug: app.user.restaurant.slug}) }}" target="_blank" rel="noopener"
+                           class="header-view-menu" aria-label="{{ 'action.view_menu'|trans({}, 'admin_base') }}">
+                            <i class="ti ti-external-link" aria-hidden="true"></i>
+                            <span>{{ 'header.view_menu_short'|trans({}, 'admin_base') }}</span>
                         </a>
                     {% endif %}
                     <button class="theme-toggle-btn"
@@ -388,6 +436,20 @@
             <div class="main-header-actions">{% block header_actions %}{% endblock %}</div>
         </div>
         <div class="main-body">
+            {# Self sign-up still to confirm its email (EmailConfirmation): the
+               public menu stays hidden until then. .flash-warning's colours (AA,
+               _styles_tokens); the button is the standard .btn. #}
+            {% if app.user and app.user.emailConfirmationPending %}
+                <div class="flash flash-warning email-confirm-banner" role="status">
+                    <i class="ti ti-mail" aria-hidden="true"></i>
+                    <span class="email-confirm-text">{{ 'email_confirmation.banner'|trans({'%email%': app.user.email}, 'admin_base') }}</span>
+                    <form method="post" action="{{ path('admin_confirm_email_resend') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('confirm_email_resend') }}">
+                        <input type="hidden" name="back" value="{{ app.request.pathInfo }}">
+                        <button type="submit" class="btn btn-sm">{{ 'email_confirmation.resend'|trans({}, 'admin_base') }}</button>
+                    </form>
+                </div>
+            {% endif %}
             {% for message in app.flashes('success') %}
                 <div class="flash flash-success"><i class="ti ti-check" aria-hidden="true"></i> {{ message }}</div>
             {% endfor %}
@@ -427,12 +489,15 @@
            class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_qr' ? 'active' : '' }}">
             <i class="ti ti-qrcode" aria-hidden="true"></i> {{ 'bottom_nav.qr'|trans({}, 'admin_base') }}
         </a>
-        <a href="{{ path('admin_users') }}"
-           class="bottom-nav-tab {{ app.request.attributes.get('_route') == 'admin_users' ? 'active' : '' }}">
-            <i class="ti ti-users" aria-hidden="true"></i> {{ 'bottom_nav.users'|trans({}, 'admin_base') }}
-        </a>
+        {# Subscription (was a header icon on mobile); Equipo moved into Configuración (mobile row). #}
+        {% if app.user.restaurant %}
+            <a href="{{ path('admin_billing_index') }}"
+               class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_billing' ? 'active' : '' }}">
+                <i class="ti ti-credit-card" aria-hidden="true"></i> {{ 'bottom_nav.plan'|trans({}, 'admin_base') }}
+            </a>
+        {% endif %}
         <a href="{{ path('admin_settings') }}"
-           class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
+           class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_setting' or app.request.attributes.get('_route') == 'admin_users' ? 'active' : '' }}">
             <i class="ti ti-settings" aria-hidden="true"></i> {{ 'bottom_nav.settings'|trans({}, 'admin_base') }}
         </a>
     {% endif %}

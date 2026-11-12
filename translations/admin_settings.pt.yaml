@@ -49,6 +49,7 @@ action:
     save_section: Guardar secção
 
 hint:
+    drop_image: "Toque para escolher ou arraste uma imagem para aqui."
     logo_format: 'PNG ou JPG, máx. 2 MB'
     hero_image_format: 'PNG, JPG ou WebP, máx. %max_mb% MB (mín. %min%x%min% px, máx. %max%x%max% px; recomendado: %recommended% px de largura ou mais)'
     hero_image: "Mostrada como faixa de fotografia na capa do cardápio público, em todos os temas."

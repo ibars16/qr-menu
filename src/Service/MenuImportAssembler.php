@@ -25,9 +25,15 @@ use Doctrine\ORM\EntityManagerInterface;
  * Turns a MenuImportBatch's already-extracted page JSON (see
  * MenuVisionPromptBuilder for the shape, MenuImportExtractionService for
  * where it comes from) into real Category/Product/Ingredient rows — the
- * ONLY thing this class does. It never sets active = true, never clears
- * needsReview, and never builds anything a customer or Smart Waiter could
- * see: that's the review step, a later phase, not this one.
+ * ONLY thing this class does. It never clears needsReview.
+ *
+ * Visibility: the restaurant's FIRST carta (no dish of its own before this
+ * import) is published right away — categories and dishes active, so the
+ * owner sees a working menu and is asked once, on the import's complete
+ * page, to check it (MenuImportController::complete()). A dish without a
+ * readable price stays hidden even then (a 0 € placeholder is never shown).
+ * Any later import adds to a live carta, so everything it creates stays
+ * hidden (active = false) until the owner reviews it.
  *
  * Deliberately reuses, unmodified, the exact ingredient-resolution and
  * category/product conventions MenuAdminController::saveProduct() already
@@ -59,6 +65,7 @@ final class MenuImportAssembler
         /** @var array<string, Category> normalized name => Category, scoped to this one assemble() call */
         $categoriesThisRun = [];
         $anyPageExtracted = false;
+        $publish = $this->isFirstMenu($restaurant, $batch);
 
         foreach ($batch->getPages() as $page) {
             if ($page->getStatus() !== MenuImportPageStatus::EXTRACTED) {
@@ -85,11 +92,11 @@ final class MenuImportAssembler
                     continue;
                 }
 
-                [$category, $wasCreated] = $this->resolveCategory($restaurant, $name, $locale, $batch, $categoriesThisRun);
+                [$category, $wasCreated] = $this->resolveCategory($restaurant, $name, $locale, $batch, $categoriesThisRun, $publish);
                 $wasCreated ? $categoriesCreated++ : $categoriesReused++;
 
                 foreach ((is_array($categoryData['products'] ?? null) ? $categoryData['products'] : []) as $productData) {
-                    $product = $this->buildProduct($productData, $category, $batch, $locale, $restaurant, $ingredientsLinked, $ingredientsSkippedUncertain, $tagsAssigned);
+                    $product = $this->buildProduct($productData, $category, $batch, $locale, $restaurant, $ingredientsLinked, $ingredientsSkippedUncertain, $tagsAssigned, $publish);
                     if ($product === null) {
                         $productsSkipped++;
                         continue;
@@ -117,11 +124,28 @@ final class MenuImportAssembler
         );
     }
 
+    /** No dish in the restaurant other than this import's own (so re-assembling the same batch keeps its answer). */
+    private function isFirstMenu(Restaurant $restaurant, MenuImportBatch $batch): bool
+    {
+        $others = (int) $this->em->createQueryBuilder()
+            ->select('COUNT(p.id)')
+            ->from(Product::class, 'p')
+            ->join('p.category', 'c')
+            ->where('c.restaurant = :restaurant')
+            ->andWhere('p.importBatch IS NULL OR p.importBatch != :batch')
+            ->setParameter('restaurant', $restaurant)
+            ->setParameter('batch', $batch)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $others === 0;
+    }
+
     /**
      * @param array<string, Category> $categoriesThisRun
      * @return array{0: Category, 1: bool} the category, and whether it was newly created
      */
-    private function resolveCategory(Restaurant $restaurant, string $name, string $locale, MenuImportBatch $batch, array &$categoriesThisRun): array
+    private function resolveCategory(Restaurant $restaurant, string $name, string $locale, MenuImportBatch $batch, array &$categoriesThisRun, bool $publish): array
     {
         $key = mb_strtolower($name);
 
@@ -138,7 +162,7 @@ final class MenuImportAssembler
         $category = new Category();
         $category->setRestaurant($restaurant);
         $category->setPosition($restaurant->getCategories()->count());
-        $category->setActive(false);
+        $category->setActive($publish);
         $category->setNeedsReview(true);
         $category->setImportBatch($batch);
 
@@ -165,6 +189,7 @@ final class MenuImportAssembler
         int &$ingredientsLinked,
         int &$ingredientsSkippedUncertain,
         int &$tagsAssigned,
+        bool $publish,
     ): ?Product {
         $name = trim((string) ($productData['name'] ?? ''));
         if ($name === '') {
@@ -175,7 +200,7 @@ final class MenuImportAssembler
         $description = is_string($description) && trim($description) !== '' ? trim($description) : null;
 
         $price = $productData['price'] ?? null;
-        $priceCents = is_numeric($price) ? (int) round(((float) $price) * 100) : 0; // 0 is a placeholder, not a claim — see MenuImportAssembler's class docblock: this product is needsReview=true and active=false regardless
+        $priceCents = is_numeric($price) ? (int) round(((float) $price) * 100) : 0; // 0 is a placeholder, not a claim — such a product always stays active=false (see the class docblock)
 
         $supplementPrice = $productData['supplement_price'] ?? null;
         $supplementPriceCents = is_numeric($supplementPrice) ? (int) round(((float) $supplementPrice) * 100) : null;
@@ -185,7 +210,7 @@ final class MenuImportAssembler
         $product->setBasePrice($priceCents);
         $product->setSupplementPrice($supplementPriceCents);
         $product->setPosition($category->getProducts()->count());
-        $product->setActive(false);
+        $product->setActive($publish && is_numeric($price));
         $product->setNeedsReview(true);
         $product->setImportBatch($batch);
         $product->setAiConfidence($this->computeConfidence($productData));

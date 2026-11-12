@@ -39,6 +39,12 @@ status:
         failed: Non riuscita
 
 complete:
+    title_published: 'Il tuo menù è online'
+    subtitle_published: 'Abbiamo aggiunto i tuoi piatti e i tuoi clienti possono già vederli.'
+    review_title: 'Controlla il tuo menù'
+    review_text: 'Dagli un''occhiata per verificare che sia tutto corretto: nomi, prezzi, descrizioni e allergeni. Puoi modificare qualsiasi piatto da Menu.'
+    review_hidden_singular: '%count% piatto senza prezzo resta nascosto finché non gliene dai uno.'
+    review_hidden_plural: '%count% piatti senza prezzo restano nascosti finché non gliene dai uno.'
     title_success: Il tuo menù è pronto per la revisione
     subtitle_success: Abbiamo aggiunto i tuoi piatti al menù, nascosti ai clienti finché non li rivedi.
     subtitle_partial_failure: ' Non siamo riusciti a leggere %failed% delle tue %total% foto — puoi provare a ricaricarle separatamente.'

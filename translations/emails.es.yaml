@@ -5,9 +5,16 @@ welcome:
     button: "Entrar en tu panel"
     login_with: "Entras con este email: %email%"
     forgot: "Si olvidas la contraseña, usa «¿Has olvidado tu contraseña?» en la pantalla de entrada."
+    confirm_intro: "Confirma tu email para publicar tu carta: hasta entonces solo tú puedes verla."
 reset:
     subject: "Cambia tu contraseña"
     intro: "Hemos recibido una petición para cambiar la contraseña de tu cuenta."
     button: "Cambiar contraseña"
     expiry: "El enlace caduca en 1 hora y solo sirve una vez."
     ignore: "Si no lo has pedido tú, ignora este email: tu contraseña no cambia."
+confirm:
+    subject: "Confirma tu email"
+    intro: "Confirma que este es tu email para que tus clientes puedan ver tu carta."
+    button: "Confirmar mi email"
+    expiry: "El enlace caduca en 7 días. Si caduca, pide otro desde tu panel."
+    ignore: "Si no has creado tú esta cuenta, ignora este email."

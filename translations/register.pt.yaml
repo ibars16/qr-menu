@@ -48,3 +48,9 @@ unavailable:
     title: "Link indisponível"
     heading: "Este link não está disponível"
     text: "Peça um link novo a quem lho enviou."
+email_confirmed:
+    title: "Email confirmado"
+    text: "Obrigado. A sua carta já está visível para os seus clientes."
+    invalid_title: "Link inválido"
+    invalid_text: "O link expirou ou não está correto. Entre no seu painel e carregue em «Reenviar» para receber outro."
+    login: "Entrar no meu painel"
