@@ -246,6 +246,8 @@
         .plan-included li { display: flex; align-items: flex-start; gap: var(--sp-2); font-size: var(--fs-base); line-height: var(--lh-body); color: var(--tx-2); }
         .plan-included i { flex-shrink: 0; font-size: 16px; margin-top: 2px; color: #7aad40; }
         @media (max-width: 767px) { .plan-included { grid-template-columns: 1fr; } }
+        .plan-charge-now { display: flex; align-items: flex-start; gap: var(--sp-2); margin: var(--sp-3) 0 0; font-size: var(--fs-base); line-height: var(--lh-body); color: var(--tx-1); }
+        .plan-charge-now i { flex-shrink: 0; font-size: 16px; margin-top: 2px; color: var(--brand); }
     </style>
     {% block stylesheets %}{% endblock %}
     {{ importmap('admin') }}
@@ -504,6 +506,8 @@
 </nav>
 
 {% if is_granted('ROLE_OWNER') and app.user.restaurant and app.user.restaurant.ownerPaysByCard and not app.user.restaurant.hasLiveSubscription %}
+    {# Free trial (never paid, not expired): subscribing charges today and ends it. #}
+    {% set charges_now = app.user.restaurant.lastPaidAt is null and not app.user.restaurant.isExpired() %}
     {% if app.user.restaurant.reseller %}
         {# Its reseller's plans and prices (Stripe Connect). #}
         {% import 'billing/_price.html.twig' as price %}
@@ -512,9 +516,9 @@
         {% for plan, cents in resellerPlans %}
             {% set resellerLabels = resellerLabels|merge({(plan): ('billing.plan_' ~ plan)|trans({'%price%': price.amount(cents)}, 'admin_base')}) %}
         {% endfor %}
-        {% include 'admin/_billing_dialog.html.twig' with {plans: resellerPlans|keys, plan_labels: resellerLabels} %}
+        {% include 'admin/_billing_dialog.html.twig' with {plans: resellerPlans|keys, plan_labels: resellerLabels, charges_now: charges_now} %}
     {% else %}
-        {% include 'admin/_billing_dialog.html.twig' %}
+        {% include 'admin/_billing_dialog.html.twig' with {charges_now: charges_now} %}
     {% endif %}
 {% endif %}
 

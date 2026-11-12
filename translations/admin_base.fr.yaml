@@ -82,6 +82,7 @@ billing:
     staff_expired: "Demandez au propriétaire de renouveler l'abonnement"
     error: "Impossible de se connecter à Stripe. Veuillez réessayer."
     checkout_no_charge_until: "Aucun prélèvement avant le %date%"
+    charges_now: "Le paiement a lieu aujourd'hui et votre offre commence maintenant (votre essai gratuit prend fin)."
 
 header:
     view_menu_short: "Voir la carte"

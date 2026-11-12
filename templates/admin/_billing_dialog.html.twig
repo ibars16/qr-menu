@@ -8,7 +8,9 @@
    The reseller's panel passes its own checkout_route, checkout_token_id,
    plan_option_template (each option's content, given `plan`) and
    plan_note (a line under the options). A reseller's restaurant passes
-   `plans` (only those its reseller offers) and their plan_labels. #}
+   `plans` (only those its reseller offers) and their plan_labels.
+   charges_now: never paid and still in the free trial — Checkout charges
+   at once (StripeBilling::trialEndFor() null), so say so before paying. #}
 {% import 'billing/_price.html.twig' as billing_price %}
 {% set plans = plans|default(['monthly', 'yearly']) %}
 {% set checkout_route = checkout_route|default('admin_billing_checkout') %}
@@ -43,6 +45,9 @@
                                 </label>
                             {% endfor %}
                         </div>
+                        {% if charges_now|default(false) %}
+                            <p class="plan-charge-now"><i class="ti ti-info-circle" aria-hidden="true"></i> {{ 'billing.charges_now'|trans({}, 'admin_base') }}</p>
+                        {% endif %}
                         {% if plan_note is defined %}<p class="plan-note">{{ plan_note }}</p>{% endif %}
                         {# What the plan includes: the home's "Todo incluido" list (public_site
                            pricing.inc1-6, same 6 locales as the panel) plus the AI photos.

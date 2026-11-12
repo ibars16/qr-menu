@@ -82,6 +82,7 @@ billing:
     staff_expired: "Ask the owner to renew the subscription"
     error: "Could not connect to Stripe. Please try again."
     checkout_no_charge_until: "No charge until %date%"
+    charges_now: "You're charged today and your plan starts now (your free trial ends)."
 
 header:
     view_menu_short: "View menu"

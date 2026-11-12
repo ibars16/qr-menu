@@ -199,7 +199,7 @@ final class ResellerRestaurantCardTest extends WebTestCase
         }
     }
 
-    public function testCheckoutInResellerAccountWithItsPriceAndTrial(): void
+    public function testCheckoutInResellerAccountWithItsPriceChargesNowInFreeTrial(): void
     {
         $this->client->loginUser($this->owner);
         $token = $this->client->request('GET', '/admin/menu')->filter('#billing-modal input[name="_token"]')->attr('value');
@@ -210,15 +210,29 @@ final class ResellerRestaurantCardTest extends WebTestCase
         $params = FakeStripeGateway::$checkoutParams[0];
         self::assertSame([['price' => 'price_card_yearly', 'quantity' => 1]], $params['line_items']);
         self::assertSame((string) $this->restaurant->getId(), $params['subscription_data']['metadata']['restaurant_id']);
-        // Trial up to the end of its own paid_until (30 days: well over 48 h).
-        $expectedEnd = (new \DateTimeImmutable('today +31 days', new \DateTimeZone('UTC')))->getTimestamp();
-        self::assertSame($expectedEnd, $params['subscription_data']['trial_end']);
+        // Never paid: its free trial ends, charged today.
+        self::assertArrayNotHasKey('trial_end', $params['subscription_data']);
         self::assertArrayNotHasKey('application_fee_percent', $params['subscription_data']);
         // Customer and session both in the reseller's account.
         self::assertSame([['createCustomer', $this->account()], ['createCheckoutSession', $this->account()]], FakeStripeGateway::$accountLog);
         $restaurant = $this->reloaded();
         self::assertSame($this->account(), $restaurant->getStripeAccountId());
         self::assertNotNull($restaurant->getStripeCustomerId());
+    }
+
+    public function testCheckoutKeepsDaysTheResellerRegisteredAsPaid(): void
+    {
+        $restaurant = $this->reloaded();
+        $restaurant->markPaid(Restaurant::PLAN_MONTHLY);
+        $this->em->flush();
+        $expectedEnd = (new \DateTimeImmutable($restaurant->getPaidUntil()->format('Y-m-d') . ' 00:00:00', new \DateTimeZone('UTC')))->modify('+1 day')->getTimestamp();
+
+        $this->client->loginUser($this->owner);
+        $token = $this->client->request('GET', '/admin/menu')->filter('#billing-modal input[name="_token"]')->attr('value');
+        self::assertSelectorNotExists('.plan-charge-now');
+        $this->client->request('POST', '/admin/billing/checkout', ['_token' => $token, 'plan' => 'yearly']);
+
+        self::assertSame($expectedEnd, FakeStripeGateway::$checkoutParams[0]['subscription_data']['trial_end']);
     }
 
     public function testCheckoutRefusesPlanResellerDoesNotOffer(): void

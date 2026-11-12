@@ -82,6 +82,7 @@ billing:
     staff_expired: "Bitten Sie den Inhaber, das Abonnement zu verlängern"
     error: "Verbindung zu Stripe fehlgeschlagen. Bitte versuchen Sie es erneut."
     checkout_no_charge_until: "Keine Abbuchung bis zum %date%"
+    charges_now: "Die Abbuchung erfolgt heute und dein Tarif beginnt jetzt (deine kostenlose Testphase endet)."
 
 header:
     view_menu_short: "Karte ansehen"

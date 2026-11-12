@@ -82,6 +82,7 @@ billing:
     staff_expired: "Chiedi al titolare di rinnovare l'abbonamento"
     error: "Impossibile collegarsi a Stripe. Riprova."
     checkout_no_charge_until: "Nessun addebito fino al %date%"
+    charges_now: "L'addebito avviene oggi e il tuo piano inizia ora (la tua prova gratuita termina)."
 
 header:
     view_menu_short: "Vedi menù"

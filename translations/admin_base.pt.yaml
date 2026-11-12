@@ -82,6 +82,7 @@ billing:
     staff_expired: "Peça ao proprietário que renove a subscrição"
     error: "Não foi possível ligar ao Stripe. Tente novamente."
     checkout_no_charge_until: "Sem cobrança até %date%"
+    charges_now: "A cobrança é feita hoje e o seu plano começa agora (termina o seu período de teste gratuito)."
 
 header:
     view_menu_short: "Ver carta"

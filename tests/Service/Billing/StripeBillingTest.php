@@ -5,13 +5,15 @@ namespace App\Tests\Service\Billing;
 use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Service\Billing\StripeBilling;
+use App\Service\DishPhoto\DishPhotoQuota;
 use App\Tests\Support\FakeStripeGateway;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
  * StripeBilling against FakeStripeGateway (never Stripe): checkout params
- * (trial_end so the trial days aren't lost), and the webhook-side sync —
+ * (free trial: charged at once, no trial_end; days paid by hand: trial_end
+ * so they aren't charged twice), and the webhook-side sync —
  * forward-only dates, 0 € trial invoice not counted as a payment, repeated
  * and out-of-order events harmless, a second subscription only logged.
  */
@@ -63,6 +65,13 @@ final class StripeBillingTest extends KernelTestCase
         $this->em->flush();
     }
 
+    /** A payment registered by hand (/platform, the reseller): the days up to paidUntil are paid. */
+    private function setLastPaidAt(string $date): void
+    {
+        (new \ReflectionProperty(Restaurant::class, 'lastPaidAt'))->setValue($this->restaurant, new \DateTimeImmutable($date));
+        $this->em->flush();
+    }
+
     private function reloaded(): Restaurant
     {
         $this->em->clear();
@@ -77,16 +86,25 @@ final class StripeBillingTest extends KernelTestCase
 
     // ── Checkout ──
 
-    public function testTrialEndIsEndOfLastCoveredDay(): void
+    public function testTrialEndIsEndOfLastPaidDay(): void
+    {
+        $this->setPaidUntil('2026-11-20');
+        $this->setLastPaidAt('2026-10-20');
+
+        self::assertSame(self::ts('2026-11-21 00:00'), $this->billing->trialEndFor($this->restaurant, new \DateTimeImmutable('2026-11-01 10:00', new \DateTimeZone('UTC'))));
+    }
+
+    public function testNeverPaidChargesNowEvenWithTrialDaysLeft(): void
     {
         $this->setPaidUntil('2026-11-20');
 
-        self::assertSame(self::ts('2026-11-21 00:00'), $this->billing->trialEndFor($this->restaurant, new \DateTimeImmutable('2026-11-01 10:00', new \DateTimeZone('UTC'))));
+        self::assertNull($this->billing->trialEndFor($this->restaurant, new \DateTimeImmutable('2026-11-01 10:00', new \DateTimeZone('UTC'))));
     }
 
     public function testChargesNowWhenUnder48HoursLeft(): void
     {
         $this->setPaidUntil('2026-11-20');
+        $this->setLastPaidAt('2026-10-20');
 
         // 2026-11-21 00:00 is 38 hours away.
         self::assertNull($this->billing->trialEndFor($this->restaurant, new \DateTimeImmutable('2026-11-19 10:00', new \DateTimeZone('UTC'))));
@@ -95,11 +113,12 @@ final class StripeBillingTest extends KernelTestCase
     public function testChargesNowWhenExpired(): void
     {
         $this->setPaidUntil('2026-11-20');
+        $this->setLastPaidAt('2026-10-20');
 
         self::assertNull($this->billing->trialEndFor($this->restaurant, new \DateTimeImmutable('2026-11-25 10:00', new \DateTimeZone('UTC'))));
     }
 
-    public function testStartCheckoutCreatesCustomerOnceAndSendsTrialEnd(): void
+    public function testStartCheckoutInFreeTrialChargesNow(): void
     {
         $url = $this->billing->startCheckout($this->restaurant, $this->owner, Restaurant::PLAN_YEARLY, 'https://ok', 'https://cancel');
 
@@ -109,14 +128,27 @@ final class StripeBillingTest extends KernelTestCase
         self::assertSame([['price' => self::YEARLY, 'quantity' => 1]], $params['line_items']);
         self::assertSame((string) $this->restaurant->getId(), $params['client_reference_id']);
         self::assertSame((string) $this->restaurant->getId(), $params['subscription_data']['metadata']['restaurant_id']);
-        self::assertSame($this->billing->trialEndFor($this->restaurant), $params['subscription_data']['trial_end']);
-        self::assertSame('No charge until ' . gmdate('d/m/Y', $params['subscription_data']['trial_end']), $params['custom_text']['submit']['message']);
+        self::assertFalse($this->restaurant->isExpired(), 'still in the free trial');
+        self::assertArrayNotHasKey('trial_end', $params['subscription_data'], 'the trial ends: charged today');
+        self::assertArrayNotHasKey('custom_text', $params);
         self::assertNotNull($this->reloaded()->getStripeCustomerId());
 
         // Second checkout (another tab): same customer, none created.
         $this->billing->startCheckout($this->reloaded(), $this->owner, Restaurant::PLAN_MONTHLY, 'https://ok', 'https://cancel');
         self::assertCount(1, FakeStripeGateway::$createdCustomers);
         self::assertSame(FakeStripeGateway::$checkoutParams[0]['customer'], FakeStripeGateway::$checkoutParams[1]['customer']);
+    }
+
+    public function testStartCheckoutWithDaysPaidByHandKeepsThem(): void
+    {
+        $this->setPaidUntil('today +20 days');
+        $this->setLastPaidAt('today -10 days');
+
+        $this->billing->startCheckout($this->restaurant, $this->owner, Restaurant::PLAN_MONTHLY, 'https://ok', 'https://cancel');
+
+        $params = FakeStripeGateway::$checkoutParams[0];
+        self::assertSame(self::ts('today +21 days'), $params['subscription_data']['trial_end']);
+        self::assertSame('No charge until ' . gmdate('d/m/Y', $params['subscription_data']['trial_end']), $params['custom_text']['submit']['message']);
     }
 
     public function testStartCheckoutForExpiredRestaurantHasNoTrial(): void
@@ -148,6 +180,26 @@ final class StripeBillingTest extends KernelTestCase
         self::assertFalse($restaurant->isTrialActive());
         self::assertNull($restaurant->getLastPaidAt(), '0 € invoice is not a payment');
         self::assertSame((new \DateTimeImmutable('today +31 days'))->format('Y-m-d'), $restaurant->getPaidUntil()->format('Y-m-d'));
+    }
+
+    public function testCheckoutInFreeTrialCountsAsFirstPaymentAtOnce(): void
+    {
+        $id = $this->restaurant->getId();
+        self::assertTrue(DishPhotoQuota::isLimited($this->restaurant), 'free trial: 2 AI photos');
+        FakeStripeGateway::subscription('sub_1', $id, self::MONTHLY, 'cus_1');
+        // Charged today: the first period starts now.
+        $periodEnd = (new \DateTimeImmutable('today'))->modify('+1 month');
+        FakeStripeGateway::invoice('in_first', 'sub_1', $periodEnd->getTimestamp(), 3999, time());
+        FakeStripeGateway::$objects['cs_1'] = ['id' => 'cs_1', 'mode' => 'subscription', 'subscription' => 'sub_1', 'client_reference_id' => (string) $id, 'invoice' => 'in_first'];
+
+        $this->billing->syncCheckoutSession('cs_1');
+
+        $restaurant = $this->reloaded();
+        self::assertSame((new \DateTimeImmutable('today'))->format('Y-m-d'), $restaurant->getLastPaidAt()?->format('Y-m-d'));
+        self::assertSame($periodEnd->format('Y-m-d'), $restaurant->getPaidUntil()->format('Y-m-d'));
+        self::assertFalse(DishPhotoQuota::isLimited($restaurant), 'paid: the monthly AI photo allowance at once');
+        self::assertFalse(DishPhotoQuota::isCardPending($restaurant));
+        self::assertNull(static::getContainer()->get(DishPhotoQuota::class)->trialRemaining($restaurant), 'no trial counter');
     }
 
     public function testCheckoutReturnForAnotherRestaurantIsIgnored(): void

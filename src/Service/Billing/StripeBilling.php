@@ -92,7 +92,7 @@ class StripeBilling
         ];
         if (($trialEnd = $this->trialEndFor($restaurant, $now)) !== null) {
             $params['subscription_data']['trial_end'] = $trialEnd;
-            // Checkout's own trial wording is easy to miss; the first charge date, said plainly.
+            // Days already paid by hand. Checkout's own trial wording is easy to miss; the first charge date, said plainly.
             $params['custom_text'] = ['submit' => ['message' => $this->translator->trans(
                 'billing.checkout_no_charge_until', ['%date%' => gmdate('d/m/Y', $trialEnd)], 'admin_base',
             )]];
@@ -353,13 +353,16 @@ class StripeBilling
 
     /**
      * Unix time the first charge should fall on: the end of the last day
-     * already covered (paidUntil inclusive, UTC), so the owner keeps the
-     * days left. Null = charge now (expired, or under 48 hours left).
+     * already paid (paidUntil inclusive, UTC), so days paid by hand
+     * (/platform, the reseller) aren't charged twice. Null = charge now:
+     * never paid (the free trial ends the moment they subscribe, so the
+     * first real payment — and the paid AI photo allowance — come at once),
+     * expired, or under 48 hours left.
      */
     public function trialEndFor(Restaurant $restaurant, ?\DateTimeImmutable $now = null): ?int
     {
         $now = $now ?? new \DateTimeImmutable();
-        if ($restaurant->isExpired(new \DateTimeImmutable($now->format('Y-m-d')))) {
+        if ($restaurant->getLastPaidAt() === null || $restaurant->isExpired(new \DateTimeImmutable($now->format('Y-m-d')))) {
             return null;
         }
 

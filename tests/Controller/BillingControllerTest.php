@@ -120,6 +120,21 @@ final class BillingControllerTest extends WebTestCase
         self::assertStringContainsString('Camarero con IA para tus clientes', $crawler->filter('#billing-modal .plan-included')->text());
         self::assertStringContainsString('Fotos de tus platos con IA', $crawler->filter('#billing-modal .plan-included')->text());
         self::assertStringNotContainsString('ilimitad', $crawler->filter('#billing-modal .plan-included')->text(), 'no limit or "unlimited" in the plan list');
+        self::assertSelectorTextSame('#billing-modal .plan-charge-now', 'Se cobra hoy y tu plan empieza ahora (termina tu prueba gratis).');
+        self::assertSelectorTextSame('#billing-sheet .plan-charge-now', 'Se cobra hoy y tu plan empieza ahora (termina tu prueba gratis).');
+    }
+
+    public function testNoChargeNowNoticeWithDaysPaidByHand(): void
+    {
+        $restaurant = $this->managed();
+        $restaurant->markPaid(Restaurant::PLAN_MONTHLY);
+        $this->em->flush();
+
+        $this->client->loginUser($this->owner);
+        $this->client->request('GET', '/admin/menu');
+
+        self::assertSelectorExists('#billing-modal');
+        self::assertSelectorNotExists('.plan-charge-now');
     }
 
     public function testChoosePlanDialogAndExpiredPageShowPricesInEnglish(): void
@@ -133,6 +148,7 @@ final class BillingControllerTest extends WebTestCase
         self::assertStringContainsString('Yearly · €399.99/year', $crawler->filter('.billing-dialog')->text());
         self::assertStringContainsString('AI photos of your dishes', $crawler->filter('#billing-modal .plan-included')->text());
         self::assertStringNotContainsString('Unlimited', $crawler->filter('#billing-modal .plan-included')->text());
+        self::assertSelectorTextSame('#billing-modal .plan-charge-now', "You're charged today and your plan starts now (your free trial ends).");
 
         $this->expire();
         $crawler = $this->client->request('GET', '/admin/menu');
@@ -186,6 +202,7 @@ final class BillingControllerTest extends WebTestCase
         self::assertStringStartsWith('https://checkout.stripe.test/', $this->client->getResponse()->headers->get('Location'));
         self::assertSame('price_test_yearly', FakeStripeGateway::$checkoutParams[0]['line_items'][0]['price']);
         self::assertStringContainsString('/admin/billing/return?session_id={CHECKOUT_SESSION_ID}', FakeStripeGateway::$checkoutParams[0]['success_url']);
+        self::assertArrayNotHasKey('trial_end', FakeStripeGateway::$checkoutParams[0]['subscription_data'], 'free trial: charged today');
     }
 
     public function testExpiredOwnerCanPayFromExpiredPage(): void

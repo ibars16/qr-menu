@@ -82,6 +82,7 @@ billing:
     staff_expired: "Pide al propietario que renueve la suscripción"
     error: "No se pudo conectar con Stripe. Inténtalo de nuevo."
     checkout_no_charge_until: "Sin cargo hasta el %date%"
+    charges_now: "Se cobra hoy y tu plan empieza ahora (termina tu prueba gratis)."
 
 header:
     view_menu_short: "Ver carta"
