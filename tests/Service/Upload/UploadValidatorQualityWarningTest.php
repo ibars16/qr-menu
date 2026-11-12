@@ -143,19 +143,18 @@ final class UploadValidatorQualityWarningTest extends TestCase
         self::assertNotNull($result->safeFilename);
     }
 
-    public function testDishImageProfileDoesNotOptIntoWarningsAndStillRejectsSmallDimensions(): void
+    public function testDishImageProfileAcceptsSmallDimensionsWithoutWarnings(): void
     {
-        // Same undersized fixture, but the dish_image profile — no
-        // qualityWarningsEnabled there, so this must be a hard failure,
-        // exactly as before this change, confirmation flag or not.
+        // Same undersized fixture, but the dish_image profile: no minimum
+        // and no qualityWarningsEnabled — accepted as is, even unconfirmed
+        // (the editor shows its own soft "foto pequeña" notice instead).
         $result = $this->validator()->validate(
             $this->fixture('upload_hero_small.jpg'),
             UploadProfile::DishImage,
-            qualityWarningsConfirmed: true
         );
 
-        self::assertFalse($result->isValid);
-        self::assertSame(UploadValidationError::DimensionsTooSmall, $result->error);
+        self::assertTrue($result->isValid);
+        self::assertNull($result->error);
         self::assertSame([], $result->warnings);
     }
 

@@ -607,6 +607,18 @@
 }
 .img-upload.framing .img-upload-frame-badge { display:inline-flex; }
 .clip-frame-hint { display:none; margin-top:6px; font-size:12px; color:var(--tx-muted); }
+/* "Esta foto es pequeña…": a soft notice, not an error — the same warn
+   pair as Carta's notices: --warn-fg on --warn-bg-solid, 8.70:1 dark /
+   5.55:1 light (AA). Its "Mejorar con IA" sits right under the text. */
+.photo-small-notice {
+    display:flex; flex-direction:column; align-items:flex-start; gap:var(--sp-2);
+    margin-top:10px; padding:10px 12px;
+    background:var(--warn-bg-solid); color:var(--warn-fg);
+    border:1px solid rgba(193,150,14,0.3); border-radius:var(--r-md);
+}
+.photo-small-notice[hidden] { display:none; }
+.photo-small-notice-text { display:flex; align-items:flex-start; gap:6px; margin:0; font-size:var(--fs-base); line-height:var(--lh-body); }
+.photo-small-notice-text .ti { font-size:16px; margin-top:2px; flex-shrink:0; }
 .clip-trim-notice { display:flex; align-items:center; gap:6px; margin-top:6px; font-size:12px; color:var(--tx-muted); }
 .clip-frame-hint.show { display:block; }
 .img-upload img.loaded, .img-upload video.loaded { opacity:1; }

@@ -195,8 +195,7 @@ final class MenuAdminControllerClipUploadTest extends WebTestCase
      * Real static fixture (800x400 JPEG, already committed for the hero-image
      * tests) copied to a fresh temp path — UploadedFile::move() consumes its
      * source file even in test mode, so pointing straight at the fixture
-     * would break every later test reusing it. 800x400 clears dish_image's
-     * own 400x400 minimum in both dimensions; no GD needed.
+     * would break every later test reusing it. No GD needed.
      */
     private function photoUpload(): UploadedFile
     {

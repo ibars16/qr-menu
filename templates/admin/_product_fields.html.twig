@@ -264,6 +264,23 @@
                     </button>
                     {% endif %}
                 </div>
+                {# The photo in the box has a side under DISH_IMAGE_SHARP_SIDE
+                   (measured in the browser once it loads — not stored):
+                   a soft notice, never a rejection, and right under it
+                   "Mejorar con IA" when it can be used on this photo.
+                   Shown/hidden by AiPhoto.updateEnhance(). #}
+                <div class="photo-small-notice" hidden>
+                    <p class="photo-small-notice-text">
+                        <i class="ti ti-info-circle" aria-hidden="true"></i>
+                        <span>{{ 'upload.small_photo'|trans({}, 'admin_menu') }}</span>
+                    </p>
+                    {% if aiPhotoAvailable %}
+                    <button type="button" class="btn ai-photo-btn ai-enhance-btn ai-enhance-btn--notice{% if aiExhausted %} is-exhausted{% endif %}" hidden onclick="AiPhoto.enhance()"{% if aiExhausted %} disabled{% endif %}>
+                        <i class="ti ti-sparkles" aria-hidden="true"></i>
+                        <span class="ai-enhance-btn-label">{{ 'ai_photo.enhance'|trans({}, 'admin_menu') }}</span>
+                    </button>
+                    {% endif %}
+                </div>
                 {% if aiPhotoAvailable %}
                 <div class="ai-photo-pending" hidden>
                     <i class="ti ti-sparkles" aria-hidden="true"></i>

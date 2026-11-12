@@ -203,7 +203,8 @@ smart_waiter:
 upload:
     aria: Foto oder Clip des Gerichts hochladen
     hint: Klicke oder ziehe ein Foto oder einen Clip hierher
-    limits: 'Foto: JPEG, PNG oder WebP (max. 8 MB, min. 400×400 px) · Video: MP4 (max. 60 MB)'
+    limits: 'Foto: JPEG, PNG oder WebP (max. 8 MB) · Video: MP4 (max. 60 MB)'
+    small_photo: 'Dieses Foto ist klein und kann auf der Speisekarte unscharf wirken.'
     change: Ändern
     delete: 'Foto entfernen'
     confirm_delete: 'Foto dieses Gerichts entfernen? Das kann nicht rückgängig gemacht werden.'

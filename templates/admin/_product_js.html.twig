@@ -32,6 +32,8 @@
     const MSG_AI_PHOTO_SAVED = "{{ 'ai_photo.saved'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_AI_PHOTO_ENHANCE = "{{ 'ai_photo.enhance'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_AI_PHOTO_ENHANCING = "{{ 'ai_photo.enhancing'|trans({}, 'admin_menu')|e('js') }}";
+    // A photo with a side under this gets the soft "puede verse borrosa" notice (UploadValidator::DISH_IMAGE_SHARP_SIDE).
+    const SMALL_PHOTO_SIDE = {{ constant('App\\Service\\Upload\\UploadValidator::DISH_IMAGE_SHARP_SIDE') }};
     const MSG_AI_PHOTO_ENHANCE_PENDING = "{{ 'ai_photo.enhance_pending'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PHOTO_CONFIRM_DELETE = "{{ 'upload.confirm_delete'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PHOTO_DELETED = "{{ 'upload.deleted'|trans({}, 'admin_menu')|e('js') }}";
@@ -1324,6 +1326,9 @@
     function clearMediaPreview(area) {
         area.querySelectorAll('img, video').forEach(el => el.remove());
         area.classList.remove('loading', 'framing', 'dragging');
+        // No photo (or a clip) until a new <img> loads: no "foto pequeña" notice.
+        S.photoSmall = false;
+        AiPhoto.updateEnhance();
         area.closest('.field').querySelectorAll('.clip-frame-hint, .clip-zoom').forEach(el => el.classList.remove('show'));
     }
 
@@ -1340,7 +1345,13 @@
         const img = document.createElement('img');
         area.appendChild(img);
         area.classList.add('loading');
-        img.onload = () => { img.classList.add('loaded'); area.classList.remove('loading'); };
+        img.onload = () => {
+            img.classList.add('loaded');
+            area.classList.remove('loading');
+            // The real size of whatever photo is in the box (saved, picked or an AI draft).
+            S.photoSmall = Math.min(img.naturalWidth, img.naturalHeight) < SMALL_PHOTO_SIDE;
+            AiPhoto.updateEnhance();
+        };
         img.src = src;
         area.querySelector('.img-upload-hint').style.display = 'none';
         area.closest('.field').querySelectorAll('.img-upload-change-btn, .img-upload-delete-btn').forEach(b => { b.style.display = ''; });
@@ -1691,12 +1702,19 @@
             return this.mode === 'enhance' ? this.enhance() : this.generate();
         },
 
-        // Shown only for a saved dish whose saved photo is the owner's own
-        // (no AI one, no clip), with nothing else picked or pending.
+        // "Mejorar con IA" only for a saved dish whose saved photo is the
+        // owner's own (no AI one, no clip), with nothing else picked or
+        // pending. A small photo in the box (S.photoSmall, set when its
+        // <img> loads): the soft notice, with the button right under it —
+        // only if it can be used now (quota left); else just the notice.
         updateEnhance() {
-            const show = !!S.productId && !!S.savedMedia?.image && !S.savedMedia?.clip && !S.savedMedia?.source
+            const can = !!S.productId && !!S.savedMedia?.image && !S.savedMedia?.clip && !S.savedMedia?.source
                 && !S.aiPhotoToken && !panelEl('p-img-input')?.files?.length;
-            document.querySelectorAll('.ai-enhance-btn').forEach(b => { b.hidden = !show; });
+            const small = !!S.photoSmall;
+            document.querySelectorAll('.photo-small-notice').forEach(n => { n.hidden = !small; });
+            document.querySelectorAll('.ai-enhance-btn').forEach(b => {
+                b.hidden = b.classList.contains('ai-enhance-btn--notice') ? !(can && small && !this.exhausted) : !(can && !small);
+            });
         },
 
         // 'draft': "se aplicará al guardar" + Otra/Descartar; 'enhance': the
@@ -1745,6 +1763,7 @@
             document.querySelectorAll('.ai-photo-btn, .ai-enhance-btn').forEach(b => { b.classList.toggle('is-exhausted', this.exhausted); });
             this.setBusy(this.busy);
             this.showPlanButton(this.exhausted);
+            this.updateEnhance();
         },
 
         // Paid and this month's photos used up: "…Se renueva el 1 de <mes>.", no plan button.
@@ -1758,6 +1777,7 @@
             document.querySelectorAll('.ai-photo-btn, .ai-enhance-btn').forEach(b => { b.classList.add('is-exhausted'); });
             this.setBusy(this.busy);
             this.showPlanButton(false);
+            this.updateEnhance();
         },
 
         // Only where the plan dialog exists (an owner who pays by card) and

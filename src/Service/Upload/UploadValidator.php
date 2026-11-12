@@ -48,11 +48,17 @@ final class UploadValidator
             'maxWidth'        => 2000,
             'maxHeight'       => 2000,
         ],
+        /**
+         * Any size is accepted (owners didn't understand a "too small"
+         * rejection): below DISH_IMAGE_SHARP_SIDE the editor only shows a
+         * soft "puede verse borrosa" notice and offers "Mejorar con IA".
+         * minWidth/minHeight 1 = any real image; the max stays a hard limit.
+         */
         'dish_image' => [
             'maxSizeBytes'    => 8 * 1024 * 1024,
             'checkDimensions' => true,
-            'minWidth'        => 400,
-            'minHeight'       => 400,
+            'minWidth'        => 1,
+            'minHeight'       => 1,
             'maxWidth'        => 5000,
             'maxHeight'       => 5000,
         ],
@@ -71,11 +77,9 @@ final class UploadValidator
          * a hero photo is décor, not a menu item people order off of or a
          * brand mark that has to render crisply everywhere, so a slightly
          * soft or oddly-cropped one is the owner's call, not ours to block.
-         * dish_image and logo don't opt in: keeping dish photos sharp is a
-         * real commercial concern (a blurry photo of the food itself hurts
-         * the product), and a logo's constraints are about how the mark
-         * actually renders, not friendliness — neither shares the reasoning
-         * that motivated relaxing this one.
+         * dish_image and logo don't opt in: dish_image has no minimum at
+         * all now (its soft notice lives in the editor, see above), and a
+         * logo's constraints are about how the mark actually renders.
          *
          * recommendedWidth: below it (but above minWidth) the photo is
          * saved anyway and the owner just gets an informative
@@ -120,6 +124,12 @@ final class UploadValidator
             'maxStoredSizeBytes'      => 8 * 1024 * 1024,
         ],
     ];
+
+    /**
+     * A dish photo with a side below this may look blurry on the menu — not
+     * rejected, only a notice in the editor (_product_js: SMALL_PHOTO_SIDE).
+     */
+    public const DISH_IMAGE_SHARP_SIDE = 400;
 
     public function __construct(
         private readonly ContentModerationInterface $moderation,

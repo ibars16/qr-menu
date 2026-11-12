@@ -203,7 +203,8 @@ smart_waiter:
 upload:
     aria: Ajouter une photo ou un clip du plat
     hint: Cliquez ou glissez une photo ou un clip ici
-    limits: 'Photo : JPEG, PNG ou WebP (8 Mo max, 400×400 px min) · Vidéo : MP4 (60 Mo max)'
+    limits: 'Photo : JPEG, PNG ou WebP (8 Mo max) · Vidéo : MP4 (60 Mo max)'
+    small_photo: 'Cette photo est petite et peut paraître floue sur la carte.'
     change: Changer
     delete: 'Supprimer la photo'
     confirm_delete: 'Supprimer la photo de ce plat ? Cette action est irréversible.'

@@ -167,10 +167,20 @@ final class UploadValidatorTest extends TestCase
     {
         $file = $this->pngUpload(50, 50);
 
-        $result = $this->validator()->validate($file, UploadProfile::DishImage);
+        $result = $this->validator()->validate($file, UploadProfile::Logo);
 
         self::assertFalse($result->isValid);
         self::assertSame(UploadValidationError::DimensionsTooSmall, $result->error);
+    }
+
+    /** No minimum for a dish photo: a small one only gets the editor's soft notice. */
+    public function testADishPhotoOfAnySizeIsAccepted(): void
+    {
+        $result = $this->validator()->validate($this->pngUpload(50, 50), UploadProfile::DishImage);
+
+        self::assertTrue($result->isValid);
+        self::assertNull($result->error);
+        self::assertSame([], $result->warnings);
     }
 
     public function testRejectsDimensionsAboveProfileMaximum(): void

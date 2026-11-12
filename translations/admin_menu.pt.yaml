@@ -203,7 +203,8 @@ smart_waiter:
 upload:
     aria: Enviar foto ou clipe do prato
     hint: Arraste ou clique para enviar uma foto ou um clipe
-    limits: 'Foto: JPEG, PNG ou WebP (máx. 8 MB, mín. 400×400 px) · Vídeo: MP4 (máx. 60 MB)'
+    limits: 'Foto: JPEG, PNG ou WebP (máx. 8 MB) · Vídeo: MP4 (máx. 60 MB)'
+    small_photo: 'Esta foto é pequena e pode ficar desfocada na ementa.'
     change: Alterar
     delete: 'Eliminar foto'
     confirm_delete: 'Eliminar a foto deste prato? Esta ação não pode ser anulada.'

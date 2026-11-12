@@ -275,6 +275,30 @@ final class DishPhotoEnhanceTest extends WebTestCase
         self::assertResponseIsSuccessful('the new upload can be enhanced');
     }
 
+    /** A photo under 400px is no longer refused: uploaded as is, and "Mejorar con IA" works on it. */
+    public function testASmallPhotoIsAcceptedAndCanBeEnhanced(): void
+    {
+        $restaurant = $this->restaurant();
+        $this->client->loginUser($this->owner($restaurant));
+        $product = $this->dish($this->category($restaurant), 'Croquetas');
+
+        $tmp = tempnam(sys_get_temp_dir(), 'small') . '.png';
+        copy(dirname(__DIR__) . '/fixtures/dish_photo/too_small_200x150.png', $tmp);
+        $this->client->request('POST', '/admin/products/' . $product->getId() . '/image', files: [
+            'image' => new UploadedFile($tmp, 'small.png', 'image/png', null, true),
+        ]);
+        self::assertResponseIsSuccessful();
+        $product = $this->reload($product);
+        self::assertNotNull($product->getImage());
+        self::assertTrue($product->hasOwnerPhoto());
+
+        $this->enhance($product);
+        self::assertResponseIsSuccessful();
+        $size = getimagesizefromstring(FakeDishImageGenerator::$edits[0]['bytes']);
+        self::assertSame([200, 150], [$size[0], $size[1]], 'never upscaled before sending');
+        self::assertSame('4:3', FakeDishImageGenerator::$edits[0]['aspectRatio']);
+    }
+
     /** Whatever the original's shape, the result is asked in the cards' 4:3. */
     public function testAPortraitPhotoIsAskedBackIn43(): void
     {
@@ -289,6 +313,27 @@ final class DishPhotoEnhanceTest extends WebTestCase
         $size = getimagesizefromstring(FakeDishImageGenerator::$edits[0]['bytes']);
         self::assertLessThan($size[1], $size[0], 'the portrait original is what gets sent');
         self::assertSame('4:3', FakeDishImageGenerator::$edits[0]['aspectRatio']);
+    }
+
+    /** The soft notice and its own "Mejorar con IA" are in the editor, hidden until the browser measures the photo. */
+    public function testTheEditorHasTheSmallPhotoNotice(): void
+    {
+        $product = $this->dishWithOwnPhoto();
+        $this->client->loginUser($this->owner($product->getCategory()->getRestaurant()));
+
+        $crawler = $this->client->request('GET', '/admin/menu');
+        $notice = $crawler->filter('.photo-small-notice')->first();
+        self::assertNotNull($notice->attr('hidden'));
+        self::assertSame('Esta foto es pequeña y puede verse borrosa en la carta.', trim($notice->filter('.photo-small-notice-text')->text()));
+        self::assertSame('Mejorar con IA', trim($notice->filter('.ai-enhance-btn--notice')->text()));
+        self::assertStringNotContainsString('400×400', $crawler->filter('.img-upload-hint-limits')->first()->text());
+        self::assertStringContainsString('const SMALL_PHOTO_SIDE = 400;', $this->client->getResponse()->getContent());
+
+        // Without the image key: the notice stays, no button in it.
+        $this->withoutImageKey();
+        $crawler = $this->client->request('GET', '/admin/menu');
+        self::assertCount(1, $crawler->filter('.photo-small-notice')->first());
+        self::assertCount(0, $crawler->filter('.photo-small-notice .ai-enhance-btn'));
     }
 
     /** The public menu has no "IA" mark: none of its templates (everything outside admin/) reads image_source. */

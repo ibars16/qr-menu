@@ -203,7 +203,8 @@ smart_waiter:
 upload:
     aria: Upload dish photo or clip
     hint: Drag or click to upload a photo or a clip
-    limits: 'Photo: JPEG, PNG or WebP (max 8 MB, min 400×400 px) · Video: MP4 (max 60 MB)'
+    limits: 'Photo: JPEG, PNG or WebP (max 8 MB) · Video: MP4 (max 60 MB)'
+    small_photo: 'This photo is small and may look blurry on the menu.'
     change: Change
     delete: 'Remove photo'
     confirm_delete: 'Remove this dish''s photo? This can''t be undone.'

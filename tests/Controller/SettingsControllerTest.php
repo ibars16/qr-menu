@@ -139,7 +139,7 @@ final class SettingsControllerTest extends WebTestCase
         self::assertResponseRedirects('/admin/settings');
     }
 
-    /** DishImage profile requires >=400x400 (unlike Logo's >=100x100), so this is deliberately bigger than logoUpload()'s. */
+    /** Clears the hero profile's 300px minimum, so deliberately bigger than logoUpload()'s. */
     private function heroImageUpload(string $originalName = 'hero.png'): UploadedFile
     {
         return $this->fixtureUploadedFile('upload_png_500x500.png', $originalName, 'image/png');

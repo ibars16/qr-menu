@@ -203,7 +203,8 @@ smart_waiter:
 upload:
     aria: Carica foto o clip del piatto
     hint: Trascina o clicca per caricare una foto o una clip
-    limits: 'Foto: JPEG, PNG o WebP (max 8 MB, min 400×400 px) · Video: MP4 (max 60 MB)'
+    limits: 'Foto: JPEG, PNG o WebP (max 8 MB) · Video: MP4 (max 60 MB)'
+    small_photo: 'Questa foto è piccola e potrebbe apparire sfocata nel menu.'
     change: Cambia
     delete: 'Elimina foto'
     confirm_delete: 'Eliminare la foto di questo piatto? L''operazione non si può annullare.'

@@ -189,7 +189,8 @@ final class DishPhotoEditorTest extends WebTestCase
         $restaurant = $this->restaurant();
         $this->client->loginUser($this->owner($restaurant));
 
-        FakeDishImageGenerator::willReturn(dirname(__DIR__) . '/fixtures/dish_photo/too_small_200x150.png');
+        // Not a real image (dish photos have no minimum size any more).
+        FakeDishImageGenerator::willReturn(dirname(__DIR__) . '/fixtures/upload_fake_mime.png');
         $data = $this->generate(['name' => 'Flan']);
 
         self::assertResponseStatusCodeSame(422);
