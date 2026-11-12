@@ -283,6 +283,13 @@ when@test:
     # Tests never call Stripe.
     services:
         App\Tests\Support\FakeStripeGateway: ~
+
+        # menu_warm_ip's counters in tests (rate_limiter.yaml): a plain array
+        # cache, not a cache pool — those are emptied between requests, so
+        # the limit could never be reached within a test.
+        app.test.menu_warm_limiter_pool:
+            class: Symfony\Component\Cache\Adapter\ArrayAdapter
+            autoconfigure: false
         App\Service\Billing\StripeGatewayInterface:
             alias: App\Tests\Support\FakeStripeGateway
 

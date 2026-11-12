@@ -19,13 +19,16 @@ use App\Service\ProductEffectiveTags;
 use App\Service\ProductTranslationService;
 use App\Service\TagTranslationService;
 use App\Service\TranslationDeadline;
+use App\Service\WarmTranslationLock;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Clock\ClockInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -145,6 +148,12 @@ class MenuController extends AbstractController
      * categories, tags, then the dishes, and last the ingredient names
      * (only seen in a dish's detail). Before, the owner texts came after
      * the dishes and a 58-dish menu ran out of time before reaching them.
+     *
+     * Public and calling the AI, so braked twice: per IP (menu_warm_ip,
+     * rate_limiter.yaml: 20 every 10 minutes, then 429 — the loading screen
+     * shows the menu anyway) and one visit at a time per restaurant +
+     * language (WarmTranslationLock: a second one waits for the first,
+     * within the same deadline, and only does what's still missing).
      */
     #[Route('/r/{slug}/warm-translations', name: 'menu_warm_translations', methods: ['POST'])]
     public function warmTranslations(
@@ -158,8 +167,14 @@ class MenuController extends AbstractController
         OwnerTextTranslationService $ownerTextTranslationService,
         TagTranslationService $tagTranslationService,
         ClockInterface $clock,
+        WarmTranslationLock $lock,
+        #[Autowire(service: 'limiter.menu_warm_ip')] RateLimiterFactoryInterface $ipLimiter,
     ): JsonResponse {
-        $deadline   = TranslationDeadline::in($clock, TranslationDeadline::WARM_SECONDS);
+        $deadline = TranslationDeadline::in($clock, TranslationDeadline::WARM_SECONDS);
+        if (!$ipLimiter->create($request->getClientIp() ?? '')->consume()->isAccepted()) {
+            return $this->json(['error' => 'rate_limited'], 429);
+        }
+
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
             return $this->json(['ok' => false], 404);
@@ -173,28 +188,38 @@ class MenuController extends AbstractController
             return $this->json(['ok' => false], 400);
         }
 
-        // Owner texts first: few, short, at the top of the menu.
-        $ownerTextTranslationService->translateMissingTexts($restaurant, $locale, $deadline);
+        // Another visit already translating it: wait for it (it stores as
+        // it goes), never past the deadline. Out of time → no AI at all.
+        if (!$lock->acquire($restaurant->getId(), $locale, $deadline)) {
+            return $this->json(['ok' => true]);
+        }
 
-        $categoryTranslationService->resolveForMenu(
-            $restaurant,
-            $restaurant->getCategories()->filter(fn($c) => $c->isActive())->toArray(),
-            $locale,
-            deadline: $deadline,
-        );
+        try {
+            // Owner texts first: few, short, at the top of the menu.
+            $ownerTextTranslationService->translateMissingTexts($restaurant, $locale, $deadline);
 
-        // Tags: every tag still missing in $locale, batch by batch.
-        $tagTranslationService->translateMissing($restaurant, $locale, $deadline);
+            $categoryTranslationService->resolveForMenu(
+                $restaurant,
+                $restaurant->getCategories()->filter(fn($c) => $c->isActive())->toArray(),
+                $locale,
+                deadline: $deadline,
+            );
 
-        $productTranslationService->resolveForMenu(
-            $restaurant,
-            array_values(array_filter($productRepo->findActiveForRestaurant($restaurant), static fn ($p) => $p->isShownOnMenu())),
-            $locale,
-            $deadline,
-        );
+            // Tags: every tag still missing in $locale, batch by batch.
+            $tagTranslationService->translateMissing($restaurant, $locale, $deadline);
 
-        // Last: ingredient names, seen only in a dish's detail.
-        $ownerTextTranslationService->translateMissingIngredientNames($restaurant, $locale, $deadline);
+            $productTranslationService->resolveForMenu(
+                $restaurant,
+                array_values(array_filter($productRepo->findActiveForRestaurant($restaurant), static fn ($p) => $p->isShownOnMenu())),
+                $locale,
+                $deadline,
+            );
+
+            // Last: ingredient names, seen only in a dish's detail.
+            $ownerTextTranslationService->translateMissingIngredientNames($restaurant, $locale, $deadline);
+        } finally {
+            $lock->release($restaurant->getId(), $locale);
+        }
 
         // Every batch above that stored something bumped the menu content
         // version, so the menu this screen reloads into reads it fresh.
@@ -249,9 +274,9 @@ class MenuController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
-    // Same cache-counter idiom as SmartWaiterController::allowRequest — no
-    // rate-limiter component used anywhere in this app, deliberately kept as
-    // a small per-controller helper rather than a shared abstraction. Views
+    // Same cache-counter idiom as SmartWaiterController::allowRequest, kept
+    // as a small per-controller helper (it predates the app's use of
+    // symfony/rate-limiter — rate_limiter.yaml, e.g. menu_warm_ip). Views
     // fire far more often per visitor than chat messages, hence the higher
     // ceiling than Smart Waiter's 20/min.
     private function allowViewTracking(CacheItemPoolInterface $cache, int $restaurantId, string $ip): bool

@@ -17,3 +17,8 @@ framework:
         # Namespaced pools use the above "app" backend by default
         #pools:
             #my.dedicated.cache: null
+
+        # menu_warm_ip's counters (rate_limiter.yaml).
+        pools:
+            cache.menu_warm_limiter:
+                adapter: cache.app

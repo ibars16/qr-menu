@@ -28,3 +28,26 @@ framework:
             policy: sliding_window
             limit: 10
             interval: '1 hour'
+
+        # The public menu's loading screen (MenuController::warmTranslations(),
+        # it calls the AI): 20 every 10 minutes per IP, across restaurants.
+        # A normal visit makes one per language, and only when something is
+        # missing. Past it: 429, and the loading screen shows the menu anyway.
+        # Counted in its own pool (cache.yaml); in memory in tests (below).
+        menu_warm_ip:
+            policy: sliding_window
+            limit: 20
+            interval: '10 minutes'
+            cache_pool: cache.menu_warm_limiter
+
+when@test:
+    framework:
+        rate_limiter:
+            # Same limit, counted in memory for one test's kernel only
+            # (services.yaml, when@test): the suite's many loading-screen
+            # requests from 127.0.0.1 never add up across tests or runs.
+            menu_warm_ip:
+                policy: sliding_window
+                limit: 20
+                interval: '10 minutes'
+                cache_pool: app.test.menu_warm_limiter_pool
