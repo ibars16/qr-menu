@@ -114,6 +114,9 @@
         {% for message in app.flashes('success') %}
             <div class="flash flash-success">{{ message }}</div>
         {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="flash flash-error">{{ message }}</div>
+        {% endfor %}
 
         <div class="summary">
             <div class="summary-card"><div class="summary-value">{{ summary.active }}</div><div class="summary-label">Activas</div></div>
@@ -176,7 +179,9 @@
                                                 <button type="button" class="btn copy-link" disabled>Sin dueño</button>
                                             {% endif %}
                                         {% endif %}
-                                        {{ _self.deactivate_form(restaurant, 'platform_deactivate', 'platform-deactivate-', '¿Desactivar ' ~ restaurant.name ~ '? Su carta dejará de verse.') }}
+                                        {{ _self.deactivate_form(restaurant, 'platform_deactivate', 'platform-deactivate-', restaurant.hasLiveSubscription
+                                            ? '¿Desactivar ' ~ restaurant.name ~ '? Este restaurante paga con tarjeta. Se cancelará su suscripción y no se le volverá a cobrar.'
+                                            : '¿Desactivar ' ~ restaurant.name ~ '? Su carta dejará de verse.') }}
                                     </div>
                                 </td>
                             {% endif %}

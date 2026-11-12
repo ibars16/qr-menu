@@ -313,6 +313,18 @@ class StripeBilling
         return true;
     }
 
+    /**
+     * Stripe has ended it and it's not (or no longer) the one linked: e.g.
+     * cancelled by Desactivar/Archivar (cancelNow()). A late invoice.paid
+     * or checkout.session.completed of it must not turn the menu back on.
+     *
+     * @param array<string, mixed> $subscription
+     */
+    private static function endedElsewhere(Restaurant|Reseller $restaurant, array $subscription): bool
+    {
+        return !self::collectable($subscription) && $restaurant->getStripeSubscriptionId() !== $subscription['id'];
+    }
+
     /** @param array<string, mixed> $subscription Stripe still bills it (not ended). */
     private static function collectable(array $subscription): bool
     {
@@ -551,6 +563,34 @@ class StripeBilling
         $this->syncSubscription($subscription['id'], self::accountOf($restaurant));
     }
 
+    /**
+     * Desactivar / Archivar (/partners, /platform) a restaurant paying by
+     * card: its subscription ends right now (in the reseller's connected
+     * account for a reseller's restaurant), no refund, and is unlinked —
+     * it's back to "Elegir plan" like anyone. One Stripe already ended
+     * (a missed webhook) is just unlinked. Throws when Stripe fails, so the
+     * caller doesn't turn it off while it keeps charging. Late webhooks of
+     * the ended subscription change nothing (syncInvoice(),
+     * syncCheckoutSession()).
+     */
+    public function cancelNow(Restaurant $restaurant): void
+    {
+        if (!$restaurant->hasLiveSubscription()) {
+            return;
+        }
+        $subscription = $this->liveSubscription($restaurant);
+        if (self::collectable($subscription)) {
+            // A scheduled plan change is dropped first, as in cancel().
+            if (($subscription['schedule'] ?? null) !== null) {
+                $this->gatewayFor($restaurant)->releaseSubscriptionSchedule(self::id($subscription['schedule']));
+            }
+            $this->gatewayFor($restaurant)->cancelSubscription($subscription['id']);
+        }
+        $restaurant->setStripeSubscriptionId(null);
+        $restaurant->setStripeCancelPending(false);
+        $this->em->flush();
+    }
+
     /** "No cancelar": clears both ways a cancel can be stored. */
     public function resume(Restaurant|Reseller $restaurant): void
     {
@@ -702,6 +742,9 @@ class StripeBilling
         }
 
         $subscription = $gateway->retrieveSubscription($session['subscription']);
+        if (self::endedElsewhere($restaurant, $subscription)) {
+            return;
+        }
         $this->link($restaurant, $subscription, $account);
         if (($plan = $this->planFor($subscription, $account !== null)) !== null) {
             $restaurant->setPlan($plan);
@@ -736,6 +779,10 @@ class StripeBilling
             return;
         }
 
+        if (self::endedElsewhere($restaurant, $subscription)) {
+            $this->logger->info('Stripe invoice of an ended subscription not applied', ['invoice' => $invoiceId, 'subscription' => $subscriptionId]);
+            return;
+        }
         $this->link($restaurant, $subscription, $account);
 
         // The trial's 0 € invoice still extends paidUntil to the trial end,

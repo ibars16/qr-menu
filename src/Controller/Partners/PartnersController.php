@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Service\Billing\StripeBilling;
 use App\Service\RestaurantCreator;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,6 +36,7 @@ class PartnersController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly TranslatorInterface $translator,
         private readonly StripeBilling $billing,
+        private readonly LoggerInterface $logger,
         #[Autowire('%app.reseller_included_restaurants%')]
         private readonly int $includedRestaurants,
         #[Autowire('%app.connect_currency%')]
@@ -91,6 +93,14 @@ class PartnersController extends AbstractController
         $restaurant = $this->ownRestaurant($id);
         $this->checkToken($request, 'partners-restaurant-archive-' . $id);
         if (!$this->reseller()->isExpired()) {
+            $byCard = $restaurant->hasLiveSubscription();
+            if (!$this->cancelCard($restaurant)) {
+                return $this->redirectToRoute('partners_index');
+            }
+            // Paid by card: off for good, so restoring it means choosing a plan again.
+            if ($byCard) {
+                $restaurant->deactivateNow();
+            }
             $restaurant->archive();
             $this->em->flush();
             $this->billing->syncResellerExtrasOrLog($this->reseller());
@@ -149,12 +159,34 @@ class PartnersController extends AbstractController
         $this->checkToken($request, 'partners-restaurant-deactivate-' . $id);
 
         if (!$this->reseller()->isExpired() && !$restaurant->isArchived()) {
+            if (!$this->cancelCard($restaurant)) {
+                return $this->redirectToRoute('partners_index');
+            }
             $restaurant->deactivateNow();
             $this->em->flush();
             $this->addFlash('success', $this->translator->trans('flash.deactivated', ['%name%' => $restaurant->getName()], 'partners'));
         }
 
         return $this->redirectToRoute('partners_index');
+    }
+
+    /**
+     * Before Desactivar / Archivar: a restaurant paying by card stops being
+     * charged (StripeBilling::cancelNow()). False when Stripe failed —
+     * flashed, and the restaurant is left as it was.
+     */
+    private function cancelCard(Restaurant $restaurant): bool
+    {
+        try {
+            $this->billing->cancelNow($restaurant);
+
+            return true;
+        } catch (\Throwable $e) {
+            $this->logger->error('Stripe subscription not cancelled; restaurant left on', ['restaurant' => $restaurant->getId(), 'exception' => $e]);
+            $this->addFlash('error', $this->translator->trans('flash.cancel_failed', ['%name%' => $restaurant->getName()], 'partners'));
+
+            return false;
+        }
     }
 
     /** @param array{error?: string, values?: array{name: string, email: string}} $dialog */

@@ -45,6 +45,7 @@ list:
     enter: "Entra"
     archive: "Archivia"
     archive_confirm: "Archiviare %name%? Il menù non si vedrà più."
+    archive_confirm_card: "Archiviare %name%? Questo ristorante paga con carta. Il suo abbonamento verrà annullato e non gli verrà più addebitato nulla."
     restore: "Ripristina"
     archived_title: "Archiviati"
     empty: "Non hai ancora ristoranti."
@@ -54,6 +55,7 @@ list:
     no_payments: "Nessun pagamento"
     deactivate: "Disattiva"
     deactivate_confirm: "Disattivare %name%? Il suo menù non sarà più visibile finché non registri un pagamento. Continuerà a essere conteggiato nel tuo abbonamento. Se non è più tuo cliente, usa Archivia."
+    deactivate_confirm_card: "Disattivare %name%? Questo ristorante paga con carta. Il suo abbonamento verrà annullato e non gli verrà più addebitato nulla."
     copy_link: "Copia link di pagamento"
     copied: "Copiato ✓"
     auto_pay: "💳 Pagamento automatico"
@@ -80,6 +82,7 @@ flash:
     restored: "%name% ripristinato."
     paid: "Pagamento registrato: %name% è attivo fino al %date%."
     deactivated: "%name% disattivato: il suo menù non è più visibile."
+    cancel_failed: "Non è stato possibile annullare l'abbonamento di %name% in Stripe. Non è cambiato nulla; riprova tra qualche minuto."
 
 summary:
     active: "Attivi"

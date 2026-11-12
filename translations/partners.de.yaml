@@ -45,6 +45,7 @@ list:
     enter: "Öffnen"
     archive: "Archivieren"
     archive_confirm: "%name% archivieren? Die Speisekarte wird dann nicht mehr angezeigt."
+    archive_confirm_card: "%name% archivieren? Dieses Restaurant zahlt per Karte. Sein Abonnement wird gekündigt und es wird nicht mehr belastet."
     restore: "Wiederherstellen"
     archived_title: "Archiviert"
     empty: "Sie haben noch keine Restaurants."
@@ -54,6 +55,7 @@ list:
     no_payments: "Keine Zahlungen"
     deactivate: "Deaktivieren"
     deactivate_confirm: "%name% deaktivieren? Die Speisekarte ist nicht mehr sichtbar, bis Sie eine Zahlung erfassen. Es wird weiterhin in Ihrem Abonnement berechnet. Wenn es nicht mehr Ihr Kunde ist, verwenden Sie Archivieren."
+    deactivate_confirm_card: "%name% deaktivieren? Dieses Restaurant zahlt per Karte. Sein Abonnement wird gekündigt und es wird nicht mehr belastet."
     copy_link: "Zahlungslink kopieren"
     copied: "Kopiert ✓"
     auto_pay: "💳 Automatische Zahlung"
@@ -80,6 +82,7 @@ flash:
     restored: "%name% wiederhergestellt."
     paid: "Zahlung erfasst: %name% ist aktiv bis %date%."
     deactivated: "%name% deaktiviert: die Speisekarte ist nicht mehr sichtbar."
+    cancel_failed: "Das Abonnement von %name% konnte in Stripe nicht gekündigt werden. Es wurde nichts geändert; versuchen Sie es in ein paar Minuten erneut."
 
 summary:
     active: "Aktiv"

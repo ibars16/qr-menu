@@ -45,6 +45,7 @@ list:
     enter: "Enter"
     archive: "Archive"
     archive_confirm: "Archive %name%? Its menu will stop being shown."
+    archive_confirm_card: "Archive %name%? This restaurant pays by card. Its subscription will be cancelled and it won't be charged again."
     restore: "Restore"
     archived_title: "Archived"
     empty: "You don't have any restaurants yet."
@@ -54,6 +55,7 @@ list:
     no_payments: "No payments"
     deactivate: "Deactivate"
     deactivate_confirm: "Deactivate %name%? Its menu will stop showing until you register a payment. It will still count in your subscription. If it is no longer your client, use Archive."
+    deactivate_confirm_card: "Deactivate %name%? This restaurant pays by card. Its subscription will be cancelled and it won't be charged again."
     copy_link: "Copy payment link"
     copied: "Copied ✓"
     auto_pay: "💳 Automatic payment"
@@ -80,6 +82,7 @@ flash:
     restored: "%name% restored."
     paid: "Payment registered: %name% is active until %date%."
     deactivated: "%name% deactivated: its menu no longer shows."
+    cancel_failed: "%name%'s subscription couldn't be cancelled in Stripe. Nothing has changed; please try again in a few minutes."
 
 summary:
     active: "Active"

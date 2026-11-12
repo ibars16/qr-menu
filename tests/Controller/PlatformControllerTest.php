@@ -4,6 +4,7 @@ namespace App\Tests\Controller;
 
 use App\Entity\Restaurant;
 use App\Entity\User;
+use App\Tests\Support\FakeStripeGateway;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -353,10 +354,14 @@ final class PlatformControllerTest extends WebTestCase
 
     public function testDeactivateSetsYesterdayAndKeepsPlan(): void
     {
+        FakeStripeGateway::reset();
         $this->restaurant->markPaid(Restaurant::PLAN_MONTHLY);
         $this->em->flush();
 
-        $this->client->submit($this->row()->selectButton('Desactivar')->form());
+        $row = $this->row();
+        self::assertSame('¿Desactivar Platform Test Restaurant? Su carta dejará de verse.', self::confirmText($row->filter('form[action$="/deactivate"]')));
+        $this->client->submit($row->selectButton('Desactivar')->form());
+        self::assertSame([], FakeStripeGateway::$calls, 'no card: nothing in Stripe');
 
         self::assertResponseRedirects('/platform');
         $restaurant = $this->reloaded();
@@ -438,5 +443,57 @@ final class PlatformControllerTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(403);
         self::assertSame($before, $this->reloaded()->getPaidUntil()->format('Y-m-d'));
+    }
+
+    // ── Desactivar a restaurant paying by card ──
+
+    private function payingByCard(): void
+    {
+        FakeStripeGateway::reset();
+        $restaurant = $this->reloaded();
+        $restaurant->setStripeCustomerId('cus_platform_' . uniqid());
+        $restaurant->setStripeSubscriptionId('sub_platform');
+        $restaurant->setPlan(Restaurant::PLAN_MONTHLY);
+        $this->em->flush();
+        FakeStripeGateway::subscription('sub_platform', $restaurant->getId(), 'price_test_monthly', $restaurant->getStripeCustomerId());
+    }
+
+    public function testDeactivateByCardCancelsSubscriptionNow(): void
+    {
+        $this->payingByCard();
+        $this->setPaidUntil('+20 days');
+
+        $row = $this->row();
+        self::assertStringContainsString('Este restaurante paga con tarjeta. Se cancelará su suscripción y no se le volverá a cobrar.', self::confirmText($row->filter('form[action$="/deactivate"]')));
+        $this->client->submit($row->selectButton('Desactivar')->form());
+
+        self::assertResponseRedirects('/platform');
+        self::assertContains(['cancelSubscription', 'sub_platform', []], FakeStripeGateway::$calls);
+        self::assertContains(['cancelSubscription', null], FakeStripeGateway::$accountLog, 'in the platform account');
+        $restaurant = $this->reloaded();
+        self::assertNull($restaurant->getStripeSubscriptionId());
+        self::assertSame((new \DateTimeImmutable('yesterday'))->format('Y-m-d'), $restaurant->getPaidUntil()->format('Y-m-d'));
+    }
+
+    public function testDeactivateByCardLeavesItOnWhenStripeFails(): void
+    {
+        $this->payingByCard();
+        $this->setPaidUntil('+20 days');
+        $row = $this->row();
+        FakeStripeGateway::$fail = true;
+
+        $this->client->submit($row->selectButton('Desactivar')->form());
+        $this->client->followRedirect();
+
+        self::assertSelectorTextContains('.flash-error', 'No se pudo cancelar la suscripción de Platform Test Restaurant en Stripe');
+        $restaurant = $this->reloaded();
+        self::assertSame('sub_platform', $restaurant->getStripeSubscriptionId());
+        self::assertFalse($restaurant->isExpired());
+    }
+
+    /** The text of a form's onsubmit="return confirm(…)" (JSON-escaped in the page). */
+    private static function confirmText(\Symfony\Component\DomCrawler\Crawler $form): string
+    {
+        return json_decode(substr($form->attr('onsubmit'), strlen('return confirm('), -1));
     }
 }

@@ -48,6 +48,13 @@ interface StripeGatewayInterface
      */
     public function updateSubscription(string $id, array $params): array;
 
+    /**
+     * Ends it right now: no refund, no final invoice.
+     *
+     * @return array<string, mixed>
+     */
+    public function cancelSubscription(string $id): array;
+
     /** @return array<string, mixed> With invoice_settings.default_payment_method expanded. */
     public function retrieveCustomer(string $id): array;
 

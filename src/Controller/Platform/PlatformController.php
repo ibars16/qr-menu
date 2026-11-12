@@ -7,6 +7,7 @@ use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Service\Billing\StripeBilling;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -104,9 +105,21 @@ class PlatformController extends AbstractController
     }
 
     #[Route('/restaurants/{id}/deactivate', name: 'deactivate', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function deactivate(int $id, Request $request, EntityManagerInterface $em): Response
+    public function deactivate(int $id, Request $request, EntityManagerInterface $em, StripeBilling $billing, LoggerInterface $logger): Response
     {
         $restaurant = $this->ownBilledRestaurant($id, $em);
+        if (!$this->isCsrfTokenValid('platform-deactivate-' . $restaurant->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF no válido.');
+        }
+        // Paying by card: its subscription ends now (no refund) — or it's left on if Stripe fails.
+        try {
+            $billing->cancelNow($restaurant);
+        } catch (\Throwable $e) {
+            $logger->error('Stripe subscription not cancelled; restaurant left on', ['restaurant' => $restaurant->getId(), 'exception' => $e]);
+            $this->addFlash('error', sprintf('No se pudo cancelar la suscripción de %s en Stripe. No se ha desactivado; inténtalo de nuevo.', $restaurant->getName()));
+
+            return $this->redirectToRoute('platform_index');
+        }
 
         return $this->deactivateFor($restaurant, $restaurant->getName(), 'platform-deactivate-' . $restaurant->getId(), $request, $em);
     }

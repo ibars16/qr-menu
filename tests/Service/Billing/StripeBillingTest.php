@@ -347,4 +347,46 @@ final class StripeBillingTest extends KernelTestCase
         $this->billing->syncSubscriptionDeleted('sub_1');
         self::assertFalse($this->reloaded()->isStripeCancelPending());
     }
+
+    // ── cancelNow (Desactivar / Archivar) ──
+
+    public function testCancelNowEndsAndUnlinks(): void
+    {
+        FakeStripeGateway::subscription('sub_1', $this->restaurant->getId(), self::MONTHLY);
+        $this->restaurant->setStripeSubscriptionId('sub_1');
+        $this->em->flush();
+
+        $this->billing->cancelNow($this->restaurant);
+
+        self::assertSame([['cancelSubscription', 'sub_1', []]], FakeStripeGateway::$calls);
+        self::assertNull($this->reloaded()->getStripeSubscriptionId());
+    }
+
+    public function testCancelNowOfOneStripeAlreadyEndedJustUnlinks(): void
+    {
+        FakeStripeGateway::subscription('sub_1', $this->restaurant->getId(), self::MONTHLY);
+        FakeStripeGateway::$objects['sub_1']['status'] = 'canceled';
+        $this->restaurant->setStripeSubscriptionId('sub_1');
+        $this->em->flush();
+
+        $this->billing->cancelNow($this->restaurant);
+
+        self::assertSame([], FakeStripeGateway::$calls);
+        self::assertNull($this->reloaded()->getStripeSubscriptionId());
+    }
+
+    public function testLateInvoiceOfEndedSubscriptionChangesNothing(): void
+    {
+        $this->setPaidUntil('yesterday');
+        FakeStripeGateway::subscription('sub_1', $this->restaurant->getId(), self::MONTHLY);
+        FakeStripeGateway::$objects['sub_1']['status'] = 'canceled';
+        FakeStripeGateway::invoice('in_1', 'sub_1', self::ts('today +1 month'), 3999, time());
+
+        $this->billing->syncInvoice('in_1');
+
+        $restaurant = $this->reloaded();
+        self::assertTrue($restaurant->isExpired());
+        self::assertNull($restaurant->getStripeSubscriptionId());
+        self::assertNull($restaurant->getLastPaidAt());
+    }
 }

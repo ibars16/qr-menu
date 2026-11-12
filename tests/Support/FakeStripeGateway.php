@@ -180,6 +180,16 @@ class FakeStripeGateway implements StripeGatewayInterface
         return $subscription;
     }
 
+    public function cancelSubscription(string $id): array
+    {
+        $this->log('cancelSubscription');
+        $this->maybeFail();
+        self::$calls[] = ['cancelSubscription', $id, []];
+        self::$objects[$id]['status'] = 'canceled';
+
+        return self::$objects[$id];
+    }
+
     public function retrieveCustomer(string $id): array
     {
         $this->log('retrieveCustomer');

@@ -104,12 +104,12 @@
                                         <button type="button" class="btn btn-primary enter" disabled>{{ 'list.enter'|trans({}, 'partners') }}</button>
                                     {% endif %}
                                     <form method="post" action="{{ path('partners_restaurant_deactivate', {id: restaurant.id}) }}"
-                                          onsubmit="return confirm({{ 'list.deactivate_confirm'|trans({'%name%': restaurant.name}, 'partners')|json_encode }})">
+                                          onsubmit="return confirm({{ (restaurant.hasLiveSubscription ? 'list.deactivate_confirm_card' : 'list.deactivate_confirm')|trans({'%name%': restaurant.name}, 'partners')|json_encode }})">
                                         <input type="hidden" name="_token" value="{{ csrf_token('partners-restaurant-deactivate-' ~ restaurant.id) }}">
                                         <button type="submit" class="btn btn-danger deactivate" {{ expired ? 'disabled' }}>{{ 'list.deactivate'|trans({}, 'partners') }}</button>
                                     </form>
                                     <form method="post" action="{{ path('partners_restaurant_archive', {id: restaurant.id}) }}"
-                                          onsubmit="return confirm({{ 'list.archive_confirm'|trans({'%name%': restaurant.name}, 'partners')|json_encode }})">
+                                          onsubmit="return confirm({{ (restaurant.hasLiveSubscription ? 'list.archive_confirm_card' : 'list.archive_confirm')|trans({'%name%': restaurant.name}, 'partners')|json_encode }})">
                                         <input type="hidden" name="_token" value="{{ csrf_token('partners-restaurant-archive-' ~ restaurant.id) }}">
                                         <button type="submit" class="btn archive" {{ expired ? 'disabled' }}>{{ 'list.archive'|trans({}, 'partners') }}</button>
                                     </form>

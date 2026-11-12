@@ -65,6 +65,11 @@ class StripeGateway implements StripeGatewayInterface
         return $this->stripe->subscriptions->update($id, $params, $this->opts())->toArray();
     }
 
+    public function cancelSubscription(string $id): array
+    {
+        return $this->stripe->subscriptions->cancel($id, [], $this->opts())->toArray();
+    }
+
     public function retrieveCustomer(string $id): array
     {
         return $this->stripe->customers->retrieve($id, ['expand' => ['invoice_settings.default_payment_method']], $this->opts())->toArray();

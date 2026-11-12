@@ -492,4 +492,101 @@ final class ResellerRestaurantCardTest extends WebTestCase
 
         self::assertEquals($before, $this->reloaded()->getPaidUntil());
     }
+
+    // ── Desactivar / Archivar a restaurant paying by card ───────────────────
+
+    private function partnersForm(string $action): \Symfony\Component\DomCrawler\Crawler
+    {
+        $this->client->loginUser($this->resellerUser);
+        $crawler = $this->client->request('GET', '/partners');
+        self::assertResponseIsSuccessful();
+
+        return $crawler->filter('form[action="/partners/restaurantes/' . $this->restaurant->getId() . '/' . $action . '"]');
+    }
+
+    public function testDeactivateByCardCancelsInResellerAccountAndLateEventsChangeNothing(): void
+    {
+        $this->subscribed();
+        $form = $this->partnersForm('desactivar');
+        self::assertStringContainsString('Este restaurante paga con tarjeta. Se cancelará su suscripción y no se le volverá a cobrar.', self::confirmText($form));
+
+        $this->client->submit($form->form());
+
+        self::assertResponseRedirects('/partners');
+        self::assertContains(['cancelSubscription', 'sub_card', []], FakeStripeGateway::$calls);
+        self::assertContains(['cancelSubscription', $this->account()], FakeStripeGateway::$accountLog);
+        $restaurant = $this->reloaded();
+        self::assertNull($restaurant->getStripeSubscriptionId());
+        self::assertTrue($restaurant->isExpired());
+
+        // A late invoice.paid and checkout.session.completed of it: still off, still unlinked.
+        FakeStripeGateway::invoice('in_late', 'sub_card', strtotime('+1 month'), 2500, time());
+        $this->postEvent('invoice.paid', 'in_late', $this->account());
+        FakeStripeGateway::$objects['cs_late'] = ['id' => 'cs_late', 'mode' => 'subscription', 'subscription' => 'sub_card', 'client_reference_id' => (string) $this->restaurant->getId(), 'invoice' => 'in_late'];
+        $this->postEvent('checkout.session.completed', 'cs_late', $this->account());
+
+        $restaurant = $this->reloaded();
+        self::assertNull($restaurant->getStripeSubscriptionId());
+        self::assertTrue($restaurant->isExpired());
+        self::assertSame((new \DateTimeImmutable('yesterday'))->format('Y-m-d'), $restaurant->getPaidUntil()->format('Y-m-d'));
+    }
+
+    public function testArchiveByCardCancelsAndRestoredOwnerChoosesAPlan(): void
+    {
+        $this->subscribed();
+        $form = $this->partnersForm('archivar');
+        self::assertStringContainsString('¿Archivar Card Test Restaurant? Este restaurante paga con tarjeta.', self::confirmText($form));
+
+        $this->client->submit($form->form());
+
+        self::assertContains(['cancelSubscription', 'sub_card', []], FakeStripeGateway::$calls);
+        $restaurant = $this->reloaded();
+        self::assertTrue($restaurant->isArchived());
+        self::assertNull($restaurant->getStripeSubscriptionId());
+        self::assertTrue($restaurant->isOwnPeriodExpired(), 'off for good: restoring it means choosing a plan');
+
+        $this->client->submit($this->partnersForm('restaurar')->form());
+        self::assertFalse($this->reloaded()->isArchived());
+
+        $this->client->loginUser($this->owner);
+        $crawler = $this->client->request('GET', '/admin/menu');
+        self::assertResponseStatusCodeSame(403);
+        self::assertCount(2, $crawler->filter('form[action="/admin/billing/checkout"] input[name="plan"]'));
+    }
+
+    public function testStripeFailureLeavesTheRestaurantOn(): void
+    {
+        $this->subscribed();
+        $form = $this->partnersForm('desactivar');
+        $before = $this->reloaded()->getPaidUntil()->format('Y-m-d');
+        FakeStripeGateway::$fail = true;
+
+        $this->client->submit($form->form());
+        $this->client->followRedirect();
+
+        self::assertSelectorTextContains('.flash-error', 'No se pudo cancelar la suscripción de Card Test Restaurant en Stripe');
+        $restaurant = $this->reloaded();
+        self::assertSame('sub_card', $restaurant->getStripeSubscriptionId());
+        self::assertSame($before, $restaurant->getPaidUntil()->format('Y-m-d'));
+        self::assertFalse($restaurant->isExpired());
+    }
+
+    public function testWithoutCardNothingGoesToStripe(): void
+    {
+        $form = $this->partnersForm('desactivar');
+        self::assertStringNotContainsString('tarjeta', self::confirmText($form));
+        self::assertStringNotContainsString('tarjeta', self::confirmText($this->client->getCrawler()->filter('form[action="/partners/restaurantes/' . $this->restaurant->getId() . '/archivar"]')));
+        FakeStripeGateway::$accountLog = [];
+
+        $this->client->submit($form->form());
+
+        self::assertTrue($this->reloaded()->isExpired());
+        self::assertSame([], FakeStripeGateway::$accountLog);
+    }
+
+    /** The text of a form's onsubmit="return confirm(…)" (JSON-escaped in the page). */
+    private static function confirmText(\Symfony\Component\DomCrawler\Crawler $form): string
+    {
+        return json_decode(substr($form->attr('onsubmit'), strlen('return confirm('), -1));
+    }
 }

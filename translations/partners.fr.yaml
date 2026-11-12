@@ -45,6 +45,7 @@ list:
     enter: "Entrer"
     archive: "Archiver"
     archive_confirm: "Archiver %name% ? La carte ne s'affichera plus."
+    archive_confirm_card: "Archiver %name% ? Ce restaurant paie par carte. Son abonnement sera résilié et il ne sera plus prélevé."
     restore: "Restaurer"
     archived_title: "Archivés"
     empty: "Vous n'avez encore aucun restaurant."
@@ -54,6 +55,7 @@ list:
     no_payments: "Aucun paiement"
     deactivate: "Désactiver"
     deactivate_confirm: "Désactiver %name% ? Sa carte ne sera plus visible jusqu'à ce que vous enregistriez un paiement. Il continuera d'être compté dans votre abonnement. S'il n'est plus votre client, utilisez Archiver."
+    deactivate_confirm_card: "Désactiver %name% ? Ce restaurant paie par carte. Son abonnement sera résilié et il ne sera plus prélevé."
     copy_link: "Copier le lien de paiement"
     copied: "Copié ✓"
     auto_pay: "💳 Paiement automatique"
@@ -80,6 +82,7 @@ flash:
     restored: "%name% restauré."
     paid: "Paiement enregistré : %name% est actif jusqu'au %date%."
     deactivated: "%name% désactivé : sa carte n'est plus visible."
+    cancel_failed: "Impossible de résilier l'abonnement de %name% dans Stripe. Rien n'a changé ; réessayez dans quelques minutes."
 
 summary:
     active: "Actifs"
