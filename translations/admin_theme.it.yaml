@@ -20,6 +20,9 @@ preview:
     apply: Applica
     title_with_names: 'Anteprima: %layout% · %theme%'
     closed_toast: Anteprima chiusa
+    banner_title: "Modalità anteprima"
+    banner_sub: "Solo tu vedi questo tema. I tuoi clienti continuano a vedere il tema attivo."
+    banner_back: "← Torna all'admin"
 
 section:
     theme_title: Tema visivo

@@ -8,6 +8,7 @@ use App\Enum\AllergenPresence;
 use App\Repository\ProductRepository;
 use App\Repository\ProductViewRepository;
 use App\Repository\RestaurantRepository;
+use App\Service\AdminLocaleResolver;
 use App\Service\CategoryTranslationService;
 use App\Service\CategoryTypeFilterResolver;
 use App\Service\CurrencyConverter;
@@ -31,6 +32,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class MenuController extends AbstractController
 {
     private const VIEW_RATE_LIMIT_PER_MINUTE = 60;
+
+    public function __construct(
+        private readonly AdminLocaleResolver $adminLocaleResolver,
+    ) {
+    }
 
     // "Popular" badge (see renderMenu()): only the very top dishes, and only
     // once there's enough real traffic to mean something — a 2-view badge on
@@ -626,6 +632,8 @@ class MenuController extends AbstractController
             'layout'        => $layout,
             'theme'         => $theme,
             'isPreview'     => $isPreview,
+            // The preview banner speaks the owner's panel language, not the menu's.
+            'previewLocale' => $isPreview ? $this->adminLocaleResolver->resolve($restaurant->getAdminLocale()) : null,
             'previewLayout' => $previewLayout,
             'previewTheme'  => $previewTheme,
             'showPrefsDialog' => $showPrefsDialog,

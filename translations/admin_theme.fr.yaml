@@ -20,6 +20,9 @@ preview:
     apply: Appliquer
     title_with_names: 'Aperçu : %layout% · %theme%'
     closed_toast: Aperçu fermé
+    banner_title: "Mode aperçu"
+    banner_sub: "Vous seul voyez ce thème. Vos clients continuent de voir le thème actif."
+    banner_back: "← Retour à l'admin"
 
 section:
     theme_title: Thème visuel

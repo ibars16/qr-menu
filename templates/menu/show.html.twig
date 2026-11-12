@@ -47,11 +47,11 @@
     <div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#150d2e;border-bottom:2px solid #534AB7;padding:10px 16px;display:flex;align-items:center;gap:12px">
         <span style="font-size:18px">👁️</span>
         <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:600;color:#c4b5fd">Modo previsualización</div>
-            <div style="font-size:11px;color:#7c6ca0">Solo tú ves este tema. Tus clientes siguen viendo el tema activo.</div>
+            <div style="font-size:13px;font-weight:600;color:#c4b5fd">{{ 'preview.banner_title'|trans({}, 'admin_theme', previewLocale) }}</div>
+            <div style="font-size:11px;color:#7c6ca0">{{ 'preview.banner_sub'|trans({}, 'admin_theme', previewLocale) }}</div>
         </div>
         <a href="{{ path('admin_theme') }}" style="padding:7px 14px;background:#C1440E;color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;flex-shrink:0">
-            ← Volver al admin
+            {{ 'preview.banner_back'|trans({}, 'admin_theme', previewLocale) }}
         </a>
     </div>
     <div style="height:60px"></div>

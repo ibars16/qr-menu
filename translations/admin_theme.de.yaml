@@ -20,6 +20,9 @@ preview:
     apply: Anwenden
     title_with_names: 'Vorschau: %layout% · %theme%'
     closed_toast: Vorschau geschlossen
+    banner_title: "Vorschaumodus"
+    banner_sub: "Nur Sie sehen dieses Theme. Ihre Kunden sehen weiterhin das aktive Theme."
+    banner_back: "← Zurück zum Admin"
 
 section:
     theme_title: Visuelles Design

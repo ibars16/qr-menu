@@ -20,6 +20,9 @@ preview:
     apply: Aplicar
     title_with_names: 'Pré-visualização: %layout% · %theme%'
     closed_toast: Pré-visualização fechada
+    banner_title: "Modo de pré-visualização"
+    banner_sub: "Só você vê este tema. Os seus clientes continuam a ver o tema ativo."
+    banner_back: "← Voltar ao admin"
 
 section:
     theme_title: Tema visual
