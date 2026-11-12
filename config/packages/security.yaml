@@ -10,10 +10,11 @@ security:
             algorithm: bcrypt
 
     providers:
+        # No `property`: UserRepository::loadUserByIdentifier() looks the
+        # email up case-insensitively.
         app_user_provider:
             entity:
                 class: App\Entity\User
-                property: email
 
     firewalls:
         dev:

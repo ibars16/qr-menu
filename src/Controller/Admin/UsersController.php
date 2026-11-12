@@ -89,7 +89,7 @@ class UsersController extends AbstractController
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return $this->json(['error' => $translator->trans('error.email_invalid', domain: 'admin_users')], 400);
         }
-        if ($em->getRepository(User::class)->findOneBy(['email' => $email])) {
+        if ($em->getRepository(User::class)->findOneByEmail($email)) {
             return $this->json(['error' => $translator->trans('error.email_taken', domain: 'admin_users')], 400);
         }
 

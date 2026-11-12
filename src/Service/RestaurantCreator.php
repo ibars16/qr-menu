@@ -26,7 +26,7 @@ class RestaurantCreator
 
     public function isEmailTaken(string $email): bool
     {
-        return $this->em->getRepository(User::class)->findOneBy(['email' => $email]) !== null;
+        return $this->em->getRepository(User::class)->findOneByEmail($email) !== null;
     }
 
     /**

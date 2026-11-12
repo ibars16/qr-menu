@@ -79,11 +79,7 @@ class ResetPasswordController extends AbstractController
                 && $emailLimiter->create($email)->consume()->isAccepted();
 
             if ($allowed) {
-                $user = $em->getRepository(User::class)->createQueryBuilder('u')
-                    ->where('LOWER(u.email) = :email')
-                    ->setParameter('email', $email)
-                    ->getQuery()
-                    ->getOneOrNullResult();
+                $user = $em->getRepository(User::class)->findOneByEmail($email);
 
                 if ($user instanceof User) {
                     $this->requests->removeRequests($user); // a new link invalidates the older ones
