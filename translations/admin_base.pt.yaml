@@ -5,22 +5,22 @@ sidebar:
     role: Painel de administração
 
 action:
-    view_menu: Ver o meu cardápio
+    view_menu: Ver a minha ementa
 
 nav:
     section:
-        menu: Cardápio
+        menu: Ementa
         restaurant: Restaurante
     item:
-        menu: Cardápio
+        menu: Ementa
         menus: Menus
         categories: Categorias
         tags: Etiquetas
-        theme: Personalizar cardápio
+        theme: Personalizar ementa
         stats: Estatísticas
-        qr: Meu QR
+        qr: O meu QR
         users: Utilizadores
-        settings: Configurações
+        settings: Definições
         logout: Sair
         back_to_partners: "Voltar ao meu painel"
 
@@ -32,7 +32,7 @@ theme:
 
 bottom_nav:
     aria_label: Navegação
-    menu: Cardápio
+    menu: Ementa
     menus: Menus
     categories: Categ.
     tags: Etiq.
@@ -40,14 +40,14 @@ bottom_nav:
     stats: Estat.
     qr: QR
     users: Equipa
-    settings: Config
+    settings: Defin.
     plan: Plano
 
 subscription_expired: "A sua subscrição expirou em %date%"
 reseller_inactive: "Este restaurante não está ativo"
-choose_plan: "Escolha um plano para ativar a sua carta"
-expired_menu_hidden: "Entretanto, os seus clientes não veem a sua carta. Renove para voltar a mostrá-la."
-first_payment_menu_hint: "Os seus clientes verão a sua carta assim que escolher um plano."
+choose_plan: "Escolha um plano para ativar a sua ementa"
+expired_menu_hidden: "Entretanto, os seus clientes não veem a sua ementa. Renove para voltar a mostrá-la."
+first_payment_menu_hint: "Os seus clientes verão a sua ementa assim que escolher um plano."
 reseller_inactive_hint: "Contacte %name%."
 
 # A reseller's restaurant, its own paid_until 7 days or fewer away (no payment button).
@@ -61,12 +61,12 @@ trial:
     days_left_plural: "Teste gratuito · restam %count% dias"
 
 renewal:
-    expires_today: "A sua assinatura vence hoje"
-    expires_singular: "A sua assinatura vence dentro de %count% dia"
-    expires_plural: "A sua assinatura vence dentro de %count% dias"
-    ends_today: "A sua assinatura termina hoje"
-    ends_singular: "A sua assinatura termina dentro de %count% dia"
-    ends_plural: "A sua assinatura termina dentro de %count% dias"
+    expires_today: "A sua subscrição vence hoje"
+    expires_singular: "A sua subscrição vence dentro de %count% dia"
+    expires_plural: "A sua subscrição vence dentro de %count% dias"
+    ends_today: "A sua subscrição termina hoje"
+    ends_singular: "A sua subscrição termina dentro de %count% dia"
+    ends_plural: "A sua subscrição termina dentro de %count% dias"
     renew: "Renovar"
 
 billing:
@@ -85,12 +85,12 @@ billing:
     charges_now: "A cobrança é feita hoje e o seu plano começa agora (termina o seu período de teste gratuito)."
 
 header:
-    view_menu_short: "Ver carta"
+    view_menu_short: "Ver ementa"
     subscription_aria: "Subscrição"
     logout_aria: "Terminar sessão"
 email_confirmation:
-    banner: "Confirme o seu email para que os seus clientes vejam a sua carta. Enviámos um link para %email%."
+    banner: "Confirme o seu email para que os seus clientes vejam a sua ementa. Enviámos um link para %email%."
     resend: "Reenviar"
     sent: "Enviámos outro link para %email%."
     wait: "Espere um minuto antes de pedir outro link."
-    done: "Email confirmado: a sua carta já está visível para os seus clientes."
+    done: "Email confirmado: a sua ementa já está visível para os seus clientes."

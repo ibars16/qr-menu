@@ -1,4 +1,4 @@
-title: "Assinatura"
+title: "Subscrição"
 stripe_error: "Não foi possível carregar os dados do Stripe. Tente novamente mais tarde."
 next_charge: "%amount% em %date%"
 
@@ -43,7 +43,7 @@ action:
     to_yearly: "Mudar para anual"
     to_monthly: "Mudar para mensal"
     undo_change: "Manter o plano atual"
-    cancel: "Cancelar assinatura"
+    cancel: "Cancelar subscrição"
     resume: "Não cancelar"
     change_card: "Alterar cartão"
 
@@ -76,6 +76,6 @@ invoice_status:
 reseller:
     section: "O seu revendedor"
     until: "Ativa até"
-    managed_by: "A sua carta é gerida por %name%. Para pagar ou mudar de plano, fale com eles."
+    managed_by: "A sua ementa é gerida por %name%. Para pagar ou mudar de plano, fale com eles."
     contact: "Contacto:"
-    managed_by_short: "A sua carta é gerida por %name%"
+    managed_by_short: "A sua ementa é gerida por %name%"

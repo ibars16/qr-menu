@@ -1,13 +1,13 @@
-title: Importar menu
+title: Importar ementa
 
 action:
-    back_to_menu: Voltar ao menu
+    back_to_menu: Voltar à ementa
 
 upload:
-    intro: 'Carregue fotos do seu menu impresso e nós as lemos por si — uma foto por página está bem.'
-    drop_text: Arraste as fotos do seu menu para aqui, ou toque para escolher ficheiros
+    intro: 'Carregue fotos da sua ementa impressa e nós lemo-las por si — uma foto por página está bem.'
+    drop_text: Arraste as fotos da sua ementa para aqui, ou toque para escolher ficheiros
     drop_hint: Adicione quantas precisar
-    submit: Começar a ler o meu menu
+    submit: Começar a ler a minha ementa
     uploading: A carregar as suas fotos…
     upload_failed: O carregamento falhou — verifique a sua ligação e tente novamente.
     retry: Tentar novamente
@@ -24,7 +24,7 @@ status:
         title: 'A ler a página %position% de %total%'
         sub: Estamos a ler cada prato com atenção.
         sub_slow_page: Esta página tem muitos detalhes — continuamos a ler.
-        sub_slow_global: Isto está a demorar um pouco mais do que o habitual — menus maiores podem demorar alguns minutos.
+        sub_slow_global: Isto está a demorar um pouco mais do que o habitual — ementas maiores podem demorar alguns minutos.
     organizing:
         title: A organizar os seus pratos
         sub: A agrupar categorias e a associar ingredientes.
@@ -39,18 +39,18 @@ status:
         failed: Falhou
 
 complete:
-    title_published: 'A sua carta já está publicada'
+    title_published: 'A sua ementa já está publicada'
     subtitle_published: 'Adicionámos os seus pratos e os seus clientes já os podem ver.'
-    review_title: 'Reveja a sua carta'
-    review_text: 'Dê uma vista de olhos para confirmar que está tudo bem: nomes, preços, descrições e alergénios. Pode alterar qualquer prato em Cardápio.'
+    review_title: 'Reveja a sua ementa'
+    review_text: 'Dê uma vista de olhos para confirmar que está tudo bem: nomes, preços, descrições e alergénios. Pode alterar qualquer prato em Ementa.'
     review_hidden_singular: '%count% prato sem preço fica oculto até lhe dar um.'
     review_hidden_plural: '%count% pratos sem preço ficam ocultos até lhes dar um.'
-    title_success: O seu menu está pronto para revisão
-    subtitle_success: Adicionámos os seus pratos ao menu, ocultos dos clientes até os rever.
+    title_success: A sua ementa está pronta para revisão
+    subtitle_success: Adicionámos os seus pratos à ementa, ocultos dos clientes até os rever.
     subtitle_partial_failure: ' Não conseguimos ler %failed% das suas %total% fotos — pode tentar carregá-las novamente em separado.'
     stat_categories: Categorias
     stat_products: Pratos
-    button_continue: Ver o meu menu
-    title_failed: Não conseguimos ler o seu menu
-    subtitle_failed: Nenhuma das suas fotos pôde ser processada. Verifique se são fotos nítidas e bem iluminadas de um menu, e tente novamente.
+    button_continue: Ver a minha ementa
+    title_failed: Não conseguimos ler a sua ementa
+    subtitle_failed: Nenhuma das suas fotos pôde ser processada. Verifique se são fotos nítidas e bem iluminadas de uma ementa, e tente novamente.
     button_retry: Tentar novamente

@@ -4,9 +4,9 @@ dialog:
     currency_label: "Moeda"
     confirm: "Continuar"
 loading:
-    title: "A preparar o seu menu…"
+    title: "A preparar a sua ementa…"
 hero:
-    subtitle: "Explore a nossa carta"
+    subtitle: "Explore a nossa ementa"
 search:
     placeholder: "Procurar pratos…"
 tabs:
@@ -65,9 +65,9 @@ nav:
 common:
     close: "Fechar"
 chat:
-    bubble: "Pergunte sobre o menu"
-    title: "Assistente do menu"
-    greeting: "Olá! Pergunte-me qualquer coisa sobre o menu: recomendações, ingredientes, alergias ou outra coisa."
+    bubble: "Pergunte sobre a ementa"
+    title: "Assistente da ementa"
+    greeting: "Olá! Pergunte-me qualquer coisa sobre a ementa: recomendações, ingredientes, alergias ou outra coisa."
     placeholder: "Escreva a sua pergunta…"
     send: "Enviar"
     disclaimer: "Respostas geradas por IA. Em caso de alergia grave, confirme com a equipa."
@@ -76,8 +76,8 @@ chat:
     # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
     staff:
         confirm: "Antes de pedir, convém confirmar com os funcionários."
-        none_confirmed: "Nenhum prato do nosso menu está confirmado sem %allergens%."
-        none_confirmed_allergy: "Nenhum prato do nosso menu está confirmado como adequado para esta alergia."
+        none_confirmed: "Nenhum prato da nossa ementa está confirmado sem %allergens%."
+        none_confirmed_allergy: "Nenhum prato da nossa ementa está confirmado como adequado para esta alergia."
         and: " e "
 footer:
     visit: "Visite-nos"
@@ -95,4 +95,4 @@ footer:
         sat: "Sáb"
         sun: "Dom"
 unavailable:
-    message: "Menu indisponível de momento"
+    message: "Ementa indisponível de momento"

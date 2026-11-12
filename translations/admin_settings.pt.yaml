@@ -1,4 +1,4 @@
-title: Configurações
+title: Definições
 
 section:
     restaurant_info: Informações do restaurante
@@ -13,10 +13,10 @@ field:
     name_placeholder: Nome do seu restaurante
     tagline: Lema
     tagline_placeholder: 'Ex: Cozinha mediterrânica de época'
-    menu_url: URL do seu cardápio digital
+    menu_url: URL da sua ementa digital
     logo: Logo do restaurante
     hero_image: Foto de cabeçalho
-    menu_language: Idioma principal do cardápio
+    menu_language: Idioma principal da ementa
     admin_language: Idioma do Painel de Administração
     currency: Moeda base
     address: "Morada"
@@ -52,15 +52,15 @@ hint:
     drop_image: "Toque para escolher ou arraste uma imagem para aqui."
     logo_format: 'PNG ou JPG, máx. 2 MB'
     hero_image_format: 'PNG, JPG ou WebP, máx. %max_mb% MB (mín. %min%x%min% px, máx. %max%x%max% px; recomendado: %recommended% px de largura ou mais)'
-    hero_image: "Mostrada como faixa de fotografia na capa do cardápio público, em todos os temas."
+    hero_image: "Mostrada como faixa de fotografia na capa da ementa pública, em todos os temas."
     hero_image_width_notice: "Esta foto mede %width% × %height% px. Será guardada na mesma, mas em ecrãs grandes pode ficar pouco nítida. Recomendado: %recommended% px de largura ou mais."
     upload_discarded_logo: "O logo que escolheu não foi guardado; escolha-o novamente."
     upload_discarded_hero_image: "A foto de cabeçalho que escolheu não foi guardada; escolha-a novamente."
     upload_discarded_both: "O logo e a foto de cabeçalho que escolheu não foram guardados; escolha-os novamente."
     upload_discarded_use_appearance: "São guardados com o botão «%button%» da secção %section%."
-    tagline: "Mostrado sob o nome do restaurante na capa do cardápio público."
-    menu_language: O idioma em que você insere os nomes e descrições dos pratos.
-    admin_language: O idioma deste painel de gestão. Não afeta o cardápio visto pelos seus clientes.
+    tagline: "Mostrado sob o nome do restaurante na capa da ementa pública."
+    menu_language: O idioma em que introduz os nomes e descrições dos pratos.
+    admin_language: O idioma deste painel de gestão. Não afeta a ementa vista pelos seus clientes.
     currency: Os preços são guardados nesta moeda. Os clientes podem ver a conversão em tempo real.
     phone: "Pode usar +, espaços, hífenes e parênteses."
     social: "Cole o link ou escreva o seu nome de utilizador. Deixe vazio o que não usar."
@@ -80,7 +80,7 @@ flash:
     hero_image_warning_dimensions: "Esta imagem mede %width% × %height% px e pode ficar desfocada em ecrãs grandes (mínimo %min% × %min% px; recomendado: %recommended% px de largura ou mais)."
     hero_image_warning_portrait: É muito vertical e o hero vai cortar as laterais.
     hero_image_warning_width: "Foto de cabeçalho guardada. Mede %width% × %height% px: em ecrãs grandes pode ficar pouco nítida. Recomendado: %recommended% px de largura ou mais."
-    saved: Configurações guardadas com sucesso.
+    saved: Definições guardadas com sucesso.
     section_saved: Secção guardada com sucesso.
     form_errors: "Verifique os campos assinalados."
     csrf_invalid: "A sessão expirou. Tente novamente."
@@ -102,7 +102,7 @@ hours:
     empty: "Ainda não indicou o seu horário. Crie-o para que os seus clientes saibam quando abre."
     create: "Criar horário"
     clear: "Apagar horário"
-    clear_confirm: "Apagar o horário? A carta deixará de mostrar quando abre."
+    clear_confirm: "Apagar o horário? A ementa deixará de mostrar quando abre."
 
 day:
     mon: "Segunda-feira"
@@ -127,12 +127,12 @@ error:
     hours_same_time: "A abertura e o fecho não podem ser iguais."
 
 language_change:
-    title: "A converter o seu cardápio…"
-    text: "Estamos a passar os textos do seu cardápio para %language%. Pode fechar esta janela: a mudança retoma-se em Configurações."
+    title: "A converter a sua ementa…"
+    text: "Estamos a passar os textos da sua ementa para %language%. Pode fechar esta janela: a mudança retoma-se em Definições."
     remaining: "Faltam %count% por converter…"
     error: "Não foi possível converter agora. Tente novamente dentro de alguns minutos."
     retry: "Tentar novamente"
-    done: "O seu cardápio está agora em %language%. Reveja os textos."
+    done: "A sua ementa está agora em %language%. Reveja os textos."
     blocked_import: "Termine a importação antes de mudar o idioma"
-    pending: "A mudança do seu cardápio para %language% ficou a meio."
+    pending: "A mudança da sua ementa para %language% ficou a meio."
     resume: "Continuar"

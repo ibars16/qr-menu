@@ -1,4 +1,4 @@
-title: Cardápio
+title: Ementa
 
 action:
     import_ai: Importar com IA
@@ -24,9 +24,9 @@ common:
     help: Ajuda
 
 empty:
-    title: O seu cardápio está vazio
-    subtitle: 'Crie a sua primeira categoria (Entradas, Pizzas, Sobremesas…) e depois adicione os seus pratos. Ou importe todo o cardápio a partir de uma foto com IA.'
-    import_ai: Importar cardápio com IA
+    title: A sua ementa está vazia
+    subtitle: 'Crie a sua primeira categoria (Entradas, Pizzas, Sobremesas…) e depois adicione os seus pratos. Ou importe toda a ementa a partir de uma foto com IA.'
+    import_ai: Importar ementa com IA
     create_first_category: Criar primeira categoria
 
 field:
@@ -34,8 +34,8 @@ field:
     nutrition_facts: Informação nutricional
     nutrition_toggle: Adicionar informação nutricional
     nutrition_collapse: Recolher informação nutricional
-    nutrition_visible_label: Mostrar no cardápio público
-    nutrition_visible_hint: Se desmarcares esta opção, esta informação não aparecerá no teu cardápio público, embora fique guardada aqui.
+    nutrition_visible_label: Mostrar na ementa pública
+    nutrition_visible_hint: Se desmarcar esta opção, esta informação não aparecerá na sua ementa pública, embora fique guardada aqui.
     fat: Gorduras
     protein: Proteínas
     carbohydrates: Hidratos de carbono
@@ -66,27 +66,27 @@ field:
 field_error:
     name_required: O nome é obrigatório
     price_required: O preço é obrigatório
-    price_variants_incomplete: Preenche o rótulo e o preço de cada linha (mínimo 2 preços)
+    price_variants_incomplete: Preencha o rótulo e o preço de cada linha (mínimo 2 preços)
 
 ingredients:
     hint: Os novos ingredientes são adicionados automaticamente ao banco de ingredientes do restaurante.
-    placeholder: 'Escreva um ingrediente e pressione Enter…'
+    placeholder: 'Escreva um ingrediente e prima Enter…'
     no_results: Nenhum ingrediente encontrado
     source_global: Global
     source_restaurant: Restaurante
 
 allergens:
-    computed_title: A partir dos teus ingredientes
-    computed_hint: Calculado automaticamente com base nos ingredientes abaixo — edita os alergénios de um ingrediente ou adiciona uma exceção específica para este prato, se necessário.
+    computed_title: A partir dos seus ingredientes
+    computed_hint: Calculado automaticamente com base nos ingredientes abaixo — edite os alergénios de um ingrediente ou adicione uma exceção específica para este prato, se necessário.
     computed_empty: Nenhum alergénio detetado nos ingredientes atuais.
-    computed_refresh_error: Não foi possível atualizar — guarda o prato para o recalcular.
-    your_ingredients_title: Alergénios dos teus ingredientes
-    scope_all_dishes: Todos os teus pratos
+    computed_refresh_error: Não foi possível atualizar — guarde o prato para o recalcular.
+    your_ingredients_title: Alergénios dos seus ingredientes
+    scope_all_dishes: Todos os seus pratos
     your_ingredients_hint: Partilhado com qualquer outro prato que use o mesmo ingrediente.
-    new_ingredient_hint: Guarda primeiro o prato para poderes marcar os alergénios de ingredientes recém-adicionados.
+    new_ingredient_hint: Guarde primeiro o prato para poder marcar os alergénios de ingredientes recém-adicionados.
     overrides_title: Exceções deste prato
     add_exception: Adicionar exceção
-    select_allergen: Seleciona um alergénio…
+    select_allergen: Selecione um alergénio…
     presence_contains: Contém
     presence_may_contain: Pode conter vestígios
     presence_free_from: Confirmado sem este alergénio
@@ -94,9 +94,9 @@ allergens:
     remove: Remover
     advanced_title: Casos especiais de alergénios
     scope_this_dish: Só este prato
-    advanced_hint: Usa esta secção apenas se os alergénios detetados automaticamente não forem suficientes — por exemplo, devido a contaminação cruzada ou porque este prato usa um ingrediente alternativo certificado sem esse alergénio.
-    help_computed: Estes alergénios são detetados automaticamente a partir dos ingredientes deste prato. Na maioria dos casos não precisas de alterar nada.
-    help_presence_legend: 'Contém: o prato contém este alergénio. Pode conter vestígios: risco de contaminação cruzada — por exemplo por partilhar fritadeira, forno ou zona de preparação. Confirmado sem este alergénio: só quando tiveres a certeza real (por exemplo, um ingrediente certificado) — é uma afirmação excecional, não a opção por defeito.'
+    advanced_hint: Use esta secção apenas se os alergénios detetados automaticamente não forem suficientes — por exemplo, devido a contaminação cruzada ou porque este prato usa um ingrediente alternativo certificado sem esse alergénio.
+    help_computed: Estes alergénios são detetados automaticamente a partir dos ingredientes deste prato. Na maioria dos casos não precisa de alterar nada.
+    help_presence_legend: 'Contém: o prato contém este alergénio. Pode conter vestígios: risco de contaminação cruzada — por exemplo por partilhar fritadeira, forno ou zona de preparação. Confirmado sem este alergénio: só quando tiver a certeza real (por exemplo, um ingrediente certificado) — é uma afirmação excecional, não a opção por defeito.'
 
 js:
     category_created: 'Categoria criada ✓'
@@ -113,9 +113,9 @@ js:
     product_deleted: Prato eliminado
     product_saved: 'Prato guardado ✓'
     allergen_override_added: 'Exceção adicionada'
-    allergen_note_required: 'Adiciona uma nota a explicar por que está marcado como "sem este alergénio"'
+    allergen_note_required: 'Adicione uma nota a explicar porque está marcado como "sem este alergénio"'
     ingredient_allergens_saved: 'Alergénios guardados ✓'
-    confirm_delete_all_products_step1: 'Eliminar todos os pratos (%count%) do cardápio? As categorias mantêm-se.'
+    confirm_delete_all_products_step1: 'Eliminar todos os pratos (%count%) da ementa? As categorias mantêm-se.'
     confirm_delete_all_products_step2: 'Esta ação é definitiva e não pode ser desfeita. Confirma que quer eliminá-los todos?'
     all_products_deleted: 'Todos os pratos foram eliminados'
 
@@ -129,25 +129,25 @@ modal:
     close_aria: Fechar
 
 language_notice:
-    text: 'Este cardápio parece estar em %language% e o seu cardápio está em %main%.'
-    text_singular: 'Este cardápio parece estar em %language% e o seu cardápio está em %main%: %count% prato.'
-    text_plural: 'Este cardápio parece estar em %language% e o seu cardápio está em %main%: %count% pratos.'
+    text: 'Esta ementa parece estar em %language% e a sua ementa está em %main%.'
+    text_singular: 'Esta ementa parece estar em %language% e a sua ementa está em %main%: %count% prato.'
+    text_plural: 'Esta ementa parece estar em %language% e a sua ementa está em %main%: %count% pratos.'
     translate: 'Traduzir para %main%'
     continue: 'Continuar a tradução'
     show_dishes_singular: 'Ver o prato'
     show_dishes_plural: 'Ver os %count% pratos'
     dismiss: 'Deixar assim'
     toggle_aria: 'Mostrar ou ocultar as opções do aviso'
-    working: 'Traduzindo para %language%… faltam %count%.'
-    half_done: 'Tradução pela metade: faltam %count%.'
+    working: 'A traduzir para %language%… faltam %count%.'
+    half_done: 'Tradução a meio: faltam %count%.'
     error: 'Não foi possível traduzir agora. Tente novamente em alguns minutos.'
     done: 'Os pratos e categorias importados foram traduzidos para %language%.'
 
 notice:
-    missing_photos_singular: '%count% prato sem foto no seu cardápio'
-    missing_photos_plural: '%count% pratos sem foto no seu cardápio'
-    not_on_menu_singular: '%count% prato não aparece no seu cardápio'
-    not_on_menu_plural: '%count% pratos não aparecem no seu cardápio'
+    missing_photos_singular: '%count% prato sem foto na sua ementa'
+    missing_photos_plural: '%count% pratos sem foto na sua ementa'
+    not_on_menu_singular: '%count% prato não aparece na sua ementa'
+    not_on_menu_plural: '%count% pratos não aparecem na sua ementa'
     unmark: 'Remover marcação'
 
 product:
@@ -157,7 +157,7 @@ product:
         category_hidden: a categoria está oculta
         no_translation: não tem nome
         price_zero: o preço é 0
-    not_on_menu: 'Não aparece no cardápio: %reason%'
+    not_on_menu: 'Não aparece na ementa: %reason%'
     toggle_aria: Ativar/desativar prato
     visible: Visível
 
@@ -184,7 +184,7 @@ tab:
 
 tags:
     emoji_group:
-        diet: 'Dieta e alérgenos'
+        diet: 'Dieta e alergénios'
         food: 'Comida'
         drinks: 'Bebidas'
         featured: 'Destaques'
@@ -202,7 +202,7 @@ smart_waiter:
 
 upload:
     aria: Enviar foto ou clipe do prato
-    hint: Arrasta ou clica para enviar uma foto ou um clipe
+    hint: Arraste ou clique para enviar uma foto ou um clipe
     limits: 'Foto: JPEG, PNG ou WebP (máx. 8 MB, mín. 400×400 px) · Vídeo: MP4 (máx. 60 MB)'
     change: Alterar
     delete: 'Eliminar foto'
@@ -223,7 +223,7 @@ error:
     product_not_found: Prato não encontrado.
     translation_name_required: O nome é obrigatório.
     category_not_found: Categoria não encontrada.
-    allergen_free_from_note_required: Adicione uma breve nota explicando por que este alergénio está marcado como ausente.
+    allergen_free_from_note_required: Adicione uma breve nota a explicar porque este alergénio está marcado como ausente.
     image_invalid: Nenhuma imagem válida foi selecionada.
     image_unsupported_type: Formato de imagem não suportado. Use JPEG, PNG ou WebP.
     image_too_large: A imagem é demasiado grande (máx. 8 MB).
@@ -231,18 +231,18 @@ error:
     image_dimensions_too_large: A imagem é demasiado grande (máx. 5000x5000 px).
     image_upload_failed: Não foi possível enviar a imagem. Tente novamente.
     clip_invalid: Não foi selecionado um vídeo válido.
-    clip_unsupported_type: Formato de vídeo não suportado. Usa MP4.
+    clip_unsupported_type: Formato de vídeo não suportado. Use MP4.
     clip_too_large: 'O vídeo é demasiado grande (máx. 60 MB).'
     clip_duration_too_long: 'O vídeo é demasiado longo (máx. 60 s).'
-    clip_upload_failed: Não foi possível enviar o vídeo. Tenta novamente.
+    clip_upload_failed: Não foi possível enviar o vídeo. Tente novamente.
     unexpected: Ocorreu um erro. Tente novamente.
-    reorder_stale: 'O menu mudou enquanto ordenava. Recarregue a página e tente de novo.'
+    reorder_stale: 'A ementa mudou enquanto ordenava. Recarregue a página e tente de novo.'
     nutrition_value_invalid: 'O valor deve ser um número entre 0 e 9999.9, com no máximo uma casa decimal.'
-    price_variants_invalid: 'Preenche o rótulo e o preço de cada variante (mínimo 2 preços).'
+    price_variants_invalid: 'Preencha o rótulo e o preço de cada variante (mínimo 2 preços).'
 
 sort:
     open: 'Ordenar'
-    title: 'Ordenar o menu'
+    title: 'Ordenar a ementa'
     hint: 'Arraste uma categoria ou um prato para mudar a ordem (no telemóvel, mantenha premido e arraste). Guarda-se ao largar.'
     done: 'Concluído'
     saved: 'Ordem guardada'
@@ -307,14 +307,14 @@ ai_photo:
         trial_used_plural: 'Já usou as suas %limit% fotos com IA grátis. Escolha um plano para criar as fotos dos %count% pratos que faltam.'
         progress: 'A criar as fotos…'
         count: '%done% de %total%'
-        close_hint: 'Pode fechar esta janela: o processo continua em Cardápio.'
+        close_hint: 'Pode fechar esta janela: o processo continua em Ementa.'
         skipped_singular: '%count% prato ignorado (não foi possível criar a foto)'
         skipped_plural: '%count% pratos ignorados (não foi possível criar as fotos)'
         done: 'Fotos criadas.'
-        created_singular: 'Criámos %count% foto com IA. Já está na sua carta.'
-        created_plural: 'Criámos %count% fotos com IA. Já estão na sua carta.'
+        created_singular: 'Criámos %count% foto com IA. Já está na sua ementa.'
+        created_plural: 'Criámos %count% fotos com IA. Já estão na sua ementa.'
         retry: 'Tentar novamente'
-        view_menu: 'Ver o meu cardápio'
+        view_menu: 'Ver a minha ementa'
     notice:
         text_singular: 'Fotos com IA a meio: falta %count% prato.'
         text_plural: 'Fotos com IA a meio: faltam %count% pratos.'

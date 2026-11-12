@@ -1,15 +1,15 @@
-title: "QR Menu — Carta digital para o seu restaurante"
+title: "QR Menu — Ementa digital para o seu restaurante"
 
 meta:
-  description: "Crie o menu digital do seu restaurante em minutos: menu por QR, painel de administração, chat com IA para os seus clientes e estatísticas. Teste grátis durante 1 mês, sem cartão de crédito."
-  og_title: "QR Menu — Carta digital para o seu restaurante"
-  og_description: "Menu por QR, painel de administração, chat com IA e estatísticas para o seu restaurante. Teste grátis durante 1 mês, sem cartão de crédito."
+  description: "Crie a ementa digital do seu restaurante em minutos: ementa por QR, painel de administração, chat com IA para os seus clientes e estatísticas. Experimente grátis durante 1 mês, sem cartão de crédito."
+  og_title: "QR Menu — Ementa digital para o seu restaurante"
+  og_description: "Ementa por QR, painel de administração, chat com IA e estatísticas para o seu restaurante. Experimente grátis durante 1 mês, sem cartão de crédito."
 
 nav:
   login: "Iniciar sessão"
   panel: "Ir para o painel"
   pricing: "Preços"
-  cta_short: "Teste grátis"
+  cta_short: "Experimente grátis"
   language: "Idioma"
   theme_title: "Mudar tema"
   theme_aria: "Alternar entre modo escuro e claro"
@@ -19,18 +19,18 @@ nav:
   light_mode: "Modo claro"
 
 hero:
-  badge: "Teste grátis de 1 mês, sem cartão"
-  title_main: "A carta do seu restaurante, "
+  badge: "1 mês grátis, sem cartão"
+  title_main: "A ementa do seu restaurante, "
   title_accent: "digital e sempre atualizada"
-  subtitle: "Os seus clientes leem um QR e veem a carta na hora — no seu idioma, com fotos, alergénios e preços sempre atualizados. Edita-a a partir de um painel pensado para se gerir num minuto."
-  cta_primary: "Teste grátis de 1 mês →"
+  subtitle: "Os seus clientes leem um QR e veem a ementa na hora — no seu idioma, com fotos, alergénios e preços sempre atualizados. Edite-a a partir de um painel pensado para se gerir num minuto."
+  cta_primary: "Experimente grátis durante 1 mês →"
   cta_secondary: "Ver preços"
   note: "Sem cartão de crédito. Cancele quando quiser."
 
 mockup:
   view_more: "Ver mais"
   restaurant_tagline: "Produto de mercado, tratado com respeito"
-  device_label: "Exemplo: assim um cliente vê a carta no telemóvel"
+  device_label: "Exemplo: assim um cliente vê a ementa no telemóvel"
   cat_pizzas: "Pizzas"
   cat_meat: "Carnes"
   cat_pasta: "Massas"
@@ -55,7 +55,7 @@ mockup:
   waiter_answer: "Sim: as costeletas de borrego com avelãs não têm glúten."
 
 demo:
-  link: "Ver uma carta real"
+  link: "Ver uma ementa real"
 
 faq:
   eyebrow: "Perguntas frequentes"
@@ -64,31 +64,31 @@ faq:
     q: "Preciso de cartão de crédito para o teste?"
     a: "Não. O teste de 1 mês é totalmente gratuito, sem cartão nem compromisso."
   q2:
-    q: "Posso importar a carta que já tenho?"
-    a: "Sim. Carregue uma foto da sua carta atual e a IA organiza-a automaticamente por categorias e pratos."
+    q: "Posso importar a ementa que já tenho?"
+    a: "Sim. Carregue uma foto da sua ementa atual e a IA organiza-a automaticamente por categorias e pratos."
   q3:
     q: "Os meus clientes têm de instalar alguma coisa?"
-    a: "Não. Basta lerem o código QR e veem a carta diretamente no navegador do telemóvel."
+    a: "Não. Basta lerem o código QR e veem a ementa diretamente no navegador do telemóvel."
   q4:
-    q: "Em quantos idiomas pode ser mostrada a minha carta?"
+    q: "Em quantos idiomas pode ser mostrada a minha ementa?"
     a: "É traduzida automaticamente para 20 idiomas, sem que tenha de fazer nada."
   q5:
     q: "O que acontece quando termina o mês de teste?"
-    a: "A sua carta fica em pausa até escolher um plano. Não é cobrado nada automaticamente, porque não lhe pedimos o cartão."
+    a: "A sua ementa fica em pausa até escolher um plano. Não é cobrado nada automaticamente, porque não lhe pedimos o cartão."
   price:
     q: "Quanto custa?"
     a: "%monthly% por mês ou %yearly% por ano, IVA incluído. Um único plano com tudo incluído, e o primeiro mês é grátis, sem cartão."
 
 features:
   eyebrow: "Funcionalidades"
-  title: "Tudo o que a sua carta precisa"
+  title: "Tudo o que a sua ementa precisa"
   subtitle: "Pensado para que um restaurante a possa gerir sozinho, sem depender de ninguém."
   qr:
-    title: "Carta digital por QR"
-    desc: "Um código QR por mesa leva diretamente à sua carta, sem apps nem downloads para o cliente."
+    title: "Ementa digital por QR"
+    desc: "Um código QR por mesa leva diretamente à sua ementa, sem apps nem downloads para o cliente."
   import:
-    title: "Importe a sua carta com uma fotografia"
-    desc: "Tire uma fotografia à sua carta em papel: a IA lê-a e organiza-a por categorias e pratos. Só tem de a rever."
+    title: "Importe a sua ementa com uma fotografia"
+    desc: "Tire uma fotografia à sua ementa em papel: a IA lê-a e organiza-a por categorias e pratos. Só tem de a rever."
   smart_waiter:
     title: "Empregado de mesa com IA"
     desc: "Os seus clientes perguntam sobre alergénios, ingredientes ou recomendações e recebem resposta instantânea."
@@ -97,16 +97,16 @@ features:
     desc: "Os 14 alergénios de declaração obrigatória na UE, assinalados em cada prato e bem visíveis para os seus clientes."
   multilang:
     title: "20 idiomas"
-    desc: "A sua carta é traduzida automaticamente para 20 idiomas, para que qualquer cliente a entenda no seu."
+    desc: "A sua ementa é traduzida automaticamente para 20 idiomas, para que qualquer cliente a entenda no seu."
   multicurrency:
     title: "Multi-moeda"
-    desc: "Escolha a moeda da sua carta — euros, dólares e mais — e todos os preços são sempre apresentados corretamente."
+    desc: "Escolha a moeda da sua ementa — euros, dólares e mais — e todos os preços são sempre apresentados corretamente."
   stats:
     title: "Estatísticas"
-    desc: "Que pratos são mais vistos e como o chat é utilizado — dados úteis para a sua carta, sem ruído técnico."
+    desc: "Que pratos são mais vistos e como o chat é utilizado — dados úteis para a sua ementa, sem ruído técnico."
   themes:
     title: "Temas visuais"
-    desc: "Vários estilos e cores para que a carta combine com a imagem do seu restaurante."
+    desc: "Vários estilos e cores para que a ementa combine com a imagem do seu restaurante."
 
 steps:
   eyebrow: "Como funciona"
@@ -115,11 +115,11 @@ steps:
     title: "Registe-se"
     desc: "Crie a sua conta grátis, sem cartão de crédito. Um minuto e o seu painel está pronto."
   step2:
-    title: "Crie a sua carta"
-    desc: "Adicione categorias e pratos, ou importe a sua carta atual para poupar o trabalho manual."
+    title: "Crie a sua ementa"
+    desc: "Adicione categorias e pratos, ou importe a sua ementa atual para poupar o trabalho manual."
   step3:
     title: "Partilhe o QR"
-    desc: "Descarregue o seu código QR, imprima-o nas mesas e a sua carta digital já está no ar."
+    desc: "Descarregue o seu código QR, imprima-o nas mesas e a sua ementa digital já está no ar."
 
 pricing:
   eyebrow: "Preços"
@@ -134,18 +134,18 @@ pricing:
   vat: "IVA incluído"
   saving: "Poupa %saving% face ao pagamento mensal"
   included_title: "Tudo incluído:"
-  inc1: "Carta digital por QR, sem apps para os seus clientes"
-  inc2: "Importação da sua carta com uma fotografia"
+  inc1: "Ementa digital por QR, sem apps para os seus clientes"
+  inc2: "Importação da sua ementa com uma fotografia"
   inc3: "Empregado de mesa com IA para os seus clientes"
   inc4: "14 alergénios oficiais e 20 idiomas"
   inc5: "Multi-moeda e temas visuais"
-  inc6: "Estatísticas da sua carta"
-  cta: "Teste grátis de 1 mês"
+  inc6: "Estatísticas da sua ementa"
+  cta: "Experimente grátis durante 1 mês"
   no_card: "Sem cartão de crédito"
 
 cta:
   title: "Experimente o QR Menu grátis durante 1 mês"
-  subtitle: "Sem cartão de crédito. Configure a sua carta ainda hoje."
+  subtitle: "Sem cartão de crédito. Configure a sua ementa ainda hoje."
   button: "Criar a minha conta grátis →"
 
 footer:
@@ -161,13 +161,13 @@ pages:
   updated: "Última atualização: %date%"
   about:
     title: "Sobre nós"
-    description: "O QR Menu ajuda os restaurantes a ter uma carta digital simples, sempre atualizada e sem depender de ninguém para a manter."
+    description: "O QR Menu ajuda os restaurantes a ter uma ementa digital simples, sempre atualizada e sem depender de ninguém para a manter."
   privacy:
     title: "Política de Privacidade"
     description: "Que dados o QR Menu recolhe, para que os utiliza e quais são os seus direitos."
   terms:
     title: "Termos de Serviço"
-    description: "As condições de utilização do QR Menu, a carta digital para restaurantes."
+    description: "As condições de utilização do QR Menu, a ementa digital para restaurantes."
   cookies:
     title: "Política de Cookies"
     description: "Que cookies o QR Menu utiliza e como geri-los."

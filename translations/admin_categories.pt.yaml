@@ -17,7 +17,7 @@ action:
 
 empty_state:
     title: Sem categorias
-    subtitle: 'As categorias organizam o seu cardápio (Entradas, Pizzas, Sobremesas…). Crie a primeira para começar.'
+    subtitle: 'As categorias organizam a sua ementa (Entradas, Pizzas, Sobremesas…). Crie a primeira para começar.'
 
 modal:
     edit_title: Editar categoria

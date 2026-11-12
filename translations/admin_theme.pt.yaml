@@ -1,8 +1,8 @@
-title: Personalizar cardápio
+title: Personalizar ementa
 
 confirm:
     default_title: Aplicar alteração
-    default_sub: A alteração será visível imediatamente para todos os visitantes do seu cardápio.
+    default_sub: A alteração será visível imediatamente para todos os visitantes da sua ementa.
     cancel: Cancelar
     apply_now: Aplicar agora
     applying: A aplicar…
@@ -15,13 +15,13 @@ confirm:
 
 preview:
     active_title: Pré-visualização ativa
-    active_sub: Só você vê esta combinação. Os seus clientes continuam a ver a configuração ativa.
+    active_sub: Esta combinação só é visível para si. Os seus clientes continuam a ver a configuração ativa.
     close: Fechar
     apply: Aplicar
     title_with_names: 'Pré-visualização: %layout% · %theme%'
     closed_toast: Pré-visualização fechada
     banner_title: "Modo de pré-visualização"
-    banner_sub: "Só você vê este tema. Os seus clientes continuam a ver o tema ativo."
+    banner_sub: "Este tema só é visível para si. Os seus clientes continuam a ver o tema ativo."
     banner_back: "← Voltar ao admin"
 
 section:
@@ -49,7 +49,7 @@ theme:
         desc: Preto profundo com destaque laranja e detalhes bronze. Moderno e urbano.
     glass:
         name: Glassmorphism
-        desc: Degradê noturno com superfícies de vidro e destaque violeta. Moderno e premium.
+        desc: Degradé noturno com superfícies de vidro e destaque violeta. Moderno e premium.
     ocean:
         name: Oceano
         desc: Azul-água com faixa e títulos azul-marinho e destaque turquesa. Ideal para cozinha do mar.

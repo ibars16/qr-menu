@@ -1,7 +1,7 @@
 # Reseller sign-up (/partners/registro) and panel (/partners).
 register:
     title: "Registo de revendedor"
-    tagline: "Cartas digitais para os restaurantes que gere"
+    tagline: "Ementas digitais para os restaurantes que gere"
     subtitle: "Crie a conta da sua empresa. Poderá adicionar restaurantes quando a subscrição estiver ativa."
     section_company: "A sua empresa"
     section_account: "A sua conta"
@@ -32,7 +32,7 @@ register:
         general: "Não foi possível enviar o formulário. Recarregue a página e tente novamente."
 
 logout: "Terminar sessão"
-inactive: "A sua conta não está ativa. Entretanto não pode criar, entrar nem arquivar restaurantes, e as cartas deles não se veem."
+inactive: "A sua conta não está ativa. Entretanto não pode criar, entrar nem arquivar restaurantes, e as ementas deles não se veem."
 
 count:
     included: "Restaurantes: <strong>%total%</strong> de %included% incluídos"
@@ -41,10 +41,10 @@ count:
 list:
     restaurant: "Restaurante"
     no_owner: "Sem dono"
-    view_menu: "Ver carta"
+    view_menu: "Ver ementa"
     enter: "Entrar"
     archive: "Arquivar"
-    archive_confirm: "Arquivar %name%? A carta deixará de se ver."
+    archive_confirm: "Arquivar %name%? A ementa deixará de se ver."
     archive_confirm_card: "Arquivar %name%? Este restaurante paga com cartão. A sua subscrição será cancelada e não voltará a ser cobrado."
     restore: "Restaurar"
     archived_title: "Arquivados"
@@ -54,7 +54,7 @@ list:
     last_paid: "Último pagamento %date%"
     no_payments: "Sem pagamentos"
     deactivate: "Desativar"
-    deactivate_confirm: "Desativar %name%? A carta deixará de estar visível até registar um pagamento. Continuará a contar na sua subscrição. Se já não é seu cliente, use Arquivar."
+    deactivate_confirm: "Desativar %name%? A ementa deixará de estar visível até registar um pagamento. Continuará a contar na sua subscrição. Se já não é seu cliente, use Arquivar."
     deactivate_confirm_card: "Desativar %name%? Este restaurante paga com cartão. A sua subscrição será cancelada e não voltará a ser cobrado."
     copy_link: "Copiar link de pagamento"
     copied: "Copiado ✓"
@@ -77,11 +77,11 @@ new:
         email_taken: "Já existe uma conta com esse email. Use outro para o dono."
 
 flash:
-    created: "%name% criado. Entre para preparar a carta. Será ativada quando pagar."
-    archived: "%name% arquivado: a carta já não se vê."
+    created: "%name% criado. Entre para preparar a ementa. Será ativada quando pagar."
+    archived: "%name% arquivado: a ementa já não se vê."
     restored: "%name% restaurado."
     paid: "Pagamento registado: %name% fica ativo até %date%."
-    deactivated: "%name% desativado: a carta já não está visível."
+    deactivated: "%name% desativado: a ementa já não está visível."
     cancel_failed: "Não foi possível cancelar a subscrição de %name% no Stripe. Nada foi alterado; tente novamente dentro de alguns minutos."
 
 summary:
@@ -155,7 +155,7 @@ connect:
         price: "Escreva um preço entre %min% e %max%, por exemplo 25 ou 25,50."
         stripe: "Não foi possível ligar ao Stripe. Tente novamente dentro de alguns minutos."
     # The product in the reseller's Stripe account (Checkout, invoices).
-    product_name: "Carta digital QR"
+    product_name: "Ementa digital QR"
 signup_link:
     title: "O seu link de registo para clientes"
     text: "Envie-o a um restaurante: regista-se sozinho e aparece na sua lista, com pagamento pendente."
