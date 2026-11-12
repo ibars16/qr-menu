@@ -5,7 +5,9 @@ namespace App\Controller\Admin;
 use App\Entity\Category;
 use App\Entity\CategoryTranslation;
 use App\Service\CartaReorder;
+use App\Service\CategoryTranslationService;
 use App\Service\MenuImportReview;
+use App\Service\MenuPreferencesResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -58,34 +60,63 @@ class CategoriesController extends AbstractController
         ]);
     }
 
+    /**
+     * The owner's names for a category, language by language. Only the 20
+     * menu languages (config/languages.php); any other code is ignored.
+     * Same rule as a dish's: a name the owner really changed becomes theirs
+     * ('human'); one saved as it was stays as it was (an AI name stays
+     * 'ai'). A changed main-language name redoes its AI translations, as
+     * renaming it on the Carta does (MenuAdminController::editCategory()).
+     */
     #[Route('/categories/{id}/translations/save', name: 'category_translations_save', methods: ['POST'])]
     public function saveTranslations(
         Category $category,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        MenuPreferencesResolver $menuPreferences,
+        CategoryTranslationService $categoryTranslationService,
     ): JsonResponse {
         if ($category->getRestaurant() !== $this->restaurant()) {
             return $this->json(['error' => 'Forbidden'], 403);
         }
 
-        $data = json_decode($request->getContent(), true);
+        $data          = json_decode($request->getContent(), true);
+        $defaultLocale = $category->getRestaurant()->getDefaultLanguage();
+        $changed       = false;
+        $sourceChanged = false;
 
         foreach ($data['translations'] ?? [] as $locale => $name) {
-            $name = trim($name);
-            if (!$name) continue;
+            $locale = (string) $locale;
+            $name   = trim((string) $name);
+            if ($name === '' || !$menuPreferences->isLanguageSupported($locale)) {
+                continue;
+            }
 
             $translation = $category->getTranslation($locale);
-            if (!$translation) {
+            if ($translation !== null && $translation->getName() === $name) {
+                continue;
+            }
+            if ($translation === null) {
                 $translation = new CategoryTranslation();
                 $translation->setCategory($category);
                 $translation->setLocale($locale);
+                $category->addTranslation($translation);
                 $em->persist($translation);
             }
             $translation->setName($name);
+            $translation->setSource(CategoryTranslation::SOURCE_HUMAN);
+            $changed = true;
+            $sourceChanged = $sourceChanged || $locale === $defaultLocale;
         }
 
-        $category->getRestaurant()->bumpMenuContentVersion();
-        $em->flush();
+        if ($sourceChanged) {
+            $categoryTranslationService->invalidateStale($category, $defaultLocale);
+        }
+        if ($changed) {
+            $category->getRestaurant()->bumpMenuContentVersion();
+            $em->flush();
+        }
+
         return $this->json(['ok' => true]);
     }
 

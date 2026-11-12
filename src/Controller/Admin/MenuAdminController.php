@@ -27,6 +27,7 @@ use App\Service\DishPhoto\AiPhotoBatch;
 use App\Service\OwnerTextTranslationPruner;
 use App\Service\MenuImportLanguageNotice;
 use App\Service\MenuImportReview;
+use App\Service\MenuPreferencesResolver;
 use App\Service\ProductAllergenResolver;
 use App\Service\ProductEffectiveTags;
 use App\Service\ProductTranslationService;
@@ -529,9 +530,14 @@ class MenuAdminController extends AbstractController
      * default-locale name/description changes — see that method's docblock.
      */
     #[Route('/products/{id}/translations/{locale}', name: 'product_translation_save', methods: ['POST'])]
-    public function saveProductTranslation(Product $product, string $locale, Request $request, EntityManagerInterface $em): JsonResponse
+    public function saveProductTranslation(Product $product, string $locale, Request $request, EntityManagerInterface $em, MenuPreferencesResolver $menuPreferences): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
+
+        // Only the 20 menu languages (config/languages.php): nothing stored for any other code.
+        if (!$menuPreferences->isLanguageSupported($locale)) {
+            return $this->json(['error' => 'unsupported_language'], 400);
+        }
 
         $data = json_decode($request->getContent(), true);
         $name = trim($data['name'] ?? '');
@@ -798,7 +804,7 @@ class MenuAdminController extends AbstractController
     }
 
     #[Route('/products/save', name: 'product_save', methods: ['POST'])]
-    public function saveProduct(Request $request, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
+    public function saveProduct(Request $request, EntityManagerInterface $em, MenuImportReview $importReview, MenuPreferencesResolver $menuPreferences): JsonResponse
     {
         $restaurant = $this->restaurant();
         $data       = json_decode($request->getContent(), true);
@@ -988,6 +994,11 @@ class MenuAdminController extends AbstractController
         $sourceChanged = false;
 
         foreach ($data['translations'] ?? [] as $locale => $trans) {
+            // Only the 20 menu languages (config/languages.php); any other code is ignored.
+            $locale = (string) $locale;
+            if (!$menuPreferences->isLanguageSupported($locale)) {
+                continue;
+            }
             $translation = $product->getTranslation($locale);
             $newName        = $trans['name'] ?? '';
             $newDescription = $trans['description'] ?? null;

@@ -17,6 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  * changed leaves it as it was — an AI text (say, one a main-language
  * change wrote) stays 'ai' — and redoes no translation. Through the real
  * routes: POST /admin/products/save and /admin/products/{id}/translations/{locale}.
+ * Only the 20 menu languages are stored: any other code is ignored.
  */
 final class MenuAdminTranslationSourceOnSaveTest extends WebTestCase
 {
@@ -150,5 +151,21 @@ final class MenuAdminTranslationSourceOnSaveTest extends WebTestCase
         $this->client->request('POST', $url, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['name' => 'Agneau de lait', 'description' => '']));
         self::assertResponseIsSuccessful();
         self::assertSame(['Agneau de lait', 'human'], $this->rows()['fr']);
+    }
+
+    public function testUnknownLanguageIsNeverStored(): void
+    {
+        $this->client->request('POST', '/admin/products/' . $this->productId . '/translations/xx', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['name' => 'Something', 'description' => '']));
+        self::assertResponseStatusCodeSame(400);
+
+        $this->client->request('POST', '/admin/products/save', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'id'           => $this->productId,
+            'categoryId'   => $this->categoryId,
+            'basePrice'    => 10.0,
+            'translations' => ['en' => ['name' => 'Lamb tenderloin', 'description' => null], 'xx' => ['name' => 'Something', 'description' => null]],
+        ]));
+        self::assertResponseIsSuccessful();
+
+        self::assertSame(['en', 'es', 'fr', 'it'], array_keys($this->rows()), 'no "xx" row');
     }
 }
