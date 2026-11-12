@@ -255,6 +255,13 @@
                         <i class="ti ti-sparkles" aria-hidden="true"></i>
                         <span class="ai-photo-btn-label">{{ 'ai_photo.generate'|trans({}, 'admin_menu') }}</span>
                     </button>
+                    {# "Mejorar con IA" — a retouched copy of the owner's own
+                       saved photo (never an AI one or a clip), a draft until
+                       Guardar; shown by AiPhoto.updateEnhance(). Same quota. #}
+                    <button type="button" class="btn ai-photo-btn ai-enhance-btn{% if aiExhausted %} is-exhausted{% endif %}" hidden onclick="AiPhoto.enhance()"{% if aiExhausted %} disabled{% endif %}>
+                        <i class="ti ti-sparkles" aria-hidden="true"></i>
+                        <span class="ai-enhance-btn-label">{{ 'ai_photo.enhance'|trans({}, 'admin_menu') }}</span>
+                    </button>
                     {% endif %}
                 </div>
                 {% if aiPhotoAvailable %}
@@ -262,7 +269,7 @@
                     <i class="ti ti-sparkles" aria-hidden="true"></i>
                     <span class="ai-photo-pending-text">{{ 'ai_photo.pending'|trans({}, 'admin_menu') }}</span>
                     <span class="ai-photo-pending-actions">
-                        <button type="button" class="btn btn-sm ai-photo-another-btn" onclick="AiPhoto.generate()">
+                        <button type="button" class="btn btn-sm ai-photo-another-btn" onclick="AiPhoto.again()">
                             <i class="ti ti-refresh" aria-hidden="true"></i> {{ 'ai_photo.another'|trans({}, 'admin_menu') }}
                         </button>
                         <button type="button" class="btn btn-sm ai-photo-discard-btn" onclick="AiPhoto.discard()">

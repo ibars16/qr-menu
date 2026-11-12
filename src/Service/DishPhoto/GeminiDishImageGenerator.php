@@ -33,6 +33,26 @@ final class GeminiDishImageGenerator implements DishImageGeneratorInterface
 
     public function generate(string $prompt): GeneratedImage
     {
+        return $this->request($prompt, '4:3');
+    }
+
+    /**
+     * Same call with the photo as an inline image part next to the text.
+     * Not yet confirmed with a real call (the model accepts input images
+     * for editing per Google's docs; the Interactions API takes a list of
+     * typed content parts as input).
+     */
+    public function edit(string $prompt, GeneratedImage $image, string $mimeType, string $aspectRatio): GeneratedImage
+    {
+        return $this->request([
+            ['type' => 'text', 'text' => $prompt],
+            ['type' => 'image', 'mime_type' => $mimeType, 'data' => base64_encode($image->bytes)],
+        ], $aspectRatio);
+    }
+
+    /** @param string|list<array<string, string>> $input */
+    private function request(string|array $input, string $aspectRatio): GeneratedImage
+    {
         if (trim($this->apiKey) === '') {
             throw new DishImageGenerationException(DishImageFailure::NotConfigured, 'GEMINI_IMAGE_API_KEY is empty');
         }
@@ -46,8 +66,8 @@ final class GeminiDishImageGenerator implements DishImageGeneratorInterface
                 ],
                 'json' => [
                     'model' => $this->model,
-                    'input' => $prompt,
-                    'response_format' => ['type' => 'image', 'aspect_ratio' => '4:3', 'image_size' => '1K'],
+                    'input' => $input,
+                    'response_format' => ['type' => 'image', 'aspect_ratio' => $aspectRatio, 'image_size' => '1K'],
                 ],
                 'timeout' => self::TIMEOUT_SECONDS,
                 'max_duration' => self::TIMEOUT_SECONDS,

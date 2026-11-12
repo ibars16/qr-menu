@@ -44,6 +44,31 @@ Strictly forbidden: any text, letters, numbers, logos, watermarks, menus or sign
 PROMPT;
     }
 
+    /**
+     * "Mejorar con IA": the owner's own photo turned into a menu photo —
+     * reframed (centered, cropped/zoomed, straightened; never a new angle,
+     * which would make the AI imagine unseen food) onto the same surface
+     * and light as build()'s house style, so retouched and generated photos
+     * sit together on the carta. Fixed text — no dish name or description,
+     * nothing that could suggest changing the food.
+     */
+    public function enhance(): string
+    {
+        return <<<PROMPT
+Professional food photograph for a restaurant menu, made from the attached photo of a real dish.
+Turn it into a polished, appetizing menu photo of THIS SAME dish:
+- Framing: center the dish, crop or zoom in so it fills about 70% of the frame, and straighten it. Keep the camera angle of the original photo. Landscape 4:3.
+- Background: light warm-grey matte stone surface, softly out of focus, nothing else on the table. Remove clutter, other dishes, napkins, bottles and anything that isn't part of this dish.
+- Lighting: soft natural daylight from the upper left, gentle shadows, no harsh highlights or color casts.
+- Color and detail: vivid but true-to-life colors, crisp sharp focus on the food, shallow depth of field.
+
+The food itself must stay exactly the same: the same ingredients, the same quantity and portion size, the same arrangement on the plate, and the same plate or vessel. Do not add, remove, replace, move or restyle any food, sauce or garnish, and do not invent anything that isn't visible in the original photo. If part of the dish is hidden in the original, keep it hidden rather than guessing.
+Keep it realistic: no stylization, no illustration, no 3D render.
+
+Strictly forbidden: any text, letters, numbers, logos or watermarks; any people, hands or body parts; cutlery in use.
+PROMPT;
+    }
+
     /** One line, no control characters, no quote marks that could close ours, capped. */
     private static function clean(string $text, int $max): string
     {

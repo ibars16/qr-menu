@@ -26,7 +26,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * Dish photos generated with AI (App\Service\DishPhoto):
  *
  * - editor, Foto tab: generate() makes a DRAFT from the dish's name and
- *   description (the dish may not exist yet), draft() shows it, and only
+ *   description (the dish may not exist yet), enhance() one from the
+ *   owner's own photo ("Mejorar con IA"), draft() shows it, and only
  *   apply() — called by the editor's save — puts it on the dish.
  * - after an import: importStep() does one dish per request, the browser
  *   repeats it until done (resumable from Carta); importDismiss() hides it.
@@ -84,6 +85,28 @@ class DishPhotoController extends AbstractController
         ]);
     }
 
+    /** "Mejorar con IA": a retouched copy of the dish's own photo, as a draft (same quota as generate()). */
+    #[Route('/products/{id}/ai-photo/enhance', name: 'product_ai_photo_enhance', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function enhance(Product $product): JsonResponse
+    {
+        $restaurant = $this->restaurant();
+        if ($product->getCategory()->getRestaurant() !== $restaurant) {
+            throw $this->createAccessDeniedException();
+        }
+
+        try {
+            $token = $this->generator->enhanceDraft($product);
+        } catch (DishPhotoException $e) {
+            return $this->failure($e, $restaurant);
+        }
+
+        return $this->json([
+            'token' => $token,
+            'preview' => $this->generateUrl('admin_product_ai_photo_draft', ['token' => $token]),
+            'trialRemaining' => $this->quota->trialRemaining($restaurant),
+        ]);
+    }
+
     #[Route('/products/ai-photo/draft/{token}', name: 'product_ai_photo_draft', methods: ['GET'])]
     public function draft(string $token): Response
     {
@@ -109,15 +132,17 @@ class DishPhotoController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true);
-        $filename = $this->storage->promoteDraft($restaurant, (string) (is_array($data) ? ($data['token'] ?? '') : ''));
+        $token = (string) (is_array($data) ? ($data['token'] ?? '') : '');
+        $source = $this->storage->isEnhancedDraft($restaurant, $token) ? Product::IMAGE_SOURCE_AI_EDIT : Product::IMAGE_SOURCE_AI;
+        $filename = $this->storage->promoteDraft($restaurant, $token);
         if ($filename === null) {
             return $this->json(['error' => $this->trans('ai_photo.error.draft_expired'), 'reason' => 'draft_expired'], Response::HTTP_GONE);
         }
 
-        $this->replacer->replace($product, $filename, Product::IMAGE_SOURCE_AI);
+        $this->replacer->replace($product, $filename, $source);
         $this->em->flush();
 
-        return $this->json(['image' => $filename, 'videoClip' => null]);
+        return $this->json(['image' => $filename, 'videoClip' => null, 'imageSource' => $source]);
     }
 
     #[Route('/menu/import/{id}/photos/step', name: 'menu_import_photos_step', methods: ['POST'], requirements: ['id' => '\d+'])]
@@ -152,6 +177,7 @@ class DishPhotoController extends AbstractController
         $status = match ($e->reason) {
             DishPhotoException::REASON_TRIAL_LIMIT, DishPhotoException::REASON_CARD_PENDING => Response::HTTP_PAYMENT_REQUIRED,
             DishPhotoException::REASON_RATE_LIMITED, DishPhotoException::REASON_MONTHLY_LIMIT => Response::HTTP_TOO_MANY_REQUESTS,
+            DishPhotoException::REASON_NO_OWNER_PHOTO => Response::HTTP_CONFLICT,
             'timeout' => Response::HTTP_GATEWAY_TIMEOUT,
             'unavailable', 'not_configured' => Response::HTTP_SERVICE_UNAVAILABLE,
             default => Response::HTTP_UNPROCESSABLE_ENTITY,

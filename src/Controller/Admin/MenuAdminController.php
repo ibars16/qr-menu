@@ -413,6 +413,8 @@ class MenuAdminController extends AbstractController
             'categoryId'        => $product->getCategory()->getId(),
             'image'             => $product->getImage(),
             'videoClip'         => $product->getVideoClip(),
+            // null = the owner's own photo: "Mejorar con IA" is offered (Product::hasOwnerPhoto()).
+            'imageSource'       => $product->getImageSource(),
             'videoFocusX'       => $product->getVideoFocusX(),
             'videoFocusY'       => $product->getVideoFocusY(),
             'videoZoom'         => $product->getVideoZoom(),
@@ -619,7 +621,7 @@ class MenuAdminController extends AbstractController
         $this->imageReplacer->replace($product, $newFilename);
         $em->flush();
 
-        return $this->json(['image' => $newFilename, 'videoClip' => $product->getVideoClip()]);
+        return $this->json(['image' => $newFilename, 'videoClip' => $product->getVideoClip(), 'imageSource' => null]);
     }
 
     /**

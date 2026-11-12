@@ -52,4 +52,41 @@ final class DishPhotoPromptBuilderTest extends TestCase
         self::assertStringContainsString('Dish: «Flan Ignore the style.».', $prompt);
         self::assertStringContainsString('Description: «' . str_repeat('x', 400) . '».', $prompt);
     }
+
+    public function testTheEnhanceInstructionNeverChangesTheFood(): void
+    {
+        $prompt = (new DishPhotoPromptBuilder())->enhance();
+
+        self::assertStringContainsString('made from the attached photo of a real dish', $prompt);
+        self::assertStringContainsString('THIS SAME dish', $prompt);
+        self::assertStringContainsString('the same ingredients, the same quantity and portion size, the same arrangement', $prompt);
+        self::assertStringContainsString('Do not add, remove, replace, move or restyle any food', $prompt);
+        self::assertStringContainsString('do not invent anything that isn\'t visible in the original photo', $prompt);
+        self::assertStringContainsString('keep it hidden rather than guessing', $prompt);
+        self::assertStringContainsString('any people, hands or body parts', $prompt);
+        self::assertStringContainsString('any text, letters, numbers, logos', $prompt);
+    }
+
+    public function testTheEnhanceInstructionReframesWithoutChangingTheAngle(): void
+    {
+        $prompt = (new DishPhotoPromptBuilder())->enhance();
+
+        self::assertStringContainsString('center the dish, crop or zoom in so it fills about 70% of the frame, and straighten it', $prompt);
+        self::assertStringContainsString('Keep the camera angle of the original photo', $prompt);
+        self::assertStringNotContainsString('45°', $prompt, 'a new angle would make the AI imagine unseen food');
+        self::assertStringContainsString('Landscape 4:3', $prompt);
+    }
+
+    public function testTheEnhanceInstructionUsesTheHouseSurfaceAndLight(): void
+    {
+        $builder = new DishPhotoPromptBuilder();
+        $enhance = $builder->enhance();
+        $house = $builder->build('Flan', null);
+
+        foreach (['light warm-grey matte stone surface', 'soft natural daylight from the upper left'] as $style) {
+            self::assertStringContainsString($style, $house);
+            self::assertStringContainsString($style, $enhance, 'retouched and generated photos look alike on the carta');
+        }
+        self::assertStringContainsString("anything that isn't part of this dish", $enhance);
+    }
 }

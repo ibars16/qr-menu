@@ -5,6 +5,7 @@ namespace App\Tests\Service\DishPhoto;
 use App\Service\DishPhoto\DishImageFailure;
 use App\Service\DishPhoto\DishImageGenerationException;
 use App\Service\DishPhoto\GeminiDishImageGenerator;
+use App\Service\DishPhoto\GeneratedImage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\Exception\TransportException;
@@ -47,6 +48,28 @@ final class GeminiDishImageGeneratorTest extends TestCase
             'input' => 'a prompt',
             'response_format' => ['type' => 'image', 'aspect_ratio' => '4:3', 'image_size' => '1K'],
         ], json_decode($options['body'], true));
+    }
+
+    public function testEditSendsThePhotoNextToTheTextWithItsAspectRatio(): void
+    {
+        $seen = null;
+        $client = new MockHttpClient(function (string $method, string $url, array $options) use (&$seen) {
+            $seen = json_decode($options['body'], true);
+
+            return self::json(['output_image' => ['data' => base64_encode('EDITED')]]);
+        });
+
+        $image = $this->generator($client)->edit('retouch it', new GeneratedImage('JPEGBYTES'), 'image/jpeg', '3:4');
+
+        self::assertSame('EDITED', $image->bytes);
+        self::assertSame([
+            'model' => 'gemini-3.1-flash-lite-image',
+            'input' => [
+                ['type' => 'text', 'text' => 'retouch it'],
+                ['type' => 'image', 'mime_type' => 'image/jpeg', 'data' => base64_encode('JPEGBYTES')],
+            ],
+            'response_format' => ['type' => 'image', 'aspect_ratio' => '3:4', 'image_size' => '1K'],
+        ], $seen);
     }
 
     public function testImageInAModelOutputStep(): void

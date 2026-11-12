@@ -15,6 +15,8 @@ class Product
     use TimestampableTrait;
 
     public const IMAGE_SOURCE_AI = 'ai';
+    /** The owner's own photo retouched by AI ("Mejorar con IA"). Fits the 10-char column: no migration. */
+    public const IMAGE_SOURCE_AI_EDIT = 'ai_edit';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -54,8 +56,9 @@ class Product
 
     /**
      * Where $image came from: IMAGE_SOURCE_AI (generated, see
-     * App\Service\DishPhoto) or null (the owner's own photo / a clip's
-     * poster / no photo). Internal only — never shown on the public menu.
+     * App\Service\DishPhoto), IMAGE_SOURCE_AI_EDIT (the owner's photo
+     * retouched by AI) or null (the owner's own photo / a clip's poster /
+     * no photo — only that one can be retouched). Internal only — never shown on the public menu.
      */
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $imageSource = null;
@@ -333,6 +336,12 @@ class Product
     public function setImageSource(?string $imageSource): void
     {
         $this->imageSource = $imageSource;
+    }
+
+    /** "Mejorar con IA" is offered: a photo the owner uploaded — not AI-made or retouched, not a clip's poster. */
+    public function hasOwnerPhoto(): bool
+    {
+        return $this->image !== null && $this->imageSource === null && $this->videoClip === null;
     }
 
     public function getVideoClip(): ?string

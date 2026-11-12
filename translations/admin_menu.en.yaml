@@ -259,9 +259,12 @@ search:
 ai_photo:
     generate: 'Generate with AI'
     generating: 'Creating photo…'
+    enhance: 'Enhance with AI'
+    enhancing: 'Enhancing photo…'
     another: 'Another'
     discard: 'Discard'
     pending: 'Photo created with AI. It will be applied when you save.'
+    enhance_pending: 'Photo enhanced with AI. It will be applied when you save.'
     saved: 'AI photo created and saved to the dish.'
     trial_remaining: 'You have %count% of %limit% free AI photos left.'
     trial_used: 'You''ve used your %limit% free AI photos. Choose a plan to create more.'
@@ -293,6 +296,8 @@ ai_photo:
         unavailable: 'The photo can''t be created right now, try again in a few minutes.'
         not_configured: 'The photo can''t be created right now, try again in a few minutes.'
         draft_expired: 'The AI photo has expired. Please generate it again.'
+        no_owner_photo: 'Only photos you uploaded yourself can be enhanced.'
+        enhance_refused: 'We couldn''t enhance this photo. Try another photo of the dish.'
     batch:
         offer_singular: '%count% dish has no photo'
         offer_plural: '%count% dishes have no photo'

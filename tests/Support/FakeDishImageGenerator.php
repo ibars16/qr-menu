@@ -20,11 +20,14 @@ final class FakeDishImageGenerator implements DishImageGeneratorInterface
     private static array $queue = [];
     /** @var string[] */
     public static array $prompts = [];
+    /** @var list<array{bytes: string, mimeType: string, aspectRatio: string}> what each edit() got */
+    public static array $edits = [];
 
     public static function reset(): void
     {
         self::$queue = [];
         self::$prompts = [];
+        self::$edits = [];
     }
 
     public static function willFail(DishImageFailure $failure): void
@@ -45,6 +48,20 @@ final class FakeDishImageGenerator implements DishImageGeneratorInterface
     public function generate(string $prompt): GeneratedImage
     {
         self::$prompts[] = $prompt;
+
+        return $this->next();
+    }
+
+    public function edit(string $prompt, GeneratedImage $image, string $mimeType, string $aspectRatio): GeneratedImage
+    {
+        self::$prompts[] = $prompt;
+        self::$edits[] = ['bytes' => $image->bytes, 'mimeType' => $mimeType, 'aspectRatio' => $aspectRatio];
+
+        return $this->next();
+    }
+
+    private function next(): GeneratedImage
+    {
         $next = array_shift(self::$queue) ?? self::defaultFixture();
         if ($next instanceof DishImageFailure) {
             throw new DishImageGenerationException($next, 'fake failure: ' . $next->value);

@@ -10,6 +10,9 @@ use Symfony\Component\Process\Process;
  * because the container has neither GD nor Imagick, and production already
  * needs FFmpeg for dish clips (ClipTranscoder).
  *
+ * Also shrinks an owner's photo before "Mejorar con IA" sends it
+ * ($maxSide = DishPhotoGenerator::ENHANCE_INPUT_MAX_SIDE).
+ *
  * Returns false on any FFmpeg failure (or FFmpeg missing), never throws:
  * DishPhotoStorage then keeps the provider's original file instead.
  */
@@ -18,13 +21,13 @@ class DishPhotoJpegEncoder
     private const MAX_SIDE = 1200;
     private const TIMEOUT_SECONDS = 30;
 
-    public function encode(string $sourcePath, string $targetPath): bool
+    public function encode(string $sourcePath, string $targetPath, int $maxSide = self::MAX_SIDE): bool
     {
         $process = new Process([
             'ffmpeg', '-nostdin', '-y', '-loglevel', 'error',
             '-i', $sourcePath,
             '-frames:v', '1',
-            '-vf', sprintf("scale='min(%1\$d,iw)':'min(%1\$d,ih)':force_original_aspect_ratio=decrease", self::MAX_SIDE),
+            '-vf', sprintf("scale='min(%1\$d,iw)':'min(%1\$d,ih)':force_original_aspect_ratio=decrease", $maxSide),
             '-q:v', '4',
             '-pix_fmt', 'yuvj420p',
             '-f', 'image2', '-c:v', 'mjpeg',

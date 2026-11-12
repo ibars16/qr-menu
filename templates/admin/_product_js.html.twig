@@ -30,6 +30,9 @@
     const MSG_AI_PHOTO_GENERATING = "{{ 'ai_photo.generating'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_AI_PHOTO_PENDING = "{{ 'ai_photo.pending'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_AI_PHOTO_SAVED = "{{ 'ai_photo.saved'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_ENHANCE = "{{ 'ai_photo.enhance'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_ENHANCING = "{{ 'ai_photo.enhancing'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_ENHANCE_PENDING = "{{ 'ai_photo.enhance_pending'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PHOTO_CONFIRM_DELETE = "{{ 'upload.confirm_delete'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PHOTO_DELETED = "{{ 'upload.deleted'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_AI_PHOTO_NAME_REQUIRED = "{{ 'ai_photo.error.name_required'|trans({}, 'admin_menu')|e('js') }}";
@@ -160,8 +163,10 @@
                 // A saved clip with no zoom yet keeps its old full-cover look.
                 S.clipFocus = { x: data.videoFocusX ?? 50, y: data.videoFocusY ?? 50, zoom: data.videoZoom ?? 100 };
                 // What "Descartar" on an AI draft goes back to.
-                S.savedMedia = { image: data.image, clip: data.videoClip };
+                // source null = the owner's own photo: "Mejorar con IA" is offered.
+                S.savedMedia = { image: data.image, clip: data.videoClip, source: data.imageSource ?? null };
                 renderProductMedia(data.image, data.videoClip);
+                AiPhoto.updateEnhance();
 
                 document.querySelectorAll('.tag-pill').forEach(p =>
                     p.classList.toggle('on', data.tags.includes(parseInt(p.dataset.tagId)))
@@ -1483,6 +1488,7 @@
         showMediaError(null);
         // A picked file replaces an unsaved AI draft: one choice at a time.
         AiPhoto.forget();
+        AiPhoto.updateEnhance();
 
         if (file.type.startsWith('video/')) {
             const src = URL.createObjectURL(file);
@@ -1570,6 +1576,9 @@
     // "Generar con IA" and "Otra" stay off, "Ya has usado…" + "Elegir plan".
     const AiPhoto = {
         busy: false,
+        enhancing: false,
+        // What the pending draft is ('generate' | 'enhance'), for "Otra".
+        mode: 'generate',
         exhausted: !!document.querySelector('.ai-photo-btn.is-exhausted'),
 
         async generate() {
@@ -1611,6 +1620,7 @@
             // The AI photo is now the choice: drop any picked-but-unsaved file.
             document.querySelectorAll('[id="p-img-input"]').forEach(el => { el.value = ''; });
             S.aiPhotoToken = data.token;
+            this.mode = 'generate';
             document.querySelectorAll('[id="img-upload-area"]').forEach(area => showImageInArea(area, data.preview));
 
             if (!S.productId) {
@@ -1630,7 +1640,7 @@
                 return;
             }
             S.aiPhotoToken = null;
-            S.savedMedia = { image: applied.image, clip: null };
+            S.savedMedia = { image: applied.image, clip: null, source: applied.imageSource ?? 'ai' };
             S.mediaChanged = true;
             // Applying moved the draft file: its preview URL is gone (404,
             // blank box if the browser hadn't loaded it yet) — show the
@@ -1640,12 +1650,63 @@
             showToast(MSG_AI_PHOTO_SAVED, 'success');
         },
 
-        // 'draft': "se aplicará al guardar" + Otra/Descartar; 'saved': already
-        // on the dish, only Otra (Eliminar foto is the way back).
+        // "Mejorar con IA": a retouched copy of the dish's saved photo (only
+        // the owner's own — updateEnhance()). Unlike "Generar", it stays a
+        // DRAFT until Guardar even on a saved dish: "Descartar" keeps the
+        // original. Counts on the same quota.
+        async enhance() {
+            if (this.busy || this.exhausted || !S.productId) return;
+            showMediaError(null);
+            this.showPlanButton(false);
+            this.setBusy(true, true);
+
+            let res = null, data = null;
+            try {
+                res = await fetch(`/admin/products/${S.productId}/ai-photo/enhance`, { method: 'POST' });
+                data = await res.json();
+            } catch (e) {
+                data = null;
+            }
+            this.setBusy(false);
+            if (data && 'trialRemaining' in data) this.showTrial(data.trialRemaining);
+
+            if (!res?.ok || !data?.token) {
+                if (data?.reason === 'trial_limit' || data?.reason === 'card_pending') return;
+                if (data?.reason === 'monthly_limit') return this.showMonthlyLimit(data.error);
+                const message = data?.error || MSG_UNEXPECTED_ERROR;
+                showMediaError(message);
+                showToast(message, 'error');
+                return;
+            }
+
+            S.aiPhotoToken = data.token;
+            this.mode = 'enhance';
+            document.querySelectorAll('[id="img-upload-area"]').forEach(area => showImageInArea(area, data.preview));
+            this.showPending('enhance');
+            this.updateEnhance();
+        },
+
+        // "Otra": one more of whichever kind the pending one is.
+        again() {
+            return this.mode === 'enhance' ? this.enhance() : this.generate();
+        },
+
+        // Shown only for a saved dish whose saved photo is the owner's own
+        // (no AI one, no clip), with nothing else picked or pending.
+        updateEnhance() {
+            const show = !!S.productId && !!S.savedMedia?.image && !S.savedMedia?.clip && !S.savedMedia?.source
+                && !S.aiPhotoToken && !panelEl('p-img-input')?.files?.length;
+            document.querySelectorAll('.ai-enhance-btn').forEach(b => { b.hidden = !show; });
+        },
+
+        // 'draft': "se aplicará al guardar" + Otra/Descartar; 'enhance': the
+        // same for a retouch; 'saved': already on the dish, only Otra
+        // (Eliminar foto is the way back).
         showPending(mode) {
+            const text = { saved: MSG_AI_PHOTO_SAVED, enhance: MSG_AI_PHOTO_ENHANCE_PENDING }[mode] ?? MSG_AI_PHOTO_PENDING;
             document.querySelectorAll('.ai-photo-pending').forEach(el => {
                 el.hidden = false;
-                el.querySelector('.ai-photo-pending-text').textContent = mode === 'saved' ? MSG_AI_PHOTO_SAVED : MSG_AI_PHOTO_PENDING;
+                el.querySelector('.ai-photo-pending-text').textContent = text;
                 el.querySelectorAll('.ai-photo-discard-btn').forEach(b => { b.hidden = mode === 'saved'; });
             });
         },
@@ -1659,13 +1720,17 @@
         forget() {
             S.aiPhotoToken = null;
             document.querySelectorAll('.ai-photo-pending').forEach(el => { el.hidden = true; });
+            this.updateEnhance();
         },
 
-        setBusy(busy) {
+        // enhancing: the label that changes is "Mejorar con IA"'s, not "Generar"'s.
+        setBusy(busy, enhancing = this.enhancing) {
             this.busy = busy;
-            document.querySelectorAll('.ai-photo-btn, .ai-photo-another-btn').forEach(b => { b.disabled = busy || this.exhausted; });
+            this.enhancing = busy && enhancing;
+            document.querySelectorAll('.ai-photo-btn, .ai-enhance-btn, .ai-photo-another-btn').forEach(b => { b.disabled = busy || this.exhausted; });
             document.querySelectorAll('.ai-photo-discard-btn').forEach(b => { b.disabled = busy; });
-            document.querySelectorAll('.ai-photo-btn-label').forEach(l => { l.textContent = busy ? MSG_AI_PHOTO_GENERATING : MSG_AI_PHOTO_GENERATE; });
+            document.querySelectorAll('.ai-photo-btn-label').forEach(l => { l.textContent = busy && !this.enhancing ? MSG_AI_PHOTO_GENERATING : MSG_AI_PHOTO_GENERATE; });
+            document.querySelectorAll('.ai-enhance-btn-label').forEach(l => { l.textContent = this.enhancing ? MSG_AI_PHOTO_ENHANCING : MSG_AI_PHOTO_ENHANCE; });
             document.querySelectorAll('[id="img-upload-area"]').forEach(area => area.classList.toggle('loading', busy));
         },
 
@@ -1677,7 +1742,7 @@
                 el.classList.toggle('is-used', this.exhausted);
                 if (remaining !== null) el.textContent = this.exhausted ? MSG_AI_PHOTO_TRIAL_USED : MSG_AI_PHOTO_TRIAL.replace('%count%', remaining);
             });
-            document.querySelectorAll('.ai-photo-btn').forEach(b => { b.classList.toggle('is-exhausted', this.exhausted); });
+            document.querySelectorAll('.ai-photo-btn, .ai-enhance-btn').forEach(b => { b.classList.toggle('is-exhausted', this.exhausted); });
             this.setBusy(this.busy);
             this.showPlanButton(this.exhausted);
         },
@@ -1690,7 +1755,7 @@
                 el.classList.add('is-used', 'is-monthly');
                 el.textContent = message;
             });
-            document.querySelectorAll('.ai-photo-btn').forEach(b => { b.classList.add('is-exhausted'); });
+            document.querySelectorAll('.ai-photo-btn, .ai-enhance-btn').forEach(b => { b.classList.add('is-exhausted'); });
             this.setBusy(this.busy);
             this.showPlanButton(false);
         },
@@ -1718,7 +1783,7 @@
                 const data = await apiFetch(`/admin/products/${S.productId}/image/delete`);
                 // apiFetch() has already toasted it.
                 if (data.error) return;
-                S.savedMedia = { image: null, clip: null };
+                S.savedMedia = { image: null, clip: null, source: null };
                 S.mediaChanged = true;
                 showToast(MSG_PHOTO_DELETED, 'success');
             }
@@ -1827,9 +1892,10 @@
         AiPhoto.forget();
         // The monthly limit is no reason to choose a plan: only the trial's.
     AiPhoto.showPlanButton(AiPhoto.exhausted && !document.querySelector('.ai-photo-trial.is-monthly'));
-        S.savedMedia = { image: null, clip: null };
+        S.savedMedia = { image: null, clip: null, source: null };
         S.mediaChanged = false;
         S.productId=null; S.categoryId=null; S.menuSectionId=null; S.spicy=0;
+        AiPhoto.updateEnhance();
         // Reset steps visibility
         ['product-modal-steps','product-sheet-steps'].forEach(id => {
             const el=document.getElementById(id); if(el) el.style.display='';

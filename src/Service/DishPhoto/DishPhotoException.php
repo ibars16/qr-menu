@@ -14,6 +14,10 @@ final class DishPhotoException extends \RuntimeException
     public const REASON_CARD_PENDING = 'card_pending';
     /** Paid, this month's photos used up: renews on the 1st (its message takes %month%). */
     public const REASON_MONTHLY_LIMIT = 'monthly_limit';
+    /** "Mejorar con IA" on a dish whose photo isn't the owner's own (AI-made, retouched, a clip's poster, none). */
+    public const REASON_NO_OWNER_PHOTO = 'no_owner_photo';
+    /** "Mejorar con IA": the provider gave no retouched photo (Refused, with its own message). */
+    public const REASON_ENHANCE_REFUSED = 'enhance_refused';
 
     public function __construct(public readonly string $reason, ?\Throwable $previous = null)
     {

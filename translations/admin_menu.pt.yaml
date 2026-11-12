@@ -259,9 +259,12 @@ search:
 ai_photo:
     generate: 'Gerar com IA'
     generating: 'A criar a foto…'
+    enhance: 'Melhorar com IA'
+    enhancing: 'A melhorar a foto…'
     another: 'Outra'
     discard: 'Descartar'
     pending: 'Foto criada com IA. Será aplicada ao guardar.'
+    enhance_pending: 'Foto melhorada com IA. Será aplicada ao guardar.'
     saved: 'Foto criada com IA e guardada no prato.'
     trial_remaining: 'Restam-lhe %count% de %limit% fotos com IA grátis.'
     trial_used: 'Já usou as suas %limit% fotos com IA grátis. Escolha um plano para criar mais.'
@@ -293,6 +296,8 @@ ai_photo:
         unavailable: 'De momento não é possível criar a foto, tente daqui a alguns minutos.'
         not_configured: 'De momento não é possível criar a foto, tente daqui a alguns minutos.'
         draft_expired: 'A foto criada com IA expirou. Gere-a novamente.'
+        no_owner_photo: 'Só é possível melhorar as fotos que tenha carregado.'
+        enhance_refused: 'Não foi possível melhorar esta foto. Experimente outra foto do prato.'
     batch:
         offer_singular: '%count% prato não tem foto'
         offer_plural: '%count% pratos não têm foto'
