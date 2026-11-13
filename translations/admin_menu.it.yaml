@@ -8,6 +8,7 @@ action:
     save: Salva
     save_product: Salva piatto
     delete_all_products: Elimina tutti i piatti
+    delete_product: Elimina piatto
 
 category:
     delete_title: Elimina categoria

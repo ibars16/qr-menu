@@ -83,14 +83,13 @@
     .panel-footer .btn-danger { flex:0; min-width:48px; padding:0; }
 }
 
-/* "Eliminar plato" — deliberately de-emphasized: the same box/border
-   weight as "Guardar" read as two competing primary actions, when
-   deleting a dish is rare, destructive and irreversible. No new red
-   either — --brand already means something else here ("+ Nuevo
-   plato"/the save CTA); a second red would read as a conflicting kind of
-   emphasis. Discretion, not color, communicates "handle with care" — the
-   hover still uses #F0997B, the same danger accent .icon-btn.danger
-   already uses elsewhere in this admin, not a new one.
+/* "Eliminar plato" — visible on purpose (owner asked, 2026-11-13: the
+   bare grey icon was hard to find): danger outline in the shared
+   --err-text/--err-border tokens (AA in both themes, see
+   _styles_tokens), transparent fill so it never competes with the
+   filled "Guardar". Desktop shows the label and sits on the left, apart
+   from Cancelar/Guardar; mobile stays icon-only (48px) in the tight
+   footer, with the same title/aria-label.
    Scoped by id, not a .btn-danger override: that class is global
    (base.html.twig) and reused as-is by the "eliminar todos" header
    buttons and by the tags/users edit-modal footers on other screens —
@@ -100,9 +99,10 @@
    deleteProduct() in _product_js.html.twig — logic/confirm dialog
    unchanged. */
 #d-delete-btn, #m-delete-btn {
-    background:none; border-color:transparent; color:var(--tx-muted);
+    background:none; border-color:var(--err-border); color:var(--err-text);
 }
-#d-delete-btn:hover, #m-delete-btn:hover { background:var(--bg-hover); color:#F0997B; }
+#d-delete-btn { gap:6px; margin-right:auto; }
+#d-delete-btn:hover, #m-delete-btn:hover { background:var(--bg-hover); border-color:var(--err-text); }
 #d-delete-btn:focus-visible, #m-delete-btn:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
 
 /* Step body wrappers — must be flex containers so the constrained height from

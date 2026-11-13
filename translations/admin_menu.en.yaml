@@ -8,6 +8,7 @@ action:
     save: Save
     save_product: Save dish
     delete_all_products: Delete all dishes
+    delete_product: Delete dish
 
 category:
     delete_title: Delete category

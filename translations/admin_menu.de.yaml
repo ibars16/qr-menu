@@ -8,6 +8,7 @@ action:
     save: Speichern
     save_product: Gericht speichern
     delete_all_products: Alle Gerichte löschen
+    delete_product: Gericht löschen
 
 category:
     delete_title: Kategorie löschen

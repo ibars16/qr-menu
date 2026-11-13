@@ -8,6 +8,7 @@ action:
     save: Guardar
     save_product: Guardar plato
     delete_all_products: Eliminar todos los platos
+    delete_product: Eliminar plato
 
 category:
     delete_title: Eliminar categoría
