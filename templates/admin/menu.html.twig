@@ -398,6 +398,11 @@
                  data-step-url="{{ path('admin_menu_import_language_translate', {id: batchId}) }}"
                  data-token="{{ csrf_token('import_language_' ~ batchId) }}"
                  data-main="{{ notice.main }}"
+                 data-text="{{ 'language_notice.text'|trans({'%language%': notice.language, '%main%': notice.main}, 'admin_menu') }}"
+                 data-text-singular="{{ 'language_notice.text_singular'|trans({'%language%': notice.language, '%main%': notice.main}, 'admin_menu') }}"
+                 data-text-plural="{{ 'language_notice.text_plural'|trans({'%language%': notice.language, '%main%': notice.main}, 'admin_menu') }}"
+                 data-show-singular="{{ 'language_notice.show_dishes_singular'|trans({}, 'admin_menu') }}"
+                 data-show-plural="{{ 'language_notice.show_dishes_plural'|trans({}, 'admin_menu') }}"
                  data-state="{{ notice.batch.languageNotice == 'translating' ? 'stopped' : 'idle' }}">
                 {# Says how many dishes; "Ver los N platos" marks them (toggleMark(), like the other notices) —
                    exactly the dishes "Traducir" would translate. Only the categories left: nothing to mark. #}
@@ -405,11 +410,11 @@
                 <div class="import-lang-notice-text">
                     <i class="ti ti-alert-triangle" aria-hidden="true"></i>
                     <span class="import-lang-notice-message">
-                        {% if dishCount > 0 %}
+                        <span class="import-lang-notice-count">{% if dishCount > 0 %}
                             {{ (dishCount == 1 ? 'language_notice.text_singular' : 'language_notice.text_plural')|trans({'%language%': notice.language, '%main%': notice.main, '%count%': dishCount}, 'admin_menu') }}
                         {% else %}
                             {{ 'language_notice.text'|trans({'%language%': notice.language, '%main%': notice.main}, 'admin_menu') }}
-                        {% endif %}
+                        {% endif %}</span>
                         {% if notice.batch.languageNotice == 'translating' %}
                             <span class="import-lang-notice-half">{{ 'language_notice.half_done'|trans({'%count%': notice.remaining}, 'admin_menu') }}</span>
                         {% endif %}
@@ -429,7 +434,7 @@
                             <i class="ti ti-eye mark-off" aria-hidden="true"></i>
                             <i class="ti ti-x mark-on" aria-hidden="true"></i>
                             <span class="mark-on mark-sr">{{ 'notice.unmark'|trans({}, 'admin_menu') }}:</span>
-                            {{ (dishCount == 1 ? 'language_notice.show_dishes_singular' : 'language_notice.show_dishes_plural')|trans({'%count%': dishCount}, 'admin_menu') }}
+                            <span class="import-lang-notice-show">{{ (dishCount == 1 ? 'language_notice.show_dishes_singular' : 'language_notice.show_dishes_plural')|trans({'%count%': dishCount}, 'admin_menu') }}</span>
                         </button>
                     {% endif %}
                     <button type="button" class="btn btn-primary import-lang-notice-translate">
@@ -451,7 +456,9 @@
 
         {# Above the photo banner: dishes customers can't see at all matter more than dishes without a picture. #}
         {% if notOnMenuCount > 0 %}
-            <button type="button" class="info-banner" id="not-on-menu-banner" aria-pressed="false" onclick="highlightNotOnMenu(this)">
+            <button type="button" class="info-banner" id="not-on-menu-banner" aria-pressed="false" onclick="highlightNotOnMenu(this)"
+                    data-singular="{{ 'notice.not_on_menu_singular'|trans({}, 'admin_menu') }}"
+                    data-plural="{{ 'notice.not_on_menu_plural'|trans({}, 'admin_menu') }}">
                 <i class="ti ti-eye-off" aria-hidden="true"></i>
                 <span class="info-banner-text">
                     {{ (notOnMenuCount == 1 ? 'notice.not_on_menu_singular' : 'notice.not_on_menu_plural')|trans({'%count%': notOnMenuCount}, 'admin_menu') }}
@@ -463,7 +470,9 @@
         {% endif %}
 
         {% if missingPhotoCount > 0 %}
-            <button type="button" class="info-banner" id="missing-photo-banner" aria-pressed="false" onclick="highlightMissingPhotos(this)">
+            <button type="button" class="info-banner" id="missing-photo-banner" aria-pressed="false" onclick="highlightMissingPhotos(this)"
+                    data-singular="{{ 'notice.missing_photos_singular'|trans({}, 'admin_menu') }}"
+                    data-plural="{{ 'notice.missing_photos_plural'|trans({}, 'admin_menu') }}">
                 <i class="ti ti-photo-off" aria-hidden="true"></i>
                 <span class="info-banner-text">
                     {{ (missingPhotoCount == 1 ? 'notice.missing_photos_singular' : 'notice.missing_photos_plural')|trans({'%count%': missingPhotoCount}, 'admin_menu') }}
@@ -693,7 +702,7 @@
         const MSG_CONFIRM_DELETE_ALL_PRODUCTS_STEP1 = "{{ 'js.confirm_delete_all_products_step1'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_CONFIRM_DELETE_ALL_PRODUCTS_STEP2 = "{{ 'js.confirm_delete_all_products_step2'|trans({}, 'admin_menu')|e('js') }}";
         const MSG_ALL_PRODUCTS_DELETED = "{{ 'js.all_products_deleted'|trans({}, 'admin_menu')|e('js') }}";
-        const TOTAL_PRODUCTS_COUNT = {{ totalProducts }};
+        let TOTAL_PRODUCTS_COUNT = {{ totalProducts }};
 
         // S, isMobile, apiFetch, panelEl/getVal/setVal come from
         // _admin_js_utils.html.twig — declare S first since the product JS
@@ -873,8 +882,13 @@
             const data = await apiFetch(`/admin/categories/${id}/delete`);
             if (data.ok) {
                 btn.closest('.cat-block').remove();
+                document.querySelector(`.sort-cat[data-id="${id}"]`)?.remove();
+                document.querySelectorAll(`[id="p-category"] option[value="${id}"]`).forEach(o => o.remove());
                 showToast(MSG_CATEGORY_DELETED, 'success');
-                if (!document.querySelector('.cat-block')) location.reload();
+                if (!document.querySelector('.cat-block')) { location.reload(); return; }
+                TOTAL_PRODUCTS_COUNT -= count;
+                refreshNotices();
+                refreshFromServer();
             }
         }
 
@@ -891,6 +905,109 @@
                 showToast(MSG_ALL_PRODUCTS_DELETED, 'success');
                 location.reload();
             }
+        }
+
+        // ── Notices kept in step with the list, without reload ──
+        // A dish deleted from the editor (desktop modal or mobile sheet,
+        // same deleteProduct() in _product_js) leaves the list here: its
+        // row in the list and in "Ordenar", and one from its category's
+        // counts. Then every notice is recounted from the rows left.
+        function onProductDeleted(id) {
+            const row = document.querySelector(`.product-row[data-id="${id}"]`);
+            const block = row?.closest('.cat-block');
+            row?.remove();
+            const sortRow = document.querySelector(`.sort-prod[data-id="${id}"]`);
+            const sortCat = sortRow?.closest('.sort-cat');
+            sortRow?.remove();
+            if (block) {
+                const n = block.querySelectorAll('.product-row').length;
+                block.querySelector('.cat-count').textContent = n;
+                // The trash button's confirm says how many dishes go with it.
+                const del = block.querySelector('.cat-actions .icon-btn.danger');
+                if (del) del.setAttribute('onclick', del.getAttribute('onclick').replace(/, \d+, this\)$/, `, ${n}, this)`));
+            }
+            if (sortCat) {
+                const n = sortCat.querySelectorAll('.sort-prod').length;
+                sortCat.querySelector('.sort-count').textContent = n;
+            }
+            TOTAL_PRODUCTS_COUNT--;
+            refreshNotices();
+            refreshFromServer();
+        }
+
+        // What only the server can count, fetched again in the background
+        // right after a delete (the page itself isn't reloaded):
+        //   - "N platos sin foto de tu carta importada" / "Crear sus fotos
+        //     con IA" (_ai_photo_batch: its count depends on the import's
+        //     dishes, the trial and the month's photos). Each box is swapped
+        //     for the fresh one, or removed if the server no longer shows it.
+        //     A box that is creating photos right now is left alone.
+        //   - the dish counts on "Nuevo plato"'s category cards (_cat_select).
+        async function refreshFromServer() {
+            let doc;
+            try {
+                const response = await fetch(location.href, { credentials: 'same-origin' });
+                if (!response.ok) return;
+                doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+            } catch (e) { return; }
+
+            document.querySelectorAll('.ai-batch').forEach(box => {
+                if (box.dataset.state === 'working' || box.dataset.state === 'done') return;
+                const fresh = Array.from(doc.querySelectorAll('.ai-batch'))
+                    .find(b => b.dataset.stepUrl === box.dataset.stepUrl);
+                if (!fresh) { box.remove(); return; }
+                const node = document.importNode(fresh, true);
+                box.replaceWith(node);
+                if (typeof initAiBatch === 'function') initAiBatch(node);
+            });
+
+            document.querySelectorAll('.cat-select-card').forEach(card => {
+                const fresh = doc.querySelector(`.cat-select-card[data-cat-id="${card.dataset.catId}"]`);
+                if (!fresh) { card.remove(); return; }
+                const count = card.querySelector('.cat-select-card-count');
+                const freshCount = fresh.querySelector('.cat-select-card-count');
+                if (count && freshCount) count.textContent = freshCount.textContent;
+            });
+        }
+
+        // Same conditions the server used for each count (see the filter
+        // functions further down), read from the rows still on screen. A
+        // notice whose count reaches 0 goes away, exactly as on reload.
+        function refreshNotices() {
+            const rows = Array.from(document.querySelectorAll('#cats-list .product-row'));
+            const plural = (el, n) => (n === 1 ? el.dataset.singular : el.dataset.plural).replace('%count%', n);
+            const setBanner = (banner, n) => {
+                if (!banner) return;
+                if (n === 0) {
+                    if (activeMark === banner) activeMark = null;
+                    banner.remove();
+                    return;
+                }
+                banner.querySelector('.info-banner-text').textContent = plural(banner, n);
+            };
+            setBanner(document.getElementById('missing-photo-banner'),
+                rows.filter(isMissingPhoto).length);
+            setBanner(document.getElementById('not-on-menu-banner'),
+                rows.filter(isNotOnMenu).length);
+
+            const present = new Set(rows.map(r => r.dataset.id));
+            document.querySelectorAll('.import-lang-notice').forEach(notice => {
+                const btn = notice.querySelector('[data-product-ids]');
+                if (!btn) return;
+                const ids = btn.dataset.productIds.split(',').filter(i => present.has(i));
+                const n = ids.length;
+                const msg = notice.querySelector('.import-lang-notice-count');
+                if (n === 0) {
+                    if (activeMark === btn) activeMark = null;
+                    btn.remove();
+                    if (msg) msg.textContent = notice.dataset.text;
+                    return;
+                }
+                btn.dataset.productIds = ids.join(',');
+                if (msg) msg.textContent = (n === 1 ? notice.dataset.textSingular : notice.dataset.textPlural).replace('%count%', n);
+                const show = btn.querySelector('.import-lang-notice-show');
+                if (show) show.textContent = (n === 1 ? notice.dataset.showSingular : notice.dataset.showPlural).replace('%count%', n);
+            });
         }
 
         // Dish-row marking shared by the three notices that point at dishes
@@ -930,9 +1047,9 @@
         // .product-thumb (the template only renders one when product.image
         // is set, see the fallback plate emoji a few lines up).
         function highlightMissingPhotos(button) {
-            toggleMark(button, Array.from(document.querySelectorAll('.product-row'))
-                .filter(row => !row.querySelector('.product-thumb img')));
+            toggleMark(button, Array.from(document.querySelectorAll('.product-row')).filter(isMissingPhoto));
         }
+        function isMissingPhoto(row) { return !row.querySelector('.product-thumb img'); }
 
         // Import-language notice (see .import-lang-notice above) — the rows
         // are exactly the dishes the server listed for it (the ones
@@ -951,9 +1068,9 @@
         // no reload) keeps its now-hidden notice in the DOM but reads
         // "Oculto" honestly, so it is skipped, matching the notice's own CSS.
         function highlightNotOnMenu(button) {
-            toggleMark(button, Array.from(document.querySelectorAll('.product-row'))
-                .filter(row => !row.classList.contains('inactive') && row.querySelector('.menu-notice')));
+            toggleMark(button, Array.from(document.querySelectorAll('.product-row')).filter(isNotOnMenu));
         }
+        function isNotOnMenu(row) { return !row.classList.contains('inactive') && !!row.querySelector('.menu-notice'); }
 
         // ── Dish/category search ──────────────────────────────────────────
         // Purely in the browser, on every keystroke: the whole Carta is

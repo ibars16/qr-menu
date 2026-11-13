@@ -77,7 +77,9 @@
         }|json_encode|raw }};
         const canChoosePlan = typeof BillingUI !== 'undefined';
 
-        document.querySelectorAll('.ai-batch').forEach(box => {
+        // Also exposed as initAiBatch(box): Carta swaps in a fresh box after a
+        // delete (refreshAiPhotoNotices() in menu.html.twig) and wires it here.
+        const init = box => {
             const $ = sel => box.querySelector(sel);
             const total = parseInt(box.dataset.total, 10) || 0;
             const trial = box.dataset.trial === '1';
@@ -172,6 +174,8 @@
 
             $('.ai-batch-start').addEventListener('click', step);
             $('.ai-batch-retry').addEventListener('click', step);
-        });
+        };
+        window.initAiBatch = init;
+        document.querySelectorAll('.ai-batch').forEach(init);
     })();
 </script>

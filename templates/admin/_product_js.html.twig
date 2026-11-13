@@ -554,7 +554,21 @@
         const name = getVal('p-name') || MSG_DEFAULT_PRODUCT_NAME;
         if (!confirm(MSG_CONFIRM_DELETE_PRODUCT.replace('%name%', name))) return;
         const data = await apiFetch(`/admin/products/${S.productId}/delete`);
-        if (data.ok) { showToast(MSG_PRODUCT_DELETED, 'success'); ProductUI.closeProduct(); setTimeout(() => location.reload(), 700); }
+        if (!data.ok) return;
+        showToast(MSG_PRODUCT_DELETED, 'success');
+        // A page that can update its list (and its notices) in place
+        // defines onProductDeleted(id) — the Carta does. Without it the
+        // page reloads as before. Either way the dish is gone, so a media
+        // change made before deleting no longer needs closeProduct()'s reload.
+        const id = S.productId;
+        if (typeof onProductDeleted === 'function') {
+            S.mediaChanged = false;
+            ProductUI.closeProduct();
+            onProductDeleted(id);
+        } else {
+            ProductUI.closeProduct();
+            setTimeout(() => location.reload(), 700);
+        }
     }
 
     // ── Category selector (step 1 — only present when show_category_step) ──────
