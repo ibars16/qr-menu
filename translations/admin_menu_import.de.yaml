@@ -6,13 +6,14 @@ action:
 upload:
     intro: 'Lade Fotos deiner gedruckten Speisekarte hoch — wir lesen sie für dich ein. Ein Foto pro Seite reicht.'
     drop_text: Ziehe deine Menüfotos hierher oder tippe, um Dateien auszuwählen
-    drop_hint: Füge so viele hinzu, wie du brauchst
+    drop_hint: 'Bis zu 30 Fotos, jeweils höchstens 15 MB.'
     submit: Speisekarte jetzt einlesen
     uploading: Deine Fotos werden hochgeladen…
     upload_failed: Hochladen fehlgeschlagen — bitte prüfe deine Verbindung und versuche es erneut.
     retry: Erneut versuchen
     error:
         no_files: Bitte wähle mindestens ein Foto aus.
+        total_too_large: 'Die Fotos sind insgesamt zu groß. Lade sie in mehreren Durchgängen hoch (höchstens etwa 60 MB pro Upload).'
         too_many_files: 'Bitte lade höchstens %max% Fotos gleichzeitig hoch.'
         invalid_file: '„%name%" konnte nicht hochgeladen werden — bitte versuche es erneut.'
         unsupported_type: '„%name%" ist kein unterstützter Bildtyp. Bitte verwende JPEG, PNG oder WebP.'

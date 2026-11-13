@@ -70,7 +70,15 @@ class MenuImportController extends AbstractController
         $files = $request->files->all('images') ?? [];
 
         if (empty($files)) {
-            $this->addFlash('error', $this->translator->trans('upload.error.no_files', domain: 'admin_menu_import'));
+            // A body over post_max_size makes PHP drop $_FILES entirely, so
+            // "nothing arrived" would read as "nothing was picked" —
+            // Content-Length vs. the real ini limit tells the two apart.
+            $postMaxSize = self::iniBytes((string) ini_get('post_max_size'));
+            $contentLength = (int) $request->server->get('CONTENT_LENGTH', 0);
+            $key = $postMaxSize > 0 && $contentLength > $postMaxSize
+                ? 'upload.error.total_too_large'
+                : 'upload.error.no_files';
+            $this->addFlash('error', $this->translator->trans($key, domain: 'admin_menu_import'));
             return $this->redirectToRoute('admin_menu_import_new');
         }
 
@@ -257,6 +265,23 @@ class MenuImportController extends AbstractController
             MenuImportBatchStatus::COMPLETED,
             MenuImportBatchStatus::FAILED,
         ], true);
+    }
+
+    /** "66M" / "1G" / "512K" / "1048576" → bytes; 0 means "no limit". */
+    private static function iniBytes(string $value): int
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return 0;
+        }
+        $number = (int) $value;
+
+        return match (strtolower(substr($value, -1))) {
+            'g' => $number * 1024 ** 3,
+            'm' => $number * 1024 ** 2,
+            'k' => $number * 1024,
+            default => $number,
+        };
     }
 
     private function importErrorKey(UploadValidationError $error): string

@@ -6,13 +6,14 @@ action:
 upload:
     intro: 'Carica le foto del tuo menù stampato e le leggeremo per te — va bene una foto per pagina.'
     drop_text: Trascina qui le foto del tuo menù, oppure tocca per scegliere i file
-    drop_hint: Aggiungine quante ne servono
+    drop_hint: 'Fino a 30 foto, massimo 15 MB ciascuna.'
     submit: Inizia a leggere il mio menù
     uploading: Caricamento delle tue foto…
     upload_failed: Caricamento non riuscito — controlla la connessione e riprova.
     retry: Riprova
     error:
         no_files: Scegli almeno una foto.
+        total_too_large: 'Le foto pesano troppo in totale. Caricale in più volte (massimo circa 60 MB per invio).'
         too_many_files: 'Carica al massimo %max% foto alla volta.'
         invalid_file: '"%name%" non è stato caricato — riprova.'
         unsupported_type: '"%name%" non è un tipo di foto supportato. Usa JPEG, PNG o WebP.'

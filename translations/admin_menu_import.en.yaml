@@ -6,13 +6,14 @@ action:
 upload:
     intro: 'Upload photos of your printed menu and we''ll read them for you — one photo per page is fine.'
     drop_text: Drag your menu photos here, or tap to choose files
-    drop_hint: Add as many as you need
+    drop_hint: 'Up to 30 photos, 15 MB max each.'
     submit: Start reading my menu
     uploading: Uploading your photos…
     upload_failed: Upload failed — check your connection and try again.
     retry: Try again
     error:
         no_files: Please choose at least one photo.
+        total_too_large: 'The photos are too large in total. Upload them in several goes (about 60 MB max per upload).'
         too_many_files: 'Please upload %max% photos or fewer at a time.'
         invalid_file: '"%name%" couldn''t be uploaded — please try again.'
         unsupported_type: '"%name%" isn''t a supported photo type. Please use JPEG, PNG, or WebP.'

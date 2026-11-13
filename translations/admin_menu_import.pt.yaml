@@ -6,13 +6,14 @@ action:
 upload:
     intro: 'Carregue fotos da sua ementa impressa e nós lemo-las por si — uma foto por página está bem.'
     drop_text: Arraste as fotos da sua ementa para aqui, ou toque para escolher ficheiros
-    drop_hint: Adicione quantas precisar
+    drop_hint: 'Até 30 fotos, com 15 MB no máximo cada uma.'
     submit: Começar a ler a minha ementa
     uploading: A carregar as suas fotos…
     upload_failed: O carregamento falhou — verifique a sua ligação e tente novamente.
     retry: Tentar novamente
     error:
         no_files: Escolha pelo menos uma foto.
+        total_too_large: 'As fotos pesam demasiado no total. Carregue-as em várias vezes (máximo de cerca de 60 MB por envio).'
         too_many_files: 'Carregue no máximo %max% fotos de cada vez.'
         invalid_file: '"%name%" não pôde ser carregada — tente novamente.'
         unsupported_type: '"%name%" não é um tipo de foto suportado. Use JPEG, PNG ou WebP.'
