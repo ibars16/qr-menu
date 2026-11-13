@@ -56,6 +56,8 @@ mockup:
 
 demo:
   link: "Voir une carte réelle"
+  eyebrow: "Carte en direct"
+  sub: "Testez-la comme un client"
 
 faq:
   eyebrow: "Questions fréquentes"

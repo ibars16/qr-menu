@@ -56,6 +56,8 @@ mockup:
 
 demo:
   link: "Ver uma ementa real"
+  eyebrow: "Ementa ao vivo"
+  sub: "Experimente-a como um cliente"
 
 faq:
   eyebrow: "Perguntas frequentes"

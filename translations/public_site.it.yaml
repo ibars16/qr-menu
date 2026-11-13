@@ -56,6 +56,8 @@ mockup:
 
 demo:
   link: "Vedi un menu reale"
+  eyebrow: "Menu dal vivo"
+  sub: "Provalo come un cliente"
 
 faq:
   eyebrow: "Domande frequenti"
