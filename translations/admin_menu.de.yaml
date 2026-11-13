@@ -265,7 +265,9 @@ ai_photo:
     another: 'Neues'
     discard: 'Verwerfen'
     pending: 'Mit KI erstelltes Foto. Es wird beim Speichern übernommen.'
-    enhance_pending: 'Mit KI verbessertes Foto. Es wird beim Speichern übernommen.'
+    enhance_saved: 'Mit KI verbessertes Foto, im Gericht gespeichert.'
+    revert: 'Zurück zum Original'
+    reverted: 'Das Originalfoto ist wieder da.'
     saved: 'KI-Foto erstellt und beim Gericht gespeichert.'
     trial_remaining: 'Du hast noch %count% von %limit% kostenlosen KI-Fotos.'
     trial_used: 'Du hast deine %limit% kostenlosen KI-Fotos verbraucht. Wähle einen Tarif, um mehr zu erstellen.'
@@ -299,6 +301,7 @@ ai_photo:
         draft_expired: 'Das KI-Foto ist abgelaufen. Erstelle es bitte neu.'
         no_owner_photo: 'Nur selbst hochgeladene Fotos können verbessert werden.'
         enhance_refused: 'Dieses Foto konnten wir nicht verbessern. Versuche es mit einem anderen Foto des Gerichts.'
+        no_original: 'Das Originalfoto ist nicht mehr verfügbar.'
     batch:
         offer_singular: '%count% Gericht hat kein Foto'
         offer_plural: '%count% Gerichte haben kein Foto'

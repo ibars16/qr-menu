@@ -13,9 +13,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * "Mejorar con IA" in the dish editor (DishPhotoController::enhance()):
- * only the owner's own photo, sent reduced, a draft until saved (marked
- * ai_edit then), the same quota and brakes as "Generar con IA". The
- * provider is always FakeDishImageGenerator — never a real AI.
+ * only the owner's own photo, sent reduced, saved on the dish at once
+ * (ai_edit) with the original kept aside for "Volver a la original"
+ * (revert()) until the photo changes, the same quota and brakes as
+ * "Generar con IA". The provider is always FakeDishImageGenerator —
+ * never a real AI.
  */
 final class DishPhotoEnhanceTest extends WebTestCase
 {
@@ -67,11 +69,33 @@ final class DishPhotoEnhanceTest extends WebTestCase
         return $this->dish($this->category($restaurant), $name, $filename);
     }
 
-    public function testADraftFromTheOwnersPhotoThatOnlyReplacesItOnSave(): void
+    /** @return string[] the originals kept for $restaurant (basenames) */
+    private function keptOriginals(Restaurant $restaurant): array
+    {
+        $dir = static::getContainer()->getParameter('app.ai_photo_originals_dir') . '/' . $restaurant->getId();
+
+        return is_dir($dir) ? array_values(array_diff(scandir($dir), ['.', '..'])) : [];
+    }
+
+    private function menuVersion(Restaurant $restaurant): int
+    {
+        return (int) $this->em->getConnection()->fetchOne('SELECT menu_content_version FROM restaurant WHERE id = ?', [$restaurant->getId()]);
+    }
+
+    private function revert(Product $product): array
+    {
+        $this->client->request('POST', '/admin/products/' . $product->getId() . '/image/original');
+
+        return json_decode($this->client->getResponse()->getContent(), true) ?? [];
+    }
+
+    public function testSavedOnTheDishAtOnceKeepingTheOriginalAside(): void
     {
         $product = $this->dishWithOwnPhoto();
         $restaurant = $product->getCategory()->getRestaurant();
         $original = $product->getImage();
+        $originalBytes = file_get_contents($this->productsDir() . '/' . $original);
+        $version = $this->menuVersion($restaurant);
         $this->client->loginUser($this->owner($restaurant));
 
         $data = $this->enhance($product);
@@ -90,27 +114,118 @@ final class DishPhotoEnhanceTest extends WebTestCase
         self::assertSame(IMAGETYPE_JPEG, $size[2]);
         self::assertSame(1024, max($size[0], $size[1]), 'longest side reduced to 1024');
 
-        // Closing without saving (Descartar): the original stays.
-        self::assertSame($original, $this->reload($product)->getImage());
-        self::assertNull($this->reload($product)->getImageSource());
-        $this->client->request('GET', $data['preview']);
-        self::assertResponseIsSuccessful();
-
-        // Guardar: the retouch replaces it, marked ai_edit.
-        $result = $this->apply($product, $data['token']);
-        self::assertResponseIsSuccessful();
-        self::assertSame(Product::IMAGE_SOURCE_AI_EDIT, $result['imageSource']);
+        // On the dish already, no Guardar needed.
+        self::assertSame(Product::IMAGE_SOURCE_AI_EDIT, $data['imageSource']);
+        self::assertTrue($data['canRevert']);
         $product = $this->reload($product);
-        self::assertSame($result['image'], $product->getImage());
+        self::assertSame($data['image'], $product->getImage());
         self::assertSame(Product::IMAGE_SOURCE_AI_EDIT, $product->getImageSource());
-        self::assertFileDoesNotExist($this->productsDir() . '/' . $original);
+        self::assertFileExists($this->productsDir() . '/' . $data['image']);
+        self::assertGreaterThan($version, $this->menuVersion($restaurant), 'the public menu is refreshed');
 
-        // Already retouched: not offered again (and not counted).
-        $again = $this->enhance($product);
+        // The original: out of the public folder, kept aside, untouched.
+        self::assertFileDoesNotExist($this->productsDir() . '/' . $original);
+        self::assertSame([$data['image'] . '.png'], $this->keptOriginals($restaurant));
+        $kept = static::getContainer()->getParameter('app.ai_photo_originals_dir') . '/' . $restaurant->getId() . '/' . $data['image'] . '.png';
+        self::assertSame($originalBytes, file_get_contents($kept));
+
+        // The editor knows it can go back.
+        $this->client->request('GET', '/admin/products/' . $product->getId());
+        self::assertTrue(json_decode($this->client->getResponse()->getContent(), true)['canRevert']);
+    }
+
+    public function testOtraStartsAgainFromTheOriginal(): void
+    {
+        $product = $this->dishWithOwnPhoto();
+        $restaurant = $product->getCategory()->getRestaurant();
+        $this->client->loginUser($this->owner($restaurant));
+
+        $first = $this->enhance($product);
+        $second = $this->enhance($this->reload($product));
+        self::assertResponseIsSuccessful();
+
+        self::assertSame(FakeDishImageGenerator::$edits[0]['bytes'], FakeDishImageGenerator::$edits[1]['bytes'], 'the original again, not the enhanced one');
+        self::assertSame($second['image'], $this->reload($product)->getImage());
+        self::assertFileDoesNotExist($this->productsDir() . '/' . $first['image']);
+        self::assertSame([$second['image'] . '.png'], $this->keptOriginals($restaurant), 'still one original');
+        self::assertSame(2, $this->aiPhotoCount($restaurant));
+    }
+
+    public function testBackToTheOriginal(): void
+    {
+        $product = $this->dishWithOwnPhoto();
+        $restaurant = $product->getCategory()->getRestaurant();
+        $originalBytes = file_get_contents($this->productsDir() . '/' . $product->getImage());
+        $this->client->loginUser($this->owner($restaurant));
+        $enhanced = $this->enhance($product)['image'];
+        $version = $this->menuVersion($restaurant);
+
+        $data = $this->revert($this->reload($product));
+        self::assertResponseIsSuccessful();
+        self::assertFalse($data['canRevert']);
+        self::assertNull($data['imageSource']);
+
+        $product = $this->reload($product);
+        self::assertSame($data['image'], $product->getImage());
+        self::assertNull($product->getImageSource());
+        self::assertSame($originalBytes, file_get_contents($this->productsDir() . '/' . $product->getImage()));
+        self::assertFileDoesNotExist($this->productsDir() . '/' . $enhanced);
+        self::assertSame([], $this->keptOriginals($restaurant));
+        self::assertGreaterThan($version, $this->menuVersion($restaurant), 'the public menu is refreshed');
+        self::assertSame(1, $this->aiPhotoCount($restaurant), 'going back costs nothing');
+
+        $again = $this->revert($product);
+        self::assertResponseStatusCodeSame(410);
+        self::assertSame('no_original', $again['reason']);
+        self::assertSame('La foto original ya no está disponible.', $again['error']);
+
+        $this->enhance($product);
+        self::assertResponseIsSuccessful('the original can be enhanced again');
+    }
+
+    public function testAnyOtherPhotoChangeDropsTheOriginal(): void
+    {
+        $restaurant = $this->restaurant(paid: true);
+        $this->client->loginUser($this->owner($restaurant));
+        $uploaded = $this->dishWithOwnPhoto('Bravas', $restaurant);
+        $removed = $this->dishWithOwnPhoto('Patatas', $restaurant);
+        $generated = $this->dishWithOwnPhoto('Gazpacho', $restaurant);
+        foreach ([$uploaded, $removed, $generated] as $product) {
+            $this->enhance($product);
+            self::assertResponseIsSuccessful();
+        }
+        self::assertCount(3, $this->keptOriginals($restaurant));
+
+        $tmp = tempnam(sys_get_temp_dir(), 'own') . '.png';
+        copy(FakeDishImageGenerator::defaultFixture(), $tmp);
+        $this->client->request('POST', '/admin/products/' . $uploaded->getId() . '/image', files: [
+            'image' => new UploadedFile($tmp, 'mine.png', 'image/png', null, true),
+        ]);
+        self::assertResponseIsSuccessful();
+        $this->client->request('POST', '/admin/products/' . $removed->getId() . '/image/delete');
+        self::assertResponseIsSuccessful();
+        $this->apply($generated, $this->generate(['name' => 'Gazpacho', 'productId' => $generated->getId()])['token']);
+        self::assertResponseIsSuccessful();
+
+        self::assertSame([], $this->keptOriginals($restaurant));
+        foreach ([$uploaded, $removed, $generated] as $product) {
+            $this->revert($this->reload($product));
+            self::assertResponseStatusCodeSame(410);
+        }
+    }
+
+    public function testAnEnhancedPhotoWithoutItsOriginalIsNotEnhancedAgain(): void
+    {
+        $product = $this->dishWithOwnPhoto();
+        $product->setImageSource(Product::IMAGE_SOURCE_AI_EDIT);
+        $this->em->flush();
+        $this->client->loginUser($this->owner($product->getCategory()->getRestaurant()));
+
+        $data = $this->enhance($product);
         self::assertResponseStatusCodeSame(409);
-        self::assertSame('no_owner_photo', $again['reason']);
-        self::assertSame('Solo se pueden mejorar las fotos que has subido tú.', $again['error']);
-        self::assertSame(1, $this->aiPhotoCount($restaurant));
+        self::assertSame('no_owner_photo', $data['reason']);
+        self::assertSame('Solo se pueden mejorar las fotos que has subido tú.', $data['error']);
+        self::assertSame([], FakeDishImageGenerator::$edits);
     }
 
     public function testOnlyTheOwnersOwnPhoto(): void
@@ -208,6 +323,8 @@ final class DishPhotoEnhanceTest extends WebTestCase
         $this->client->loginUser($this->owner($mine));
 
         $this->enhance($theirDish);
+        self::assertResponseStatusCodeSame(403);
+        $this->revert($theirDish);
 
         self::assertResponseStatusCodeSame(403);
         self::assertSame([], FakeDishImageGenerator::$edits);

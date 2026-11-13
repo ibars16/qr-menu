@@ -265,7 +265,9 @@ ai_photo:
     another: 'Un''altra'
     discard: 'Scarta'
     pending: 'Foto creata con l''IA. Verrà applicata al salvataggio.'
-    enhance_pending: 'Foto migliorata con l''IA. Verrà applicata al salvataggio.'
+    enhance_saved: 'Foto migliorata con l''IA e salvata nel piatto.'
+    revert: 'Torna all''originale'
+    reverted: 'È tornata la foto originale.'
     saved: 'Foto creata con l''IA e salvata nel piatto.'
     trial_remaining: 'Ti restano %count% foto IA gratuite su %limit%.'
     trial_used: 'Hai usato le tue %limit% foto IA gratuite. Scegli un piano per crearne altre.'
@@ -299,6 +301,7 @@ ai_photo:
         draft_expired: 'La foto creata con l''IA è scaduta. Generala di nuovo.'
         no_owner_photo: 'Si possono migliorare solo le foto caricate da te.'
         enhance_refused: 'Non siamo riusciti a migliorare questa foto. Prova con un''altra foto del piatto.'
+        no_original: 'La foto originale non è più disponibile.'
     batch:
         offer_singular: '%count% piatto non ha la foto'
         offer_plural: '%count% piatti non hanno la foto'

@@ -415,6 +415,8 @@ class MenuAdminController extends AbstractController
             'videoClip'         => $product->getVideoClip(),
             // null = the owner's own photo: "Mejorar con IA" is offered (Product::hasOwnerPhoto()).
             'imageSource'       => $product->getImageSource(),
+            // A "Mejorar con IA" photo whose original is kept: "Volver a la original".
+            'canRevert'         => $this->imageReplacer->originalPath($product) !== null,
             'videoFocusX'       => $product->getVideoFocusX(),
             'videoFocusY'       => $product->getVideoFocusY(),
             'videoZoom'         => $product->getVideoZoom(),
@@ -713,6 +715,8 @@ class MenuAdminController extends AbstractController
             return $processingFailed();
         }
 
+        // An enhanced photo's kept original goes with it ("Volver a la original" no longer applies).
+        $this->imageReplacer->discardOriginal($product);
         foreach ([$product->getVideoClip(), $product->getImage()] as $old) {
             if ($old && is_file($uploadDir . '/' . $old)) {
                 unlink($uploadDir . '/' . $old);

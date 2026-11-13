@@ -10,6 +10,10 @@ parameters:
     # AI dish photos waiting for the owner to save the dish (DishPhotoStorage):
     # never public, deleted after a day.
     app.ai_photo_drafts_dir: '%kernel.project_dir%/var/ai_photo_drafts'
+    # The owner's photo kept aside while its "Mejorar con IA" version is on
+    # the dish, for "Volver a la original" (ProductImageReplacer): never
+    # public, deleted as soon as the dish's photo changes.
+    app.ai_photo_originals_dir: '%kernel.project_dir%/var/ai_photo_originals'
 
     # Model for AI dish photos (GeminiDishImageGenerator) — change it here
     # or with GEMINI_IMAGE_MODEL, nothing else.
@@ -276,6 +280,8 @@ when@test:
     parameters:
         app.uploads_dir: '%kernel.project_dir%/var/test-uploads'
         app.ai_photo_drafts_dir: '%kernel.project_dir%/var/test-ai_photo_drafts'
+        # Inside test-uploads: emptied with it.
+        app.ai_photo_originals_dir: '%kernel.project_dir%/var/test-uploads/ai_photo_originals'
         # A sender, so account emails (AccountMailer) are actually built in
         # tests — MAILER_DSN is null://null there, nothing leaves.
         mailer_from_email: 'no-reply@example.test'

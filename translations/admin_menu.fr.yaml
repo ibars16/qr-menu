@@ -265,7 +265,9 @@ ai_photo:
     another: 'Une autre'
     discard: 'Supprimer'
     pending: 'Photo créée avec l''IA. Elle sera appliquée à l''enregistrement.'
-    enhance_pending: 'Photo améliorée avec l''IA. Elle sera appliquée à l''enregistrement.'
+    enhance_saved: 'Photo améliorée avec l''IA et enregistrée sur le plat.'
+    revert: 'Revenir à l''originale'
+    reverted: 'La photo originale est de retour.'
     saved: 'Photo créée par IA et enregistrée sur le plat.'
     trial_remaining: 'Il vous reste %count% photos IA gratuites sur %limit%.'
     trial_used: 'Vous avez utilisé vos %limit% photos IA gratuites. Choisissez une formule pour en créer plus.'
@@ -299,6 +301,7 @@ ai_photo:
         draft_expired: 'La photo créée avec l''IA a expiré. Générez-la à nouveau.'
         no_owner_photo: 'Seules les photos que vous avez envoyées peuvent être améliorées.'
         enhance_refused: 'Nous n''avons pas pu améliorer cette photo. Essayez avec une autre photo du plat.'
+        no_original: 'La photo originale n''est plus disponible.'
     batch:
         offer_singular: '%count% plat n''a pas de photo'
         offer_plural: '%count% plats n''ont pas de photo'

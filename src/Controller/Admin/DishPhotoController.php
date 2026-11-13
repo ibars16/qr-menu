@@ -26,9 +26,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * Dish photos generated with AI (App\Service\DishPhoto):
  *
  * - editor, Foto tab: generate() makes a DRAFT from the dish's name and
- *   description (the dish may not exist yet), enhance() one from the
- *   owner's own photo ("Mejorar con IA"), draft() shows it, and only
- *   apply() — called by the editor's save — puts it on the dish.
+ *   description (the dish may not exist yet), draft() shows it, and
+ *   apply() puts it on the dish (at once for a saved dish, on save for a
+ *   new one).
+ * - "Mejorar con IA" (enhance()): a saved dish only, applied at once, the
+ *   owner's original kept aside until revert() ("Volver a la original")
+ *   or any other change of photo (ProductImageReplacer).
  * - after an import: importStep() does one dish per request, the browser
  *   repeats it until done (resumable from Carta); importDismiss() hides it.
  *
@@ -85,7 +88,7 @@ class DishPhotoController extends AbstractController
         ]);
     }
 
-    /** "Mejorar con IA": a retouched copy of the dish's own photo, as a draft (same quota as generate()). */
+    /** "Mejorar con IA": the dish's photo retouched and put on it at once (same quota as generate()). */
     #[Route('/products/{id}/ai-photo/enhance', name: 'product_ai_photo_enhance', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function enhance(Product $product): JsonResponse
     {
@@ -95,16 +98,35 @@ class DishPhotoController extends AbstractController
         }
 
         try {
-            $token = $this->generator->enhanceDraft($product);
+            $filename = $this->generator->enhance($product);
         } catch (DishPhotoException $e) {
             return $this->failure($e, $restaurant);
         }
+        $this->replacer->applyEnhanced($product, $filename);
+        $this->em->flush();
 
         return $this->json([
-            'token' => $token,
-            'preview' => $this->generateUrl('admin_product_ai_photo_draft', ['token' => $token]),
+            'image' => $filename,
+            'videoClip' => null,
+            'imageSource' => Product::IMAGE_SOURCE_AI_EDIT,
+            'canRevert' => true,
             'trialRemaining' => $this->quota->trialRemaining($restaurant),
         ]);
+    }
+
+    /** "Volver a la original": the photo kept by enhance() back on the dish. */
+    #[Route('/products/{id}/image/original', name: 'product_image_original', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function revert(Product $product): JsonResponse
+    {
+        if ($product->getCategory()->getRestaurant() !== $this->restaurant()) {
+            throw $this->createAccessDeniedException();
+        }
+        if (!$this->replacer->restoreOriginal($product)) {
+            return $this->json(['error' => $this->trans('ai_photo.error.no_original'), 'reason' => 'no_original'], Response::HTTP_GONE);
+        }
+        $this->em->flush();
+
+        return $this->json(['image' => $product->getImage(), 'videoClip' => null, 'imageSource' => null, 'canRevert' => false]);
     }
 
     #[Route('/products/ai-photo/draft/{token}', name: 'product_ai_photo_draft', methods: ['GET'])]
@@ -132,17 +154,15 @@ class DishPhotoController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true);
-        $token = (string) (is_array($data) ? ($data['token'] ?? '') : '');
-        $source = $this->storage->isEnhancedDraft($restaurant, $token) ? Product::IMAGE_SOURCE_AI_EDIT : Product::IMAGE_SOURCE_AI;
-        $filename = $this->storage->promoteDraft($restaurant, $token);
+        $filename = $this->storage->promoteDraft($restaurant, (string) (is_array($data) ? ($data['token'] ?? '') : ''));
         if ($filename === null) {
             return $this->json(['error' => $this->trans('ai_photo.error.draft_expired'), 'reason' => 'draft_expired'], Response::HTTP_GONE);
         }
 
-        $this->replacer->replace($product, $filename, $source);
+        $this->replacer->replace($product, $filename, Product::IMAGE_SOURCE_AI);
         $this->em->flush();
 
-        return $this->json(['image' => $filename, 'videoClip' => null, 'imageSource' => $source]);
+        return $this->json(['image' => $filename, 'videoClip' => null, 'imageSource' => Product::IMAGE_SOURCE_AI, 'canRevert' => false]);
     }
 
     #[Route('/menu/import/{id}/photos/step', name: 'menu_import_photos_step', methods: ['POST'], requirements: ['id' => '\d+'])]

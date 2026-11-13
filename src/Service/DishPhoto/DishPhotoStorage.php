@@ -20,8 +20,10 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  *    restaurant, until the owner saves the dish (promoteDraft()). Closing
  *    without saving leaves the dish untouched; drafts older than a day
  *    are deleted on the restaurant's next generation.
- * 3. The batch after an import: straight into uploads/products
- *    (storeForProduct()) — those dishes have no photo to protect.
+ * 3. The batch after an import and "Mejorar con IA": straight into
+ *    uploads/products (storeForProduct()) — the batch's dishes have no
+ *    photo to protect, and an enhanced photo keeps its original aside
+ *    (ProductImageReplacer::applyEnhanced()).
  *
  * A file that doesn't pass the validator throws Refused: for the owner
  * it's the same as the AI not making a photo.
@@ -30,7 +32,6 @@ class DishPhotoStorage
 {
     private const DRAFT_MAX_AGE_SECONDS = 86400;
     private const TOKEN_PATTERN = '/^[a-f0-9]{32}$/';
-    private const ENHANCED_MARK = '.edit';
 
     public function __construct(
         private readonly DishPhotoJpegEncoder $encoder,
@@ -40,29 +41,17 @@ class DishPhotoStorage
     ) {
     }
 
-    /**
-     * $enhanced: a retouch of the owner's photo ("Mejorar con IA") — kept in
-     * the file name (<token>.edit.<ext>) so apply knows which image_source
-     * to set without trusting the browser.
-     *
-     * @return string the draft token
-     */
-    public function createDraft(Restaurant $restaurant, GeneratedImage $image, bool $enhanced = false): string
+    /** @return string the draft token */
+    public function createDraft(Restaurant $restaurant, GeneratedImage $image): string
     {
         $dir = $this->restaurantDraftsDir($restaurant);
         $this->deleteOldDrafts($dir);
 
         [$path, $filename] = $this->prepare($image, $dir);
         $token = bin2hex(random_bytes(16));
-        rename($path, $dir . '/' . $token . ($enhanced ? self::ENHANCED_MARK : '') . '.' . pathinfo($filename, PATHINFO_EXTENSION));
+        rename($path, $dir . '/' . $token . '.' . pathinfo($filename, PATHINFO_EXTENSION));
 
         return $token;
-    }
-
-    /** The draft is a retouch of the owner's photo (createDraft(…, enhanced: true)). */
-    public function isEnhancedDraft(Restaurant $restaurant, string $token): bool
-    {
-        return str_contains(basename((string) $this->draftPath($restaurant, $token)), self::ENHANCED_MARK . '.');
     }
 
     /** The draft's file, only for its own restaurant; null when unknown, expired or someone else's. */

@@ -34,7 +34,8 @@
     const MSG_AI_PHOTO_ENHANCING = "{{ 'ai_photo.enhancing'|trans({}, 'admin_menu')|e('js') }}";
     // A photo with a side under this gets the soft "puede verse borrosa" notice (UploadValidator::DISH_IMAGE_SHARP_SIDE).
     const SMALL_PHOTO_SIDE = {{ constant('App\\Service\\Upload\\UploadValidator::DISH_IMAGE_SHARP_SIDE') }};
-    const MSG_AI_PHOTO_ENHANCE_PENDING = "{{ 'ai_photo.enhance_pending'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_ENHANCE_SAVED = "{{ 'ai_photo.enhance_saved'|trans({}, 'admin_menu')|e('js') }}";
+    const MSG_AI_PHOTO_REVERTED = "{{ 'ai_photo.reverted'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PHOTO_CONFIRM_DELETE = "{{ 'upload.confirm_delete'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_PHOTO_DELETED = "{{ 'upload.deleted'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_AI_PHOTO_NAME_REQUIRED = "{{ 'ai_photo.error.name_required'|trans({}, 'admin_menu')|e('js') }}";
@@ -166,9 +167,11 @@
                 S.clipFocus = { x: data.videoFocusX ?? 50, y: data.videoFocusY ?? 50, zoom: data.videoZoom ?? 100 };
                 // What "Descartar" on an AI draft goes back to.
                 // source null = the owner's own photo: "Mejorar con IA" is offered.
-                S.savedMedia = { image: data.image, clip: data.videoClip, source: data.imageSource ?? null };
+                // canRevert: an enhanced photo whose original is kept ("Volver a la original").
+                S.savedMedia = { image: data.image, clip: data.videoClip, source: data.imageSource ?? null, canRevert: !!data.canRevert };
                 renderProductMedia(data.image, data.videoClip);
                 AiPhoto.updateEnhance();
+                if (S.savedMedia.canRevert) AiPhoto.showEnhanced();
 
                 document.querySelectorAll('.tag-pill').forEach(p =>
                     p.classList.toggle('on', data.tags.includes(parseInt(p.dataset.tagId)))
@@ -1662,9 +1665,10 @@
         },
 
         // "Mejorar con IA": a retouched copy of the dish's saved photo (only
-        // the owner's own — updateEnhance()). Unlike "Generar", it stays a
-        // DRAFT until Guardar even on a saved dish: "Descartar" keeps the
-        // original. Counts on the same quota.
+        // the owner's own — updateEnhance()), saved on the dish AT ONCE like
+        // "Generar"; the original is kept on the server, so instead of
+        // "Descartar" there's "Volver a la original" (revert()). "Otra"
+        // starts again from that original. Counts on the same quota.
         async enhance() {
             if (this.busy || this.exhausted || !S.productId) return;
             showMediaError(null);
@@ -1681,7 +1685,7 @@
             this.setBusy(false);
             if (data && 'trialRemaining' in data) this.showTrial(data.trialRemaining);
 
-            if (!res?.ok || !data?.token) {
+            if (!res?.ok || !data?.image) {
                 if (data?.reason === 'trial_limit' || data?.reason === 'card_pending') return;
                 if (data?.reason === 'monthly_limit') return this.showMonthlyLimit(data.error);
                 const message = data?.error || MSG_UNEXPECTED_ERROR;
@@ -1690,11 +1694,34 @@
                 return;
             }
 
-            S.aiPhotoToken = data.token;
-            this.mode = 'enhance';
-            document.querySelectorAll('[id="img-upload-area"]').forEach(area => showImageInArea(area, data.preview));
-            this.showPending('enhance');
+            S.savedMedia = { image: data.image, clip: null, source: data.imageSource, canRevert: true };
+            S.mediaChanged = true;
+            renderProductMedia(data.image, null);
+            this.showEnhanced();
             this.updateEnhance();
+            showToast(MSG_AI_PHOTO_ENHANCE_SAVED, 'success');
+        },
+
+        // An enhanced photo on the dish: "Otra" (from the original) + "Volver a la original".
+        showEnhanced() {
+            this.mode = 'enhance';
+            this.showPending('enhanced');
+        },
+
+        // "Volver a la original": the kept original back on the dish, at once.
+        async revert() {
+            if (this.busy || !S.productId) return;
+            this.setBusy(true);
+            const data = await apiFetch(`/admin/products/${S.productId}/image/original`);
+            this.setBusy(false);
+            // apiFetch() has already toasted it.
+            if (data.error) return;
+            S.savedMedia = { image: data.image, clip: null, source: null, canRevert: false };
+            S.mediaChanged = true;
+            this.forget();
+            renderProductMedia(data.image, null);
+            this.updateEnhance();
+            showToast(MSG_AI_PHOTO_REVERTED, 'success');
         },
 
         // "Otra": one more of whichever kind the pending one is.
@@ -1717,15 +1744,17 @@
             });
         },
 
-        // 'draft': "se aplicará al guardar" + Otra/Descartar; 'enhance': the
-        // same for a retouch; 'saved': already on the dish, only Otra
-        // (Eliminar foto is the way back).
+        // 'draft' (a dish not saved yet): "se aplicará al guardar" +
+        // Otra/Descartar; 'saved': a generated photo already on the dish,
+        // only Otra (Eliminar foto is the way back); 'enhanced': an
+        // enhanced photo on the dish, Otra + "Volver a la original".
         showPending(mode) {
-            const text = { saved: MSG_AI_PHOTO_SAVED, enhance: MSG_AI_PHOTO_ENHANCE_PENDING }[mode] ?? MSG_AI_PHOTO_PENDING;
+            const text = { saved: MSG_AI_PHOTO_SAVED, enhanced: MSG_AI_PHOTO_ENHANCE_SAVED }[mode] ?? MSG_AI_PHOTO_PENDING;
             document.querySelectorAll('.ai-photo-pending').forEach(el => {
                 el.hidden = false;
                 el.querySelector('.ai-photo-pending-text').textContent = text;
-                el.querySelectorAll('.ai-photo-discard-btn').forEach(b => { b.hidden = mode === 'saved'; });
+                el.querySelectorAll('.ai-photo-discard-btn').forEach(b => { b.hidden = mode !== 'draft'; });
+                el.querySelectorAll('.ai-photo-revert-btn').forEach(b => { b.hidden = mode !== 'enhanced'; });
             });
         },
 
@@ -1746,7 +1775,7 @@
             this.busy = busy;
             this.enhancing = busy && enhancing;
             document.querySelectorAll('.ai-photo-btn, .ai-enhance-btn, .ai-photo-another-btn').forEach(b => { b.disabled = busy || this.exhausted; });
-            document.querySelectorAll('.ai-photo-discard-btn').forEach(b => { b.disabled = busy; });
+            document.querySelectorAll('.ai-photo-discard-btn, .ai-photo-revert-btn').forEach(b => { b.disabled = busy; });
             document.querySelectorAll('.ai-photo-btn-label').forEach(l => { l.textContent = busy && !this.enhancing ? MSG_AI_PHOTO_GENERATING : MSG_AI_PHOTO_GENERATE; });
             document.querySelectorAll('.ai-enhance-btn-label').forEach(l => { l.textContent = this.enhancing ? MSG_AI_PHOTO_ENHANCING : MSG_AI_PHOTO_ENHANCE; });
             document.querySelectorAll('[id="img-upload-area"]').forEach(area => area.classList.toggle('loading', busy));

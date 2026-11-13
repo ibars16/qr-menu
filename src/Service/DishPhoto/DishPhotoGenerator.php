@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
  * — refused, timed out, provider down, file rejected — the reservation is
  * given back, so only photos actually produced count.
  *
- * "Mejorar con IA" (enhanceDraft()) is one more photo for all of that:
+ * "Mejorar con IA" (enhance()) is one more photo for all of that:
  * same quota, same brakes, same messages.
  */
 class DishPhotoGenerator
@@ -55,21 +55,26 @@ class DishPhotoGenerator
     }
 
     /**
-     * The editor's "Mejorar con IA": the owner's own photo (Product::hasOwnerPhoto()),
-     * reduced to ENHANCE_INPUT_MAX_SIDE, reframed to ENHANCE_ASPECT_RATIO — a draft the dish only
-     * gets on save, its original untouched until then. Counts like a
-     * generated photo, on the same per-dish brake.
+     * The editor's "Mejorar con IA" (always a saved dish): the owner's own
+     * photo (Product::hasOwnerPhoto()) — or, on "Otra", the original kept
+     * aside by the last one (ProductImageReplacer::applyEnhanced()) —
+     * reduced to ENHANCE_INPUT_MAX_SIDE, reframed to ENHANCE_ASPECT_RATIO.
+     * Counts like a generated photo, on the same per-dish brake.
      *
-     * @return string the draft token
+     * @return string the new filename in uploads/products — the caller puts
+     *                it on the dish with ProductImageReplacer::applyEnhanced()
      *
      * @throws DishPhotoException
      */
-    public function enhanceDraft(Product $product): string
+    public function enhance(Product $product): string
     {
         $restaurant = $product->getCategory()->getRestaurant();
         $this->assertAvailable();
-        $source = $this->replacer->productsDir() . '/' . $product->getImage();
-        if (!$product->hasOwnerPhoto() || !is_file($source)) {
+        $original = $this->replacer->originalPath($product);
+        $source = $original ?? $this->replacer->productsDir() . '/' . $product->getImage();
+        $eligible = $product->hasOwnerPhoto()
+            || ($original !== null && $product->getImageSource() === Product::IMAGE_SOURCE_AI_EDIT && $product->getVideoClip() === null);
+        if (!$eligible || !is_file($source)) {
             throw new DishPhotoException(DishPhotoException::REASON_NO_OWNER_PHOTO);
         }
 
@@ -80,7 +85,7 @@ class DishPhotoGenerator
         try {
             return $this->generate($restaurant, (string) $product->getId(),
                 fn () => $this->generator->edit($prompt, $input, 'image/jpeg', self::ENHANCE_ASPECT_RATIO),
-                fn (GeneratedImage $image) => $this->storage->createDraft($restaurant, $image, enhanced: true));
+                fn (GeneratedImage $image) => $this->storage->storeForProduct($image));
         } catch (DishPhotoException $e) {
             // "Change the description" makes no sense here: its own message.
             throw $e->reason === DishImageFailure::Refused->value

@@ -265,7 +265,9 @@ ai_photo:
     another: 'Outra'
     discard: 'Descartar'
     pending: 'Foto criada com IA. Será aplicada ao guardar.'
-    enhance_pending: 'Foto melhorada com IA. Será aplicada ao guardar.'
+    enhance_saved: 'Foto melhorada com IA e guardada no prato.'
+    revert: 'Voltar à original'
+    reverted: 'Voltou à foto original.'
     saved: 'Foto criada com IA e guardada no prato.'
     trial_remaining: 'Restam-lhe %count% de %limit% fotos com IA grátis.'
     trial_used: 'Já usou as suas %limit% fotos com IA grátis. Escolha um plano para criar mais.'
@@ -299,6 +301,7 @@ ai_photo:
         draft_expired: 'A foto criada com IA expirou. Gere-a novamente.'
         no_owner_photo: 'Só é possível melhorar as fotos que tenha carregado.'
         enhance_refused: 'Não foi possível melhorar esta foto. Experimente outra foto do prato.'
+        no_original: 'A foto original já não está disponível.'
     batch:
         offer_singular: '%count% prato não tem foto'
         offer_plural: '%count% pratos não têm foto'
