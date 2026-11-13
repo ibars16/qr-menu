@@ -7,24 +7,26 @@
     <style>
         .settings-wrap { max-width: 600px; }
 
-        /* Mobile only: Equipo left the bottom bar (base.html.twig) and lives here.
-           --tx-1 on --bg-card (dark #ccc/#141414, light #333/#fafafa) and the
-           chevron in --tx-2: AA in both modes. */
-        .settings-team-link { display: none; }
-        @media (max-width: 767px) {
-            .settings-team-link {
-                display: flex; align-items: center; gap: var(--sp-3); min-height: 52px;
-                padding: var(--sp-3) var(--sp-4); margin-bottom: var(--sp-4);
-                background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg);
-                box-shadow: var(--shadow-sm); color: var(--tx-1); font-size: var(--fs-md); font-weight: 500;
-                text-decoration: none; -webkit-tap-highlight-color: transparent;
-            }
-            .settings-team-link:active { background: var(--bg-input); }
-            .settings-team-link:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-            .settings-team-link > i:first-child { font-size: 20px; }
-            .settings-team-link span { flex: 1; }
-            .settings-team-link .ti-chevron-right { font-size: 18px; color: var(--tx-2); }
+        /* Link rows to sub-screens: "Mi cuenta" (every width) and Equipo
+           (mobile only: it left the bottom bar, base.html.twig, and lives
+           here; desktop has it in the sidebar). --tx-1 on --bg-card (dark
+           #ccc/#141414, light #333/#fafafa) and the chevron in --tx-2: AA in
+           both modes. */
+        .settings-link {
+            display: flex; align-items: center; gap: var(--sp-3); min-height: 52px;
+            padding: var(--sp-3) var(--sp-4); margin-bottom: var(--sp-4);
+            background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg);
+            box-shadow: var(--shadow-sm); color: var(--tx-1); font-size: var(--fs-md); font-weight: 500;
+            text-decoration: none; -webkit-tap-highlight-color: transparent;
         }
+        .settings-link:hover { border-color: var(--bd-2); }
+        .settings-link:active { background: var(--bg-input); }
+        .settings-link:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+        .settings-link > i:first-child { font-size: 20px; }
+        .settings-link-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .settings-link-sub { font-size: var(--fs-sm); font-weight: 400; color: var(--tx-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .settings-link .ti-chevron-right { font-size: 18px; color: var(--tx-2); }
+        @media (min-width: 768px) { .settings-team-link { display: none; } }
 
         .settings-section {
             background: var(--bg-card);
@@ -323,12 +325,20 @@
 {% import _self as fieldErr %}
     <div class="settings-wrap">
         {% if is_granted('ROLE_OWNER') %}
-            <a href="{{ path('admin_users') }}" class="settings-team-link">
+            <a href="{{ path('admin_users') }}" class="settings-link settings-team-link">
                 <i class="ti ti-users" aria-hidden="true"></i>
-                <span>{{ 'bottom_nav.users'|trans({}, 'admin_base') }}</span>
+                <span class="settings-link-text">{{ 'bottom_nav.users'|trans({}, 'admin_base') }}</span>
                 <i class="ti ti-chevron-right" aria-hidden="true"></i>
             </a>
         {% endif %}
+        <a href="{{ path('admin_account') }}" class="settings-link settings-account-link">
+            <i class="ti ti-user-circle" aria-hidden="true"></i>
+            <span class="settings-link-text">
+                <span>{{ 'nav.item.account'|trans({}, 'admin_base') }}</span>
+                <span class="settings-link-sub">{{ app.user.email }} · {{ 'account_link_sub'|trans({}, 'admin_settings') }}</span>
+            </span>
+            <i class="ti ti-chevron-right" aria-hidden="true"></i>
+        </a>
 
         <form method="post" enctype="multipart/form-data">
             <input type="hidden" name="_token" value="{{ csrf_token('admin_settings') }}">

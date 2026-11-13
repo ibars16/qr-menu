@@ -5,6 +5,8 @@ namespace App\Controller\Admin;
 use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Repository\ResetPasswordRequestRepository;
+use App\Repository\UserRepository;
+use App\Service\EmailChange;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -125,6 +127,7 @@ class UsersController extends AbstractController
         UserPasswordHasherInterface $hasher,
         TranslatorInterface $translator,
         ResetPasswordRequestRepository $resetRequests,
+        EmailChange $emailChange,
     ): JsonResponse {
         if ($user->getRestaurant() !== $this->restaurant()) {
             return $this->json(['error' => 'Forbidden'], 403);
@@ -146,6 +149,22 @@ class UsersController extends AbstractController
             return $this->json(['error' => $translator->trans('error.password_too_short', domain: 'admin_users')], 400);
         }
 
+        // Optional: a request without "email" keeps the current one. A new
+        // address only takes over once confirmed from its inbox (EmailChange).
+        $newEmail = null;
+        if (array_key_exists('email', $data ?? [])) {
+            $email = UserRepository::normalizeEmail((string) $data['email']);
+            if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $this->json(['error' => $translator->trans('error.email_invalid', domain: 'admin_users')], 400);
+            }
+            if ($email !== $user->getEmail() && $email !== $user->getPendingEmail()) {
+                if ($em->getRepository(User::class)->findOneByEmail($email)) {
+                    return $this->json(['error' => $translator->trans('error.email_taken', domain: 'admin_users')], 400);
+                }
+                $newEmail = $email;
+            }
+        }
+
         $user->setFirstName(trim($data['firstName'] ?? '') ?: null);
         $user->setLastName(trim($data['lastName'] ?? '') ?: null);
         $user->setRoles([$role]);
@@ -155,6 +174,12 @@ class UsersController extends AbstractController
         }
 
         $em->flush();
+
+        if ($newEmail !== null) {
+            $emailChange->request($user, $newEmail);
+
+            return $this->json(['ok' => true, 'emailChangeSent' => $newEmail]);
+        }
 
         return $this->json(['ok' => true]);
     }

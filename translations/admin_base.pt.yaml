@@ -21,6 +21,7 @@ nav:
         qr: O meu QR
         users: Utilizadores
         settings: Definições
+        account: "A minha conta"
         logout: Sair
         back_to_partners: "Voltar ao meu painel"
 

@@ -21,6 +21,7 @@ nav:
         qr: Mon QR
         users: Utilisateurs
         settings: Paramètres
+        account: "Mon compte"
         logout: Déconnexion
         back_to_partners: "Retour à mon espace"
 

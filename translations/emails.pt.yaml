@@ -18,3 +18,13 @@ confirm:
     button: "Confirmar o meu email"
     expiry: "O link expira em 7 dias. Se expirar, peça outro no seu painel."
     ignore: "Se não criou esta conta, ignore este email."
+email_change:
+    subject: "Confirme o seu novo email"
+    intro: "Pediu para entrar no %app% com %new% em vez de %old%. Confirme para que a alteração seja feita."
+    button: "Confirmar o novo email"
+    expiry: "A ligação expira em 7 dias. Até confirmar, continua a entrar com o seu email atual."
+    ignore: "Se não foi você que pediu, ignore este email: nada muda."
+email_changed:
+    subject: "O seu email de acesso foi alterado"
+    intro: "A partir de agora esta conta entra com %new%. Este email já não serve para entrar."
+    not_you: "Se não foi você, contacte o suporte do %app% o mais depressa possível."

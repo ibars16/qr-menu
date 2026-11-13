@@ -20,6 +20,7 @@ field:
     role: Rôle
 
 hint:
+    email_edit: "Un lien sera envoyé au nouvel e-mail ; le changement se fait quand cette personne le confirme."
     password_edit: Laissez ce champ vide pour conserver le mot de passe actuel.
     role: 'Propriétaire : accès complet. Personnel : carte, catégories, étiquettes, personnalisation et statistiques uniquement.'
 
@@ -28,6 +29,7 @@ role:
     staff: Personnel
 
 label:
+    pending_email: "En attente de confirmation : %email%"
     you: Toi
 
 error:
@@ -40,6 +42,7 @@ error:
     cannot_delete_self: Vous ne pouvez pas supprimer votre propre compte.
 
 toast:
+    email_change_sent: "Lien envoyé à %email%. L'e-mail changera une fois confirmé."
     created: 'Utilisateur ajouté ✓'
     updated: 'Utilisateur mis à jour ✓'
     deleted: 'Utilisateur supprimé ✓'

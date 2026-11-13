@@ -15,7 +15,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * The account emails: welcome (the three sign-ups only — /register,
  * /alta/{code}, /partners/registro; never staff, restaurants a reseller
  * creates or app:create-admin-user), "confirma tu email" and "change your
- * password". A self sign-up still to confirm its email
+ * password", plus a login email change (EmailChange: the link to the new
+ * address, then a notice to the old one). A self sign-up still to confirm its email
  * (User::$emailConfirmationPending) gets the confirmation button in its
  * welcome email; "Reenviar" in the panel sends confirm on its own.
  *
@@ -61,6 +62,26 @@ final class AccountMailer
         ]);
     }
 
+    /** To the NEW address (User::$pendingEmail): the link that makes it the login email (EmailChange). */
+    public function sendEmailChangeConfirmation(User $user, string $confirmUrl): void
+    {
+        $locale = $this->localeFor($user);
+        $this->send($user, 'email_change', $locale, 'emails/email_change.html.twig', [
+            'confirmUrl' => $confirmUrl,
+            'newEmail' => $user->getPendingEmail(),
+            'oldEmail' => $user->getEmail(),
+        ], $user->getPendingEmail());
+    }
+
+    /** To the OLD address, once the change is confirmed. */
+    public function sendEmailChangedNotice(User $user, string $oldEmail): void
+    {
+        $locale = $this->localeFor($user);
+        $this->send($user, 'email_changed', $locale, 'emails/email_changed.html.twig', [
+            'newEmail' => $user->getEmail(),
+        ], $oldEmail);
+    }
+
     public function sendPasswordReset(User $user, string $publicToken): void
     {
         $locale = $this->localeFor($user);
@@ -82,12 +103,12 @@ final class AccountMailer
     }
 
     /** @param array<string, mixed> $context */
-    private function send(User $user, string $kind, string $locale, string $template, array $context): void
+    private function send(User $user, string $kind, string $locale, string $template, array $context, ?string $to = null): void
     {
         try {
             $email = (new TemplatedEmail())
                 ->from(new Address($this->fromEmail, self::APP_NAME))
-                ->to($user->getEmail())
+                ->to($to ?? $user->getEmail())
                 ->subject($this->translator->trans($kind . '.subject', ['%app%' => self::APP_NAME], 'emails', $locale))
                 // No ->locale(): rendering with it goes through LocaleSwitcher,
                 // which afterwards puts the request back on the default locale

@@ -1,0 +1,48 @@
+title: "Mein Konto"
+impersonating: "Du siehst das Konto einer anderen Person: Du kannst ihre E-Mail oder ihr Passwort nicht ändern."
+
+field:
+    current_password: "Aktuelles Passwort"
+
+email:
+    title: "Anmelde-E-Mail"
+    current: "Du meldest dich derzeit an mit"
+    new: "Neue E-Mail"
+    hint: "Wir senden einen Link an diese E-Mail. Die Änderung erfolgt, sobald du sie bestätigst; bis dahin meldest du dich weiter mit der aktuellen an."
+    pending: "Wartet auf Bestätigung:"
+    pending_hint: "Öffne den Link, den wir an diese E-Mail gesendet haben."
+    resend: "Link erneut senden"
+    cancel: "Änderung abbrechen"
+    save: "E-Mail ändern"
+
+password:
+    title: "Passwort"
+    new: "Neues Passwort"
+    confirm: "Neues Passwort wiederholen"
+    hint: "Mindestens %min% Zeichen."
+    save: "Passwort ändern"
+
+error:
+    csrf: "Deine Sitzung ist abgelaufen. Bitte versuche es erneut."
+    current_password_wrong: "Das aktuelle Passwort ist falsch."
+    email_invalid: "Gib eine gültige E-Mail ein."
+    email_same: "Das ist bereits deine E-Mail."
+    email_taken: "Diese E-Mail wird bereits von einem anderen Konto verwendet."
+    password_too_short: "Das Passwort muss mindestens %min% Zeichen lang sein."
+    password_mismatch: "Die Passwörter stimmen nicht überein."
+
+flash:
+    email_change_sent: "Wir haben einen Link an %email% gesendet. Deine E-Mail ändert sich, sobald du ihn bestätigst."
+    email_change_wait: "Warte eine Minute, bevor du einen neuen Link anforderst."
+    email_change_cancelled: "E-Mail-Änderung abgebrochen."
+    email_updated: "E-Mail geändert. Ab jetzt meldest du dich mit %email% an."
+    password_updated: "Passwort geändert."
+
+confirm_page:
+    ok_title: "E-Mail geändert"
+    ok_text: "Ab jetzt meldest du dich mit %email% an."
+    invalid_title: "Ungültiger Link"
+    invalid_text: "Der Link ist abgelaufen oder nicht mehr gültig. Fordere unter Mein Konto einen neuen an."
+    taken_title: "E-Mail nicht verfügbar"
+    taken_text: "Ein anderes Konto verwendet diese E-Mail bereits, daher wurde sie nicht geändert."
+    login: "Zur Anmeldung"

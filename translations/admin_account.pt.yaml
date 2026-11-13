@@ -1,0 +1,48 @@
+title: "A minha conta"
+impersonating: "Está a ver a conta de outra pessoa: não pode alterar o email nem a palavra-passe."
+
+field:
+    current_password: "Palavra-passe atual"
+
+email:
+    title: "Email de acesso"
+    current: "Atualmente entra com"
+    new: "Novo email"
+    hint: "Enviaremos uma ligação para esse email. A alteração é feita quando a confirmar; até lá continua a entrar com o atual."
+    pending: "A aguardar confirmação:"
+    pending_hint: "Abra a ligação que enviámos para esse email."
+    resend: "Reenviar ligação"
+    cancel: "Cancelar alteração"
+    save: "Alterar email"
+
+password:
+    title: "Palavra-passe"
+    new: "Nova palavra-passe"
+    confirm: "Repita a nova palavra-passe"
+    hint: "Mínimo de %min% caracteres."
+    save: "Alterar palavra-passe"
+
+error:
+    csrf: "A sessão expirou. Tente novamente."
+    current_password_wrong: "A palavra-passe atual não está correta."
+    email_invalid: "Introduza um email válido."
+    email_same: "Esse já é o seu email."
+    email_taken: "Esse email já está a ser usado por outra conta."
+    password_too_short: "A palavra-passe deve ter pelo menos %min% caracteres."
+    password_mismatch: "As palavras-passe não coincidem."
+
+flash:
+    email_change_sent: "Enviámos uma ligação para %email%. O email muda quando a confirmar."
+    email_change_wait: "Aguarde um minuto antes de pedir outra ligação."
+    email_change_cancelled: "Alteração de email cancelada."
+    email_updated: "Email alterado. A partir de agora entra com %email%."
+    password_updated: "Palavra-passe alterada."
+
+confirm_page:
+    ok_title: "Email alterado"
+    ok_text: "A partir de agora entra com %email%."
+    invalid_title: "Ligação inválida"
+    invalid_text: "A ligação expirou ou já não é válida. Peça outra em A minha conta."
+    taken_title: "Email indisponível"
+    taken_text: "Outra conta já usa esse email, por isso não foi alterado."
+    login: "Ir para a entrada"

@@ -20,6 +20,7 @@ field:
     role: Rolle
 
 hint:
+    email_edit: "Ein Link wird an die neue E-Mail gesendet; die Änderung erfolgt, wenn diese Person ihn bestätigt."
     password_edit: Leer lassen, um das aktuelle Passwort beizubehalten.
     role: 'Inhaber: voller Zugriff. Personal: nur Speisekarte, Kategorien, Tags, Anpassung und Statistiken.'
 
@@ -28,6 +29,7 @@ role:
     staff: Personal
 
 label:
+    pending_email: "Wartet auf Bestätigung: %email%"
     you: Du
 
 error:
@@ -40,6 +42,7 @@ error:
     cannot_delete_self: Du kannst dein eigenes Konto nicht löschen.
 
 toast:
+    email_change_sent: "Link an %email% gesendet. Die E-Mail ändert sich nach der Bestätigung."
     created: 'Benutzer hinzugefügt ✓'
     updated: 'Benutzer aktualisiert ✓'
     deleted: 'Benutzer gelöscht ✓'

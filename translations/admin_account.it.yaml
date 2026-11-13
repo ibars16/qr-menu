@@ -1,0 +1,48 @@
+title: "Il mio account"
+impersonating: "Stai visualizzando l'account di un'altra persona: non puoi modificarne l'email o la password."
+
+field:
+    current_password: "Password attuale"
+
+email:
+    title: "Email di accesso"
+    current: "Attualmente accedi con"
+    new: "Nuova email"
+    hint: "Invieremo un link a quell'email. Il cambio avviene quando lo confermi; fino ad allora continui ad accedere con quella attuale."
+    pending: "In attesa di conferma:"
+    pending_hint: "Apri il link che abbiamo inviato a quell'email."
+    resend: "Invia di nuovo il link"
+    cancel: "Annulla il cambio"
+    save: "Cambia email"
+
+password:
+    title: "Password"
+    new: "Nuova password"
+    confirm: "Ripeti la nuova password"
+    hint: "Almeno %min% caratteri."
+    save: "Cambia password"
+
+error:
+    csrf: "La sessione è scaduta. Riprova."
+    current_password_wrong: "La password attuale non è corretta."
+    email_invalid: "Inserisci un'email valida."
+    email_same: "Questa è già la tua email."
+    email_taken: "Questa email è già usata da un altro account."
+    password_too_short: "La password deve contenere almeno %min% caratteri."
+    password_mismatch: "Le password non coincidono."
+
+flash:
+    email_change_sent: "Abbiamo inviato un link a %email%. L'email cambierà quando lo confermi."
+    email_change_wait: "Attendi un minuto prima di chiedere un altro link."
+    email_change_cancelled: "Cambio email annullato."
+    email_updated: "Email cambiata. D'ora in poi accedi con %email%."
+    password_updated: "Password cambiata."
+
+confirm_page:
+    ok_title: "Email cambiata"
+    ok_text: "D'ora in poi accedi con %email%."
+    invalid_title: "Link non valido"
+    invalid_text: "Il link è scaduto o non è più valido. Chiedine un altro da Il mio account."
+    taken_title: "Email non disponibile"
+    taken_text: "Un altro account usa già quell'email, quindi non è stata cambiata."
+    login: "Vai all'accesso"

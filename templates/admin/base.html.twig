@@ -376,9 +376,16 @@
                     <span class="sidebar-theme-knob"></span>
                 </button>
             </div>
+            {# Owners reach "Mi cuenta" from Configuración; staff has no Configuración. #}
+            {% if is_granted('ROLE_STAFF') and not is_granted('ROLE_OWNER') %}
+                <a href="{{ path('admin_account') }}"
+                   class="nav-item {{ app.request.attributes.get('_route') == 'admin_account' ? 'active' : '' }}">
+                    <i class="ti ti-user-circle" aria-hidden="true"></i> {{ 'nav.item.account'|trans({}, 'admin_base') }}
+                </a>
+            {% endif %}
             {% if is_granted('ROLE_OWNER') %}
                 <a href="{{ path('admin_settings') }}"
-                   class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_setting' ? 'active' : '' }}">
+                   class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_setting' or app.request.attributes.get('_route') == 'admin_account' ? 'active' : '' }}">
                     <i class="ti ti-settings" aria-hidden="true"></i> {{ 'nav.item.settings'|trans({}, 'admin_base') }}
                 </a>
             {% endif %}
@@ -422,6 +429,11 @@
                         <i class="ti ti-sun theme-icon-dark" aria-hidden="true"></i>
                         <i class="ti ti-moon theme-icon-light" aria-hidden="true"></i>
                     </button>
+                    {% if is_granted('ROLE_STAFF') and not is_granted('ROLE_OWNER') %}
+                        <a href="{{ path('admin_account') }}" class="theme-toggle-btn" aria-label="{{ 'nav.item.account'|trans({}, 'admin_base') }}">
+                            <i class="ti ti-user-circle" aria-hidden="true"></i>
+                        </a>
+                    {% endif %}
                     {# "Como" the owner, logout leaves impersonation instead,
                        here and in the sidebar (exitUrl, at the top). #}
                     {% if impersonating %}
@@ -499,7 +511,7 @@
             </a>
         {% endif %}
         <a href="{{ path('admin_settings') }}"
-           class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_setting' or app.request.attributes.get('_route') == 'admin_users' ? 'active' : '' }}">
+           class="bottom-nav-tab {{ app.request.attributes.get('_route') starts with 'admin_setting' or app.request.attributes.get('_route') in ['admin_users', 'admin_account'] ? 'active' : '' }}">
             <i class="ti ti-settings" aria-hidden="true"></i> {{ 'bottom_nav.settings'|trans({}, 'admin_base') }}
         </a>
     {% endif %}

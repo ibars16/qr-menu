@@ -18,3 +18,13 @@ confirm:
     button: "Confirm my email"
     expiry: "The link expires in 7 days. If it does, ask for a new one from your panel."
     ignore: "If you didn't create this account, ignore this email."
+email_change:
+    subject: "Confirm your new email"
+    intro: "You asked to log in to %app% with %new% instead of %old%. Confirm it to make the change."
+    button: "Confirm the new email"
+    expiry: "The link expires in 7 days. Until you confirm, you keep logging in with your current email."
+    ignore: "If you didn't ask for this, ignore this email: nothing changes."
+email_changed:
+    subject: "Your login email has changed"
+    intro: "From now on this account logs in with %new%. This email can no longer be used to log in."
+    not_you: "If this wasn't you, contact %app% support as soon as possible."

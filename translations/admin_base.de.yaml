@@ -21,6 +21,7 @@ nav:
         qr: Mein QR-Code
         users: Benutzer
         settings: Einstellungen
+        account: "Mein Konto"
         logout: Abmelden
         back_to_partners: "Zurück zu meinem Bereich"
 

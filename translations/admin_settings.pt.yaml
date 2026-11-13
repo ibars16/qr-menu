@@ -136,3 +136,4 @@ language_change:
     blocked_import: "Termine a importação antes de mudar o idioma"
     pending: "A mudança da sua ementa para %language% ficou a meio."
     resume: "Continuar"
+account_link_sub: "Alterar email ou palavra-passe"

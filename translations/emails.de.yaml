@@ -18,3 +18,13 @@ confirm:
     button: "Meine E-Mail bestätigen"
     expiry: "Der Link ist 7 Tage gültig. Danach kannst du in deinem Panel einen neuen anfordern."
     ignore: "Wenn du dieses Konto nicht erstellt hast, ignoriere diese E-Mail."
+email_change:
+    subject: "Bestätige deine neue E-Mail"
+    intro: "Du möchtest dich bei %app% mit %new% statt %old% anmelden. Bestätige es, damit die Änderung wirksam wird."
+    button: "Neue E-Mail bestätigen"
+    expiry: "Der Link läuft in 7 Tagen ab. Bis zur Bestätigung meldest du dich weiter mit deiner bisherigen E-Mail an."
+    ignore: "Wenn du das nicht angefordert hast, ignoriere diese E-Mail: Es ändert sich nichts."
+email_changed:
+    subject: "Deine Anmelde-E-Mail wurde geändert"
+    intro: "Ab jetzt meldet sich dieses Konto mit %new% an. Mit dieser E-Mail ist keine Anmeldung mehr möglich."
+    not_you: "Wenn du das nicht warst, kontaktiere so schnell wie möglich den %app%-Support."

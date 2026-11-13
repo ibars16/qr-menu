@@ -20,6 +20,7 @@ field:
     role: Role
 
 hint:
+    email_edit: "A link will be sent to the new email; the change happens when that person confirms it."
     password_edit: Leave this blank to keep the current password.
     role: 'Owner: full access. Staff: menu, categories, tags, customization and stats only.'
 
@@ -28,6 +29,7 @@ role:
     staff: Staff
 
 label:
+    pending_email: "Waiting for confirmation: %email%"
     you: You
 
 error:
@@ -40,6 +42,7 @@ error:
     cannot_delete_self: You can't delete your own account.
 
 toast:
+    email_change_sent: "Link sent to %email%. The email will change once it's confirmed."
     created: 'User added ✓'
     updated: 'User updated ✓'
     deleted: 'User deleted ✓'

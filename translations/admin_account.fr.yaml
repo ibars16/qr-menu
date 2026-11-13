@@ -1,0 +1,48 @@
+title: "Mon compte"
+impersonating: "Vous consultez le compte de quelqu'un d'autre : vous ne pouvez pas modifier son e-mail ni son mot de passe."
+
+field:
+    current_password: "Mot de passe actuel"
+
+email:
+    title: "E-mail de connexion"
+    current: "Vous vous connectez actuellement avec"
+    new: "Nouvel e-mail"
+    hint: "Nous enverrons un lien à cet e-mail. Le changement se fait quand vous le confirmez ; d'ici là, vous continuez à vous connecter avec l'actuel."
+    pending: "En attente de confirmation :"
+    pending_hint: "Ouvrez le lien que nous avons envoyé à cet e-mail."
+    resend: "Renvoyer le lien"
+    cancel: "Annuler le changement"
+    save: "Modifier l'e-mail"
+
+password:
+    title: "Mot de passe"
+    new: "Nouveau mot de passe"
+    confirm: "Répétez le nouveau mot de passe"
+    hint: "%min% caractères minimum."
+    save: "Modifier le mot de passe"
+
+error:
+    csrf: "Votre session a expiré. Veuillez réessayer."
+    current_password_wrong: "Le mot de passe actuel est incorrect."
+    email_invalid: "Saisissez un e-mail valide."
+    email_same: "C'est déjà votre e-mail."
+    email_taken: "Cet e-mail est déjà utilisé par un autre compte."
+    password_too_short: "Le mot de passe doit contenir au moins %min% caractères."
+    password_mismatch: "Les mots de passe ne correspondent pas."
+
+flash:
+    email_change_sent: "Nous avons envoyé un lien à %email%. Votre e-mail changera dès que vous l'aurez confirmé."
+    email_change_wait: "Attendez une minute avant de demander un autre lien."
+    email_change_cancelled: "Changement d'e-mail annulé."
+    email_updated: "E-mail modifié. Désormais, vous vous connectez avec %email%."
+    password_updated: "Mot de passe modifié."
+
+confirm_page:
+    ok_title: "E-mail modifié"
+    ok_text: "Désormais, vous vous connectez avec %email%."
+    invalid_title: "Lien non valide"
+    invalid_text: "Le lien a expiré ou n'est plus valable. Demandez-en un autre depuis Mon compte."
+    taken_title: "E-mail indisponible"
+    taken_text: "Un autre compte utilise déjà cet e-mail, il n'a donc pas été modifié."
+    login: "Aller à la connexion"

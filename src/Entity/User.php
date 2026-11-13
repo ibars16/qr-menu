@@ -37,6 +37,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private string $password;
 
+    /**
+     * A new login email asked for ("Mi cuenta" or the team screen) and not
+     * confirmed yet: the link goes here (EmailChange) and $email only
+     * changes when it's clicked. Null when there's nothing pending.
+     */
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $pendingEmail = null;
+
     /** @var list<string> */
     #[ORM\Column]
     private array $roles = ['ROLE_USER'];
@@ -84,6 +92,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): void
     {
         $this->email = \App\Repository\UserRepository::normalizeEmail($email);
+    }
+
+    public function getPendingEmail(): ?string
+    {
+        return $this->pendingEmail;
+    }
+
+    /** Lower-cased and trimmed like $email; null cancels the change. */
+    public function setPendingEmail(?string $email): void
+    {
+        $this->pendingEmail = $email === null ? null : \App\Repository\UserRepository::normalizeEmail($email);
     }
 
     public function getPassword(): string

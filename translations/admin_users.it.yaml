@@ -20,6 +20,7 @@ field:
     role: Ruolo
 
 hint:
+    email_edit: "Verrà inviato un link alla nuova email; il cambio avviene quando quella persona lo conferma."
     password_edit: Lascia vuoto per mantenere la password attuale.
     role: 'Proprietario: accesso completo. Personale: solo menu, categorie, etichette, personalizzazione e statistiche.'
 
@@ -28,6 +29,7 @@ role:
     staff: Personale
 
 label:
+    pending_email: "In attesa di conferma: %email%"
     you: Tu
 
 error:
@@ -40,6 +42,7 @@ error:
     cannot_delete_self: Non puoi eliminare il tuo stesso account.
 
 toast:
+    email_change_sent: "Link inviato a %email%. L'email cambierà quando sarà confermata."
     created: 'Utente aggiunto ✓'
     updated: 'Utente aggiornato ✓'
     deleted: 'Utente eliminato ✓'

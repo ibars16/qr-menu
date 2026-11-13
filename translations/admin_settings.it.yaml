@@ -136,3 +136,4 @@ language_change:
     blocked_import: "Termina l'importazione prima di cambiare la lingua"
     pending: "Il passaggio del tuo menu in %language% è a metà."
     resume: "Continua"
+account_link_sub: "Cambia email o password"

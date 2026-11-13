@@ -1,0 +1,7 @@
+{% extends 'emails/_layout.html.twig' %}
+{# To the old address, once the change is done: AccountMailer::sendEmailChangedNotice(). #}
+{% block title %}{{ 'email_changed.subject'|trans({}, 'emails', locale) }}{% endblock %}
+{% block content %}
+    <p style="margin:0 0 12px;">{{ 'email_changed.intro'|trans({'%new%': newEmail}, 'emails', locale) }}</p>
+    <p style="margin:0;color:#595959;font-size:14px;">{{ 'email_changed.not_you'|trans({'%app%': app}, 'emails', locale) }}</p>
+{% endblock %}

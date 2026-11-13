@@ -1,0 +1,9 @@
+{% extends 'emails/_layout.html.twig' %}
+{# To the new address: AccountMailer::sendEmailChangeConfirmation(). #}
+{% block title %}{{ 'email_change.subject'|trans({}, 'emails', locale) }}{% endblock %}
+{% block content %}
+    <p style="margin:0;">{{ 'email_change.intro'|trans({'%new%': newEmail, '%old%': oldEmail, '%app%': app}, 'emails', locale) }}</p>
+    {% include 'emails/_button.html.twig' with { url: confirmUrl, label: 'email_change.button'|trans({}, 'emails', locale) } only %}
+    <p style="margin:0 0 12px;color:#595959;font-size:14px;">{{ 'email_change.expiry'|trans({}, 'emails', locale) }}</p>
+    <p style="margin:0;color:#595959;font-size:14px;">{{ 'email_change.ignore'|trans({}, 'emails', locale) }}</p>
+{% endblock %}

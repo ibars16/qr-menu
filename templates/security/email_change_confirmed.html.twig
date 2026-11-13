@@ -1,0 +1,11 @@
+{% extends 'security/_reset_layout.html.twig' %}
+{# The link from "Confirma tu nuevo email" opened while logged out (or as
+   someone else): EmailConfirmationController::confirmChange(). #}
+
+{% block heading %}{{ ('confirm_page.' ~ status ~ '_title')|trans({}, 'admin_account', locale) }}{% endblock %}
+{% block sub %}{{ ('confirm_page.' ~ status ~ '_text')|trans({'%email%': email}, 'admin_account', locale) }}{% endblock %}
+{% block form %}
+    <a href="{{ path('admin_login') }}" class="submit-btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none;">
+        {{ 'confirm_page.login'|trans({}, 'admin_account', locale) }}
+    </a>
+{% endblock %}

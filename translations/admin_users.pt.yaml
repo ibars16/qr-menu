@@ -20,6 +20,7 @@ field:
     role: Função
 
 hint:
+    email_edit: "Será enviada uma ligação para o novo email; a alteração é feita quando essa pessoa a confirmar."
     password_edit: Deixe em branco para manter a palavra-passe atual.
     role: 'Proprietário: acesso total. Equipa: apenas ementa, categorias, etiquetas, personalização e estatísticas.'
 
@@ -28,6 +29,7 @@ role:
     staff: Equipa
 
 label:
+    pending_email: "A aguardar confirmação: %email%"
     you: Eu
 
 error:
@@ -40,6 +42,7 @@ error:
     cannot_delete_self: Não pode eliminar a sua própria conta.
 
 toast:
+    email_change_sent: "Ligação enviada para %email%. O email muda quando for confirmado."
     created: 'Utilizador adicionado ✓'
     updated: 'Utilizador atualizado ✓'
     deleted: 'Utilizador eliminado ✓'

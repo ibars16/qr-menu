@@ -21,6 +21,7 @@ nav:
         qr: Mi QR
         users: Usuarios
         settings: Configuración
+        account: "Mi cuenta"
         logout: Cerrar sesión
         back_to_partners: "Volver a mi panel"
 

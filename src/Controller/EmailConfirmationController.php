@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Service\AccountMailer;
+use App\Service\EmailChange;
 use App\Service\EmailConfirmation;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,6 +39,31 @@ class EmailConfirmationController extends AbstractController
             'confirmed' => $user !== null,
             'locale' => $locale,
         ], new Response(status: $user !== null ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST));
+    }
+
+    /** The link a login email change sends to the new address (EmailChange). */
+    #[Route('/confirmar-cambio-email/{id}/{check}', name: 'app_confirm_email_change', requirements: ['id' => '\d+', 'check' => '[0-9a-f]{16}'], methods: ['GET'])]
+    public function confirmChange(int $id, string $check, Request $request, EmailChange $change, AccountMailer $mailer, TranslatorInterface $translator): Response
+    {
+        // Before confirm(): the firewall is lazy, and resolving the session's
+        // user after its email changed would log it out (hasUserChanged()).
+        $current = $this->getUser();
+        [$status, $user] = $change->confirm($request, $id, $check);
+        $locale = $user !== null ? $mailer->localeFor($user) : $request->getLocale();
+
+        if ($user !== null && $current instanceof User && $current->getId() === $user->getId()) {
+            $status === EmailChange::OK
+                ? $this->addFlash('success', $translator->trans('flash.email_updated', ['%email%' => $user->getEmail()], 'admin_account', $locale))
+                : $this->addFlash('error', $translator->trans('error.email_taken', [], 'admin_account', $locale));
+
+            return $this->redirectToRoute('admin_account');
+        }
+
+        return $this->render('security/email_change_confirmed.html.twig', [
+            'status' => $status,
+            'email' => $user?->getEmail(),
+            'locale' => $locale,
+        ], new Response(status: $status === EmailChange::OK ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST));
     }
 
     #[Route('/admin/confirmar-email/reenviar', name: 'admin_confirm_email_resend', methods: ['POST'])]

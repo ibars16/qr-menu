@@ -18,3 +18,13 @@ confirm:
     button: "Conferma la mia email"
     expiry: "Il link scade tra 7 giorni. Se scade, chiedine uno nuovo dal tuo pannello."
     ignore: "Se non hai creato tu questo account, ignora questa email."
+email_change:
+    subject: "Conferma la tua nuova email"
+    intro: "Hai chiesto di accedere a %app% con %new% invece di %old%. Confermalo per completare il cambio."
+    button: "Conferma la nuova email"
+    expiry: "Il link scade tra 7 giorni. Finché non confermi, continui ad accedere con la tua email attuale."
+    ignore: "Se non l'hai chiesto tu, ignora questa email: non cambia nulla."
+email_changed:
+    subject: "La tua email di accesso è cambiata"
+    intro: "D'ora in poi questo account accede con %new%. Questa email non serve più per accedere."
+    not_you: "Se non sei stato tu, contatta al più presto l'assistenza di %app%."

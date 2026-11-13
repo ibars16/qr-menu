@@ -39,6 +39,9 @@
         .user-info { flex: 1; min-width: 0; }
         .user-name { font-size: 14px; font-weight: 500; color: var(--tx-1); display: flex; align-items: center; gap: 6px; }
         .user-meta { font-size: 12px; color: var(--tx-6); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        /* Email change waiting for its link (User::$pendingEmail): --tx-3 like .field-hint (AA). */
+        .user-pending { font-size: 12px; color: var(--tx-3); margin-top: 4px; display: flex; align-items: center; gap: 4px; word-break: break-all; }
+        .user-pending i { font-size: 14px; flex-shrink: 0; }
 
         .you-badge {
             font-size: 10px; font-weight: 600; color: var(--tx-6);
@@ -186,10 +189,16 @@
                                 {{ (isOwner ? 'role.owner' : 'role.staff')|trans({}, 'admin_users') }}
                             </span>
                         </div>
+                        {% if user.pendingEmail %}
+                            <div class="user-pending">
+                                <i class="ti ti-mail-forward" aria-hidden="true"></i>
+                                {{ 'label.pending_email'|trans({'%email%': user.pendingEmail}, 'admin_users') }}
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="user-actions">
                         <button class="icon-btn"
-                                onclick="UI.openEdit({{ user.id }}, '{{ (user.firstName ?? '')|e('js') }}', '{{ (user.lastName ?? '')|e('js') }}', '{{ isOwner ? 'owner' : 'staff' }}')"
+                                onclick="UI.openEdit({{ user.id }}, '{{ user.email|e('js') }}', '{{ (user.firstName ?? '')|e('js') }}', '{{ (user.lastName ?? '')|e('js') }}', '{{ isOwner ? 'owner' : 'staff' }}')"
                                 title="{{ 'action.edit_user'|trans({}, 'admin_users') }}">
                             <i class="ti ti-edit" aria-hidden="true"></i>
                         </button>
@@ -266,6 +275,7 @@
         const MSG_EDIT_USER     = "{{ 'action.edit_user'|trans({}, 'admin_users')|e('js') }}";
         const MSG_USER_CREATED  = "{{ 'toast.created'|trans({}, 'admin_users')|e('js') }}";
         const MSG_USER_UPDATED  = "{{ 'toast.updated'|trans({}, 'admin_users')|e('js') }}";
+        const MSG_EMAIL_CHANGE_SENT = "{{ 'toast.email_change_sent'|trans({}, 'admin_users')|e('js') }}";
         const MSG_USER_DELETED  = "{{ 'toast.deleted'|trans({}, 'admin_users')|e('js') }}";
         const MSG_CONFIRM_DELETE = "{{ 'confirm.delete'|trans({}, 'admin_users')|e('js') }}";
 
@@ -297,20 +307,23 @@
                 this._showDelete(false);
                 this._reset();
                 setFieldDisabled('user-email', false);
+                document.querySelectorAll('[id="user-email-hint"]').forEach(el => el.style.display = 'none');
                 document.querySelectorAll('[id="user-password-req"]').forEach(el => el.style.display = '');
                 document.querySelectorAll('[id="user-password-hint"]').forEach(el => el.style.display = 'none');
                 this._open();
                 setTimeout(() => activePanel()?.querySelector('[id="user-email"]')?.focus(), 80);
             },
-            openEdit(id, firstName, lastName, role) {
+            openEdit(id, email, firstName, lastName, role) {
                 editingId = id;
                 this._setTitle(MSG_EDIT_USER);
                 this._showDelete(true);
                 this._reset();
+                setFieldVal('user-email', email);
                 setFieldVal('user-first-name', firstName);
                 setFieldVal('user-last-name', lastName);
                 setFieldVal('user-role', role);
-                setFieldDisabled('user-email', true);
+                setFieldDisabled('user-email', false);
+                document.querySelectorAll('[id="user-email-hint"]').forEach(el => el.style.display = '');
                 document.querySelectorAll('[id="user-password-req"]').forEach(el => el.style.display = 'none');
                 document.querySelectorAll('[id="user-password-hint"]').forEach(el => el.style.display = '');
                 this._open();
@@ -352,7 +365,7 @@
             const password  = getFieldVal('user-password');
             const role      = getFieldVal('user-role');
 
-            if (!editingId && !email) {
+            if (!email) {
                 fieldError('user-email', 'user-email-error', true);
                 return;
             }
@@ -366,15 +379,17 @@
 
             const url  = editingId ? `/admin/usuarios/${editingId}/editar` : '/admin/usuarios/crear';
             const body = editingId
-                ? { firstName, lastName, role, password: password || undefined }
+                ? { email, firstName, lastName, role, password: password || undefined }
                 : { email, firstName, lastName, role, password };
 
             const result = await apiFetch(url, body);
             if (result.error) { showToast(result.error, 'error'); return; }
 
-            showToast(editingId ? MSG_USER_UPDATED : MSG_USER_CREATED, 'success');
+            showToast(result.emailChangeSent
+                ? MSG_EMAIL_CHANGE_SENT.replace('%email%', result.emailChangeSent)
+                : (editingId ? MSG_USER_UPDATED : MSG_USER_CREATED), 'success');
             UI.close();
-            setTimeout(() => location.reload(), 700);
+            setTimeout(() => location.reload(), result.emailChangeSent ? 2500 : 700);
         }
 
         async function deleteUser(id, name) {

@@ -4,6 +4,7 @@
     <div class="field-label">{{ 'field.email'|trans({}, 'admin_users') }} <span class="req">*</span></div>
     <input type="email" id="user-email" placeholder="nombre@restaurante.com" autocomplete="off"
            oninput="this.classList.remove('error'); document.getElementById('user-email-error').classList.remove('show')">
+    <div class="field-hint" id="user-email-hint" style="display:none">{{ 'hint.email_edit'|trans({}, 'admin_users') }}</div>
     <div class="field-error" id="user-email-error">{{ 'error.email_invalid'|trans({}, 'admin_users') }}</div>
 </div>
 

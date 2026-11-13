@@ -1,0 +1,48 @@
+title: "My account"
+impersonating: "You're viewing someone else's account: you can't change their email or password."
+
+field:
+    current_password: "Current password"
+
+email:
+    title: "Login email"
+    current: "You currently log in with"
+    new: "New email"
+    hint: "We'll send a link to that email. The change happens when you confirm it; until then you keep logging in with the current one."
+    pending: "Waiting for confirmation:"
+    pending_hint: "Open the link we sent to that email."
+    resend: "Resend link"
+    cancel: "Cancel change"
+    save: "Change email"
+
+password:
+    title: "Password"
+    new: "New password"
+    confirm: "Repeat the new password"
+    hint: "At least %min% characters."
+    save: "Change password"
+
+error:
+    csrf: "Your session expired. Please try again."
+    current_password_wrong: "The current password is incorrect."
+    email_invalid: "Enter a valid email."
+    email_same: "That's already your email."
+    email_taken: "That email is already used by another account."
+    password_too_short: "The password must be at least %min% characters long."
+    password_mismatch: "The passwords don't match."
+
+flash:
+    email_change_sent: "We've sent a link to %email%. Your email will change once you confirm it."
+    email_change_wait: "Wait a minute before asking for another link."
+    email_change_cancelled: "Email change cancelled."
+    email_updated: "Email changed. From now on you log in with %email%."
+    password_updated: "Password changed."
+
+confirm_page:
+    ok_title: "Email changed"
+    ok_text: "From now on you log in with %email%."
+    invalid_title: "Invalid link"
+    invalid_text: "The link has expired or is no longer valid. Ask for another one from My account."
+    taken_title: "Email not available"
+    taken_text: "Another account already uses that email, so it wasn't changed."
+    login: "Go to login"

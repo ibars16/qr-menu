@@ -1,0 +1,48 @@
+title: "Mi cuenta"
+impersonating: "Estás viendo la cuenta de otra persona: no puedes cambiar su email ni su contraseña."
+
+field:
+    current_password: "Contraseña actual"
+
+email:
+    title: "Email de acceso"
+    current: "Ahora entras con"
+    new: "Nuevo email"
+    hint: "Te enviaremos un enlace a ese email. El cambio se hace cuando lo confirmes; hasta entonces sigues entrando con el actual."
+    pending: "Pendiente de confirmar:"
+    pending_hint: "Abre el enlace que te hemos enviado a ese email."
+    resend: "Reenviar enlace"
+    cancel: "Cancelar cambio"
+    save: "Cambiar email"
+
+password:
+    title: "Contraseña"
+    new: "Nueva contraseña"
+    confirm: "Repite la nueva contraseña"
+    hint: "Mínimo %min% caracteres."
+    save: "Cambiar contraseña"
+
+error:
+    csrf: "La sesión ha caducado. Vuelve a intentarlo."
+    current_password_wrong: "La contraseña actual no es correcta."
+    email_invalid: "Introduce un email válido."
+    email_same: "Ese ya es tu email."
+    email_taken: "Ese email ya está en uso por otra cuenta."
+    password_too_short: "La contraseña debe tener al menos %min% caracteres."
+    password_mismatch: "Las contraseñas no coinciden."
+
+flash:
+    email_change_sent: "Te hemos enviado un enlace a %email%. El email cambiará cuando lo confirmes."
+    email_change_wait: "Espera un minuto antes de pedir otro enlace."
+    email_change_cancelled: "Cambio de email cancelado."
+    email_updated: "Email cambiado. A partir de ahora entras con %email%."
+    password_updated: "Contraseña cambiada."
+
+confirm_page:
+    ok_title: "Email cambiado"
+    ok_text: "A partir de ahora entras con %email%."
+    invalid_title: "Enlace no válido"
+    invalid_text: "El enlace ha caducado o ya no sirve. Pide otro desde Mi cuenta."
+    taken_title: "Email no disponible"
+    taken_text: "Otra cuenta ya usa ese email, así que no lo hemos cambiado."
+    login: "Ir a entrar"

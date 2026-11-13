@@ -1,0 +1,191 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ 'title'|trans({}, 'admin_account') }}{% endblock %}
+{% block page_title %}{{ 'title'|trans({}, 'admin_account') }}{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        .account-wrap { max-width: 600px; }
+        .account-back {
+            display: inline-flex; align-items: center; gap: var(--sp-1); min-height: 36px;
+            margin-bottom: var(--sp-3); color: var(--tx-3); font-size: var(--fs-base); text-decoration: none;
+        }
+        .account-back:hover { color: var(--tx-hi); }
+        .account-back:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: var(--r-sm); }
+        .account-section {
+            background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: var(--r-lg);
+            box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: var(--sp-4);
+        }
+        .account-section-title {
+            font-size: var(--fs-sm); font-weight: 600; color: var(--tx-muted);
+            text-transform: uppercase; letter-spacing: 0.08em;
+            padding: var(--sp-4) var(--sp-5) var(--sp-3);
+            border-bottom: 1px solid var(--bd-1); background: var(--bg-nav);
+        }
+        .account-body { padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-4); }
+        .account-current { font-size: var(--fs-base); color: var(--tx-3); line-height: var(--lh-body); }
+        .account-current strong { color: var(--tx-hi); font-weight: 600; word-break: break-all; }
+        /* A change waiting for its link: --tx-1/--tx-hi on --bg-input, the
+           same AA pairs as the fields; the buttons are underlined --tx-hi links. */
+        .account-pending {
+            display: flex; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4);
+            background: var(--bg-input); border: 1px solid var(--bd-2); border-radius: var(--r-md);
+            color: var(--tx-1); font-size: var(--fs-base); line-height: var(--lh-body);
+        }
+        .account-pending > i { font-size: 20px; color: var(--tx-3); flex-shrink: 0; margin-top: 1px; }
+        .account-pending-text { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+        .account-pending-text strong { color: var(--tx-hi); word-break: break-all; }
+        .account-pending-actions { display: flex; flex-wrap: wrap; gap: var(--sp-4); margin-top: var(--sp-1); }
+        .account-link-btn {
+            background: none; border: 0; padding: 0; min-height: 32px; font: inherit; font-weight: 600;
+            color: var(--tx-hi); cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+        }
+        .account-link-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .account-link-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: var(--r-sm); }
+
+        .field { display: flex; flex-direction: column; gap: var(--sp-2); }
+        .field label { font-size: var(--fs-base); font-weight: 500; color: var(--tx-3); }
+        .field input {
+            background: var(--bg-input); border: 1px solid var(--bd-2);
+            color: var(--tx-hi); font-size: var(--fs-lg); padding: var(--sp-3) var(--sp-4);
+            border-radius: var(--r-md); outline: none; width: 100%;
+            transition: border-color 0.15s; -webkit-appearance: none;
+        }
+        .field input:focus { border-color: var(--tx-5); }
+        .field input:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+        .field input.error { border-color: var(--err-border); }
+        .field-hint { font-size: var(--fs-sm); color: var(--tx-3); line-height: var(--lh-body); }
+        .field-error { font-size: var(--fs-sm); color: var(--err-text); line-height: var(--lh-body); }
+
+        .account-save {
+            display: flex; justify-content: flex-end;
+            padding: var(--sp-3) var(--sp-5); border-top: 1px solid var(--bd-1);
+        }
+        .account-save-btn {
+            padding: var(--sp-3) var(--sp-6); background: #C1440E; color: #fff;
+            border: none; border-radius: var(--r-md); font-size: var(--fs-md);
+            font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+        }
+        .account-save-btn:hover { opacity: 0.9; }
+        .account-save-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+        .account-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        @media (max-width: 767px) {
+            .account-body { padding: var(--sp-4); }
+            .account-save { padding: var(--sp-3) var(--sp-4); }
+            .account-save-btn { flex: 1; padding: var(--sp-3); font-size: var(--fs-lg); min-height: 44px; }
+        }
+    </style>
+{% endblock %}
+
+{% macro attrs(errors, key) %}{% if errors[key] is defined %}aria-invalid="true" aria-describedby="err-{{ key }}" class="error"{% endif %}{% endmacro %}
+{% macro message(errors, key) %}{% if errors[key] is defined %}<span class="field-error" id="err-{{ key }}">{{ errors[key]|trans({'%min%': 8}, 'admin_account') }}</span>{% endif %}{% endmacro %}
+
+{% block body %}
+    {% import _self as f %}
+    {# Only the section that was submitted shows its errors. #}
+    {% set emailErrors = section == 'email' ? errors : {} %}
+    {% set passwordErrors = section == 'password' ? errors : {} %}
+
+    <div class="account-wrap">
+        {# For owners this is a sub-screen of Configuración (where its link lives). #}
+        {% if is_granted('ROLE_OWNER') %}
+            <a href="{{ path('admin_settings') }}" class="account-back">
+                <i class="ti ti-chevron-left" aria-hidden="true"></i> {{ 'nav.item.settings'|trans({}, 'admin_base') }}
+            </a>
+        {% endif %}
+        {% if impersonating %}
+            <div class="flash flash-warning" role="status">
+                <i class="ti ti-alert-triangle" aria-hidden="true"></i> {{ 'impersonating'|trans({}, 'admin_account') }}
+            </div>
+        {% endif %}
+        {% if errors.form is defined %}
+            <div class="flash flash-error" role="alert">
+                <i class="ti ti-alert-circle" aria-hidden="true"></i> {{ errors.form|trans({}, 'admin_account') }}
+            </div>
+        {% endif %}
+
+        <form method="post" class="account-section" id="section-email" novalidate>
+            <input type="hidden" name="_token" value="{{ csrf_token('admin_account') }}">
+            <input type="hidden" name="section" value="email">
+            <div class="account-section-title">{{ 'email.title'|trans({}, 'admin_account') }}</div>
+            <div class="account-body">
+                <p class="account-current">{{ 'email.current'|trans({}, 'admin_account') }} <strong>{{ app.user.email }}</strong></p>
+                {% if app.user.pendingEmail %}
+                    {# The buttons submit the small forms after this section (no nested forms). #}
+                    <div class="account-pending" role="status">
+                        <i class="ti ti-mail-forward" aria-hidden="true"></i>
+                        <div class="account-pending-text">
+                            <span>{{ 'email.pending'|trans({}, 'admin_account') }} <strong>{{ app.user.pendingEmail }}</strong></span>
+                            <span class="field-hint">{{ 'email.pending_hint'|trans({}, 'admin_account') }}</span>
+                            <span class="account-pending-actions">
+                                <button type="submit" form="email-change-resend" class="account-link-btn" {% if impersonating %}disabled{% endif %}>{{ 'email.resend'|trans({}, 'admin_account') }}</button>
+                                <button type="submit" form="email-change-cancel" class="account-link-btn" {% if impersonating %}disabled{% endif %}>{{ 'email.cancel'|trans({}, 'admin_account') }}</button>
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="field">
+                    <label for="account-email">{{ 'email.new'|trans({}, 'admin_account') }}</label>
+                    <input type="email" id="account-email" name="email" autocomplete="email" required
+                           value="{{ section == 'email' ? newEmail : '' }}" {{ f.attrs(emailErrors, 'email') }}
+                           {% if impersonating %}disabled{% endif %}>
+                    {{ f.message(emailErrors, 'email') }}
+                    <span class="field-hint">{{ 'email.hint'|trans({}, 'admin_account') }}</span>
+                </div>
+                <div class="field">
+                    <label for="account-email-current-password">{{ 'field.current_password'|trans({}, 'admin_account') }}</label>
+                    <input type="password" id="account-email-current-password" name="current_password" autocomplete="current-password" required
+                           {{ f.attrs(emailErrors, 'current_password') }} {% if impersonating %}disabled{% endif %}>
+                    {{ f.message(emailErrors, 'current_password') }}
+                </div>
+            </div>
+            <div class="account-save">
+                <button type="submit" class="account-save-btn" {% if impersonating %}disabled{% endif %}>{{ 'email.save'|trans({}, 'admin_account') }}</button>
+            </div>
+        </form>
+        {% if app.user.pendingEmail %}
+            <form method="post" action="{{ path('admin_account_email_change_resend') }}" id="email-change-resend" hidden>
+                <input type="hidden" name="_token" value="{{ csrf_token('admin_account') }}">
+            </form>
+            <form method="post" action="{{ path('admin_account_email_change_cancel') }}" id="email-change-cancel" hidden>
+                <input type="hidden" name="_token" value="{{ csrf_token('admin_account') }}">
+            </form>
+        {% endif %}
+
+        <form method="post" class="account-section" id="section-password" novalidate>
+            <input type="hidden" name="_token" value="{{ csrf_token('admin_account') }}">
+            <input type="hidden" name="section" value="password">
+            {# Lets password managers tie the new password to this account. #}
+            <input type="email" name="username" value="{{ app.user.email }}" autocomplete="username" hidden readonly>
+            <div class="account-section-title">{{ 'password.title'|trans({}, 'admin_account') }}</div>
+            <div class="account-body">
+                <div class="field">
+                    <label for="account-password-current">{{ 'field.current_password'|trans({}, 'admin_account') }}</label>
+                    <input type="password" id="account-password-current" name="current_password" autocomplete="current-password" required
+                           {{ f.attrs(passwordErrors, 'current_password') }} {% if impersonating %}disabled{% endif %}>
+                    {{ f.message(passwordErrors, 'current_password') }}
+                </div>
+                <div class="field">
+                    <label for="account-password-new">{{ 'password.new'|trans({}, 'admin_account') }}</label>
+                    <input type="password" id="account-password-new" name="new_password" autocomplete="new-password" required minlength="{{ minPasswordLength }}"
+                           {{ f.attrs(passwordErrors, 'new_password') }} {% if impersonating %}disabled{% endif %}>
+                    {% if passwordErrors.new_password is defined %}
+                        {{ f.message(passwordErrors, 'new_password') }}
+                    {% else %}
+                        <span class="field-hint">{{ 'password.hint'|trans({'%min%': minPasswordLength}, 'admin_account') }}</span>
+                    {% endif %}
+                </div>
+                <div class="field">
+                    <label for="account-password-confirm">{{ 'password.confirm'|trans({}, 'admin_account') }}</label>
+                    <input type="password" id="account-password-confirm" name="new_password_confirm" autocomplete="new-password" required
+                           {{ f.attrs(passwordErrors, 'new_password_confirm') }} {% if impersonating %}disabled{% endif %}>
+                    {{ f.message(passwordErrors, 'new_password_confirm') }}
+                </div>
+            </div>
+            <div class="account-save">
+                <button type="submit" class="account-save-btn" {% if impersonating %}disabled{% endif %}>{{ 'password.save'|trans({}, 'admin_account') }}</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
