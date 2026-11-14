@@ -13,5 +13,7 @@ enum UploadProfile: string
     case DishImage = 'dish_image';
     case HeroImage = 'hero_image';
     case MenuImportPage = 'menu_import_page';
+    /** A whole menu as a PDF — split into one MenuImportPage image per page (MenuImportPdfSplitter). */
+    case MenuImportPdf = 'menu_import_pdf';
     case DishClip = 'dish_clip';
 }

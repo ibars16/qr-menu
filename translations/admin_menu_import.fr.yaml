@@ -4,9 +4,9 @@ action:
     back_to_menu: Retour au menu
 
 upload:
-    intro: 'Téléchargez des photos de votre carte imprimée et nous les lirons pour vous — une photo par page suffit.'
-    drop_text: Glissez vos photos de menu ici, ou touchez pour choisir des fichiers
-    drop_hint: 'Jusqu''à 30 photos, 15 Mo maximum chacune.'
+    intro: 'Téléchargez des photos ou le PDF de votre carte et nous la lirons pour vous — une photo par page suffit.'
+    drop_text: 'Glissez ici les photos ou le PDF de votre carte, ou touchez pour choisir des fichiers'
+    drop_hint: 'Jusqu''à 30 pages (photos ou PDF), 15 Mo maximum par fichier.'
     submit: Commencer à lire mon menu
     uploading: Téléversement de vos photos…
     upload_failed: Le téléversement a échoué — vérifiez votre connexion et réessayez.
@@ -14,11 +14,15 @@ upload:
     error:
         no_files: Veuillez choisir au moins une photo.
         total_too_large: 'Les photos sont trop lourdes au total. Envoyez-les en plusieurs fois (environ 60 Mo maximum par envoi).'
-        too_many_files: 'Veuillez téléverser %max% photos ou moins à la fois.'
+        too_many_files: 'Un envoi peut contenir %max% pages au maximum (photos et pages de PDF). Envoyez-les en plusieurs fois.'
         invalid_file: '« %name% » n''a pas pu être téléversée — veuillez réessayer.'
-        unsupported_type: '« %name% » n''est pas un type de photo pris en charge. Utilisez JPEG, PNG ou WebP.'
+        unsupported_type: '« %name% » n''est pas un type de fichier pris en charge. Utilisez JPEG, PNG, WebP ou PDF.'
         too_large: '« %name% » est trop volumineuse (max. 15 Mo).'
         storage_failed: '« %name% » n''a pas pu être enregistrée — veuillez réessayer.'
+        pdf_too_many_pages: '« %name% » compte %pages% pages et cet envoi peut en contenir %max% au maximum. Envoyez-le en plusieurs fois ou retirez des pages.'
+        pdf_password: '« %name% » est protégé par un mot de passe. Retirez-le ou envoyez des photos de la carte.'
+        pdf_unreadable: '« %name% » n''a pas pu être ouvert. Vérifiez qu''il s''agit d''un PDF valide ou envoyez des photos de la carte.'
+        pdf_no_pages: '« %name% » ne contient aucune page.'
 
 status:
     reading:

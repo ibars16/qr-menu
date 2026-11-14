@@ -106,6 +106,6 @@ final class MenuImportUploadEmptyTest extends WebTestCase
 
         $this->client->request('GET', '/admin/menu/import');
 
-        self::assertSelectorTextContains('.import-drop-hint', 'Hasta 30 fotos, de 15 MB como máximo cada una.');
+        self::assertSelectorTextContains('.import-drop-hint', 'Hasta 30 páginas (fotos o PDF), de 15 MB como máximo cada archivo.');
     }
 }

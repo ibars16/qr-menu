@@ -4,9 +4,9 @@ action:
     back_to_menu: Voltar à ementa
 
 upload:
-    intro: 'Carregue fotos da sua ementa impressa e nós lemo-las por si — uma foto por página está bem.'
-    drop_text: Arraste as fotos da sua ementa para aqui, ou toque para escolher ficheiros
-    drop_hint: 'Até 30 fotos, com 15 MB no máximo cada uma.'
+    intro: 'Carregue fotos ou o PDF da sua ementa e nós lemo-la por si — uma foto por página está bem.'
+    drop_text: 'Arraste as fotos ou o PDF da sua ementa para aqui, ou toque para escolher ficheiros'
+    drop_hint: 'Até 30 páginas (fotos ou PDF), com 15 MB no máximo por ficheiro.'
     submit: Começar a ler a minha ementa
     uploading: A carregar as suas fotos…
     upload_failed: O carregamento falhou — verifique a sua ligação e tente novamente.
@@ -14,11 +14,15 @@ upload:
     error:
         no_files: Escolha pelo menos uma foto.
         total_too_large: 'As fotos pesam demasiado no total. Carregue-as em várias vezes (máximo de cerca de 60 MB por envio).'
-        too_many_files: 'Carregue no máximo %max% fotos de cada vez.'
+        too_many_files: 'Cabem no máximo %max% páginas por envio (fotos e páginas de PDF). Carregue-as em várias vezes.'
         invalid_file: '"%name%" não pôde ser carregada — tente novamente.'
-        unsupported_type: '"%name%" não é um tipo de foto suportado. Use JPEG, PNG ou WebP.'
+        unsupported_type: '"%name%" não é um tipo de ficheiro suportado. Use JPEG, PNG, WebP ou PDF.'
         too_large: '"%name%" é demasiado grande (máx. 15 MB).'
         storage_failed: '"%name%" não pôde ser guardada — tente novamente.'
+        pdf_too_many_pages: '"%name%" tem %pages% páginas e neste envio cabem no máximo %max%. Carregue-o em várias vezes ou retire páginas.'
+        pdf_password: '"%name%" está protegido por palavra-passe. Retire-a ou carregue fotos da ementa.'
+        pdf_unreadable: 'Não foi possível abrir "%name%". Verifique se é um PDF válido ou carregue fotos da ementa.'
+        pdf_no_pages: '"%name%" não tem páginas.'
 
 status:
     reading:

@@ -4,9 +4,9 @@ action:
     back_to_menu: Volver al menú
 
 upload:
-    intro: 'Sube fotos de tu carta impresa y las leeremos por ti — una foto por página está bien.'
-    drop_text: Arrastra aquí las fotos de tu menú, o toca para elegir archivos
-    drop_hint: 'Hasta 30 fotos, de 15 MB como máximo cada una.'
+    intro: 'Sube fotos o el PDF de tu carta y la leeremos por ti — una foto por página está bien.'
+    drop_text: 'Arrastra aquí las fotos o el PDF de tu carta, o toca para elegir archivos'
+    drop_hint: 'Hasta 30 páginas (fotos o PDF), de 15 MB como máximo cada archivo.'
     submit: Empezar a leer mi menú
     uploading: Subiendo tus fotos…
     upload_failed: No se pudo subir — comprueba tu conexión e inténtalo de nuevo.
@@ -14,11 +14,15 @@ upload:
     error:
         no_files: Por favor, elige al menos una foto.
         total_too_large: 'Las fotos pesan demasiado en total. Súbelas en varias veces (máximo unos 60 MB por envío).'
-        too_many_files: 'Por favor, sube %max% fotos o menos a la vez.'
+        too_many_files: 'Caben %max% páginas como máximo por envío (fotos y páginas de PDF). Súbelas en varias veces.'
         invalid_file: '"%name%" no se pudo subir — inténtalo de nuevo.'
-        unsupported_type: '"%name%" no es un tipo de foto compatible. Usa JPEG, PNG o WebP.'
+        unsupported_type: '"%name%" no es un tipo de archivo compatible. Usa JPEG, PNG, WebP o PDF.'
         too_large: '"%name%" es demasiado grande (máx. 15 MB).'
         storage_failed: '"%name%" no se pudo guardar — inténtalo de nuevo.'
+        pdf_too_many_pages: '"%name%" tiene %pages% páginas y en este envío caben %max% como máximo. Súbelo en varias veces o quita páginas.'
+        pdf_password: '"%name%" está protegido con contraseña. Quítasela o sube fotos de la carta.'
+        pdf_unreadable: '"%name%" no se pudo abrir. Comprueba que es un PDF válido o sube fotos de la carta.'
+        pdf_no_pages: '"%name%" no tiene páginas.'
 
 status:
     reading:

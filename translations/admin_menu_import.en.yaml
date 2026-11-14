@@ -4,9 +4,9 @@ action:
     back_to_menu: Back to menu
 
 upload:
-    intro: 'Upload photos of your printed menu and we''ll read them for you — one photo per page is fine.'
-    drop_text: Drag your menu photos here, or tap to choose files
-    drop_hint: 'Up to 30 photos, 15 MB max each.'
+    intro: 'Upload photos or the PDF of your menu and we''ll read it for you — one photo per page is fine.'
+    drop_text: 'Drag your menu photos or PDF here, or tap to choose files'
+    drop_hint: 'Up to 30 pages (photos or PDF), 15 MB max per file.'
     submit: Start reading my menu
     uploading: Uploading your photos…
     upload_failed: Upload failed — check your connection and try again.
@@ -14,11 +14,15 @@ upload:
     error:
         no_files: Please choose at least one photo.
         total_too_large: 'The photos are too large in total. Upload them in several goes (about 60 MB max per upload).'
-        too_many_files: 'Please upload %max% photos or fewer at a time.'
+        too_many_files: 'At most %max% pages fit in one upload (photos and PDF pages). Upload them in several goes.'
         invalid_file: '"%name%" couldn''t be uploaded — please try again.'
-        unsupported_type: '"%name%" isn''t a supported photo type. Please use JPEG, PNG, or WebP.'
+        unsupported_type: '"%name%" isn''t a supported file type. Please use JPEG, PNG, WebP or PDF.'
         too_large: '"%name%" is too large (max 15 MB).'
         storage_failed: '"%name%" couldn''t be saved — please try again.'
+        pdf_too_many_pages: '"%name%" has %pages% pages and this upload can take %max% at most. Upload it in several goes or remove some pages.'
+        pdf_password: '"%name%" is password-protected. Remove the password or upload photos of the menu.'
+        pdf_unreadable: '"%name%" couldn''t be opened. Check that it''s a valid PDF or upload photos of the menu.'
+        pdf_no_pages: '"%name%" has no pages.'
 
 status:
     reading:

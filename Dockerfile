@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libpq-dev \
     ffmpeg \
+    poppler-utils \
     && docker-php-ext-install pdo pdo_pgsql
 
 COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini

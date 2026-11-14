@@ -10,6 +10,9 @@ use App\Service\BatchProcessingTriggerInterface;
 use App\Service\DishPhoto\AiPhotoBatch;
 use App\Service\DishPhoto\DishPhotoQuota;
 use App\Service\MenuImportLanguageNotice;
+use App\Service\MenuImportPdfError;
+use App\Service\MenuImportPdfException;
+use App\Service\MenuImportPdfSplitter;
 use App\Service\Upload\UploadProfile;
 use App\Service\Upload\UploadValidationError;
 use App\Service\Upload\UploadValidator;
@@ -36,12 +39,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_STAFF')]
 class MenuImportController extends AbstractController
 {
-    private const MAX_FILES_PER_UPLOAD = 30;
+    /** Photos + PDF pages together, per upload. */
+    private const MAX_PAGES_PER_UPLOAD = 30;
 
     public function __construct(
         private readonly TranslatorInterface $translator,
         private readonly BatchProcessingTriggerInterface $processingTrigger,
         private readonly UploadValidator $uploadValidator,
+        private readonly MenuImportPdfSplitter $pdfSplitter,
     ) {}
 
     private function restaurant(): Restaurant
@@ -82,52 +87,160 @@ class MenuImportController extends AbstractController
             return $this->redirectToRoute('admin_menu_import_new');
         }
 
-        if (count($files) > self::MAX_FILES_PER_UPLOAD) {
-            $this->addFlash('error', $this->translator->trans('upload.error.too_many_files', ['%max%' => self::MAX_FILES_PER_UPLOAD], domain: 'admin_menu_import'));
-            return $this->redirectToRoute('admin_menu_import_new');
+        if (count($files) > self::MAX_PAGES_PER_UPLOAD) {
+            return $this->uploadError('upload.error.too_many_files', ['%max%' => self::MAX_PAGES_PER_UPLOAD]);
         }
 
-        // Validate every file up front — before the batch is even created —
-        // so a bad file in the middle of a multi-file upload never leaves a
-        // half-populated batch behind.
-        $validatedFiles = [];
+        // 1) Validate every file and count its pages — nothing is rendered,
+        //    stored or created yet. A PDF is recognised by its name OR its
+        //    real content, and must then really be a PDF (sniffed bytes).
+        $entries = [];
         foreach ($files as $file) {
-            $result = $this->uploadValidator->validate($file, UploadProfile::MenuImportPage);
-            if (!$result->isValid) {
-                $this->addFlash('error', $this->translator->trans($this->importErrorKey($result->error), ['%name%' => $file->getClientOriginalName()], domain: 'admin_menu_import'));
-                return $this->redirectToRoute('admin_menu_import_new');
+            $name = $file->getClientOriginalName();
+            if ($this->looksLikePdf($file)) {
+                $result = $this->uploadValidator->validate($file, UploadProfile::MenuImportPdf);
+                if (!$result->isValid) {
+                    $key = $result->error === UploadValidationError::UnsupportedType ? 'upload.error.pdf_unreadable' : $this->importErrorKey($result->error);
+                    return $this->uploadError($key, ['%name%' => $name]);
+                }
+                try {
+                    $pages = $this->pdfSplitter->countPages($file->getPathname());
+                } catch (MenuImportPdfException $e) {
+                    return $this->uploadError($this->pdfErrorKey($e->error), ['%name%' => $name]);
+                }
+                $entries[] = ['file' => $file, 'pdf' => true, 'pages' => $pages];
+            } else {
+                $result = $this->uploadValidator->validate($file, UploadProfile::MenuImportPage);
+                if (!$result->isValid) {
+                    return $this->uploadError($this->importErrorKey($result->error), ['%name%' => $name]);
+                }
+                $entries[] = ['file' => $file, 'pdf' => false, 'pages' => 1, 'result' => $result];
             }
-            $validatedFiles[] = [$file, $result];
         }
 
+        // PDF pages count towards the same 30-page cap as photos.
+        $totalPages = array_sum(array_column($entries, 'pages'));
+        if ($totalPages > self::MAX_PAGES_PER_UPLOAD) {
+            $biggestPdf = null;
+            foreach ($entries as $entry) {
+                if ($entry['pdf'] && ($biggestPdf === null || $entry['pages'] > $biggestPdf['pages'])) {
+                    $biggestPdf = $entry;
+                }
+            }
+            $room = $biggestPdf ? self::MAX_PAGES_PER_UPLOAD - ($totalPages - $biggestPdf['pages']) : 0;
+            if ($biggestPdf && $room >= 1) {
+                return $this->uploadError('upload.error.pdf_too_many_pages', [
+                    '%name%' => $biggestPdf['file']->getClientOriginalName(),
+                    '%pages%' => $biggestPdf['pages'],
+                    '%max%' => $room,
+                ]);
+            }
+            return $this->uploadError('upload.error.too_many_files', ['%max%' => self::MAX_PAGES_PER_UPLOAD]);
+        }
+
+        // 2) Turn each PDF into one JPEG per page (in a temp folder, always
+        //    removed), each validated exactly like a photo. Still nothing stored.
+        $workDir = sys_get_temp_dir() . '/menu-import-pdf-' . bin2hex(random_bytes(8));
+        mkdir($workDir, 0700);
+        try {
+            /** @var list<array{0: UploadedFile, 1: string, 2: string}> $pagesToStore [file, safe filename, sha256] */
+            $pagesToStore = [];
+            foreach ($entries as $entry) {
+                $file = $entry['file'];
+                if (!$entry['pdf']) {
+                    $pagesToStore[] = [$file, $entry['result']->safeFilename, hash_file('sha256', $file->getPathname())];
+                    continue;
+                }
+
+                $pdfDir = $workDir . '/' . count($pagesToStore);
+                mkdir($pdfDir, 0700);
+                try {
+                    $jpegs = $this->pdfSplitter->renderPages($file->getPathname(), $entry['pages'], $pdfDir);
+                } catch (MenuImportPdfException $e) {
+                    return $this->uploadError($this->pdfErrorKey($e->error), ['%name%' => $file->getClientOriginalName()]);
+                }
+                foreach ($jpegs as $jpeg) {
+                    // A local file wrapped as an UploadedFile ("test" mode:
+                    // not from this HTTP request) so it goes through the very
+                    // same validator (real type, size, moderation) as a photo.
+                    $page = new UploadedFile($jpeg, $file->getClientOriginalName(), 'image/jpeg', null, true);
+                    $result = $this->uploadValidator->validate($page, UploadProfile::MenuImportPage);
+                    if (!$result->isValid) {
+                        return $this->uploadError('upload.error.pdf_unreadable', ['%name%' => $file->getClientOriginalName()]);
+                    }
+                    $pagesToStore[] = [$page, $result->safeFilename, hash_file('sha256', $jpeg)];
+                }
+            }
+
+            // 3) Store: all or nothing. Any failure rolls the batch and its
+            //    pages back and deletes every file already moved.
+            return $this->storeBatch($restaurant, $pagesToStore, $em);
+        } finally {
+            self::removeDir($workDir);
+        }
+    }
+
+    /**
+     * @param list<array{0: UploadedFile, 1: string, 2: string}> $pagesToStore
+     */
+    private function storeBatch(Restaurant $restaurant, array $pagesToStore, EntityManagerInterface $em): Response
+    {
+        $connection = $em->getConnection();
+        $connection->beginTransaction();
         $batch = new MenuImportBatch($restaurant);
-        $em->persist($batch);
-        $em->flush(); // assign an id — used in the storage path below
+        $pages = [];
+        $movedPaths = [];
+        $uploadDir = null;
+        $createdDir = false;
 
-        $uploadDir = $this->getParameter('app.uploads_dir')
-            . '/menu-imports/' . $restaurant->getId() . '/' . $batch->getId();
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
+        try {
+            $em->persist($batch);
+            $em->flush(); // assign an id — used in the storage path below
 
-        foreach ($validatedFiles as $position => [$file, $result]) {
-            $newFilename = $result->safeFilename;
-            $imageHash = hash_file('sha256', $file->getPathname());
-
-            try {
-                $file->move($uploadDir, $newFilename);
-            } catch (FileException) {
-                $this->addFlash('error', $this->translator->trans('upload.error.storage_failed', ['%name%' => $file->getClientOriginalName()], domain: 'admin_menu_import'));
-                return $this->redirectToRoute('admin_menu_import_new');
+            $uploadDir = $this->getParameter('app.uploads_dir')
+                . '/menu-imports/' . $restaurant->getId() . '/' . $batch->getId();
+            if (!is_dir($uploadDir)) {
+                if (!@mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+                    throw new FileException('Could not create ' . $uploadDir);
+                }
+                $createdDir = true;
             }
 
-            $relativePath = 'uploads/menu-imports/' . $restaurant->getId() . '/' . $batch->getId() . '/' . $newFilename;
-            $page = new MenuImportPage($batch, $relativePath, $position, $imageHash);
-            $em->persist($page);
-            $batch->addPage($page);
-        }
+            foreach ($pagesToStore as $position => [$file, $newFilename, $imageHash]) {
+                $failedName = $file->getClientOriginalName();
+                $file->move($uploadDir, $newFilename);
+                $movedPaths[] = $uploadDir . '/' . $newFilename;
 
-        $em->flush();
+                $relativePath = 'uploads/menu-imports/' . $restaurant->getId() . '/' . $batch->getId() . '/' . $newFilename;
+                $page = new MenuImportPage($batch, $relativePath, $position, $imageHash);
+                $em->persist($page);
+                $batch->addPage($page);
+                $pages[] = $page;
+            }
+
+            $em->flush();
+            $connection->commit();
+        } catch (\Throwable $e) {
+            $connection->rollBack();
+            foreach ($movedPaths as $path) {
+                if (is_file($path)) {
+                    unlink($path);
+                }
+            }
+            if ($createdDir && $uploadDir !== null && is_dir($uploadDir)) {
+                @rmdir($uploadDir);
+            }
+            foreach ([...$pages, $batch] as $entity) {
+                if ($em->contains($entity)) {
+                    $em->detach($entity);
+                }
+            }
+
+            if ($e instanceof FileException) {
+                return $this->uploadError('upload.error.storage_failed', ['%name%' => $failedName ?? '']);
+            }
+            throw $e;
+        }
 
         $this->processingTrigger->trigger($batch);
 
@@ -265,6 +378,43 @@ class MenuImportController extends AbstractController
             MenuImportBatchStatus::COMPLETED,
             MenuImportBatchStatus::FAILED,
         ], true);
+    }
+
+    private function uploadError(string $key, array $parameters = []): Response
+    {
+        $this->addFlash('error', $this->translator->trans($key, $parameters, domain: 'admin_menu_import'));
+
+        return $this->redirectToRoute('admin_menu_import_new');
+    }
+
+    private function looksLikePdf(UploadedFile $file): bool
+    {
+        return strtolower($file->getClientOriginalExtension()) === 'pdf'
+            || ($file->isValid() && $file->getMimeType() === 'application/pdf');
+    }
+
+    private function pdfErrorKey(MenuImportPdfError $error): string
+    {
+        return match ($error) {
+            MenuImportPdfError::PasswordProtected => 'upload.error.pdf_password',
+            MenuImportPdfError::Unreadable => 'upload.error.pdf_unreadable',
+            MenuImportPdfError::NoPages => 'upload.error.pdf_no_pages',
+        };
+    }
+
+    private static function removeDir(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+        $entries = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST,
+        );
+        foreach ($entries as $entry) {
+            $entry->isDir() ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
+        }
+        rmdir($dir);
     }
 
     /** "66M" / "1G" / "512K" / "1048576" → bytes; 0 means "no limit". */

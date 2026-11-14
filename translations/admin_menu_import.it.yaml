@@ -4,9 +4,9 @@ action:
     back_to_menu: Torna al menù
 
 upload:
-    intro: 'Carica le foto del tuo menù stampato e le leggeremo per te — va bene una foto per pagina.'
-    drop_text: Trascina qui le foto del tuo menù, oppure tocca per scegliere i file
-    drop_hint: 'Fino a 30 foto, massimo 15 MB ciascuna.'
+    intro: 'Carica le foto o il PDF del tuo menù e lo leggeremo per te — va bene una foto per pagina.'
+    drop_text: 'Trascina qui le foto o il PDF del tuo menù, oppure tocca per scegliere i file'
+    drop_hint: 'Fino a 30 pagine (foto o PDF), massimo 15 MB per file.'
     submit: Inizia a leggere il mio menù
     uploading: Caricamento delle tue foto…
     upload_failed: Caricamento non riuscito — controlla la connessione e riprova.
@@ -14,11 +14,15 @@ upload:
     error:
         no_files: Scegli almeno una foto.
         total_too_large: 'Le foto pesano troppo in totale. Caricale in più volte (massimo circa 60 MB per invio).'
-        too_many_files: 'Carica al massimo %max% foto alla volta.'
+        too_many_files: 'In un invio stanno al massimo %max% pagine (foto e pagine di PDF). Caricale in più volte.'
         invalid_file: '"%name%" non è stato caricato — riprova.'
-        unsupported_type: '"%name%" non è un tipo di foto supportato. Usa JPEG, PNG o WebP.'
+        unsupported_type: '"%name%" non è un tipo di file supportato. Usa JPEG, PNG, WebP o PDF.'
         too_large: '"%name%" è troppo grande (max 15 MB).'
         storage_failed: '"%name%" non è stato salvato — riprova.'
+        pdf_too_many_pages: '"%name%" ha %pages% pagine e in questo invio ne stanno al massimo %max%. Caricalo in più volte o togli alcune pagine.'
+        pdf_password: '"%name%" è protetto da password. Rimuovila o carica le foto del menù.'
+        pdf_unreadable: 'Non è stato possibile aprire "%name%". Controlla che sia un PDF valido o carica le foto del menù.'
+        pdf_no_pages: '"%name%" non ha pagine.'
 
 status:
     reading:

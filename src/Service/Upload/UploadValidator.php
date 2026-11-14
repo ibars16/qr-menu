@@ -21,6 +21,11 @@ final class UploadValidator
         'image/webp' => 'webp',
     ];
 
+    /** menu_import_pdf only — sniffed from the bytes like the images, never the filename. */
+    private const ALLOWED_PDF_EXTENSIONS_BY_MIME = [
+        'application/pdf' => 'pdf',
+    ];
+
     /**
      * mp4 only for now — webm uses a completely different container format
      * (Matroska/EBML, not ISO-BMFF), so accepting it would mean a second,
@@ -97,6 +102,12 @@ final class UploadValidator
             'qualityWarningsEnabled' => true,
         ],
         'menu_import_page' => [
+            'maxSizeBytes'    => 15 * 1024 * 1024,
+            'checkDimensions' => false,
+        ],
+        // Same cap as one photo; the page count is limited separately
+        // (MenuImportController) before anything is rendered.
+        'menu_import_pdf' => [
             'maxSizeBytes'    => 15 * 1024 * 1024,
             'checkDimensions' => false,
         ],
@@ -207,7 +218,11 @@ final class UploadValidator
 
         $limits = self::LIMITS[$profile->value];
         $isVideo = $profile === UploadProfile::DishClip;
-        $allowedExtensions = $isVideo ? self::ALLOWED_VIDEO_EXTENSIONS_BY_MIME : self::ALLOWED_IMAGE_EXTENSIONS_BY_MIME;
+        $allowedExtensions = match ($profile) {
+            UploadProfile::DishClip => self::ALLOWED_VIDEO_EXTENSIONS_BY_MIME,
+            UploadProfile::MenuImportPdf => self::ALLOWED_PDF_EXTENSIONS_BY_MIME,
+            default => self::ALLOWED_IMAGE_EXTENSIONS_BY_MIME,
+        };
 
         // Real content-sniffed MIME type (finfo over the file's actual
         // bytes), never the client-supplied filename or Content-Type header.
