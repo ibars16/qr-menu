@@ -965,10 +965,14 @@ class MenuAdminController extends AbstractController
             $fx = $data['videoFocus']['x'] ?? null;
             $fy = $data['videoFocus']['y'] ?? null;
             $product->setVideoFocus(is_numeric($fx) ? (int) round((float) $fx) : null, is_numeric($fy) ? (int) round((float) $fy) : null);
-            $fz = $data['videoFocus']['zoom'] ?? null;
-            $product->setVideoZoom(is_numeric($fz) ? (int) round((float) $fz) : null);
+            // Zoom is no longer sent (clips always fill their box) — only
+            // touch the stored value if a client still sends one.
+            if (array_key_exists('zoom', $data['videoFocus'])) {
+                $fz = $data['videoFocus']['zoom'];
+                $product->setVideoZoom(is_numeric($fz) ? (int) round((float) $fz) : null);
+            }
 
-            // Zoom only renders once the clip's dimensions are known — clips
+            // Clip dimensions (Product::getVideoAspectRatio()) — clips
             // uploaded before they were recorded get them read here, the
             // first time their framing is saved.
             $clip = $product->getVideoClip();

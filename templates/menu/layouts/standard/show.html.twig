@@ -17,19 +17,15 @@
    shortens the "no real fraction typed" case so the public menu reads as
    an editorial "20g" rather than a nutrition-label "20.0g". A value with an
    actual fraction (anything not ending ".0") is printed byte-for-byte. #}
-{# A dish clip, as rendered in both the card and the detail sheet. With the
-   clip's own dimensions known (Product::getVideoAspectRatio()), it's sized by
-   the owner's zoom + framing (.dish-clip--fit, see the CSS) over a blurred
-   copy of its poster that fills any gap; without them it falls back to the
-   plain object-fit:cover every clip used before zoom existed. #}
+{# A dish clip, as rendered in both the card and the detail sheet. Always
+   fills its box like a photo (object-fit:cover, see the CSS), cropped to
+   the owner's framing (Product::$videoFocusX/Y as object-position) — never
+   letterboxed. Product::$videoZoom is no longer read: a zoom below full
+   cover left bands around the clip. #}
 {% macro clipVideo(product) %}
-    {%- set ar = product.videoAspectRatio -%}
     {%- set poster = asset('uploads/products/' ~ product.image) -%}
-    {%- if ar -%}
-        <div class="clip-backdrop" style="background-image: url('{{ poster }}')" aria-hidden="true"></div>
-    {%- endif -%}
-    <video class="dish-clip{{ ar ? ' dish-clip--fit' }}" muted loop playsinline preload="none"
-           style="{% if ar %}--ar: {{ ar }}; --z: {{ (product.videoZoom ?? 100) / 100 }}; --fx: {{ (product.videoFocusX ?? 50) / 100 }}; --fy: {{ (product.videoFocusY ?? 50) / 100 }}{% else %}object-position: {{ product.videoObjectPosition }}{% endif %}"
+    <video class="dish-clip" muted loop playsinline preload="none"
+           style="object-position: {{ product.videoObjectPosition }}"
            poster="{{ poster }}"
            data-clip-src="{{ asset('uploads/products/' ~ product.videoClip) }}"
            aria-hidden="true"></video>
@@ -395,29 +391,9 @@
        commits; reverted in full — see the commit that removed it for
        why). object-fit:cover crops a clip's frame the same way it already
        crops a photo; which part of the clip stays visible is the owner's
-       own framing (Product::$videoFocusX/Y), set inline as object-position.
-       A clip with known dimensions (.dish-clip--fit, below) is sized by the
-       owner's zoom instead. */
+       own framing (Product::$videoFocusX/Y), set inline as object-position. */
     .dish-card .front-img img, .dish-card .front-img video.dish-clip { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
-    /* Zoomed clip (Product::$videoZoom): --z runs from 0 = whole clip
-       visible (contain width) to 1 = box fully covered (cover width), both
-       computed from the box's own size in container units and the clip's
-       aspect ratio --ar, so the same values fit the card, the detail sheet
-       and the admin preview alike. --fx/--fy place it like object-position
-       does (0 = left/top edge, 1 = right/bottom). Any gap left around it is
-       filled by .clip-backdrop, its poster blurred, at z-index:-1 inside an
-       isolated box (above the box background, below the clip). */
-    .dish-card .front-img:has(> video.dish-clip--fit), .dish-modal-photo:has(> video.dish-clip--fit) { container-type: size; isolation: isolate; }
-    .dish-card .front-img video.dish-clip.dish-clip--fit, .dish-modal-photo video.dish-clip.dish-clip--fit {
-        --fit-min: min(100cqw, 100cqh * var(--ar));
-        --fit-max: max(100cqw, 100cqh * var(--ar));
-        --w: calc(var(--fit-min) + var(--z) * (var(--fit-max) - var(--fit-min)));
-        position: absolute; max-width: none; object-fit: fill;
-        width: var(--w); height: calc(var(--w) / var(--ar));
-        left: calc((100cqw - var(--w)) * var(--fx));
-        top: calc((100cqh - var(--w) / var(--ar)) * var(--fy));
-    }
-    .clip-backdrop, .cover-backdrop { position: absolute; inset: -24px; z-index: -1; background: center / cover no-repeat; filter: blur(18px) brightness(0.85); pointer-events: none; }
+    .cover-backdrop { position: absolute; inset: -24px; z-index: -1; background: center / cover no-repeat; filter: blur(18px) brightness(0.85); pointer-events: none; }
     .dish-card:hover .front-img img, .dish-card:hover .front-img video.dish-clip { transform: scale(1.045); }
 
     /* No-photo placeholder — a warm brand-colored panel with an icon and

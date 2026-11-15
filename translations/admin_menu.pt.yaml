@@ -219,8 +219,7 @@ clip:
     processing: 'A enviar e processar o vídeo…'
     trimmed: 'Prato guardado. O vídeo foi cortado para os primeiros 6 segundos.'
     frame_badge: 'Arraste para enquadrar'
-    frame_hint: 'Arraste o vídeo para escolher que parte aparece e use o zoom para o ajustar à caixa. Dica: grave na horizontal para que se veja mais completo.'
-    zoom_label: 'Zoom'
+    frame_hint: 'Arraste o vídeo para escolher que parte aparece. Dica: grave na horizontal para que se veja mais completo.'
 
 error:
     category_name_required: O nome é obrigatório.

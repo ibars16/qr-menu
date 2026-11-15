@@ -218,12 +218,6 @@
                        (.framing, see initClipFraming() in _product_js). #}
                     <span class="img-upload-frame-badge" aria-hidden="true"><i class="ti ti-arrows-move"></i> {{ 'clip.frame_badge'|trans({}, 'admin_menu') }}</span>
                 </div>
-                <label class="clip-zoom">
-                    <span class="clip-zoom-label">{{ 'clip.zoom_label'|trans({}, 'admin_menu') }}</span>
-                    <i class="ti ti-zoom-out" aria-hidden="true"></i>
-                    <input type="range" min="0" max="100" step="1" value="50">
-                    <i class="ti ti-zoom-in" aria-hidden="true"></i>
-                </label>
                 <p class="clip-frame-hint" id="clip-frame-hint">{{ 'clip.frame_hint'|trans({}, 'admin_menu') }}</p>
                 {# Below the photo/clip, not over it — only shown once there's
                    media (previewMedia()/renderProductMedia() reveal it), the

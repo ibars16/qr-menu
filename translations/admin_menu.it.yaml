@@ -219,8 +219,7 @@ clip:
     processing: 'Caricamento ed elaborazione del video…'
     trimmed: 'Piatto salvato. Il video è stato tagliato ai primi 6 secondi.'
     frame_badge: 'Trascina per inquadrare'
-    frame_hint: 'Trascina il video per scegliere quale parte si vede e usa lo zoom per adattarlo al riquadro. Consiglio: registralo in orizzontale perché si veda più intero.'
-    zoom_label: 'Zoom'
+    frame_hint: 'Trascina il video per scegliere quale parte si vede. Consiglio: registralo in orizzontale perché si veda più intero.'
 
 error:
     category_name_required: Il nome è obbligatorio.

@@ -219,8 +219,7 @@ clip:
     processing: 'Video wird hochgeladen und verarbeitet…'
     trimmed: 'Gericht gespeichert. Das Video wurde auf die ersten 6 Sekunden gekürzt.'
     frame_badge: 'Zum Ausrichten ziehen'
-    frame_hint: 'Ziehe das Video, um den sichtbaren Ausschnitt zu wählen, und passe es mit dem Zoom an den Rahmen an. Tipp: Im Querformat aufnehmen, damit mehr davon zu sehen ist.'
-    zoom_label: 'Zoom'
+    frame_hint: 'Ziehe das Video, um den sichtbaren Ausschnitt zu wählen. Tipp: Im Querformat aufnehmen, damit mehr davon zu sehen ist.'
 
 error:
     category_name_required: Der Name ist erforderlich.

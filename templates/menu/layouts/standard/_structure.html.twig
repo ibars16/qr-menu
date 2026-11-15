@@ -1429,8 +1429,7 @@
        bottom fade dissolves the photo into the parchment body instead of
        cutting in a hard line. */
     .dish-modal-photo { position: relative; height: 300px; }
-    /* z-index:1 on both scrims: a zoomed clip (.dish-clip--fit) is itself
-       absolutely positioned, and would otherwise paint over them. */
+    /* z-index:1 on both scrims so they always paint over the photo/clip. */
     .dish-modal-photo::before {
         content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5rem; z-index: 1;
         background: linear-gradient(rgba(var(--scrim-rgb), 0.35), transparent); pointer-events: none;

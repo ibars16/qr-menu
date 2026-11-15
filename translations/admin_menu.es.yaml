@@ -219,8 +219,7 @@ clip:
     processing: 'Subiendo y procesando el vídeo…'
     trimmed: 'Plato guardado. El vídeo se ha recortado a los primeros 6 segundos.'
     frame_badge: 'Arrastra para encuadrar'
-    frame_hint: 'Arrastra el vídeo para elegir qué parte se ve y usa el zoom para ajustarlo a la caja. Consejo: grábalo en horizontal para que se vea más completo.'
-    zoom_label: 'Zoom'
+    frame_hint: 'Arrastra el vídeo para elegir qué parte se ve. Consejo: grábalo en horizontal para que se vea más completo.'
 
 error:
     category_name_required: El nombre es obligatorio.

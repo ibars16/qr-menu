@@ -219,8 +219,7 @@ clip:
     processing: 'Envoi et traitement de la vidéo…'
     trimmed: 'Plat enregistré. La vidéo a été coupée à ses 6 premières secondes.'
     frame_badge: 'Glissez pour cadrer'
-    frame_hint: 'Faites glisser la vidéo pour choisir la partie visible et utilisez le zoom pour l''ajuster au cadre. Astuce : filmez à l''horizontale pour qu''elle apparaisse plus en entier.'
-    zoom_label: 'Zoom'
+    frame_hint: 'Faites glisser la vidéo pour choisir la partie visible. Astuce : filmez à l''horizontale pour qu''elle apparaisse plus en entier.'
 
 error:
     category_name_required: Le nom est obligatoire.

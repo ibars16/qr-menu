@@ -19,9 +19,6 @@
     // is trimmed server-side, over CLIP_MAX_INPUT_DURATION_SECONDS is rejected.
     const CLIP_MAX_DURATION_SECONDS = 6;
     const CLIP_MAX_INPUT_DURATION_SECONDS = 60;
-    // A freshly picked clip starts halfway between "whole clip" and "box
-    // filled" — full cover zoomed a vertical phone clip in too far.
-    const CLIP_DEFAULT_ZOOM = 50;
     const MSG_CLIP_DURATION_WARNING = "{{ 'clip.duration_warning'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_CLIP_TOO_LONG = "{{ 'error.clip_duration_too_long'|trans({}, 'admin_menu')|e('js') }}";
     const MSG_CLIP_PROCESSING = "{{ 'clip.processing'|trans({}, 'admin_menu')|e('js') }}";
@@ -164,7 +161,7 @@
                     revealNutrition();
                 }
                 // A saved clip with no zoom yet keeps its old full-cover look.
-                S.clipFocus = { x: data.videoFocusX ?? 50, y: data.videoFocusY ?? 50, zoom: data.videoZoom ?? 100 };
+                S.clipFocus = { x: data.videoFocusX ?? 50, y: data.videoFocusY ?? 50 };
                 // What "Descartar" on an AI draft goes back to.
                 // source null = the owner's own photo: "Mejorar con IA" is offered.
                 // canRevert: an enhanced photo whose original is kept ("Volver a la original").
@@ -1348,7 +1345,7 @@
         // No photo (or a clip) until a new <img> loads: no "foto pequeña" notice.
         S.photoSmall = false;
         AiPhoto.updateEnhance();
-        area.closest('.field').querySelectorAll('.clip-frame-hint, .clip-zoom').forEach(el => el.classList.remove('show'));
+        area.closest('.field').querySelectorAll('.clip-frame-hint').forEach(el => el.classList.remove('show'));
     }
 
     // Shared by previewMedia() (local file, instant via ObjectURL) and
@@ -1385,75 +1382,52 @@
     // Same fixed 16/9 box as the photo, unconditionally — a clip preview
     // must not resize the box (an adaptive-box-per-clip-orientation
     // approach was tried and fully reverted; see the commit that removed
-    // it). Inside it the clip is sized by the owner's zoom and placed by
-    // their framing (.clip-fit, same formula as the public carta's
-    // .dish-clip--fit), over a blurred, cover-fit copy of itself filling any
-    // gap — see initClipFraming().
+    // it). Inside it the clip always fills the box like a photo
+    // (object-fit:cover, same as the public carta's .dish-clip), cropped to
+    // the owner's framing — see initClipFraming().
     function showClipInArea(area, src) {
         clearMediaPreview(area);
-        const makeVideo = () => {
-            const v = document.createElement('video');
-            v.muted = true;
-            v.loop = true;
-            v.autoplay = true;
-            v.playsInline = true;
-            return v;
-        };
-        const backdrop = makeVideo();
-        backdrop.className = 'clip-backdrop';
-        backdrop.setAttribute('aria-hidden', 'true');
-        const video = makeVideo();
+        const video = document.createElement('video');
+        video.muted = true;
+        video.loop = true;
+        video.autoplay = true;
+        video.playsInline = true;
         video.className = 'clip-fit';
         applyClipFit(video);
-        area.append(backdrop, video);
+        area.append(video);
         area.classList.add('loading', 'framing');
-        // The browser reports the display size (rotation already applied),
-        // same as ffprobe does server-side for the carta.
-        video.onloadedmetadata = () => {
-            if (video.videoWidth && video.videoHeight) video.style.setProperty('--ar', video.videoWidth / video.videoHeight);
-        };
         video.onloadeddata = () => { video.classList.add('loaded'); area.classList.remove('loading'); };
-        backdrop.onloadeddata = () => backdrop.classList.add('loaded');
-        backdrop.src = src;
         video.src = src;
         area.querySelector('.img-upload-hint').style.display = 'none';
         const field = area.closest('.field');
         field.querySelector('.clip-frame-hint')?.classList.add('show');
-        const zoom = field.querySelector('.clip-zoom');
-        if (zoom) {
-            zoom.classList.add('show');
-            zoom.querySelector('input').value = S.clipFocus.zoom;
-        }
         field.querySelectorAll('.img-upload-change-btn, .img-upload-delete-btn').forEach(b => { b.style.display = ''; });
     }
 
     function applyClipFit(video) {
-        video.style.setProperty('--z', S.clipFocus.zoom / 100);
-        video.style.setProperty('--fx', S.clipFocus.x / 100);
-        video.style.setProperty('--fy', S.clipFocus.y / 100);
+        video.style.objectPosition = `${S.clipFocus.x}% ${S.clipFocus.y}%`;
     }
 
-    // Clip zoom + framing, stored as Product::$videoZoom (0 = whole clip
-    // visible, 100 = box fully covered) and $videoFocusX/Y (0–100, where the
-    // clip sits: 0 = left/top edge, 100 = right/bottom). All three are
-    // fractions of the box, not pixels, so what's set in this 16/9 preview
-    // carries over to the public card and detail sheet at their own sizes.
-    // Drag moves the clip on whichever axis it doesn't exactly fill; the
-    // slider under the box sets the zoom. Delegated on document since the
+    // Clip framing, stored as Product::$videoFocusX/Y (0–100, object-position
+    // %: 0 = left/top edge, 100 = right/bottom). Fractions of the box, not
+    // pixels, so what's set in this 16/9 preview carries over to the public
+    // card and detail sheet at their own sizes. The clip always covers the
+    // box (no zoom — Product::$videoZoom is no longer sent or read), so a
+    // drag moves it on whichever axis it overflows. Delegated on document since the
     // editor markup exists twice (desktop modal + mobile sheet). Arrow keys
     // nudge the framing too, for keyboard users.
     (function initClipFraming() {
         const clamp = v => Math.max(0, Math.min(100, v));
         const apply = () => document.querySelectorAll('[id="img-upload-area"] video.clip-fit').forEach(applyClipFit);
-        // Box size minus clip size on each axis at the current zoom — the
+        // Box size minus clip size on each axis — the
         // range a 0→1 focus moves the clip across (negative when the clip
         // overflows the box). Same geometry as the CSS in _product_modal_css.
         const slack = (area, video) => {
             const bw = area.clientWidth, bh = area.clientHeight;
             const ar = video.videoWidth / video.videoHeight;
             if (!ar) return { x: 0, y: 0 };
-            const min = Math.min(bw, bh * ar), max = Math.max(bw, bh * ar);
-            const w = min + S.clipFocus.zoom / 100 * (max - min);
+            // object-fit:cover — the clip is as wide as the wider of the two.
+            const w = Math.max(bw, bh * ar);
             return { x: bw - w, y: bh - w / ar };
         };
         let drag = null;
@@ -1478,12 +1452,6 @@
         const end = () => { if (drag) { drag.area.classList.remove('dragging'); drag = null; } };
         document.addEventListener('pointerup', end);
         document.addEventListener('pointercancel', end);
-        document.addEventListener('input', e => {
-            if (!e.target.matches('.clip-zoom input')) return;
-            S.clipFocus.zoom = clamp(parseInt(e.target.value, 10) || 0);
-            document.querySelectorAll('.clip-zoom input').forEach(i => { if (i !== e.target) i.value = S.clipFocus.zoom; });
-            apply();
-        });
         document.addEventListener('keydown', e => {
             const area = e.target.closest?.('.img-upload.framing');
             if (!area) return;
@@ -1522,7 +1490,7 @@
 
         if (file.type.startsWith('video/')) {
             const src = URL.createObjectURL(file);
-            S.clipFocus = { x: 50, y: 50, zoom: CLIP_DEFAULT_ZOOM };
+            S.clipFocus = { x: 50, y: 50 };
             showClipInArea(panelEl('img-upload-area'), src);
             checkClipDuration(src);
         } else {
@@ -1952,7 +1920,7 @@
         // stays in the <input> and saveProduct() would silently attach the
         // previous dish's media to whichever dish is opened next.
         document.querySelectorAll('[id="p-img-input"]').forEach(el => { el.value = ''; });
-        S.clipFocus = { x: 50, y: 50, zoom: CLIP_DEFAULT_ZOOM };
+        S.clipFocus = { x: 50, y: 50 };
         showMediaError(null);
         AiPhoto.forget();
         // The monthly limit is no reason to choose a plan: only the trial's.

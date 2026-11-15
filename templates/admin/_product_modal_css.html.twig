@@ -579,25 +579,7 @@
 }
 /* Clip framing: the whole box becomes a drag surface (touch-action:none so
    a vertical drag on mobile frames the clip instead of scrolling the sheet). */
-.img-upload.framing { cursor:grab; touch-action:none; container-type:size; isolation:isolate; }
-/* Zoomed clip — same geometry as the public carta's .dish-clip--fit
-   (layouts/standard/show.html.twig): --z 0 = whole clip, 1 = box covered;
-   --fx/--fy place it. --ar is set from the clip's metadata in
-   showClipInArea(). The blurred cover copy fills any gap behind it. */
-.img-upload video.clip-fit {
-    --fit-min: min(100cqw, 100cqh * var(--ar, 1.7778));
-    --fit-max: max(100cqw, 100cqh * var(--ar, 1.7778));
-    --w: calc(var(--fit-min) + var(--z) * (var(--fit-max) - var(--fit-min)));
-    inset:auto; object-fit:fill; max-width:none;
-    width:var(--w); height:calc(var(--w) / var(--ar, 1.7778));
-    left:calc((100cqw - var(--w)) * var(--fx));
-    top:calc((100cqh - var(--w) / var(--ar, 1.7778)) * var(--fy));
-}
-.img-upload video.clip-backdrop { inset:-24px; width:auto; height:auto; z-index:-1; filter:blur(18px) brightness(0.85); }
-.clip-zoom { display:none; align-items:center; gap:8px; margin-top:8px; font-size:12px; color:var(--tx-muted); }
-.clip-zoom.show { display:flex; }
-.clip-zoom input { flex:1; accent-color:var(--tx-1); }
-.clip-zoom i { font-size:16px; }
+.img-upload.framing { cursor:grab; touch-action:none; }
 .img-upload.framing.dragging { cursor:grabbing; }
 .img-upload.framing.dragging video { transition:none; }
 .img-upload-frame-badge {
