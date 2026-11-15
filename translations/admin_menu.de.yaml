@@ -153,6 +153,8 @@ notice:
 
 product:
     add_to_category: 'Gericht zu %category% hinzufügen'
+    duplicate_badge: 'Doppelt'
+    duplicate_title: 'In dieser Kategorie gibt es schon ein Gericht mit diesem Namen. Wenn du es nicht willst, lösche es; sonst mach es sichtbar.'
     hidden: Ausgeblendet
     hidden_reason:
         category_hidden: die Kategorie ist ausgeblendet

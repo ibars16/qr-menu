@@ -50,6 +50,9 @@ complete:
     review_text: 'Dê uma vista de olhos para confirmar que está tudo bem: nomes, preços, descrições e alergénios. Pode alterar qualquer prato em Ementa.'
     review_hidden_singular: '%count% prato sem preço fica oculto até lhe dar um.'
     review_hidden_plural: '%count% pratos sem preço ficam ocultos até lhes dar um.'
+    duplicates_singular: '1 prato repetido foi criado oculto: %names%.'
+    duplicates_plural: '%count% pratos repetidos foram criados ocultos: %names%.'
+    duplicates_more: '… e mais %count%'
     title_success: A sua ementa está pronta para revisão
     subtitle_success: Adicionámos os seus pratos à ementa, ocultos dos clientes até os rever.
     subtitle_partial_failure: ' Não conseguimos ler %failed% das suas %total% fotos — pode tentar carregá-las novamente em separado.'

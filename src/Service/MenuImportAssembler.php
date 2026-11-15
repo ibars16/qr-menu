@@ -35,6 +35,11 @@ use Doctrine\ORM\EntityManagerInterface;
  * Any later import adds to a live carta, so everything it creates stays
  * hidden (active = false) until the owner reviews it.
  *
+ * Repeated dishes: one whose name (duplicateKey()) is already in its
+ * category — in the carta, or earlier in this same upload — is still
+ * created, but always hidden and marked importDuplicate, so Carta shows
+ * "Repetido" on it until the owner reviews it (MenuImportReview::confirm()).
+ *
  * Deliberately reuses, unmodified, the exact ingredient-resolution and
  * category/product conventions MenuAdminController::saveProduct() already
  * established for manual entry — an imported dish's data ends up
@@ -64,6 +69,8 @@ final class MenuImportAssembler
 
         /** @var array<string, Category> normalized name => Category, scoped to this one assemble() call */
         $categoriesThisRun = [];
+        /** @var array<int, array<string, true>> spl_object_id(category) => duplicateKey(name) => true: dish names already in it */
+        $namesByCategory = [];
         $anyPageExtracted = false;
         $publish = $this->isFirstMenu($restaurant, $batch);
 
@@ -95,14 +102,30 @@ final class MenuImportAssembler
                 [$category, $wasCreated] = $this->resolveCategory($restaurant, $name, $locale, $batch, $categoriesThisRun, $publish);
                 $wasCreated ? $categoriesCreated++ : $categoriesReused++;
 
+                $categoryNames = &$namesByCategory[spl_object_id($category)];
+                if ($categoryNames === null) {
+                    // First time this run: the dishes already in the carta
+                    // (hidden and pending ones too), in any of their languages.
+                    $categoryNames = [];
+                    foreach ($category->getProducts() as $existing) {
+                        foreach ($existing->getTranslations() as $existingTranslation) {
+                            $key = self::duplicateKey((string) $existingTranslation->getName());
+                            if ($key !== '') {
+                                $categoryNames[$key] = true;
+                            }
+                        }
+                    }
+                }
+
                 foreach ((is_array($categoryData['products'] ?? null) ? $categoryData['products'] : []) as $productData) {
-                    $product = $this->buildProduct($productData, $category, $batch, $locale, $restaurant, $ingredientsLinked, $ingredientsSkippedUncertain, $tagsAssigned, $publish);
+                    $product = $this->buildProduct($productData, $category, $batch, $locale, $restaurant, $ingredientsLinked, $ingredientsSkippedUncertain, $tagsAssigned, $publish, $categoryNames);
                     if ($product === null) {
                         $productsSkipped++;
                         continue;
                     }
                     $productsCreated++;
                 }
+                unset($categoryNames);
             }
         }
 
@@ -122,6 +145,28 @@ final class MenuImportAssembler
             ingredientsSkippedUncertain: $ingredientsSkippedUncertain,
             tagsAssigned: $tagsAssigned,
         );
+    }
+
+    /**
+     * The name as compared for "repeated dish": lowercase, Latin accents
+     * removed, runs of spaces collapsed. Every other character is kept —
+     * stripping non-Latin letters would make two different Arabic or
+     * Chinese names both "" and so "equal". (No intl in the image, hence
+     * the table.)
+     */
+    public static function duplicateKey(string $name): string
+    {
+        $name = mb_strtolower($name);
+        $name = strtr($name, [
+            'á' => 'a', 'à' => 'a', 'â' => 'a', 'ä' => 'a', 'ã' => 'a', 'å' => 'a',
+            'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
+            'í' => 'i', 'ì' => 'i', 'î' => 'i', 'ï' => 'i',
+            'ó' => 'o', 'ò' => 'o', 'ô' => 'o', 'ö' => 'o', 'õ' => 'o',
+            'ú' => 'u', 'ù' => 'u', 'û' => 'u', 'ü' => 'u',
+            'ñ' => 'n', 'ç' => 'c', 'ý' => 'y', 'ÿ' => 'y',
+        ]);
+
+        return trim((string) preg_replace('/\s+/u', ' ', $name));
     }
 
     /** No dish in the restaurant other than this import's own (so re-assembling the same batch keeps its answer). */
@@ -190,10 +235,21 @@ final class MenuImportAssembler
         int &$ingredientsSkippedUncertain,
         int &$tagsAssigned,
         bool $publish,
+        array &$categoryNames,
     ): ?Product {
         $name = trim((string) ($productData['name'] ?? ''));
         if ($name === '') {
             return null; // ProductTranslation.name is NOT NULL — nothing sensible to create without one
+        }
+
+        // Same name already in this category (in the carta, or earlier in
+        // this same upload — e.g. a page sent twice): still created, but
+        // hidden and marked so Carta shows "Repetido" until reviewed. The
+        // price doesn't matter; a name with nothing comparable never matches.
+        $key = self::duplicateKey($name);
+        $isDuplicate = $key !== '' && isset($categoryNames[$key]);
+        if ($key !== '') {
+            $categoryNames[$key] = true;
         }
 
         $description = $productData['description'] ?? null;
@@ -210,7 +266,8 @@ final class MenuImportAssembler
         $product->setBasePrice($priceCents);
         $product->setSupplementPrice($supplementPriceCents);
         $product->setPosition($category->getProducts()->count());
-        $product->setActive($publish && is_numeric($price));
+        $product->setActive($publish && is_numeric($price) && !$isDuplicate);
+        $product->setImportDuplicate($isDuplicate);
         $product->setNeedsReview(true);
         $product->setImportBatch($batch);
         $product->setAiConfidence($this->computeConfidence($productData));

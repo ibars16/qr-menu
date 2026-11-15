@@ -14,7 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
  * review", and an import becomes COMPLETED.
  *
  * - confirm(): the owner published it (toggle) or saved it from the editor
- *   — clears needsReview. Does not flush: the caller's own flush writes it.
+ *   — clears needsReview (and a dish's "Repetido" mark). Does not flush: the caller's own flush writes it.
  * - closeFinished(): after the caller's flush — every READY_FOR_REVIEW
  *   import of the restaurant with nothing left pending becomes COMPLETED.
  *   Deleting a pending row counts as reviewing it ("discarded"), so the
@@ -26,6 +26,11 @@ final class MenuImportReview
 
     public function confirm(Product|Category $item): void
     {
+        // Reviewed: no longer "Repetido" (MenuImportAssembler), whatever
+        // the owner decided — published it, or saved it still hidden.
+        if ($item instanceof Product) {
+            $item->setImportDuplicate(false);
+        }
         if (!$item->isNeedsReview()) {
             return;
         }

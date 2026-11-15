@@ -153,6 +153,8 @@ notice:
 
 product:
     add_to_category: 'Adicionar prato a %category%'
+    duplicate_badge: 'Repetido'
+    duplicate_title: 'Já existe um prato com este nome nesta categoria. Se não o quiser, elimine-o; se quiser, torne-o visível.'
     hidden: Oculto
     hidden_reason:
         category_hidden: a categoria está oculta

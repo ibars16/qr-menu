@@ -153,6 +153,8 @@ notice:
 
 product:
     add_to_category: 'Aggiungi piatto a %category%'
+    duplicate_badge: 'Duplicato'
+    duplicate_title: 'In questa categoria c''è già un piatto con questo nome. Se non ti serve, eliminalo; altrimenti rendilo visibile.'
     hidden: Nascosto
     hidden_reason:
         category_hidden: la categoria è nascosta

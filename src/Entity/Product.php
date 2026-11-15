@@ -210,6 +210,15 @@ class Product
     #[ORM\Column]
     private bool $needsReview = false;
 
+    /**
+     * Created hidden by an AI import because a dish with the same name was
+     * already in its category (in the carta, or earlier in the same upload).
+     * The owner sees "Repetido" on Carta until they review it (published,
+     * saved from the editor or deleted — MenuImportReview::confirm()).
+     */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $importDuplicate = false;
+
     /** The model's own confidence for this row while needsReview is true — meaningless once confirmed. */
     #[ORM\Column(nullable: true)]
     private ?float $aiConfidence = null;
@@ -730,6 +739,16 @@ class Product
     public function setNeedsReview(bool $needsReview): void
     {
         $this->needsReview = $needsReview;
+    }
+
+    public function isImportDuplicate(): bool
+    {
+        return $this->importDuplicate;
+    }
+
+    public function setImportDuplicate(bool $importDuplicate): void
+    {
+        $this->importDuplicate = $importDuplicate;
     }
 
     public function getAiConfidence(): ?float

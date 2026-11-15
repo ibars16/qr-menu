@@ -50,6 +50,9 @@ complete:
     review_text: 'Take a look to make sure everything is right: names, prices, descriptions and allergens. You can change any dish from Menu.'
     review_hidden_singular: '%count% dish without a price stays hidden until you give it one.'
     review_hidden_plural: '%count% dishes without a price stay hidden until you give them one.'
+    duplicates_singular: '1 duplicate dish was created hidden: %names%.'
+    duplicates_plural: '%count% duplicate dishes were created hidden: %names%.'
+    duplicates_more: '… and %count% more'
     title_success: Your menu is ready to review
     subtitle_success: We've added your dishes to the menu, hidden from customers until you review them.
     subtitle_partial_failure: ' We couldn''t read %failed% of your %total% photos — you can try uploading those again separately.'

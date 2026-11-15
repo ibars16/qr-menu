@@ -88,6 +88,16 @@
                     </div>
                 </div>
             {% endif %}
+            {# Repeated dishes: created hidden, "Repetido" on Carta (MenuImportAssembler). #}
+            {% if duplicateCount > 0 %}
+                {% set dupList = duplicateNames|join(', ') ~ (duplicateMore > 0 ? ' ' ~ 'complete.duplicates_more'|trans({'%count%': duplicateMore}, 'admin_menu_import') : '') %}
+                <div class="import-review-notice" role="note">
+                    <i class="ti ti-copy" aria-hidden="true"></i>
+                    <div>
+                        <p>{{ (duplicateCount == 1 ? 'complete.duplicates_singular' : 'complete.duplicates_plural')|trans({'%count%': duplicateCount, '%names%': dupList}, 'admin_menu_import') }}</p>
+                    </div>
+                </div>
+            {% endif %}
             {% if aiPhotoBox %}
                 {% include 'admin/_ai_photo_batch.html.twig' with {batch: batch, remaining: aiPhotoRemaining, variant: 'offer'} %}
             {% endif %}

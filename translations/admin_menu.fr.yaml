@@ -153,6 +153,8 @@ notice:
 
 product:
     add_to_category: 'Ajouter un plat à %category%'
+    duplicate_badge: 'En double'
+    duplicate_title: 'Il y a déjà un plat portant ce nom dans cette catégorie. Si vous n''en voulez pas, supprimez-le ; sinon, rendez-le visible.'
     hidden: Masqué
     hidden_reason:
         category_hidden: sa catégorie est masquée

@@ -544,6 +544,8 @@
         btn.title = data.active ? MSG_PRODUCT_VISIBLE : MSG_PRODUCT_HIDDEN;
         const row = btn.closest('.product-row');
         row.classList.toggle('inactive', !data.active);
+        // Published = reviewed: no longer "Repetido" (MenuImportReview).
+        if (data.active) row.querySelector('.dup-badge')?.remove();
         const status = row.querySelector('.product-status');
         if (status) status.textContent = data.active ? MSG_PRODUCT_VISIBLE : MSG_PRODUCT_HIDDEN;
         showToast(data.active ? MSG_PRODUCT_VISIBLE : MSG_PRODUCT_HIDDEN);

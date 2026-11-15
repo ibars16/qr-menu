@@ -285,7 +285,22 @@
         }
         .price-amount { font-size:var(--fs-base); font-weight:600; color:var(--tx-1); }
         .price-currency { font-size:var(--fs-xs); font-weight:500; color:var(--tx-5); }
-        .product-row.inactive { opacity:0.4; }
+        /* A hidden dish is dimmed part by part (not the whole row) so the
+           "Repetido" chip below — always on a hidden dish — keeps full contrast. */
+        .product-row.inactive > :not(.product-info),
+        .product-row.inactive .product-info > :not(.dup-badge) { opacity:0.4; }
+        /* "Repetido" (MenuImportAssembler): its own line under the name, so
+           it never squeezes the price/toggle on a phone. Opaque amber fill
+           (the trial strip's tokens): --warn-fg on --warn-bg-solid 8.70:1
+           dark, 5.55:1 light — whatever the row's hover background. */
+        .dup-badge {
+            display:inline-flex; align-items:center; gap:4px; margin-top:4px; max-width:100%;
+            padding:1px var(--sp-2); border-radius:999px; white-space:nowrap;
+            font-size:var(--fs-xs); font-weight:600; line-height:1.5;
+            color:var(--warn-fg); background:var(--warn-bg-solid);
+            border:1px solid color-mix(in srgb, var(--warn-fg) 35%, transparent);
+        }
+        .dup-badge i { font-size:var(--fs-sm); }
 
         @media (max-width: 767px) {
             .product-row  { min-height:64px; padding:var(--sp-3) var(--sp-2); }
@@ -552,6 +567,11 @@
                                     </div>
                                     <div class="product-info">
                                         <div class="product-name">{{ pName }}</div>
+                                        {% if product.importDuplicate %}
+                                            <span class="dup-badge" title="{{ 'product.duplicate_title'|trans({}, 'admin_menu') }}">
+                                                <i class="ti ti-copy" aria-hidden="true"></i>{{ 'product.duplicate_badge'|trans({}, 'admin_menu') }}
+                                            </span>
+                                        {% endif %}
                                         {% include 'admin/_product_menu_notice.html.twig' %}
                                     </div>
                                     <div class="product-price">

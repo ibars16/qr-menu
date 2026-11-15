@@ -42,6 +42,9 @@ class MenuImportController extends AbstractController
     /** Photos + PDF pages together, per upload. */
     private const MAX_PAGES_PER_UPLOAD = 30;
 
+    /** Names listed in the summary's "platos repetidos" line; the rest is "… y N más". */
+    private const DUPLICATE_NAMES_SHOWN = 5;
+
     public function __construct(
         private readonly TranslatorInterface $translator,
         private readonly BatchProcessingTriggerInterface $processingTrigger,
@@ -298,6 +301,13 @@ class MenuImportController extends AbstractController
             'SELECT COUNT(*) FROM product WHERE import_batch_id = ? AND active = true',
             [$batch->getId()]
         );
+        // "Repetido" (MenuImportAssembler): hidden because the name was
+        // already in its category. Not "sin precio" — counted apart.
+        $duplicateNames = $em->getConnection()->fetchFirstColumn(
+            'SELECT t.name FROM product p JOIN product_translation t ON t.product_id = p.id AND t.locale = ?
+             WHERE p.import_batch_id = ? AND p.import_duplicate = true ORDER BY p.id',
+            [$batch->getRestaurant()->getDefaultLanguage(), $batch->getId()]
+        );
         $failedPages = array_filter(
             $batch->getPages()->toArray(),
             static fn (MenuImportPage $p) => $p->getStatus()->value === 'failed'
@@ -316,7 +326,10 @@ class MenuImportController extends AbstractController
             'categoriesCreated' => $categoriesCreated,
             'productsCreated' => $productsCreated,
             'published' => $productsVisible > 0,
-            'productsHidden' => $productsCreated - $productsVisible,
+            'productsHidden' => $productsCreated - $productsVisible - count($duplicateNames),
+            'duplicateCount' => count($duplicateNames),
+            'duplicateNames' => array_slice($duplicateNames, 0, self::DUPLICATE_NAMES_SHOWN),
+            'duplicateMore' => max(0, count($duplicateNames) - self::DUPLICATE_NAMES_SHOWN),
             'failedPageCount' => count($failedPages),
             // Every failed photo failed only because the AI service was
             // saturated: say so instead of blaming the photos.

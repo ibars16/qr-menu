@@ -50,6 +50,9 @@ complete:
     review_text: 'Jetez-y un œil pour vérifier que tout est correct : noms, prix, descriptions et allergènes. Vous pouvez modifier n''importe quel plat depuis Carte.'
     review_hidden_singular: '%count% plat sans prix reste masqué jusqu''à ce que vous lui en donniez un.'
     review_hidden_plural: '%count% plats sans prix restent masqués jusqu''à ce que vous leur en donniez un.'
+    duplicates_singular: '1 plat en double a été créé masqué : %names%.'
+    duplicates_plural: '%count% plats en double ont été créés masqués : %names%.'
+    duplicates_more: '… et %count% de plus'
     title_success: Votre menu est prêt à être vérifié
     subtitle_success: Nous avons ajouté vos plats au menu, masqués aux clients jusqu'à ce que vous les vérifiiez.
     subtitle_partial_failure: ' Nous n''avons pas pu lire %failed% de vos %total% photos — vous pouvez essayer de les téléverser à nouveau séparément.'
