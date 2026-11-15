@@ -167,7 +167,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Secondary filters (type/diet/allergens) bottom sheet — standard layout
+// Secondary filters (diet/allergens) bottom sheet — standard layout
 // only (see #filters-btn / .filters-overlay in that layout's markup);
 // no-ops elsewhere since getElementById returns null. Category tabs stay
 // in the always-visible row and are not part of this panel.
@@ -200,7 +200,7 @@ function applyFiltersPanel() {
     closeFiltersPanel();
 }
 
-// Reflects the existing activeTags/activeType/activeAllergens filter state
+// Reflects the existing activeTags/activeAllergens filter state
 // (set by the handlers below) onto the filters button label (its translated
 // base text lives in data-i18n-cta, set server-side in standard/show.html.twig) —
 // display only, the filtering itself is untouched. Also drives the live
@@ -212,7 +212,7 @@ function updateFiltersButtonBadge() {
     const clearRow = document.getElementById('filters-clear-row');
     const applyBtn = document.getElementById('filters-apply-btn');
     if (label && btn) {
-        const filterCount = activeTags.size + (activeType !== 'all' ? 1 : 0) + activeAllergens.size;
+        const filterCount = activeTags.size + activeAllergens.size;
         const baseLabel = label.dataset.i18nCta || label.textContent;
         label.textContent = filterCount > 0 ? (baseLabel + ' (' + filterCount + ')') : baseLabel;
         btn.classList.toggle('has-active', filterCount > 0);
@@ -238,12 +238,11 @@ function updateFiltersButtonBadge() {
     }
 }
 
-// Resets diet/type/allergen filters together by driving each control's own
+// Resets diet/allergen filters together by driving each control's own
 // existing "Todo" button / clear function — reuses their handlers rather
 // than duplicating the reset logic.
 function clearAllFilters() {
     document.querySelector('[data-filter="diet"][data-tag="all"]')?.click();
-    document.querySelector('[data-filter="type"][data-type="all"]')?.click();
     clearAllergenFilters();
 }
 
@@ -266,15 +265,6 @@ const dietFilters = document.querySelectorAll('[data-filter="diet"]');
 // clicking it clears the whole selection.
 let activeTags = new Set();
 
-// Food/drink category filter — a whole .cat-section is shown or hidden by
-// its own data-type ("food"/"drink"/"" for unclassified); unlike the diet
-// tag and allergen filters below, this never hides individual rows, only
-// entire sections (a category is either all-in or all-out). A section with
-// no data-type (unclassified) always matches, in either mode — see
-// CategoryType's docblock for why null is never treated as "hidden".
-const typeFilters = document.querySelectorAll('[data-filter="type"]');
-let activeType = 'all';
-
 // Allergens a customer wants to avoid — multi-select, unlike the single-select
 // diet filter above, since someone can have more than one allergy. A dish is
 // hidden if it carries ANY selected allergen (data-allergens is "code:presence
@@ -288,9 +278,7 @@ let activeAllergens = new Set();
 // functions: no DOM mutation, so countMatchingDishes() can run at any time
 // without disturbing whatever applyFilters() last rendered.
 function sectionMatchesActiveScope(sec, cat) {
-    const catMatch  = cat === 'all' || cat === sec.dataset.section;
-    const typeMatch = activeType === 'all' || !sec.dataset.type || sec.dataset.type === activeType;
-    return catMatch && typeMatch;
+    return cat === 'all' || cat === sec.dataset.section;
 }
 function rowMatchesActiveFilters(row, q) {
     const name      = row.querySelector('.front-name, .product-name')?.textContent.toLowerCase() ?? '';
@@ -492,15 +480,6 @@ dietFilters.forEach(btn => btn.addEventListener('click', () => {
         all.classList.toggle('active', activeTags.size === 0);
         all.setAttribute('aria-pressed', String(activeTags.size === 0));
     });
-    applyFilters();
-    updateFiltersButtonBadge();
-}));
-
-typeFilters.forEach(btn => btn.addEventListener('click', () => {
-    typeFilters.forEach(x => { x.classList.remove('active'); x.setAttribute('aria-pressed', 'false'); });
-    btn.classList.add('active');
-    btn.setAttribute('aria-pressed', 'true');
-    activeType = btn.dataset.type;
     applyFilters();
     updateFiltersButtonBadge();
 }));

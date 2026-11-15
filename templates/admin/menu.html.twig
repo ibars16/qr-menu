@@ -533,7 +533,7 @@
                                         title="{{ category.isActive ? 'category.toggle_hide_title'|trans({}, 'admin_menu') : 'category.toggle_show_title'|trans({}, 'admin_menu') }}"
                                         aria-label="{{ 'category.toggle_aria'|trans({}, 'admin_menu') }}"></button>
                                 <button class="icon-btn"
-                                        onclick="UI.openEditCategory({{ category.id }}, '{{ catName|e('js') }}', '{{ category.type ? category.type.value : '' }}')"
+                                        onclick="UI.openEditCategory({{ category.id }}, '{{ catName|e('js') }}')"
                                         title="{{ 'category.edit_title'|trans({}, 'admin_menu') }}">
                                     <i class="ti ti-edit" aria-hidden="true"></i>
                                 </button>
@@ -841,17 +841,15 @@
                 document.getElementById('cat-modal-title').textContent  = MSG_NEW_CATEGORY;
                 document.getElementById('cat-sheet-title').textContent  = MSG_NEW_CATEGORY;
                 document.getElementById('cat-name-input').value = '';
-                document.getElementById('cat-type-select').value = '';
                 document.getElementById('cat-name-error').classList.remove('show');
                 this._openCat();
                 setTimeout(() => document.getElementById('cat-name-input').focus(), 80);
             },
-            openEditCategory(id, name, type) {
+            openEditCategory(id, name) {
                 S.editingCatId = id;
                 document.getElementById('cat-modal-title').textContent = MSG_EDIT_CATEGORY;
                 document.getElementById('cat-sheet-title').textContent = MSG_EDIT_CATEGORY;
                 document.getElementById('cat-name-input').value = name;
-                document.getElementById('cat-type-select').value = type || '';
                 document.getElementById('cat-name-error').classList.remove('show');
                 this._openCat();
                 setTimeout(() => document.getElementById('cat-name-input').focus(), 80);
@@ -873,13 +871,12 @@
             const name = document.getElementById('cat-name-input').value.trim();
             if (!name) { document.getElementById('cat-name-error').classList.add('show'); return; }
             document.getElementById('cat-name-error').classList.remove('show');
-            const type = document.getElementById('cat-type-select').value || null;
 
             const url = S.editingCatId
                 ? `/admin/categories/${S.editingCatId}/edit`
                 : '/admin/categories/create';
 
-            const data = await apiFetch(url, { name, type });
+            const data = await apiFetch(url, { name });
             if (data.error) return; // apiFetch() has already toasted it (a 4xx)
 
             showToast(S.editingCatId ? MSG_CATEGORY_UPDATED : MSG_CATEGORY_CREATED, 'success');

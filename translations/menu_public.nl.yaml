@@ -11,14 +11,10 @@ search:
     placeholder: "Zoek gerechten…"
 tabs:
     all: "Alles"
-type:
-    food: "Eten"
-    drink: "Drinken"
 filters:
     cta_label: "Allergieën of diëten?"
     title: "Wat heb je nodig?"
     clear_all: "Alles wissen"
-    type_title: "Type"
     diet_title: "Diëten"
     allergy_title: "Allergieën"
     other_title: "Overig"

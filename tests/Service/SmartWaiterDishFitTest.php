@@ -35,7 +35,7 @@ final class SmartWaiterDishFitTest extends TestCase
 
     private static function context(array ...$dishes): array
     {
-        return ['restaurant_name' => 'Casa Test', 'currency' => 'EUR', 'categories' => [['name' => 'Platos', 'type' => null, 'products' => $dishes]]];
+        return ['restaurant_name' => 'Casa Test', 'currency' => 'EUR', 'categories' => [['name' => 'Platos', 'products' => $dishes]]];
     }
 
     /** @return string 'suitable' | 'not_confirmed' | 'not_suitable' — the group the one dish ended in */
@@ -160,7 +160,7 @@ final class SmartWaiterDishFitTest extends TestCase
         );
 
         $category = $sorted['categories'][0];
-        self::assertSame(['name', 'type', 'not_confirmed', 'not_suitable'], array_keys($category));
+        self::assertSame(['name', 'not_confirmed', 'not_suitable'], array_keys($category));
         self::assertSame(['gluten'], $category['not_confirmed'][0][SmartWaiterDishFit::UNKNOWN_KEY]);
         self::assertSame(['Carpaccio', 'Croquetas'], array_column($category['not_confirmed'], 'name'));
     }

@@ -11,14 +11,10 @@ search:
     placeholder: "ابحث عن طبق…"
 tabs:
     all: "الكل"
-type:
-    food: "طعام"
-    drink: "مشروبات"
 filters:
     cta_label: "حساسية أو نظام غذائي؟"
     title: "ماذا تحتاج؟"
     clear_all: "مسح الكل"
-    type_title: "النوع"
     diet_title: "الأنظمة الغذائية"
     allergy_title: "الحساسية"
     other_title: "أخرى"

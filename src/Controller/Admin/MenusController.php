@@ -5,7 +5,6 @@ namespace App\Controller\Admin;
 use App\Entity\Category;
 use App\Entity\CategoryTranslation;
 use App\Entity\MenuSection;
-use App\Enum\CategoryType;
 use App\Repository\AllergenRepository;
 use App\Service\CategoryMenuPriceResolver;
 use App\Service\CategoryTranslationService;
@@ -127,7 +126,6 @@ class MenusController extends AbstractController
         $menu->setRestaurant($restaurant);
         $menu->setPosition(count($this->menusFor($restaurant)));
         $menu->setActive(true);
-        $menu->setType(CategoryType::tryFrom($data['type'] ?? ''));
         $menu->setMenuPrice($priceResult['menuPrice']);
         $menu->setMenuDescription($priceResult['menuDescription']);
 
@@ -174,7 +172,6 @@ class MenusController extends AbstractController
             return $this->json(['error' => $this->translator->trans('field.menu_price_required', domain: 'admin_menus')], 400);
         }
 
-        $menu->setType(CategoryType::tryFrom($data['type'] ?? ''));
         $menu->setMenuPrice($priceResult['menuPrice']);
         $menu->setMenuDescription($priceResult['menuDescription']);
 

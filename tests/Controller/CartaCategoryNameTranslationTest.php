@@ -15,7 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  * A Carta category's name (POST /admin/categories/{id}/edit) follows the
  * owner/AI rule: a real rename — any change, a capital letter too — makes
  * it the owner's ('human') and drops its AI translations (the owner's rows
- * stay); saving the same name (only the type changed) leaves it as it was,
+ * stay); saving the same name again leaves it as it was,
  * an AI name staying 'ai', nothing redone.
  */
 final class CartaCategoryNameTranslationTest extends WebTestCase
@@ -84,14 +84,13 @@ final class CartaCategoryNameTranslationTest extends WebTestCase
 
     public function testSavingTheSameNameLeavesItAiAndKeepsItsTranslations(): void
     {
-        $this->save('Desserts', type: 'food');
+        $this->save('Desserts');
 
         self::assertSame([
             'en' => ['Desserts', 'ai'],
             'es' => ['Postres', 'human'],
             'fr' => ['Desserts', 'ai'],
         ], $this->rows(), 'an AI name stays AI; nothing is redone');
-        self::assertSame('food', $this->conn->fetchOne('SELECT type FROM category WHERE id = ?', [$this->categoryId]), 'the rest was saved');
     }
 
     public function testARenameMakesTheNameTheOwnersAndDropsItsAiTranslations(): void
@@ -117,9 +116,9 @@ final class CartaCategoryNameTranslationTest extends WebTestCase
 
     // ── Helpers ───────────────────────────────────────────────────────────
 
-    private function save(string $name, string $type = ''): void
+    private function save(string $name): void
     {
-        $this->client->request('POST', "/admin/categories/{$this->categoryId}/edit", content: json_encode(['name' => $name, 'type' => $type]));
+        $this->client->request('POST', "/admin/categories/{$this->categoryId}/edit", content: json_encode(['name' => $name]));
         self::assertResponseIsSuccessful();
     }
 

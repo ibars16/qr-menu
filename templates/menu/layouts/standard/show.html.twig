@@ -113,11 +113,6 @@
     .diet-filter:hover { background: var(--tab-hbg); color: var(--tab-htext); transform: translateY(-1px); }
     .diet-filter:active { transform: scale(0.97); }
     .diet-filter.active { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); box-shadow: var(--tab-act-shadow); }
-    .type-filters { display: flex; flex-wrap: wrap; gap: 8px; }
-    .type-filter { background: var(--tab-bg); border: 1.5px solid var(--tab-border); color: var(--tab-text); border-radius: var(--tab-radius, 24px); padding: 0 16px; min-height: 2.75rem; display: inline-flex; align-items: center; cursor: pointer; font-size: 12px; font-weight: 600; line-height: 1; letter-spacing: 0.01em; transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s; user-select: none; }
-    .type-filter:hover { background: var(--tab-hbg); color: var(--tab-htext); transform: translateY(-1px); }
-    .type-filter:active { transform: scale(0.97); }
-    .type-filter.active { background: var(--tab-act-bg); border-color: var(--tab-act-border); color: var(--tab-act-text); box-shadow: var(--tab-act-shadow); }
     .sep { height: 1px; margin: 18px 0 0; background: var(--sep-bg); }
 
     /* Allergen checklist — reused unstyled-wrapper markup inside the
@@ -709,7 +704,7 @@
         {% endif %}
     {% endfor %}
 </nav>
-{% if showTypeFilter or tags|length > 0 or menuAllergens|length > 0 %}
+{% if tags|length > 0 or menuAllergens|length > 0 %}
     <div class="ui-wrap">
         <div class="diet-allergy-row">
             <button type="button" class="diet-allergy-btn" id="filters-btn" onclick="openFiltersPanel()" aria-haspopup="true">
@@ -721,7 +716,7 @@
     </div>
 {% endif %}
 
-{% if showTypeFilter or tags|length > 0 or menuAllergens|length > 0 %}
+{% if tags|length > 0 or menuAllergens|length > 0 %}
     {% set dietTagCodes = ['vegetarian', 'vegan', 'gluten-free', 'halal'] %}
     {% set dietaTags = tags|filter(t => t.code in dietTagCodes) %}
     {# Not offered as filters: "contains-…" tags (and the older dairy/nuts/
@@ -747,16 +742,6 @@
                 <button type="button" class="filters-clear-link" onclick="clearAllFilters()">{{ 'filters.clear_all'|trans({}, 'menu_public', locale) }}</button>
             </div>
             <div class="filters-panel-body">
-                {% if showTypeFilter %}
-                    <div class="filters-section">
-                        <div class="filters-section-title">{{ 'filters.type_title'|trans({}, 'menu_public', locale) }}</div>
-                        <div class="type-filters">
-                            <button class="type-filter active" data-filter="type" data-type="all">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</button>
-                            <button class="type-filter" data-filter="type" data-type="food">{{ 'type.food'|trans({}, 'menu_public', locale) }}</button>
-                            <button class="type-filter" data-filter="type" data-type="drink">{{ 'type.drink'|trans({}, 'menu_public', locale) }}</button>
-                        </div>
-                    </div>
-                {% endif %}
                 {% if dietaTags|length > 0 %}
                     <div class="filters-section">
                         <div class="filters-section-title">{{ 'filters.diet_title'|trans({}, 'menu_public', locale) }}<span class="count">{{ '%02d'|format(dietaTags|length) }}</span></div>
@@ -814,7 +799,7 @@
         {% if not catT %}{% set catT = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
         {% if not catT %}{% set catT = category.translations.first %}{% endif %}
         {% if catT and (category.isFixedPriceMenu ? category.hasActiveMenuDishes : category.activeProductsSorted|length > 0) %}
-            <section class="cat-section {{ category.isFixedPriceMenu ? 'set-menu-section' : '' }}" id="cat-{{ category.id }}" data-section="cat-{{ category.id }}" data-type="{{ category.type ? category.type.value : '' }}">
+            <section class="cat-section {{ category.isFixedPriceMenu ? 'set-menu-section' : '' }}" id="cat-{{ category.id }}" data-section="cat-{{ category.id }}">
                 {% if category.isFixedPriceMenu %}
                     {{ setMenuMacro.section(category, locale, restaurant, currencyDisplay, tagNames, productAllergens, productTags) }}
                 {% else %}

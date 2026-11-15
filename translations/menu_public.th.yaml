@@ -11,14 +11,10 @@ search:
     placeholder: "ค้นหาเมนูอาหาร…"
 tabs:
     all: "ทั้งหมด"
-type:
-    food: "อาหาร"
-    drink: "เครื่องดื่ม"
 filters:
     cta_label: "ภูมิแพ้หรืออาหารเฉพาะ?"
     title: "คุณต้องการอะไร?"
     clear_all: "ล้างทั้งหมด"
-    type_title: "ประเภท"
     diet_title: "อาหารเฉพาะ"
     allergy_title: "สารก่อภูมิแพ้"
     other_title: "อื่นๆ"

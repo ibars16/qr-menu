@@ -11,14 +11,10 @@ search:
     placeholder: "Yemek ara…"
 tabs:
     all: "Tümü"
-type:
-    food: "Yemek"
-    drink: "İçecek"
 filters:
     cta_label: "Alerji veya diyet?"
     title: "Neye ihtiyacın var?"
     clear_all: "Tümünü temizle"
-    type_title: "Tür"
     diet_title: "Diyetler"
     allergy_title: "Alerjiler"
     other_title: "Diğer"

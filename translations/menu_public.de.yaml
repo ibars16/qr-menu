@@ -11,14 +11,10 @@ search:
     placeholder: "Gerichte suchen…"
 tabs:
     all: "Alle"
-type:
-    food: "Essen"
-    drink: "Getränke"
 filters:
     cta_label: "Allergien oder Diäten?"
     title: "Was brauchen Sie?"
     clear_all: "Alles löschen"
-    type_title: "Typ"
     diet_title: "Diäten"
     allergy_title: "Allergien"
     other_title: "Sonstiges"

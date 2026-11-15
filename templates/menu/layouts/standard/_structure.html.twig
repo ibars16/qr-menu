@@ -1070,7 +1070,7 @@
        ficha's own .dish-modal override (root stays 0.94 — see
        vars.html.twig) — every filters-panel rule already written as
        calc(Npx * var(--font-scale)) picks this up automatically. The
-       interactive chips (.diet-filter/.type-filter) are unaffected on
+       interactive chips (.diet-filter) are unaffected on
        purpose: their font-size is a plain 12px in the base layout, never
        wired to this variable, so they keep their tap-target size
        regardless of the sheet's reading-type scale — deliberately not
@@ -1123,8 +1123,7 @@
        deliberate icon system instead of raw emoji, at zero data-model
        cost — see standard/show.html.twig's chipIcon() macro for where
        this disc gets added, structure-only. */
-    .filters-panel .diet-filter,
-    .filters-panel .type-filter {
+    .filters-panel .diet-filter {
         gap: 8px;
     }
 
@@ -1134,8 +1133,7 @@
        not just the same height). Colors/border already come from the
        --tab-* tokens (ivory/line) set in vars.html.twig — only shape and
        shadow change here; .active below is a separate, louder state. */
-    .filters-panel .diet-filter,
-    .filters-panel .type-filter {
+    .filters-panel .diet-filter {
         border-radius: var(--radius); padding: 0.75rem 0.8125rem; min-height: 2.5rem; box-shadow: none;
     }
     /* Keyboard focus ring — :focus-visible only (never on a mouse click).
@@ -1145,15 +1143,14 @@
        against both the ivory resting chip and the wine-tinted active one,
        and against the dark .filters-apply-btn — one color, every target. */
     .filters-panel .diet-filter:focus-visible,
-    .filters-panel .type-filter:focus-visible,
     .dish-modal-close:focus-visible,
     .filters-apply-btn:focus-visible,
     .filters-panel .filters-clear-link:focus-visible {
         outline: 2px solid var(--cf-hborder); outline-offset: 2px;
     }
 
-    /* Diet/type/allergen chips already share one component (.diet-filter /
-       .type-filter, themed via the --tab-* vars elsewhere in this file) —
+    /* Diet/allergen chips already share one component (.diet-filter,
+       themed via the --tab-* vars elsewhere in this file) —
        only the *selected* state gets a filters-panel-specific treatment
        here: a wine tint + brass mark instead of the solid wine fill those
        classes use as category tabs (heavier than this panel's chip density
@@ -1161,13 +1158,11 @@
        "evitar alérgenos", where a check mark would misread as "I want
        this" rather than "hide dishes with this". Scoped to .filters-panel
        so the category-tab row and other layouts keep the solid-fill look. */
-    .filters-panel .diet-filter.active,
-    .filters-panel .type-filter.active {
+    .filters-panel .diet-filter.active {
         background: color-mix(in srgb, var(--accent) 8%, var(--surface));
         border-color: var(--accent); color: var(--accent); box-shadow: none; font-weight: 600;
     }
-    .filters-panel .diet-filter.active::before,
-    .filters-panel .type-filter.active::before {
+    .filters-panel .diet-filter.active::before {
         content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
         background: var(--cf-hborder); margin-inline-end: 7px; flex-shrink: 0;
     }
@@ -1273,7 +1268,7 @@
        targets; nothing here changes what data renders, only how. */
 
     /* Read-only chip — visually the same object as .filters-panel's
-       .diet-filter/.type-filter (disc icon via the shared chipIcon() macro,
+       .diet-filter (disc icon via the shared chipIcon() macro,
        .aicon-radius geometry, no shadow) but a DIFFERENT class on purpose:
        these are informational (product tags, allergens), never toggled, so
        they must never be reachable by the filters panel's own

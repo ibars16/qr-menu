@@ -11,14 +11,10 @@ search:
     placeholder: "Rechercher un plat…"
 tabs:
     all: "Tout"
-type:
-    food: "Plats"
-    drink: "Boissons"
 filters:
     cta_label: "Allergies ou régimes ?"
     title: "De quoi avez-vous besoin ?"
     clear_all: "Tout effacer"
-    type_title: "Type"
     diet_title: "Régimes"
     allergy_title: "Allergies"
     other_title: "Autres"

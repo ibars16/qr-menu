@@ -125,7 +125,6 @@ final class MenuContextBuilder
 
                 $result['categories'][] = [
                     'name' => $this->categoryName($category, $locale, $restaurant),
-                    'type' => $category->getType()?->value,
                     'menu_price' => $this->convertedDecimal($category->getMenuPrice() ?? 0, $restaurant, $currency),
                     'menu_description' => $category->getMenuDescription(),
                     'sections' => $sections,
@@ -141,7 +140,6 @@ final class MenuContextBuilder
 
             $result['categories'][] = [
                 'name' => $this->categoryName($category, $locale, $restaurant),
-                'type' => $category->getType()?->value,
                 'products' => array_map(
                     fn (Product $p) => $this->buildProduct($p, $locale, $restaurant, $currency, $allergensByProduct[$p->getId()] ?? [], $ingredientDictionary),
                     $products

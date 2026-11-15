@@ -10,7 +10,6 @@ use App\Repository\ProductViewRepository;
 use App\Repository\RestaurantRepository;
 use App\Service\AdminLocaleResolver;
 use App\Service\CategoryTranslationService;
-use App\Service\CategoryTypeFilterResolver;
 use App\Service\CurrencyConverter;
 use App\Service\MenuPreferencesResolver;
 use App\Service\OwnerTextTranslationService;
@@ -103,7 +102,6 @@ class MenuController extends AbstractController
         ProductViewRepository $productViewRepo,
         MenuPreferencesResolver $menuPreferencesResolver,
         ProductAllergenResolver $allergenResolver,
-        CategoryTypeFilterResolver $categoryTypeFilterResolver,
         TranslatorInterface $translator,
         OwnerTextTranslationService $ownerTextTranslationService,
     ): Response {
@@ -121,7 +119,7 @@ class MenuController extends AbstractController
             ], new Response(status: Response::HTTP_SERVICE_UNAVAILABLE));
         }
 
-        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $categoryTranslationService, $productRepo, $productViewRepo, $menuPreferencesResolver, $allergenResolver, $categoryTypeFilterResolver, $translator, $ownerTextTranslationService);
+        return $this->renderMenu($restaurant, $request, $em, $tagTranslationService, $categoryTranslationService, $productRepo, $productViewRepo, $menuPreferencesResolver, $allergenResolver, $translator, $ownerTextTranslationService);
     }
 
     // Backwards-compat redirect for QR codes already printed with the old table URL.
@@ -321,7 +319,6 @@ class MenuController extends AbstractController
         ProductViewRepository $productViewRepo,
         MenuPreferencesResolver $menuPreferencesResolver,
         ProductAllergenResolver $allergenResolver,
-        CategoryTypeFilterResolver $categoryTypeFilterResolver,
         TranslatorInterface $translator,
         OwnerTextTranslationService $ownerTextTranslationService,
     ): Response {
@@ -618,8 +615,6 @@ class MenuController extends AbstractController
             }
         }
 
-        $showTypeFilter = $categoryTypeFilterResolver->shouldShowFilter($categories);
-
         // "Popular" badge — the top few most-viewed dishes over the last 30
         // days, but only once each has real traffic behind it (see the two
         // POPULAR_BADGE_* constants); an under-trafficked restaurant simply
@@ -642,7 +637,6 @@ class MenuController extends AbstractController
         return $this->render('menu/show.html.twig', [
             'restaurant'    => $restaurant,
             'categories'    => $categories,
-            'showTypeFilter' => $showTypeFilter,
             'locale'        => $locale,
             'currency'      => $currency,
             'currencyDisplay' => $currencyDisplay,

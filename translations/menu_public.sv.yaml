@@ -11,14 +11,10 @@ search:
     placeholder: "Sök rätter…"
 tabs:
     all: "Alla"
-type:
-    food: "Mat"
-    drink: "Dryck"
 filters:
     cta_label: "Allergier eller dieter?"
     title: "Vad behöver du?"
     clear_all: "Rensa allt"
-    type_title: "Typ"
     diet_title: "Dieter"
     allergy_title: "Allergier"
     other_title: "Övrigt"

@@ -51,7 +51,7 @@ final class PublicMenuLanguageCoverageTest extends KernelTestCase
     public function testTheListsHaveTheExpectedSize(): void
     {
         self::assertCount(20, self::languages());
-        self::assertCount(79, self::menuPublic('en'));
+        self::assertCount(76, self::menuPublic('en'));
         self::assertCount(14, Yaml::parseFile(self::projectDir() . '/config/allergens.yaml')['allergens']);
         self::assertCount(9, Yaml::parseFile(self::projectDir() . '/config/preset_tags.yaml')['preset_tags']);
     }

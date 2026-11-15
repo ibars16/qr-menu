@@ -11,14 +11,10 @@ search:
     placeholder: "搜索菜品…"
 tabs:
     all: "全部"
-type:
-    food: "食物"
-    drink: "饮品"
 filters:
     cta_label: "过敏或饮食限制？"
     title: "您需要什么？"
     clear_all: "清除全部"
-    type_title: "类型"
     diet_title: "饮食限制"
     allergy_title: "过敏原"
     other_title: "其他"

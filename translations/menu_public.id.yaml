@@ -11,14 +11,10 @@ search:
     placeholder: "Cari hidangan…"
 tabs:
     all: "Semua"
-type:
-    food: "Makanan"
-    drink: "Minuman"
 filters:
     cta_label: "Alergi atau diet?"
     title: "Apa yang Anda butuhkan?"
     clear_all: "Hapus semua"
-    type_title: "Jenis"
     diet_title: "Diet"
     allergy_title: "Alergi"
     other_title: "Lainnya"

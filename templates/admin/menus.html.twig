@@ -266,7 +266,6 @@
         const UI = {
             openNew() {
                 ['d-menu-name-input','m-menu-name-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-                ['d-menu-type-select','m-menu-type-select'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
                 ['d-menu-price-input','m-menu-price-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
                 ['d-menu-description-input','m-menu-description-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
                 ['d-menu-name-error','m-menu-name-error','d-menu-price-error','m-menu-price-error'].forEach(id => document.getElementById(id)?.classList.remove('show'));
@@ -285,7 +284,6 @@
             async save() {
                 const s = isMobile() ? 'm' : 'd';
                 const name  = document.getElementById(`${s}-menu-name-input`).value.trim();
-                const type  = document.getElementById(`${s}-menu-type-select`).value;
                 const price = document.getElementById(`${s}-menu-price-input`).value;
                 const description = document.getElementById(`${s}-menu-description-input`).value.trim();
 
@@ -296,7 +294,7 @@
                 else document.getElementById(`${s}-menu-price-error`).classList.remove('show');
                 if (!ok) return;
 
-                const data = await api('/admin/menus/create', { name, type, menuPrice: price, menuDescription: description || null });
+                const data = await api('/admin/menus/create', { name, menuPrice: price, menuDescription: description || null });
                 if (data.error) { showToast(data.error, 'error'); return; }
 
                 showToast(MSG_MENU_CREATED, 'success');

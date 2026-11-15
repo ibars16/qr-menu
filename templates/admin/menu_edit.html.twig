@@ -341,7 +341,6 @@
 
         const MSG_HEADER_UPDATED = "{{ 'toast.menu_updated'|trans({}, 'admin_menus')|e('js') }}";
         const MSG_MENU_NAME_CURRENT = "{{ menuName|e('js') }}";
-        const MSG_MENU_TYPE_CURRENT = "{{ menu.type ? menu.type.value : '' }}";
         const MSG_MENU_PRICE_CURRENT = {{ (menu.menuPrice / 100) }};
         const MSG_MENU_DESCRIPTION_CURRENT = "{{ menu.menuDescription ? menu.menuDescription|e('js') : '' }}";
         const MSG_SECTION_NEW_TITLE = "{{ 'modal.section_new_title'|trans({}, 'admin_menus')|e('js') }}";
@@ -382,7 +381,6 @@
         const UI = {
             openEditHeader() {
                 ['d-menu-name-input','m-menu-name-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = MSG_MENU_NAME_CURRENT; });
-                ['d-menu-type-select','m-menu-type-select'].forEach(id => { const el = document.getElementById(id); if (el) el.value = MSG_MENU_TYPE_CURRENT; });
                 ['d-menu-price-input','m-menu-price-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = MSG_MENU_PRICE_CURRENT.toFixed(2); });
                 ['d-menu-description-input','m-menu-description-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = MSG_MENU_DESCRIPTION_CURRENT; });
                 ['d-menu-name-error','m-menu-name-error','d-menu-price-error','m-menu-price-error'].forEach(id => document.getElementById(id)?.classList.remove('show'));
@@ -396,7 +394,6 @@
             async saveHeader() {
                 const s = isMobile() ? 'm' : 'd';
                 const name  = document.getElementById(`${s}-menu-name-input`).value.trim();
-                const type  = document.getElementById(`${s}-menu-type-select`).value;
                 const price = document.getElementById(`${s}-menu-price-input`).value;
                 const description = document.getElementById(`${s}-menu-description-input`).value.trim();
 
@@ -407,7 +404,7 @@
                 else document.getElementById(`${s}-menu-price-error`).classList.remove('show');
                 if (!ok) return;
 
-                const data = await apiFetch(`/admin/menus/${MENU_ID}/edit`, { name, type, menuPrice: price, menuDescription: description || null });
+                const data = await apiFetch(`/admin/menus/${MENU_ID}/edit`, { name, menuPrice: price, menuDescription: description || null });
                 if (data.error) return; // apiFetch() has already toasted it (a 4xx)
 
                 showToast(MSG_HEADER_UPDATED, 'success');

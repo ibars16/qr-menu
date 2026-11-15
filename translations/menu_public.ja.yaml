@@ -11,14 +11,10 @@ search:
     placeholder: "料理を検索…"
 tabs:
     all: "すべて"
-type:
-    food: "フード"
-    drink: "ドリンク"
 filters:
     cta_label: "アレルギー・食事制限"
     title: "何をお探しですか？"
     clear_all: "すべてクリア"
-    type_title: "タイプ"
     diet_title: "食事制限"
     allergy_title: "アレルギー"
     other_title: "その他"

@@ -11,14 +11,10 @@ search:
     placeholder: "Szukaj dań…"
 tabs:
     all: "Wszystko"
-type:
-    food: "Jedzenie"
-    drink: "Napoje"
 filters:
     cta_label: "Alergie lub diety?"
     title: "Czego potrzebujesz?"
     clear_all: "Wyczyść wszystko"
-    type_title: "Typ"
     diet_title: "Diety"
     allergy_title: "Alergie"
     other_title: "Inne"

@@ -11,14 +11,10 @@ search:
     placeholder: "Search dishes…"
 tabs:
     all: "All"
-type:
-    food: "Food"
-    drink: "Drinks"
 filters:
     cta_label: "Allergies or diets?"
     title: "What do you need?"
     clear_all: "Clear all"
-    type_title: "Type"
     diet_title: "Diets"
     allergy_title: "Allergies"
     other_title: "Other"

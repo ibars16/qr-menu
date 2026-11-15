@@ -17,20 +17,6 @@
            onkeydown="if(event.key==='Enter') UI.save()">
     <div class="field-error" id="{{ suffix }}-menu-name-error">{{ 'field.name_required'|trans({}, 'admin_menus') }}</div>
 </div>
-{# Tipo — same options/keys as the normal category form (admin_categories
-   domain), reused rather than duplicated. Optional, defaults to "Sin
-   clasificar" (null): a menu can be a food menu, a drink/wine-pairing menu
-   (e.g. a wine-pairing tasting menu), or left unclassified. #}
-<div class="field">
-    <label class="field-label">
-        {{ 'field.type'|trans({}, 'admin_categories') }} <span class="opt">({{ 'common.optional'|trans({}, 'admin_menus') }})</span>
-    </label>
-    <select id="{{ suffix }}-menu-type-select">
-        <option value="">{{ 'field.type_unclassified'|trans({}, 'admin_categories') }}</option>
-        <option value="food">{{ 'field.type_food'|trans({}, 'admin_categories') }}</option>
-        <option value="drink">{{ 'field.type_drink'|trans({}, 'admin_categories') }}</option>
-    </select>
-</div>
 <div class="field">
     <label class="field-label">
         {{ 'field.menu_price'|trans({'%currency%': restaurant.currency}, 'admin_menus') }} <span class="req">*</span>

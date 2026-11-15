@@ -11,14 +11,10 @@ search:
     placeholder: "메뉴 검색…"
 tabs:
     all: "전체"
-type:
-    food: "음식"
-    drink: "음료"
 filters:
     cta_label: "알레르기 또는 식단?"
     title: "무엇이 필요하세요?"
     clear_all: "전체 지우기"
-    type_title: "유형"
     diet_title: "식단"
     allergy_title: "알레르기"
     other_title: "기타"

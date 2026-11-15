@@ -11,14 +11,10 @@ search:
     placeholder: "Поиск блюд…"
 tabs:
     all: "Все"
-type:
-    food: "Еда"
-    drink: "Напитки"
 filters:
     cta_label: "Аллергии или диеты?"
     title: "Что вам нужно?"
     clear_all: "Очистить всё"
-    type_title: "Тип"
     diet_title: "Диеты"
     allergy_title: "Аллергии"
     other_title: "Другое"

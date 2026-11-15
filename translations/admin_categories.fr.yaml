@@ -26,10 +26,6 @@ field:
     name: Nom
     name_placeholder: "Ex. : Entrées, Pizzas, Desserts…"
     name_required: Le nom est obligatoire
-    type: Type
-    type_unclassified: Non classé
-    type_food: Nourriture
-    type_drink: Boisson
     which_category: À quelle catégorie appartient-il ?
 
 meta:

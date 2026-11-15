@@ -26,10 +26,6 @@ field:
     name: Name
     name_placeholder: 'Z. B.: Vorspeisen, Pizzen, Desserts…'
     name_required: Der Name ist erforderlich
-    type: Typ
-    type_unclassified: Nicht klassifiziert
-    type_food: Essen
-    type_drink: Getränk
     which_category: Zu welcher Kategorie gehört es?
 
 meta:

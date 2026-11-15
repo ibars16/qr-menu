@@ -11,14 +11,10 @@ search:
     placeholder: "Tìm món ăn…"
 tabs:
     all: "Tất cả"
-type:
-    food: "Món ăn"
-    drink: "Đồ uống"
 filters:
     cta_label: "Dị ứng hoặc chế độ ăn?"
     title: "Bạn cần gì?"
     clear_all: "Xóa tất cả"
-    type_title: "Loại"
     diet_title: "Chế độ ăn"
     allergy_title: "Dị ứng"
     other_title: "Khác"

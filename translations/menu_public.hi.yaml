@@ -11,14 +11,10 @@ search:
     placeholder: "व्यंजन खोजें…"
 tabs:
     all: "सभी"
-type:
-    food: "भोजन"
-    drink: "पेय"
 filters:
     cta_label: "एलर्जी या डाइट?"
     title: "आपको क्या चाहिए?"
     clear_all: "सभी हटाएं"
-    type_title: "प्रकार"
     diet_title: "डाइट"
     allergy_title: "एलर्जी"
     other_title: "अन्य"
