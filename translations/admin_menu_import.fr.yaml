@@ -11,6 +11,7 @@ upload:
     uploading: Téléversement de vos photos…
     upload_failed: Le téléversement a échoué — vérifiez votre connexion et réessayez.
     retry: Réessayer
+    remove_file: 'Retirer %name%'
     error:
         no_files: Veuillez choisir au moins une photo.
         total_too_large: 'Les photos sont trop lourdes au total. Envoyez-les en plusieurs fois (environ 60 Mo maximum par envoi).'

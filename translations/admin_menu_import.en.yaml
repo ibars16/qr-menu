@@ -11,6 +11,7 @@ upload:
     uploading: Uploading your photos…
     upload_failed: Upload failed — check your connection and try again.
     retry: Try again
+    remove_file: 'Remove %name%'
     error:
         no_files: Please choose at least one photo.
         total_too_large: 'The photos are too large in total. Upload them in several goes (about 60 MB max per upload).'

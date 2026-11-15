@@ -11,6 +11,7 @@ upload:
     uploading: Caricamento delle tue foto…
     upload_failed: Caricamento non riuscito — controlla la connessione e riprova.
     retry: Riprova
+    remove_file: 'Rimuovi %name%'
     error:
         no_files: Scegli almeno una foto.
         total_too_large: 'Le foto pesano troppo in totale. Caricale in più volte (massimo circa 60 MB per invio).'

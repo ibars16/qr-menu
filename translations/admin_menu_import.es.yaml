@@ -11,6 +11,7 @@ upload:
     uploading: Subiendo tus fotos…
     upload_failed: No se pudo subir — comprueba tu conexión e inténtalo de nuevo.
     retry: Intentar de nuevo
+    remove_file: 'Quitar %name%'
     error:
         no_files: Por favor, elige al menos una foto.
         total_too_large: 'Las fotos pesan demasiado en total. Súbelas en varias veces (máximo unos 60 MB por envío).'

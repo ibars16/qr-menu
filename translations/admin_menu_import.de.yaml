@@ -11,6 +11,7 @@ upload:
     uploading: Deine Fotos werden hochgeladen…
     upload_failed: Hochladen fehlgeschlagen — bitte prüfe deine Verbindung und versuche es erneut.
     retry: Erneut versuchen
+    remove_file: '%name% entfernen'
     error:
         no_files: Bitte wähle mindestens ein Foto aus.
         total_too_large: 'Die Fotos sind insgesamt zu groß. Lade sie in mehreren Durchgängen hoch (höchstens etwa 60 MB pro Upload).'
