@@ -45,7 +45,7 @@ field:
     description: Descripción
     description_placeholder: 'Describe brevemente el plato, ingredientes principales, forma de preparación…'
     ingredients: Ingredientes
-    photo: Foto o clip del plato
+    photo: 'Foto o vídeo del plato'
     price: 'Precio (%currency%)'
     price_variant_add: Añadir otro precio
     price_variant_column_label: Etiqueta
@@ -204,9 +204,10 @@ smart_waiter:
     recommended_hint: Este plato aparecerá como una recomendación para los clientes.
 
 upload:
-    aria: Subir foto o clip del plato
-    hint: Arrastra o pulsa para subir una foto o un clip
-    limits: 'Foto: JPEG, PNG o WebP (máx. 8 MB) · Vídeo: MP4 (máx. 60 MB)'
+    aria: 'Subir foto o vídeo del plato'
+    hint: 'Pulsa o arrastra aquí una foto o un vídeo corto'
+    limits_photo: 'Foto: JPEG, PNG o WebP (máx. 8 MB)'
+    limits_video: 'Vídeo: MP4 (máx. 60 MB). Solo se usan los primeros 6 segundos.'
     small_photo: 'Esta foto es pequeña y puede verse borrosa en la carta.'
     change: Cambiar
     delete: 'Eliminar foto'
@@ -217,7 +218,6 @@ clip:
     duration_warning: 'Este vídeo dura más de 6 s — al guardar se recortará a los primeros 6 segundos.'
     processing: 'Subiendo y procesando el vídeo…'
     trimmed: 'Plato guardado. El vídeo se ha recortado a los primeros 6 segundos.'
-    trim_notice: 'Los vídeos de más de 6 s se recortan automáticamente a los primeros 6 segundos.'
     frame_badge: 'Arrastra para encuadrar'
     frame_hint: 'Arrastra el vídeo para elegir qué parte se ve y usa el zoom para ajustarlo a la caja. Consejo: grábalo en horizontal para que se vea más completo.'
     zoom_label: 'Zoom'

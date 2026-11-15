@@ -45,7 +45,7 @@ field:
     description: Description
     description_placeholder: 'Briefly describe the dish, main ingredients, preparation style…'
     ingredients: Ingredients
-    photo: Dish photo or clip
+    photo: 'Dish photo or video'
     price: 'Price (%currency%)'
     price_variant_add: Add another price
     price_variant_column_label: Label
@@ -204,9 +204,10 @@ smart_waiter:
     recommended_hint: This dish will appear as a recommendation for customers.
 
 upload:
-    aria: Upload dish photo or clip
-    hint: Drag or click to upload a photo or a clip
-    limits: 'Photo: JPEG, PNG or WebP (max 8 MB) · Video: MP4 (max 60 MB)'
+    aria: 'Upload dish photo or video'
+    hint: 'Tap or drag a photo or a short video here'
+    limits_photo: 'Photo: JPEG, PNG or WebP (max 8 MB)'
+    limits_video: 'Video: MP4 (max 60 MB). Only the first 6 seconds are used.'
     small_photo: 'This photo is small and may look blurry on the menu.'
     change: Change
     delete: 'Remove photo'
@@ -217,7 +218,6 @@ clip:
     duration_warning: 'This video is longer than 6s — it will be trimmed to its first 6 seconds when you save.'
     processing: 'Uploading and processing the video…'
     trimmed: 'Dish saved. The video was trimmed to its first 6 seconds.'
-    trim_notice: 'Videos longer than 6s are automatically trimmed to their first 6 seconds.'
     frame_badge: 'Drag to frame'
     frame_hint: 'Drag the video to choose which part shows, and use the zoom to fit it to the box. Tip: record it horizontally so more of it is visible.'
     zoom_label: 'Zoom'

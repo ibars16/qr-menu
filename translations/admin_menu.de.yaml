@@ -45,7 +45,7 @@ field:
     description: Beschreibung
     description_placeholder: 'Beschreibe kurz das Gericht, die Hauptzutaten und die Zubereitungsart…'
     ingredients: Zutaten
-    photo: Foto oder Clip des Gerichts
+    photo: 'Foto oder Video des Gerichts'
     price: 'Preis (%currency%)'
     price_variant_add: Weiteren Preis hinzufügen
     price_variant_column_label: Bezeichnung
@@ -204,9 +204,10 @@ smart_waiter:
     recommended_hint: Dieses Gericht wird den Kunden als Empfehlung angezeigt.
 
 upload:
-    aria: Foto oder Clip des Gerichts hochladen
-    hint: Klicke oder ziehe ein Foto oder einen Clip hierher
-    limits: 'Foto: JPEG, PNG oder WebP (max. 8 MB) · Video: MP4 (max. 60 MB)'
+    aria: 'Foto oder Video des Gerichts hochladen'
+    hint: 'Tippe oder ziehe ein Foto oder ein kurzes Video hierher'
+    limits_photo: 'Foto: JPEG, PNG oder WebP (max. 8 MB)'
+    limits_video: 'Video: MP4 (max. 60 MB). Nur die ersten 6 Sekunden werden verwendet.'
     small_photo: 'Dieses Foto ist klein und kann auf der Speisekarte unscharf wirken.'
     change: Ändern
     delete: 'Foto entfernen'
@@ -217,7 +218,6 @@ clip:
     duration_warning: 'Dieses Video ist länger als 6 s — beim Speichern wird es auf die ersten 6 Sekunden gekürzt.'
     processing: 'Video wird hochgeladen und verarbeitet…'
     trimmed: 'Gericht gespeichert. Das Video wurde auf die ersten 6 Sekunden gekürzt.'
-    trim_notice: 'Videos über 6 s werden automatisch auf die ersten 6 Sekunden gekürzt.'
     frame_badge: 'Zum Ausrichten ziehen'
     frame_hint: 'Ziehe das Video, um den sichtbaren Ausschnitt zu wählen, und passe es mit dem Zoom an den Rahmen an. Tipp: Im Querformat aufnehmen, damit mehr davon zu sehen ist.'
     zoom_label: 'Zoom'

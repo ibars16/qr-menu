@@ -619,7 +619,6 @@
 .photo-small-notice[hidden] { display:none; }
 .photo-small-notice-text { display:flex; align-items:flex-start; gap:6px; margin:0; font-size:var(--fs-base); line-height:var(--lh-body); }
 .photo-small-notice-text .ti { font-size:16px; margin-top:2px; flex-shrink:0; }
-.clip-trim-notice { display:flex; align-items:center; gap:6px; margin-top:6px; font-size:12px; color:var(--tx-muted); }
 .clip-frame-hint.show { display:block; }
 .img-upload img.loaded, .img-upload video.loaded { opacity:1; }
 .img-upload-hint { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; padding:0 var(--sp-4); }
@@ -627,7 +626,11 @@
 /* Real limits, not decoration — must stay in sync with UploadValidator::LIMITS['dish_image'].
    Static text on purpose (this is a markup/style-only change); if these ever
    drift, UploadValidator is the source of truth to fix, not this string. */
-.img-upload-hint-limits { font-size:11px; color:var(--tx-muted); }
+/* --tx-3 on the box's --bg-card: 5.20:1 dark, 5.50:1 light (AA with room —
+   --tx-muted only just reached it: 4.54:1 / 4.74:1). */
+.img-upload-hint-limits { font-size:11px; color:var(--tx-3); }
+/* Photo on one line, video on the next. */
+.img-upload-hint-limits > span { display:block; }
 
 /* Shown once the <img> starts loading (a saved photo is a real network
    fetch of the original upload — there's no server-side thumbnail yet, so

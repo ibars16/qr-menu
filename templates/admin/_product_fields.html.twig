@@ -208,7 +208,10 @@
                     <div class="img-upload-hint">
                         <i class="ti ti-photo-up" aria-hidden="true"></i>
                         {{ 'upload.hint'|trans({}, 'admin_menu') }}
-                        <span class="img-upload-hint-limits">{{ 'upload.limits'|trans({}, 'admin_menu') }}</span>
+                        <span class="img-upload-hint-limits">
+                            <span>{{ 'upload.limits_photo'|trans({}, 'admin_menu') }}</span>
+                            <span>{{ 'upload.limits_video'|trans({}, 'admin_menu') }}</span>
+                        </span>
                     </div>
                     <div class="img-upload-spinner" aria-hidden="true"></div>
                     {# Clip framing — shown only while a clip is in the box
@@ -323,7 +326,6 @@
                     {{ 'ai_photo.choose_plan'|trans({}, 'admin_menu') }}
                 </button>
                 {% endif %}
-                <p class="clip-trim-notice"><i class="ti ti-scissors" aria-hidden="true"></i> {{ 'clip.trim_notice'|trans({}, 'admin_menu') }}</p>
                 <input type="file"
                        id="p-img-input"
                        accept="image/*,video/*"

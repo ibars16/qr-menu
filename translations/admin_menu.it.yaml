@@ -45,7 +45,7 @@ field:
     description: Descrizione
     description_placeholder: 'Descrivi brevemente il piatto, gli ingredienti principali, il metodo di preparazione…'
     ingredients: Ingredienti
-    photo: Foto o clip del piatto
+    photo: 'Foto o video del piatto'
     price: 'Prezzo (%currency%)'
     price_variant_add: Aggiungi un altro prezzo
     price_variant_column_label: Etichetta
@@ -204,9 +204,10 @@ smart_waiter:
     recommended_hint: Questo piatto apparirà come consiglio per i clienti.
 
 upload:
-    aria: Carica foto o clip del piatto
-    hint: Trascina o clicca per caricare una foto o una clip
-    limits: 'Foto: JPEG, PNG o WebP (max 8 MB) · Video: MP4 (max 60 MB)'
+    aria: 'Carica foto o video del piatto'
+    hint: 'Tocca o trascina qui una foto o un breve video'
+    limits_photo: 'Foto: JPEG, PNG o WebP (max 8 MB)'
+    limits_video: 'Video: MP4 (max 60 MB). Vengono usati solo i primi 6 secondi.'
     small_photo: 'Questa foto è piccola e potrebbe apparire sfocata nel menu.'
     change: Cambia
     delete: 'Elimina foto'
@@ -217,7 +218,6 @@ clip:
     duration_warning: 'Questo video dura più di 6 s — al salvataggio verrà tagliato ai primi 6 secondi.'
     processing: 'Caricamento ed elaborazione del video…'
     trimmed: 'Piatto salvato. Il video è stato tagliato ai primi 6 secondi.'
-    trim_notice: 'I video più lunghi di 6 s vengono tagliati automaticamente ai primi 6 secondi.'
     frame_badge: 'Trascina per inquadrare'
     frame_hint: 'Trascina il video per scegliere quale parte si vede e usa lo zoom per adattarlo al riquadro. Consiglio: registralo in orizzontale perché si veda più intero.'
     zoom_label: 'Zoom'
