@@ -1,7 +1,7 @@
 {
   "categories": [
     {
-      "name": "PRIMEROS",
+      "name": "Primeros",
       "dishes": [
         {
           "name": "Plato Caliente del Dia",
@@ -116,7 +116,7 @@
       ]
     },
     {
-      "name": "SEGUNDOS",
+      "name": "Segundos",
       "dishes": [
         {
           "name": "Boquerones de Tarragona Fritos",
@@ -241,7 +241,7 @@
       ]
     },
     {
-      "name": "POSTRES",
+      "name": "Postres",
       "dishes": [
         {
           "name": "Flan",

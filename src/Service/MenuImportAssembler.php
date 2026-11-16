@@ -46,6 +46,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * one the carta already has — same visibility and repeated-dish rules,
  * counted like any other dish. Never dropped silently.
  *
+ * A category or dish name read ENTIRELY in capitals ("PULPO A LA GALLEGA")
+ * is stored with only its first letter capitalised (fromAllCaps()). Import
+ * only: what the owner types in the panel is never touched.
+ *
  * Deliberately reuses, unmodified, the exact ingredient-resolution and
  * category/product conventions MenuAdminController::saveProduct() already
  * established for manual entry — an imported dish's data ends up
@@ -101,7 +105,7 @@ final class MenuImportAssembler
             $categories = is_array($data['categories'] ?? null) ? $data['categories'] : [];
 
             foreach ($categories as $categoryData) {
-                $name = trim((string) ($categoryData['name'] ?? ''));
+                $name = self::fromAllCaps(trim((string) ($categoryData['name'] ?? '')));
                 if ($name === '') {
                     if (empty($categoryData['products'])) {
                         continue; // nothing to rescue: no empty "Otros"
@@ -180,6 +184,28 @@ final class MenuImportAssembler
         return trim((string) preg_replace('/\s+/u', ' ', $name));
     }
 
+    /**
+     * "PULPO A LA GALLEGA" → "Pulpo a la gallega", "AÑEJO" → "Añejo": only a
+     * name with no lowercase letter at all and at least 4 capitals. Mixed
+     * case ("Pizza BBQ"), short acronyms on their own ("BBQ", "XL") and
+     * scripts without case (Chinese, Japanese, Arabic, Thai…) are returned
+     * unchanged. The first LETTER is the one capitalised, so a leading
+     * digit or sign ("1/2 RACIÓN", "¡OFERTA!") is kept as is.
+     */
+    public static function fromAllCaps(string $name): string
+    {
+        if (preg_match('/\p{Ll}/u', $name) === 1 || preg_match_all('/\p{Lu}/u', $name) < 4) {
+            return $name;
+        }
+        $lower = mb_strtolower($name);
+        if (preg_match('/\p{L}/u', $lower, $m, PREG_OFFSET_CAPTURE) !== 1) {
+            return $name;
+        }
+        [$letter, $offset] = $m[0];
+
+        return substr($lower, 0, $offset) . mb_convert_case($letter, MB_CASE_TITLE) . substr($lower, $offset + strlen($letter));
+    }
+
     /** No dish in the restaurant other than this import's own (so re-assembling the same batch keeps its answer). */
     private function isFirstMenu(Restaurant $restaurant, MenuImportBatch $batch): bool
     {
@@ -248,7 +274,7 @@ final class MenuImportAssembler
         bool $publish,
         array &$categoryNames,
     ): ?Product {
-        $name = trim((string) ($productData['name'] ?? ''));
+        $name = self::fromAllCaps(trim((string) ($productData['name'] ?? '')));
         if ($name === '') {
             return null; // ProductTranslation.name is NOT NULL — nothing sensible to create without one
         }

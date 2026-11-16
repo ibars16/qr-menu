@@ -116,7 +116,7 @@ final class TropicalMenuFixtureTest extends KernelTestCase
         }
 
         $expectedCategories = $expected['categories'];
-        self::assertCount(3, $categoryOrder, 'expected exactly 3 categories: PRIMEROS, SEGUNDOS, POSTRES');
+        self::assertCount(3, $categoryOrder, 'expected exactly 3 categories: Primeros, Segundos, Postres (read as PRIMEROS/SEGUNDOS/POSTRES, see MenuImportAssembler::fromAllCaps())');
         self::assertCount(3, $expectedCategories);
 
         foreach ($expectedCategories as $i => $expectedCategory) {
