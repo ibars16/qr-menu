@@ -22,8 +22,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * restaurants aren't billed on their own, so they get neither. "Registrar
  * pago" is refused while Stripe charges a card (a live subscription), so
  * days are never added twice; a reseller's resumes its restaurants' card
- * payments at once (StripeBilling::resumeResellerCollectionOrLog()). Nothing
- * here ever deletes anything — "Desactivar ya" only moves paidUntil to yesterday.
+ * payments at once (StripeBilling::resumeResellerCollectionOrLog()), and its
+ * "Desactivar" pauses them at once (pauseResellerCollectionOrLog()). Nothing
+ * here ever deletes anything — "Desactivar ya" moves paidUntil to yesterday
+ * (and first ends a card subscription at once: deactivateFor()).
  */
 #[Route('/platform', name: 'platform_')]
 #[IsGranted(User::ROLE_SUPER_ADMIN)]
@@ -108,20 +110,8 @@ class PlatformController extends AbstractController
     public function deactivate(int $id, Request $request, EntityManagerInterface $em, StripeBilling $billing, LoggerInterface $logger): Response
     {
         $restaurant = $this->ownBilledRestaurant($id, $em);
-        if (!$this->isCsrfTokenValid('platform-deactivate-' . $restaurant->getId(), $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF no válido.');
-        }
-        // Paying by card: its subscription ends now (no refund) — or it's left on if Stripe fails.
-        try {
-            $billing->cancelNow($restaurant);
-        } catch (\Throwable $e) {
-            $logger->error('Stripe subscription not cancelled; restaurant left on', ['restaurant' => $restaurant->getId(), 'exception' => $e]);
-            $this->addFlash('error', sprintf('No se pudo cancelar la suscripción de %s en Stripe. No se ha desactivado; inténtalo de nuevo.', $restaurant->getName()));
 
-            return $this->redirectToRoute('platform_index');
-        }
-
-        return $this->deactivateFor($restaurant, $restaurant->getName(), 'platform-deactivate-' . $restaurant->getId(), $request, $em);
+        return $this->deactivateFor($restaurant, $restaurant->getName(), 'platform-deactivate-' . $restaurant->getId(), $request, $em, $billing, $logger);
     }
 
     #[Route('/resellers/{id}/register-payment', name: 'reseller_register_payment', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -136,11 +126,18 @@ class PlatformController extends AbstractController
     }
 
     #[Route('/resellers/{id}/deactivate', name: 'reseller_deactivate', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function deactivateReseller(int $id, Request $request, EntityManagerInterface $em): Response
+    public function deactivateReseller(int $id, Request $request, EntityManagerInterface $em, StripeBilling $billing, LoggerInterface $logger): Response
     {
         $reseller = $em->find(Reseller::class, $id) ?? throw $this->createNotFoundException();
 
-        return $this->deactivateFor($reseller, $reseller->getName(), 'platform-reseller-deactivate-' . $reseller->getId(), $request, $em);
+        $response = $this->deactivateFor($reseller, $reseller->getName(), 'platform-reseller-deactivate-' . $reseller->getId(), $request, $em, $billing, $logger);
+        // Off now (not when Stripe failed above): its restaurants' card payments pause in this same click.
+        $failed = $billing->pauseResellerCollectionOrLog($reseller);
+        if ($failed !== []) { // null: none could be tried
+            $this->addFlash('error', sprintf('%s está desactivado, pero no se pudo pausar en Stripe el cobro de %s. Se reintentará en la sincronización de cada noche.', $reseller->getName(), $failed === null ? 'sus restaurantes' : implode(', ', $failed)));
+        }
+
+        return $response;
     }
 
     /** A reseller's restaurant has no billing of its own: its reseller pays. */
@@ -176,10 +173,25 @@ class PlatformController extends AbstractController
         return $this->redirectToRoute('platform_index');
     }
 
-    private function deactivateFor(Restaurant|Reseller $customer, string $name, string $tokenId, Request $request, EntityManagerInterface $em): Response
+    /**
+     * Paying by card: its subscription ends now, no refund
+     * (StripeBilling::cancelNow()) — or, if Stripe fails, it's left on and
+     * the error shown. A reseller's restaurants keep their own
+     * subscriptions: an expired reseller pauses their collection
+     * (StripeBilling::syncResellerCollection()).
+     */
+    private function deactivateFor(Restaurant|Reseller $customer, string $name, string $tokenId, Request $request, EntityManagerInterface $em, StripeBilling $billing, LoggerInterface $logger): Response
     {
         if (!$this->isCsrfTokenValid($tokenId, $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Token CSRF no válido.');
+        }
+        try {
+            $billing->cancelNow($customer);
+        } catch (\Throwable $e) {
+            $logger->error('Stripe subscription not cancelled; left on', [$customer instanceof Reseller ? 'reseller' : 'restaurant' => $customer->getId(), 'exception' => $e]);
+            $this->addFlash('error', sprintf('No se pudo cancelar la suscripción de %s en Stripe. No se ha desactivado; inténtalo de nuevo.', $name));
+
+            return $this->redirectToRoute('platform_index');
         }
 
         $customer->deactivateNow();

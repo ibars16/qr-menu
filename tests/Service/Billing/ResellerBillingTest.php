@@ -221,6 +221,48 @@ final class ResellerBillingTest extends KernelTestCase
         self::assertFalse($reseller->isStripeCancelPending());
     }
 
+    // ── cancelNow (Desactivar in /platform) ──
+
+    public function testCancelNowEndsTheResellersSubscriptionInThePlatformAccount(): void
+    {
+        $this->live();
+
+        $this->billing->cancelNow($this->reseller);
+
+        self::assertSame([['cancelSubscription', 'sub_r', []]], FakeStripeGateway::$calls);
+        self::assertContains(['cancelSubscription', null], FakeStripeGateway::$accountLog);
+        $reseller = $this->reloaded();
+        self::assertNull($reseller->getStripeSubscriptionId());
+        self::assertFalse($reseller->isStripeCancelPending());
+    }
+
+    public function testLateWebhooksOfTheCancelledSubscriptionDontReactivateIt(): void
+    {
+        $this->live();
+        $this->reseller->markPaid('monthly');
+        $this->em->flush();
+        $this->billing->cancelNow($this->reseller);
+        $reseller = $this->reloaded();
+        $reseller->deactivateNow();
+        $this->em->flush();
+        $lastPaidAt = $reseller->getLastPaidAt()?->format('Y-m-d');
+
+        // Late invoice.paid, checkout.session.completed and
+        // customer.subscription.updated / deleted of sub_r (now canceled).
+        FakeStripeGateway::invoice('in_late', 'sub_r', strtotime('+1 month'), 4000, time());
+        $this->billing->syncInvoice('in_late');
+        FakeStripeGateway::$objects['cs_late'] = ['id' => 'cs_late', 'mode' => 'subscription', 'subscription' => 'sub_r', 'client_reference_id' => 'reseller-' . $this->reseller->getId(), 'invoice' => 'in_late'];
+        $this->billing->syncCheckoutSession('cs_late');
+        $this->billing->syncSubscription('sub_r');
+        $this->billing->syncSubscriptionDeleted('sub_r');
+
+        $reseller = $this->reloaded();
+        self::assertTrue($reseller->isExpired());
+        self::assertSame((new \DateTimeImmutable('yesterday'))->format('Y-m-d'), $reseller->getPaidUntil()->format('Y-m-d'));
+        self::assertNull($reseller->getStripeSubscriptionId());
+        self::assertSame($lastPaidAt, $reseller->getLastPaidAt()?->format('Y-m-d'));
+    }
+
     // ── Extra line ──
 
     public function testExtraLineIsAddedWhenNeeded(): void

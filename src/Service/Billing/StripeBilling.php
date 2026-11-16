@@ -266,15 +266,35 @@ class StripeBilling
     /** syncResellerCollection() right after the reseller is up to date again (it pays); never fails the caller. */
     public function resumeResellerCollectionOrLog(Reseller $reseller): void
     {
-        if ($reseller->isExpired()) {
-            return;
+        if (!$reseller->isExpired()) {
+            $this->syncResellerCollectionOrLog($reseller, 'resumed');
         }
+    }
+
+    /**
+     * syncResellerCollection() right after Desactivar (/platform): its
+     * restaurants' card payments are paused in the same click, not at the
+     * next app:resellers:sync-billing. Never fails the caller; whatever
+     * failed is logged and retried by that command.
+     *
+     * @return list<string>|null names of the restaurants not paused; null = none could be tried
+     */
+    public function pauseResellerCollectionOrLog(Reseller $reseller): ?array
+    {
+        return $reseller->isExpired() ? $this->syncResellerCollectionOrLog($reseller, 'paused') : [];
+    }
+
+    /** @return list<string>|null names of the restaurants that failed, null = it failed before any (all retried by app:resellers:sync-billing) */
+    private function syncResellerCollectionOrLog(Reseller $reseller, string $action): ?array
+    {
         try {
-            $this->syncResellerCollection($reseller);
+            return $this->syncResellerCollection($reseller)['failed'];
         } catch (\Throwable $e) {
-            $this->logger->error('Stripe collection of reseller restaurants not resumed; retried by app:resellers:sync-billing', [
+            $this->logger->error('Stripe collection of reseller restaurants not ' . $action . '; retried by app:resellers:sync-billing', [
                 'reseller' => $reseller->getId(), 'exception' => $e,
             ]);
+
+            return null;
         }
     }
 
@@ -579,16 +599,19 @@ class StripeBilling
     }
 
     /**
-     * Desactivar / Archivar (/partners, /platform) a restaurant paying by
-     * card: its subscription ends right now (in the reseller's connected
-     * account for a reseller's restaurant), no refund, and is unlinked —
-     * it's back to "Elegir plan" like anyone. One Stripe already ended
+     * Desactivar / Archivar (/partners, /platform) a restaurant, or
+     * Desactivar (/platform) a reseller, paying by card: its subscription
+     * ends right now (in the reseller's connected account for a reseller's
+     * restaurant; in the platform's for a reseller), no refund, and is
+     * unlinked — it's back to "Elegir plan" like anyone. A reseller's
+     * restaurants' own subscriptions are left alone: they follow the
+     * expired-reseller rule (syncResellerCollection()). One Stripe already ended
      * (a missed webhook) is just unlinked. Throws when Stripe fails, so the
      * caller doesn't turn it off while it keeps charging. Late webhooks of
      * the ended subscription change nothing (syncInvoice(),
      * syncCheckoutSession()).
      */
-    public function cancelNow(Restaurant $restaurant): void
+    public function cancelNow(Restaurant|Reseller $restaurant): void
     {
         if (!$restaurant->hasLiveSubscription()) {
             return;

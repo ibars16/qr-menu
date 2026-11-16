@@ -242,7 +242,9 @@
                                             <button type="button" class="btn enter" disabled>Entrar</button>
                                         {% endif %}
                                         {{ _self.payment_button(reseller, 'platform_reseller_register_payment', 'platform-reseller-register-payment-') }}
-                                        {{ _self.deactivate_form(reseller, 'platform_reseller_deactivate', 'platform-reseller-deactivate-', '¿Desactivar ' ~ reseller.name ~ '? Se apagarán todos sus restaurantes.') }}
+                                        {{ _self.deactivate_form(reseller, 'platform_reseller_deactivate', 'platform-reseller-deactivate-', reseller.hasLiveSubscription
+                                            ? '¿Desactivar ' ~ reseller.name ~ '? Este revendedor paga con tarjeta. Se cancelará su suscripción y no se le volverá a cobrar. Se apagarán todos sus restaurantes.'
+                                            : '¿Desactivar ' ~ reseller.name ~ '? Se apagarán todos sus restaurantes.') }}
                                     </div>
                                 </td>
                             </tr>

@@ -5,6 +5,8 @@ namespace App\Tests\Controller;
 use App\Entity\Reseller;
 use App\Entity\Restaurant;
 use App\Entity\User;
+use App\Service\Billing\StripeBilling;
+use App\Tests\Support\FakeStripeGateway;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -436,13 +438,126 @@ final class ResellerRestaurantTest extends WebTestCase
 
     public function testDeactivateReseller(): void
     {
+        FakeStripeGateway::reset();
         $row = $this->platformRow('Reseller Test Agency');
         $form = $row->filter('form[action$="/deactivate"]');
+        self::assertSame('¿Desactivar Reseller Test Agency? Se apagarán todos sus restaurantes.', self::confirmText($form));
 
         $this->client->request('POST', $form->attr('action'), ['_token' => $form->filter('input[name="_token"]')->attr('value')]);
 
         self::assertResponseRedirects('/platform');
         self::assertTrue($this->resellerReloaded()->isExpired());
+        self::assertSame([], FakeStripeGateway::$accountLog, 'no card: nothing in Stripe');
+    }
+
+    /**
+     * The reseller pays its plan by card (platform account) and this
+     * restaurant pays the reseller by card (its connected account).
+     */
+    private function resellerAndRestaurantPayByCard(): string
+    {
+        FakeStripeGateway::reset();
+        $account = 'acct_reseller_deactivate_' . uniqid();
+        FakeStripeGateway::resellerSubscription('sub_reseller_off', $this->reseller->getId(), 'price_test_reseller_monthly', 'price_test_reseller_extra_monthly', 0, 'cus_reseller_off');
+        $reseller = $this->resellerReloaded();
+        $reseller->setStripeCustomerId('cus_reseller_off_' . uniqid());
+        $reseller->setStripeSubscriptionId('sub_reseller_off');
+        $reseller->setConnectAccountId($account);
+        $reseller->setConnectChargesEnabled(true);
+        $restaurant = $this->em->find(Restaurant::class, $this->restaurant->getId());
+        $restaurant->markPaid(Restaurant::PLAN_MONTHLY);
+        $restaurant->setStripeAccountId($account);
+        $restaurant->setStripeCustomerId('cus_restaurant_off_' . uniqid());
+        $restaurant->setStripeSubscriptionId('sub_restaurant_off');
+        $this->em->flush();
+        FakeStripeGateway::subscription('sub_restaurant_off', $restaurant->getId(), 'price_card_monthly', 'cus_restaurant_off');
+
+        return $account;
+    }
+
+    public function testDeactivateResellerByCardCancelsItsSubscriptionAndPausesItsRestaurantsNow(): void
+    {
+        $account = $this->resellerAndRestaurantPayByCard();
+        $row = $this->platformRow('Reseller Test Agency');
+        $form = $row->filter('form[action$="/deactivate"]');
+        self::assertSame(
+            '¿Desactivar Reseller Test Agency? Este revendedor paga con tarjeta. Se cancelará su suscripción y no se le volverá a cobrar. Se apagarán todos sus restaurantes.',
+            self::confirmText($form),
+        );
+
+        $this->client->submit($row->selectButton('Desactivar')->form());
+
+        self::assertResponseRedirects('/platform');
+        // In the same click: its own subscription ends (platform account) and
+        // its restaurant's card payments are paused (its connected account) —
+        // never cancelled.
+        self::assertSame([
+            ['cancelSubscription', 'sub_reseller_off', []],
+            ['updateSubscription', 'sub_restaurant_off', ['pause_collection' => ['behavior' => 'void']]],
+        ], FakeStripeGateway::$calls);
+        self::assertContains(['cancelSubscription', null], FakeStripeGateway::$accountLog);
+        self::assertContains(['updateSubscription', $account], FakeStripeGateway::$accountLog);
+        $reseller = $this->resellerReloaded();
+        self::assertNull($reseller->getStripeSubscriptionId());
+        self::assertTrue($reseller->isExpired());
+        $restaurant = $this->em->find(Restaurant::class, $this->restaurant->getId());
+        self::assertSame('sub_restaurant_off', $restaurant->getStripeSubscriptionId());
+        self::assertTrue($restaurant->isExpired(), 'off with its reseller');
+        $this->client->followRedirect();
+        self::assertSelectorNotExists('.flash-error');
+
+        // The nightly sync then finds nothing left to do.
+        FakeStripeGateway::$calls = [];
+        $result = static::getContainer()->get(StripeBilling::class)->syncResellerCollection($reseller);
+        self::assertSame([], $result['paused']);
+        self::assertSame([], FakeStripeGateway::$calls);
+    }
+
+    public function testRestaurantPauseFailingStillDeactivatesAndTheNightlySyncRetries(): void
+    {
+        $this->resellerAndRestaurantPayByCard();
+        $subscription = FakeStripeGateway::$objects['sub_restaurant_off'];
+        unset(FakeStripeGateway::$objects['sub_restaurant_off']); // Stripe fails for that restaurant only
+        $row = $this->platformRow('Reseller Test Agency');
+
+        $this->client->submit($row->selectButton('Desactivar')->form());
+        $this->client->followRedirect();
+
+        self::assertSelectorTextContains('.flash-success', 'Reseller Test Agency: desactivado.');
+        self::assertSelectorTextContains('.flash-error', 'Reseller Test Agency está desactivado, pero no se pudo pausar en Stripe el cobro de Reseller Test Restaurant. Se reintentará');
+        $reseller = $this->resellerReloaded();
+        self::assertTrue($reseller->isExpired());
+        self::assertNull($reseller->getStripeSubscriptionId());
+        self::assertContains(['cancelSubscription', 'sub_reseller_off', []], FakeStripeGateway::$calls);
+
+        // app:resellers:sync-billing (same logic) pauses it on its next run.
+        FakeStripeGateway::$objects['sub_restaurant_off'] = $subscription;
+        $result = static::getContainer()->get(StripeBilling::class)->syncResellerCollection($reseller);
+        self::assertSame(['Reseller Test Restaurant'], $result['paused']);
+        self::assertSame('void', FakeStripeGateway::$objects['sub_restaurant_off']['pause_collection']['behavior'] ?? null);
+    }
+
+    public function testDeactivateResellerByCardLeavesItOnWhenStripeFails(): void
+    {
+        $this->resellerAndRestaurantPayByCard();
+        $row = $this->platformRow('Reseller Test Agency');
+        FakeStripeGateway::$fail = true;
+
+        $this->client->submit($row->selectButton('Desactivar')->form());
+        $this->client->followRedirect();
+
+        self::assertSelectorTextContains('.flash-error', 'No se pudo cancelar la suscripción de Reseller Test Agency en Stripe. No se ha desactivado');
+        $reseller = $this->resellerReloaded();
+        self::assertSame('sub_reseller_off', $reseller->getStripeSubscriptionId());
+        self::assertFalse($reseller->isExpired());
+        self::assertFalse($this->em->find(Restaurant::class, $this->restaurant->getId())->isExpired());
+        self::assertSame([], FakeStripeGateway::$calls, 'nothing paused either');
+    }
+
+    /** The text of a form's onsubmit="return confirm(…)" (JSON-escaped in the page). */
+    private static function confirmText(Crawler $form): string
+    {
+        return json_decode(substr($form->attr('onsubmit'), strlen('return confirm('), -1));
     }
 
     public function testRestaurantActionsRejectResellerRestaurant(): void
