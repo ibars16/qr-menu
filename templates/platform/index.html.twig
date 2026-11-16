@@ -151,6 +151,9 @@
                                 <td data-label="Suscripción">
                                     {% if restaurant.archived %}
                                         <div class="status">⚪ Archivado</div>
+                                    {% elseif restaurant.awaitingFirstPayment %}
+                                        {# Never paid (no free trial): as /partners shows it. #}
+                                        <div class="status status-never-paid">⚪ {{ 'status.pending'|trans({}, 'partners', 'es') }}</div>
                                     {% elseif restaurant.expired %}
                                         <div class="status status-expired">🔴 Vencida</div>
                                     {% else %}

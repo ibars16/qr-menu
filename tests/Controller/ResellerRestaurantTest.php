@@ -347,6 +347,29 @@ final class ResellerRestaurantTest extends WebTestCase
 
     // ── /platform ───────────────────────────────────────────────────────────
 
+    /** Never paid (created off, no trial): "Pendiente de pago" as in /partners, not "Vencida". */
+    public function testPlatformRowOfNeverPaidRestaurantSaysPendingPayment(): void
+    {
+        $this->setOwnPaidUntil('yesterday');
+        self::assertTrue($this->em->find(Restaurant::class, $this->restaurant->getId())->isAwaitingFirstPayment());
+
+        $row = $this->platformRow('Reseller Test Restaurant');
+
+        self::assertSame('⚪ Pendiente de pago', $row->filter('.status')->text());
+        self::assertStringNotContainsString('Vencida', $row->text());
+    }
+
+    public function testPlatformRowOfRestaurantExpiredAfterPayingStaysExpired(): void
+    {
+        $this->em->clear();
+        $restaurant = $this->em->find(Restaurant::class, $this->restaurant->getId());
+        $restaurant->markPaid(Restaurant::PLAN_MONTHLY);
+        $this->em->flush();
+        $this->setOwnPaidUntil('yesterday');
+
+        self::assertSame('🔴 Vencida', $this->platformRow('Reseller Test Restaurant')->filter('.status')->text());
+    }
+
     public function testPlatformRestaurantRowHasNoBillingActions(): void
     {
         $row = $this->platformRow('Reseller Test Restaurant');
