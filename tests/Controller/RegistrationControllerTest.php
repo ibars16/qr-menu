@@ -68,7 +68,7 @@ final class RegistrationControllerTest extends WebTestCase
         self::assertContains(User::ROLE_OWNER, $user->getRoles());
         self::assertInstanceOf(Restaurant::class, $user->getRestaurant());
         // Ours keep the free trial (a reseller's restaurant has none).
-        self::assertSame((new \DateTimeImmutable('today +30 days'))->format('Y-m-d'), $user->getRestaurant()->getPaidUntil()->format('Y-m-d'));
+        self::assertSame((new \DateTimeImmutable('today +7 days'))->format('Y-m-d'), $user->getRestaurant()->getPaidUntil()->format('Y-m-d'));
     }
 
     /**

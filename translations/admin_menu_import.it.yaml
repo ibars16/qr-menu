@@ -47,6 +47,8 @@ status:
 complete:
     title_published: 'Il tuo menù è online'
     subtitle_published: 'Abbiamo aggiunto i tuoi piatti e i tuoi clienti possono già vederli.'
+    title_published_off: 'Il tuo menù è pronto'
+    subtitle_published_off: 'Abbiamo aggiunto i tuoi piatti. I tuoi clienti lo vedranno quando il piano sarà attivo.'
     review_title: 'Controlla il tuo menù'
     review_text: 'Dagli un''occhiata per verificare che sia tutto corretto: nomi, prezzi, descrizioni e allergeni. Puoi modificare qualsiasi piatto da Menu.'
     review_hidden_singular: '%count% piatto senza prezzo resta nascosto finché non gliene dai uno.'

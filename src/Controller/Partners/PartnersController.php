@@ -262,7 +262,7 @@ class PartnersController extends AbstractController
                 continue;
             }
             $summary['active']++;
-            if ($restaurant->getDaysLeft() <= 7) {
+            if ($restaurant->getDaysLeft() <= Restaurant::LIST_EXPIRING_SOON_DAYS) {
                 $summary['expiringSoon']++;
             }
         }

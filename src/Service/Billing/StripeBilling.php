@@ -304,7 +304,10 @@ class StripeBilling
         }
 
         $params = ['pause_collection' => ''];
-        $newPeriod = $restaurant->isOwnPeriodExpired($today);
+        // Its paidUntil itself, not isOwnPeriodExpired(): a restaurant still in
+        // its card-renewal grace had that renewal voided too, so it needs the
+        // new period as well.
+        $newPeriod = $restaurant->getDaysLeft($today) < 0;
         if ($newPeriod) {
             // Flexible billing mode (our subscriptions'): an anchor reset
             // only invoices with always_invoice — prorated, so the unused

@@ -22,13 +22,13 @@ final class RestaurantTrialTest extends TestCase
         return $restaurant;
     }
 
-    public function testNewRestaurantIsOnTrialWithThirtyDaysRemaining(): void
+    public function testNewRestaurantIsOnTrialWithSevenDaysRemaining(): void
     {
         $restaurant = new Restaurant();
 
         self::assertNull($restaurant->getPlan());
         self::assertTrue($restaurant->isTrialActive());
-        self::assertSame(30, $restaurant->getTrialDaysRemaining());
+        self::assertSame(7, $restaurant->getTrialDaysRemaining());
     }
 
     public function testTrialIsActiveWithOneDayRemainingOnTheLastDay(): void

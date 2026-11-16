@@ -22,10 +22,16 @@
    A refused dish is skipped server side; Gemini down / the brake stop the
    run with the server's message.
 
+   Its public menu off (menu_off: never paid, trial over or "Pendiente de
+   pago" — Service\AiAccess still allows the free photos left): no
+   "prueba" and no plan link, only "Te quedan X de 2 fotos con IA gratis."
+   and the button.
+
    Params: batch (MenuImportBatch), remaining (int), variant ('offer'|'notice'),
-   kind ('resume'|'imported', notice only).
+   kind ('resume'|'imported', notice only), menu_off (bool, default false).
    Include _ai_photo_batch_assets.html.twig once per page for its CSS/JS. #}
 {% set kind = kind|default('resume') %}
+{% set menu_off = menu_off|default(false) %}
 {% set trialRemaining = ai_photo_trial_remaining() %}
 {% set trial = trialRemaining is not null %}
 {% set trialUsed = trial and trialRemaining == 0 %}
@@ -56,7 +62,9 @@
     {% endif %}
 
     {# Free trial: say plainly that these photos cost nothing and the rest need a plan. #}
-    {% if trial and not trialUsed %}
+    {% if trial and not trialUsed and menu_off %}
+        <p class="ai-batch-trial">{{ 'ai_photo.trial_remaining'|trans({'%count%': trialRemaining, '%limit%': ai_photo_trial_limit()}, 'admin_menu') }}</p>
+    {% elseif trial and not trialUsed %}
         <div class="ai-batch-trial-box">
             <p class="ai-batch-trial-title">
                 <i class="ti ti-gift" aria-hidden="true"></i>

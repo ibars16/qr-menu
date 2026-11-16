@@ -121,7 +121,7 @@
         <div class="summary">
             <div class="summary-card"><div class="summary-value">{{ summary.active }}</div><div class="summary-label">Activas</div></div>
             <div class="summary-card"><div class="summary-value">{{ summary.trial }}</div><div class="summary-label">En prueba</div></div>
-            <div class="summary-card"><div class="summary-value">{{ summary.expiringSoon }}</div><div class="summary-label">Vencen en 7 días</div></div>
+            <div class="summary-card"><div class="summary-value">{{ summary.expiringSoon }}</div><div class="summary-label">Vencen en {{ constant('App\\Entity\\Restaurant::LIST_EXPIRING_SOON_DAYS') }} días</div></div>
             <div class="summary-card"><div class="summary-value">{{ summary.expired }}</div><div class="summary-label">Vencidas</div></div>
         </div>
 
@@ -369,7 +369,7 @@
     </td>
     {% else %}
     {% set days = c.daysLeft %}
-    <td data-label="Válida hasta" class="until {{ days < 0 ? 'until-expired' : (days <= 7 ? 'until-soon' : '') }}">
+    <td data-label="Válida hasta" class="until {{ days < 0 ? 'until-expired' : (days <= constant('App\\Entity\\Restaurant::LIST_EXPIRING_SOON_DAYS') ? 'until-soon' : '') }}">
         <div>{{ c.paidUntil|date('d/m/Y') }}</div>
         <div class="sub">
             {%- if days < 0 -%}

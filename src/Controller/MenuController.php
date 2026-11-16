@@ -9,6 +9,7 @@ use App\Repository\ProductRepository;
 use App\Repository\ProductViewRepository;
 use App\Repository\RestaurantRepository;
 use App\Service\AdminLocaleResolver;
+use App\Service\AiAccess;
 use App\Service\CategoryTranslationService;
 use App\Service\CurrencyConverter;
 use App\Service\MenuPreferencesResolver;
@@ -167,6 +168,7 @@ class MenuController extends AbstractController
         ClockInterface $clock,
         WarmTranslationLock $lock,
         #[Autowire(service: 'limiter.menu_warm_ip')] RateLimiterFactoryInterface $ipLimiter,
+        AiAccess $aiAccess,
     ): JsonResponse {
         $deadline = TranslationDeadline::in($clock, TranslationDeadline::WARM_SECONDS);
         if (!$ipLimiter->create($request->getClientIp() ?? '')->consume()->isAccepted()) {
@@ -177,7 +179,7 @@ class MenuController extends AbstractController
         if (!$restaurant) {
             return $this->json(['ok' => false], 404);
         }
-        if ($restaurant->isExpired() || $this->hiddenUntilEmailConfirmed($restaurant)) {
+        if (!$aiAccess->allows($restaurant, AiAccess::TRANSLATIONS) || $this->hiddenUntilEmailConfirmed($restaurant)) {
             return $this->json(['ok' => false], 503);
         }
 

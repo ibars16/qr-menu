@@ -76,7 +76,7 @@ class PlatformController extends AbstractController
         );
 
         // Summary cards — informative only. "Expiring soon" overlaps with
-        // active/trial on purpose (today up to today + 7 days, not expired).
+        // active/trial on purpose (today up to today + LIST_EXPIRING_SOON_DAYS, not expired).
         // Only restaurants billed on their own.
         $summary = ['active' => 0, 'trial' => 0, 'expiringSoon' => 0, 'expired' => 0];
         foreach ($restaurants as $restaurant) {
@@ -88,7 +88,7 @@ class PlatformController extends AbstractController
                 continue;
             }
             $summary[$restaurant->getPlan() === null ? 'trial' : 'active']++;
-            if ($restaurant->getDaysLeft() <= 7) {
+            if ($restaurant->getDaysLeft() <= Restaurant::LIST_EXPIRING_SOON_DAYS) {
                 $summary['expiringSoon']++;
             }
         }

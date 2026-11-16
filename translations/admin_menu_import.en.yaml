@@ -47,6 +47,8 @@ status:
 complete:
     title_published: 'Your menu is live'
     subtitle_published: 'We''ve added your dishes and your customers can already see them.'
+    title_published_off: 'Your menu is ready'
+    subtitle_published_off: 'We''ve added your dishes. Your customers will see it once the plan is active.'
     review_title: 'Check your menu'
     review_text: 'Take a look to make sure everything is right: names, prices, descriptions and allergens. You can change any dish from Menu.'
     review_hidden_singular: '%count% dish without a price stays hidden until you give it one.'

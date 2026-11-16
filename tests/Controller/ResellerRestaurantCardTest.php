@@ -161,7 +161,7 @@ final class ResellerRestaurantCardTest extends WebTestCase
         $crawler = $this->client->request('GET', '/admin/menu');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('.sidebar-header .trial-badge', 'Prueba gratuita · quedan 30 días');
+        self::assertSelectorTextContains('.sidebar-header .trial-badge', 'Prueba gratuita · quedan 7 días');
         self::assertSelectorExists('.sidebar-header button.trial-choose');
         self::assertSelectorNotExists('.reseller-notice');
         $labels = $crawler->filter('#billing-modal .plan-option span')->each(fn (Crawler $n) => $n->text());
@@ -184,6 +184,9 @@ final class ResellerRestaurantCardTest extends WebTestCase
 
     public function testNoCardPaymentWithoutStripeOrPrice(): void
     {
+        // Far from its end: no "contacta con tu revendedor" notice either.
+        (new \ReflectionProperty(Restaurant::class, 'paidUntil'))->setValue($this->reloaded(), new \DateTimeImmutable('today +30 days'));
+        $this->em->flush();
         foreach (['charges' => fn (Reseller $r) => $r->setConnectChargesEnabled(false), 'price' => fn (Reseller $r) => $r->setRestaurantPriceMonthly(null, null)] as $why => $undo) {
             $this->em->clear();
             $reseller = $this->em->find(Reseller::class, $this->reseller->getId());

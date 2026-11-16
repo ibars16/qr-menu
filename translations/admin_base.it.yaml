@@ -50,6 +50,7 @@ choose_plan: "Scegli un piano per attivare il tuo menù"
 expired_menu_hidden: "Nel frattempo i tuoi clienti non vedono il tuo menù. Rinnova per mostrarlo di nuovo."
 first_payment_menu_hint: "I tuoi clienti vedranno il tuo menù appena scegli un piano."
 reseller_inactive_hint: "Contatta %name%."
+ai_blocked: "Il tuo abbonamento non è attivo. Scegli un piano per continuare a usare l'IA."
 
 # A reseller's restaurant, its own paid_until 7 days or fewer away (no payment button).
 reseller_notice:

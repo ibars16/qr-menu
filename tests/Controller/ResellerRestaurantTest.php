@@ -124,6 +124,8 @@ final class ResellerRestaurantTest extends WebTestCase
 
     public function testOwnerSeesNoPaymentInPanel(): void
     {
+        // Far from its end: no "contacta con tu revendedor" notice either.
+        $this->setOwnPaidUntil('today +30 days');
         $this->client->loginUser($this->owner);
         $this->client->request('GET', '/admin/menu');
 
@@ -140,6 +142,7 @@ final class ResellerRestaurantTest extends WebTestCase
         $reseller = $this->resellerReloaded();
         (new \ReflectionProperty(Reseller::class, 'paidUntil'))->setValue($reseller, new \DateTimeImmutable('today +2 days'));
         $this->em->flush();
+        $this->setOwnPaidUntil('today +30 days');
 
         $this->client->loginUser($this->owner);
         $this->client->request('GET', '/admin/menu');
@@ -254,9 +257,9 @@ final class ResellerRestaurantTest extends WebTestCase
         $this->client->request('GET', '/admin/billing');
 
         self::assertResponseIsSuccessful();
-        // Its own 30-day trial, managed by the reseller.
-        self::assertSelectorTextSame('#billing-status', 'Prueba gratis · quedan 30 días');
-        self::assertSelectorTextSame('#billing-until', (new \DateTimeImmutable('today +30 days'))->format('d/m/Y'));
+        // Its own trial (Restaurant::TRIAL_DAYS), managed by the reseller.
+        self::assertSelectorTextSame('#billing-status', 'Prueba gratis · quedan 7 días');
+        self::assertSelectorTextSame('#billing-until', (new \DateTimeImmutable('today +7 days'))->format('d/m/Y'));
         self::assertSelectorTextContains('#billing-reseller', 'Tu carta la gestiona Reseller Test Agency.');
         self::assertStringStartsWith('mailto:reseller-test-contact-', $this->client->getCrawler()->filter('#billing-reseller-email')->attr('href'));
         self::assertSelectorNotExists('.billing-wrap form');

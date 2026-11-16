@@ -403,6 +403,7 @@ final class PartnersControllerTest extends WebTestCase
     {
         // Bistro: an old 30-day trial (created before resellers' restaurants
         // lost theirs), never paid but still on.
+        $this->paidUntil($this->restaurant, 'today +30 days');
         $paid = $this->restaurant('Partners Test Paid', $this->reseller);
         $paid->markPaid(Restaurant::PLAN_MONTHLY);
         $this->paidUntil($paid, 'today +3 days');
@@ -419,9 +420,9 @@ final class PartnersControllerTest extends WebTestCase
 
         $crawler = $this->panel();
 
-        // Activos · Pendiente de pago · Vencen en 7 días · Vencidos (archived left out).
+        // Activos · Pendiente de pago · Vencen en 3 días · Vencidos (archived left out).
         self::assertSame(['2', '1', '1', '1'], $crawler->filter('.summary-card .summary-value')->each(fn (Crawler $n) => $n->text()));
-        self::assertSame(['Activos', 'Pendiente de pago', 'Vencen en 7 días', 'Vencidos'], $crawler->filter('.summary-card .summary-label')->each(fn (Crawler $n) => $n->text()));
+        self::assertSame(['Activos', 'Pendiente de pago', 'Vencen en 3 días', 'Vencidos'], $crawler->filter('.summary-card .summary-label')->each(fn (Crawler $n) => $n->text()));
         self::assertStringNotContainsString('prueba', $crawler->filter('body')->text());
 
         // Soonest to expire first; archived below, as before.

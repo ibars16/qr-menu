@@ -1,9 +1,9 @@
 title: "QR Menu — Menu digitale per il tuo ristorante"
 
 meta:
-  description: "Crea il menu digitale del tuo ristorante in pochi minuti: menu tramite QR, pannello di amministrazione, chat IA per i tuoi clienti e statistiche. Prova gratuita di 1 mese, senza carta di credito."
+  description: "Crea il menu digitale del tuo ristorante in pochi minuti: menu tramite QR, pannello di amministrazione, chat IA per i tuoi clienti e statistiche. Prova gratuita di 7 giorni, senza carta di credito."
   og_title: "QR Menu — Menu digitale per il tuo ristorante"
-  og_description: "Menu tramite QR, pannello di amministrazione, chat IA e statistiche per il tuo ristorante. Prova gratuita di 1 mese, senza carta di credito."
+  og_description: "Menu tramite QR, pannello di amministrazione, chat IA e statistiche per il tuo ristorante. Prova gratuita di 7 giorni, senza carta di credito."
 
 nav:
   login: "Accedi"
@@ -19,11 +19,11 @@ nav:
   light_mode: "Modalità chiara"
 
 hero:
-  badge: "Prova gratuita di 1 mese, senza carta"
+  badge: "Prova gratuita di 7 giorni, senza carta"
   title_main: "Il menu del tuo ristorante, "
   title_accent: "digitale e sempre aggiornato"
   subtitle: "I tuoi clienti scansionano un QR e vedono il menu all'istante — nella loro lingua, con foto, allergeni e prezzi sempre aggiornati. Tu lo modifichi da un pannello pensato per essere gestito in un minuto."
-  cta_primary: "Prova gratuita di 1 mese →"
+  cta_primary: "Prova gratuita di 7 giorni →"
   cta_secondary: "Vedi i prezzi"
   note: "Senza carta di credito. Annulla quando vuoi."
 
@@ -64,7 +64,7 @@ faq:
   title: "Prima che tu chieda"
   q1:
     q: "Serve la carta di credito per la prova?"
-    a: "No. La prova di 1 mese è completamente gratuita, senza carta né impegno."
+    a: "No. La prova di 7 giorni è completamente gratuita, senza carta né impegno."
   q2:
     q: "Posso importare il menu che ho già?"
     a: "Sì. Carica una foto del tuo menu attuale e l'IA lo organizza automaticamente per categorie e piatti."
@@ -75,11 +75,11 @@ faq:
     q: "In quante lingue può essere mostrato il mio menu?"
     a: "Viene tradotto automaticamente in 20 lingue, senza che tu debba fare nulla."
   q5:
-    q: "Cosa succede quando finisce il mese di prova?"
+    q: "Cosa succede quando finisce la prova?"
     a: "Il tuo menu viene messo in pausa finché non scegli un piano. Non viene addebitato nulla automaticamente, perché non ti chiediamo la carta."
   price:
     q: "Quanto costa?"
-    a: "%monthly% al mese o %yearly% all'anno, IVA inclusa. Un solo piano con tutto incluso, e il primo mese è gratuito, senza carta."
+    a: "%monthly% al mese o %yearly% all'anno, IVA inclusa. Un solo piano con tutto incluso, e i primi 7 giorni sono gratuiti, senza carta."
 
 features:
   eyebrow: "Funzionalità"
@@ -126,7 +126,7 @@ steps:
 pricing:
   eyebrow: "Prezzi"
   title: "Un solo piano, tutto incluso"
-  subtitle: "Inizia con un mese gratuito. Poi scegli se pagare al mese o all'anno."
+  subtitle: "Inizia con 7 giorni gratuiti. Poi scegli se pagare al mese o all'anno."
   period_label: "Periodo di fatturazione"
   monthly: "Mensile"
   yearly: "Annuale"
@@ -142,11 +142,11 @@ pricing:
   inc4: "14 allergeni ufficiali e 20 lingue"
   inc5: "Multivaluta e temi visivi"
   inc6: "Statistiche del tuo menu"
-  cta: "Prova gratuita di 1 mese"
+  cta: "Prova gratuita di 7 giorni"
   no_card: "Senza carta di credito"
 
 cta:
-  title: "Prova QR Menu gratis per 1 mese"
+  title: "Prova QR Menu gratis per 7 giorni"
   subtitle: "Senza carta di credito. Configura il tuo menu oggi stesso."
   button: "Crea il mio account gratuito →"
 

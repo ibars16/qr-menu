@@ -24,6 +24,7 @@ final class MenuImportPipeline
         private readonly MenuImportLanguageNotice $languageNotice,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
+        private readonly AiAccess $aiAccess,
     ) {}
 
     public function processBatch(MenuImportBatch $batch): void
@@ -33,6 +34,17 @@ final class MenuImportPipeline
         // trigger somehow fires twice), do nothing rather than risk
         // re-running assembly and duplicating categories/products.
         if (in_array($batch->getStatus(), [MenuImportBatchStatus::READY_FOR_REVIEW, MenuImportBatchStatus::COMPLETED, MenuImportBatchStatus::FAILED], true)) {
+            return;
+        }
+
+        // Started while the restaurant could use the AI, run once it can't
+        // (AiAccess): nothing is sent to the AI, the import just fails.
+        if (!$this->aiAccess->allows($batch->getRestaurant(), AiAccess::IMPORT)) {
+            $this->logger->info('Menu import batch not processed: the restaurant may not use the AI', ['batchId' => $batch->getId()]);
+            $batch->setStatus(MenuImportBatchStatus::FAILED);
+            $batch->setErrorMessage('Restaurant not active: AI not allowed.');
+            $this->em->flush();
+
             return;
         }
 

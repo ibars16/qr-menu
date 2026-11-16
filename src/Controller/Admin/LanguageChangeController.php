@@ -2,7 +2,9 @@
 
 namespace App\Controller\Admin;
 
+use App\Attribute\RequiresAi;
 use App\Entity\Restaurant;
+use App\Service\AiAccess;
 use App\Service\MenuLanguageChanger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -44,6 +46,7 @@ class LanguageChangeController extends AbstractController
     }
 
     #[Route('/convertir', name: 'step', methods: ['POST'])]
+    #[RequiresAi(AiAccess::LANGUAGE_CHANGE)]
     public function step(Request $request): JsonResponse
     {
         if (!$this->isCsrfTokenValid('admin_language_change', (string) $request->request->get('_token'))) {

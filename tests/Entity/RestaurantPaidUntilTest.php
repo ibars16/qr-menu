@@ -21,11 +21,11 @@ final class RestaurantPaidUntilTest extends TestCase
         return $restaurant;
     }
 
-    public function testNewRestaurantIsPaidUntilTodayPlusThirtyDays(): void
+    public function testNewRestaurantIsPaidUntilTodayPlusSevenDays(): void
     {
         $restaurant = new Restaurant();
 
-        self::assertSame((new \DateTimeImmutable('today +30 days'))->format('Y-m-d'), $restaurant->getPaidUntil()->format('Y-m-d'));
+        self::assertSame((new \DateTimeImmutable('today +7 days'))->format('Y-m-d'), $restaurant->getPaidUntil()->format('Y-m-d'));
         self::assertFalse($restaurant->isExpired());
     }
 

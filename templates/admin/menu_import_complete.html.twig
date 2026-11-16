@@ -64,9 +64,11 @@
             <div class="import-complete-icon is-success">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
             </div>
-            <div class="import-complete-title">{{ (published ? 'complete.title_published' : 'complete.title_success')|trans({}, 'admin_menu_import') }}</div>
+            {# Public menu off (Restaurant::isExpired()): not "ya está publicada". #}
+            {% set publishedKey = published ? (menuOff ? 'published_off' : 'published') : 'success' %}
+            <div class="import-complete-title">{{ ('complete.title_' ~ publishedKey)|trans({}, 'admin_menu_import') }}</div>
             <div class="import-complete-sub">
-                {{ (published ? 'complete.subtitle_published' : 'complete.subtitle_success')|trans({}, 'admin_menu_import') }}
+                {{ ('complete.subtitle_' ~ publishedKey)|trans({}, 'admin_menu_import') }}
                 {% if failedPageCount > 0 %}
                     {{ 'complete.subtitle_partial_failure'|trans({'%failed%': failedPageCount, '%total%': totalPageCount}, 'admin_menu_import') }}
                 {% endif %}
@@ -99,7 +101,15 @@
                 </div>
             {% endif %}
             {% if aiPhotoBox %}
-                {% include 'admin/_ai_photo_batch.html.twig' with {batch: batch, remaining: aiPhotoRemaining, variant: 'offer'} %}
+                {% include 'admin/_ai_photo_batch.html.twig' with {batch: batch, remaining: aiPhotoRemaining, variant: 'offer', menu_off: menuOff} %}
+            {% elseif aiPhotoRemaining > 0 %}
+                {# No AI photos for it now (AiAccess): just how many are missing. #}
+                <div class="import-review-notice import-photos-missing" role="note">
+                    <i class="ti ti-photo-off" aria-hidden="true"></i>
+                    <div>
+                        <p>{{ (aiPhotoRemaining == 1 ? 'ai_photo.batch.offer_singular' : 'ai_photo.batch.offer_plural')|trans({'%count%': aiPhotoRemaining}, 'admin_menu') }}</p>
+                    </div>
+                </div>
             {% endif %}
             <a href="{{ path('admin_menu') }}" class="btn btn-primary">
                 <i class="ti ti-eye" aria-hidden="true"></i> {{ 'complete.button_continue'|trans({}, 'admin_menu_import') }}

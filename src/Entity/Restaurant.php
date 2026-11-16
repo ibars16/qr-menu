@@ -407,12 +407,20 @@ class Restaurant
         return $this->aiPhotoCount;
     }
 
-    private const TRIAL_DAYS = 30;
+    /** New restaurants only: one already on the trial keeps the paidUntil it was created with. */
+    private const TRIAL_DAYS = 7;
 
     /**
-     * Its own paidUntil passed; a reseller's restaurant is also off when
-     * archived or when its reseller has expired. Everything that turns a
-     * restaurant off (admin gate, public menu, Smart Waiter, /platform,
+     * Days a card renewal that failed (Stripe still retrying: past_due) keeps
+     * everything on after paidUntil. See isInCardRenewalGrace().
+     */
+    public const CARD_RENEWAL_GRACE_DAYS = 3;
+
+    /**
+     * Its own paidUntil passed (and no card-renewal grace left); a
+     * reseller's restaurant is also off when archived or when its reseller
+     * has expired. Everything that turns a restaurant off (admin gate,
+     * public menu, Smart Waiter, the AI — Service\AiAccess —, /platform,
      * /partners) asks only this.
      */
     public function isExpired(?\DateTimeImmutable $today = null): bool
@@ -421,16 +429,38 @@ class Restaurant
             return true;
         }
 
-        return $this->isPeriodExpired($today);
+        return $this->isOwnPeriodExpired($today);
     }
 
     /**
-     * Only its own paidUntil, whatever its reseller or archiving say: the
-     * status the reseller manages for it in /partners.
+     * Only its own paidUntil (plus the card-renewal grace), whatever its
+     * reseller or archiving say: the status the reseller manages for it in
+     * /partners.
      */
     public function isOwnPeriodExpired(?\DateTimeImmutable $today = null): bool
     {
-        return $this->isPeriodExpired($today);
+        return $this->isPeriodExpired($today) && !$this->isInCardRenewalGrace($today);
+    }
+
+    /**
+     * paidUntil passed, but it pays by card and its renewal simply hasn't
+     * gone through yet (failed, Stripe retrying): still on until paidUntil
+     * + CARD_RENEWAL_GRACE_DAYS. A live Stripe subscription that isn't set
+     * to cancel only ever leaves paidUntil behind that way — a paid renewal
+     * moves it forward (invoice.paid). Never for the trial (no
+     * subscription), payments by hand (none either), a cancelled one
+     * (stripeCancelPending: it ends on paidUntil) or Desactivar / Archivar
+     * (they end the subscription first, StripeBilling::cancelNow()).
+     */
+    public function isInCardRenewalGrace(?\DateTimeImmutable $today = null): bool
+    {
+        $today = $today ?? new \DateTimeImmutable('today');
+
+        return $this->hasLiveSubscription()
+            && !$this->isStripeCancelPending()
+            && $this->getLastPaidAt() !== null
+            && $this->isPeriodExpired($today)
+            && $this->getPaidUntil()->modify('+' . self::CARD_RENEWAL_GRACE_DAYS . ' days') >= $today;
     }
 
     /**

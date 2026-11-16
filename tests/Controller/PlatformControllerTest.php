@@ -123,7 +123,7 @@ final class PlatformControllerTest extends WebTestCase
         self::assertSame('🟡 Prueba gratis', $row->filter('.status')->text());
         self::assertStringContainsString('Sin cobros', $row->text());
         self::assertStringContainsString($this->restaurant->getPaidUntil()->format('d/m/Y'), $row->filter('.until')->text());
-        self::assertSame('quedan 30 días', $row->filter('.until .sub')->text());
+        self::assertSame('quedan 7 días', $row->filter('.until .sub')->text());
         self::assertCount(0, $row->filter('.until-soon, .until-expired'));
     }
 
@@ -177,7 +177,8 @@ final class PlatformControllerTest extends WebTestCase
     public static function untilCases(): iterable
     {
         yield 'one day left'     => ['today +1 day', 'queda 1 día', 'until-soon'];
-        yield 'seven days left'  => ['today +7 days', 'quedan 7 días', 'until-soon'];
+        yield 'three days left'  => ['today +3 days', 'quedan 3 días', 'until-soon'];
+        yield 'four days left'   => ['today +4 days', 'quedan 4 días', ''];
         yield 'expires today'    => ['today', 'vence hoy', 'until-soon'];
         yield 'expired 1 day'    => ['yesterday', 'venció hace 1 día', 'until-expired'];
         yield 'expired 5 days'   => ['today -5 days', 'venció hace 5 días', 'until-expired'];
@@ -191,7 +192,11 @@ final class PlatformControllerTest extends WebTestCase
         $row = $this->row();
 
         self::assertSame($text, $row->filter('.until .sub')->text());
-        self::assertCount(1, $row->filter('.' . $class));
+        if ($class === '') {
+            self::assertCount(0, $row->filter('.until-soon, .until-expired'));
+        } else {
+            self::assertCount(1, $row->filter('.' . $class));
+        }
     }
 
     public function testAutoPayMarkOnlyWithLiveSubscription(): void
@@ -263,13 +268,13 @@ final class PlatformControllerTest extends WebTestCase
         $this->client->loginUser($this->superAdmin);
         $before = $this->client->request('GET', '/platform');
         $trial = $this->summary($before, 'En prueba');
-        $soon = $this->summary($before, 'Vencen en 7 días');
+        $soon = $this->summary($before, 'Vencen en 3 días');
         $expired = $this->summary($before, 'Vencidas');
 
         $this->setPaidUntil('today +3 days');
         $after = $this->client->request('GET', '/platform');
         self::assertSame($trial, $this->summary($after, 'En prueba'));
-        self::assertSame($soon + 1, $this->summary($after, 'Vencen en 7 días'));
+        self::assertSame($soon + 1, $this->summary($after, 'Vencen en 3 días'));
 
         $this->setPaidUntil('yesterday');
         $after = $this->client->request('GET', '/platform');

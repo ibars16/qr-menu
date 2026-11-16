@@ -87,7 +87,7 @@ flash:
 summary:
     active: "Aktiv"
     pending: "Zahlung ausstehend"
-    expiring_soon: "Laufen in 7 Tagen ab"
+    expiring_soon: "Laufen in %count% Tagen ab"
     expired: "Abgelaufen"
 
 status:

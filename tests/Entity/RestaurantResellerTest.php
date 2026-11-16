@@ -159,7 +159,7 @@ final class RestaurantResellerTest extends TestCase
 
         self::assertFalse($restaurant->isBilledByReseller());
         self::assertTrue($restaurant->isTrialActive());
-        self::assertSame(30, $restaurant->getTrialDaysRemaining());
+        self::assertSame(7, $restaurant->getTrialDaysRemaining());
 
         $this->paidUntil($restaurant, 'yesterday');
         self::assertTrue($restaurant->isExpired());
@@ -183,7 +183,7 @@ final class RestaurantResellerTest extends TestCase
 
         self::assertTrue($restaurant->ownerPaysByCard());
         self::assertTrue($restaurant->isTrialActive());
-        self::assertSame(30, $restaurant->getTrialDaysRemaining());
+        self::assertSame(7, $restaurant->getTrialDaysRemaining());
         $this->paidUntil($restaurant, 'today +3 days');
         self::assertFalse($restaurant->isResellerServiceEndingSoon(), 'the trial notice instead');
 

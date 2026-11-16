@@ -1,9 +1,9 @@
 title: "QR Menu — Digital menu for your restaurant"
 
 meta:
-  description: "Create your restaurant's digital menu in minutes: QR menu, admin panel, AI chat for your customers, and stats. Try it free for 1 month, no credit card required."
+  description: "Create your restaurant's digital menu in minutes: QR menu, admin panel, AI chat for your customers, and stats. Try it free for 7 days, no credit card required."
   og_title: "QR Menu — Digital menu for your restaurant"
-  og_description: "QR menu, admin panel, AI chat and stats for your restaurant. Try it free for 1 month, no credit card required."
+  og_description: "QR menu, admin panel, AI chat and stats for your restaurant. Try it free for 7 days, no credit card required."
 
 nav:
   login: "Log in"
@@ -19,11 +19,11 @@ nav:
   light_mode: "Light mode"
 
 hero:
-  badge: "Free 1-month trial, no card needed"
+  badge: "Free 7-day trial, no card needed"
   title_main: "Your restaurant's menu, "
   title_accent: "digital and always up to date"
   subtitle: "Your customers scan a QR code and see the menu instantly — in their language, with photos, allergens and prices always current. You edit it from a panel built to be managed in a minute."
-  cta_primary: "Try it free for 1 month →"
+  cta_primary: "Try it free for 7 days →"
   cta_secondary: "See pricing"
   note: "No credit card required. Cancel anytime."
 
@@ -64,7 +64,7 @@ faq:
   title: "Before you ask"
   q1:
     q: "Do I need a credit card for the trial?"
-    a: "No. The 1-month trial is completely free, no card and no commitment."
+    a: "No. The 7-day trial is completely free, no card and no commitment."
   q2:
     q: "Can I import the menu I already have?"
     a: "Yes. Upload a photo of your current menu and the AI organizes it into categories and dishes automatically."
@@ -75,11 +75,11 @@ faq:
     q: "How many languages can my menu be shown in?"
     a: "It's automatically translated into 20 languages, with nothing for you to do."
   q5:
-    q: "What happens when the trial month ends?"
+    q: "What happens when the trial ends?"
     a: "Your menu is paused until you choose a plan. Nothing is charged automatically, because we never ask for your card."
   price:
     q: "How much does it cost?"
-    a: "%monthly% a month or %yearly% a year, VAT included. One plan with everything included, and the first month is free, no card needed."
+    a: "%monthly% a month or %yearly% a year, VAT included. One plan with everything included, and the first 7 days are free, no card needed."
 
 features:
   eyebrow: "Features"
@@ -126,7 +126,7 @@ steps:
 pricing:
   eyebrow: "Pricing"
   title: "One plan, everything included"
-  subtitle: "Start with a free month. Then choose to pay monthly or yearly."
+  subtitle: "Start with 7 free days. Then choose to pay monthly or yearly."
   period_label: "Billing period"
   monthly: "Monthly"
   yearly: "Yearly"
@@ -142,11 +142,11 @@ pricing:
   inc4: "14 official allergens and 20 languages"
   inc5: "Multi-currency and visual themes"
   inc6: "Menu statistics"
-  cta: "Try it free for 1 month"
+  cta: "Try it free for 7 days"
   no_card: "No credit card required"
 
 cta:
-  title: "Try QR Menu free for 1 month"
+  title: "Try QR Menu free for 7 days"
   subtitle: "No credit card required. Set up your menu today."
   button: "Create my free account →"
 

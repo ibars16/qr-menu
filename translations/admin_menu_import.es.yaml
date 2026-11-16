@@ -47,6 +47,8 @@ status:
 complete:
     title_published: 'Tu carta ya está publicada'
     subtitle_published: 'Hemos añadido tus platos y ya son visibles para tus clientes.'
+    title_published_off: 'Tu carta está lista'
+    subtitle_published_off: 'Hemos añadido tus platos. Tus clientes la verán cuando se active el plan.'
     review_title: 'Revisa tu carta'
     review_text: 'Échale un vistazo para comprobar que todo está bien: nombres, precios, descripciones y alérgenos. Puedes cambiar cualquier plato desde Carta.'
     review_hidden_singular: '%count% plato sin precio se ha quedado oculto hasta que le pongas uno.'

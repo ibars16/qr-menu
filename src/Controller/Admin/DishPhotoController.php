@@ -2,9 +2,11 @@
 
 namespace App\Controller\Admin;
 
+use App\Attribute\RequiresAi;
 use App\Entity\MenuImportBatch;
 use App\Entity\Product;
 use App\Entity\Restaurant;
+use App\Service\AiAccess;
 use App\Service\DishPhoto\AiPhotoBatch;
 use App\Service\DishPhoto\DishPhotoException;
 use App\Service\DishPhoto\DishPhotoMessages;
@@ -55,6 +57,7 @@ class DishPhotoController extends AbstractController
     }
 
     #[Route('/products/ai-photo/generate', name: 'product_ai_photo_generate', methods: ['POST'])]
+    #[RequiresAi(AiAccess::PHOTOS)]
     public function generate(Request $request): JsonResponse
     {
         $restaurant = $this->restaurant();
@@ -90,6 +93,7 @@ class DishPhotoController extends AbstractController
 
     /** "Mejorar con IA": the dish's photo retouched and put on it at once (same quota as generate()). */
     #[Route('/products/{id}/ai-photo/enhance', name: 'product_ai_photo_enhance', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[RequiresAi(AiAccess::PHOTOS)]
     public function enhance(Product $product): JsonResponse
     {
         $restaurant = $this->restaurant();
@@ -166,6 +170,7 @@ class DishPhotoController extends AbstractController
     }
 
     #[Route('/menu/import/{id}/photos/step', name: 'menu_import_photos_step', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[RequiresAi(AiAccess::PHOTOS)]
     public function importStep(MenuImportBatch $importBatch, Request $request): JsonResponse
     {
         $restaurant = $this->assertBatch($importBatch);

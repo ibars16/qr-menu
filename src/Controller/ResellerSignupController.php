@@ -19,9 +19,11 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * A reseller's signup link for its customers (/alta/{code}, shown and
  * copied on /partners): the same form as /register, and the restaurant
- * created belongs to that reseller (counts for its extra restaurants) with
- * the usual first 30 days. Unknown code or reseller expired: "not
- * available" page and nothing is created.
+ * created belongs to that reseller. No free trial: it's created off,
+ * "Pendiente de pago" until it's paid (RestaurantCreator,
+ * Restaurant::isAwaitingFirstPayment()), and only counts for the
+ * reseller's extra restaurants once paid. Unknown code or reseller
+ * expired: "not available" page and nothing is created.
  */
 class ResellerSignupController extends AbstractController
 {

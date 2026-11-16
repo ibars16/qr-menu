@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Service\AdminLocaleResolver;
+use App\Service\AiAccess;
 use App\Service\ContactDetailsNormalizer;
 use App\Service\MenuLanguageChanger;
 use App\Service\OwnerTextTranslationPruner;
@@ -37,6 +38,7 @@ class SettingsController extends AbstractController
         ContactDetailsNormalizer $contactNormalizer,
         MenuLanguageChanger $languageChanger,
         OwnerTextTranslationPruner $ownerTextPruner,
+        AiAccess $aiAccess,
     ): Response {
         $restaurant = $this->getUser()->getRestaurant();
         if (!$restaurant) {
@@ -159,11 +161,18 @@ class SettingsController extends AbstractController
             // are converted (MenuLanguageChanger), after the flush below.
             // While a change is half done the field is locked.
             $languageChange = null;
+            $languageAiBlocked = false;
             if ($saves('language')) {
                 $restaurant->setCurrency($currency);
                 $restaurant->setAdminLocale($adminLocaleResolver->resolve($adminLocale));
                 if ($restaurant->getLanguageChangeTo() === null && $language !== $restaurant->getDefaultLanguage() && isset($languages[$language])) {
-                    $languageChange = $language;
+                    // Converting the texts is AI work (AiAccess): not while
+                    // the restaurant is off; the rest of the section saves.
+                    if ($aiAccess->allows($restaurant, AiAccess::LANGUAGE_CHANGE)) {
+                        $languageChange = $language;
+                    } else {
+                        $languageAiBlocked = true;
+                    }
                 }
             }
 
@@ -304,6 +313,9 @@ class SettingsController extends AbstractController
             }
             if ($languageResult === MenuLanguageChanger::BLOCKED_IMPORT) {
                 $this->addFlash('error', $translator->trans('language_change.blocked_import', domain: 'admin_settings'));
+            }
+            if ($languageAiBlocked) {
+                $this->addFlash('error', $translator->trans('ai_blocked', domain: 'admin_base'));
             }
 
             // Another section's own button: a logo / hero image picked

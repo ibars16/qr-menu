@@ -64,7 +64,7 @@ class RestaurantCreator
         $restaurant->setTheme('maison');
         $restaurant->setReseller($reseller);
         // No free trial for a reseller's restaurant: off until it's paid
-        // (Restaurant::isAwaitingFirstPayment()). Ours keep their 30 days.
+        // (Restaurant::isAwaitingFirstPayment()). Ours get the free trial (Restaurant::TRIAL_DAYS).
         if ($reseller !== null) {
             $restaurant->deactivateNow();
         }

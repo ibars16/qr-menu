@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\RestaurantRepository;
+use App\Service\AiAccess;
 use App\Service\MenuPreferencesResolver;
 use App\Service\SmartWaiterService;
 use Psr\Cache\CacheItemPoolInterface;
@@ -32,12 +33,13 @@ class SmartWaiterController extends AbstractController
         SmartWaiterService $smartWaiterService,
         MenuPreferencesResolver $menuPreferencesResolver,
         CacheItemPoolInterface $cache,
+        AiAccess $aiAccess,
     ): JsonResponse {
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
             throw $this->createNotFoundException('Restaurante no encontrado.');
         }
-        if ($restaurant->isExpired() || ($restaurant->isAwaitingEmailConfirmation() && !$this->isOwnTeam($restaurant))) {
+        if (!$aiAccess->allows($restaurant, AiAccess::SMART_WAITER) || ($restaurant->isAwaitingEmailConfirmation() && !$this->isOwnTeam($restaurant))) {
             return $this->json(['error' => 'unavailable'], 503);
         }
 

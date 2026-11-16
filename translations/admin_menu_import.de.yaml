@@ -47,6 +47,8 @@ status:
 complete:
     title_published: 'Deine Karte ist online'
     subtitle_published: 'Wir haben deine Gerichte hinzugefügt und deine Gäste können sie schon sehen.'
+    title_published_off: 'Deine Karte ist fertig'
+    subtitle_published_off: 'Wir haben deine Gerichte hinzugefügt. Deine Gäste sehen sie, sobald der Tarif aktiv ist.'
     review_title: 'Prüfe deine Karte'
     review_text: 'Schau einmal drüber, ob alles stimmt: Namen, Preise, Beschreibungen und Allergene. Jedes Gericht kannst du unter Speisekarte ändern.'
     review_hidden_singular: '%count% Gericht ohne Preis bleibt verborgen, bis du ihm einen gibst.'

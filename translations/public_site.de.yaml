@@ -1,9 +1,9 @@
 title: "QR Menu — Digitale Speisekarte für Ihr Restaurant"
 
 meta:
-  description: "Erstellen Sie die digitale Speisekarte Ihres Restaurants in wenigen Minuten: QR-Menü, Verwaltungspanel, KI-Chat für Ihre Kunden und Statistiken. 1 Monat kostenlos testen, keine Kreditkarte nötig."
+  description: "Erstellen Sie die digitale Speisekarte Ihres Restaurants in wenigen Minuten: QR-Menü, Verwaltungspanel, KI-Chat für Ihre Kunden und Statistiken. 7 Tage kostenlos testen, keine Kreditkarte nötig."
   og_title: "QR Menu — Digitale Speisekarte für Ihr Restaurant"
-  og_description: "QR-Menü, Verwaltungspanel, KI-Chat und Statistiken für Ihr Restaurant. 1 Monat kostenlos testen, keine Kreditkarte nötig."
+  og_description: "QR-Menü, Verwaltungspanel, KI-Chat und Statistiken für Ihr Restaurant. 7 Tage kostenlos testen, keine Kreditkarte nötig."
 
 nav:
   login: "Anmelden"
@@ -19,11 +19,11 @@ nav:
   light_mode: "Heller Modus"
 
 hero:
-  badge: "1 Monat kostenlos, keine Kreditkarte"
+  badge: "7 Tage kostenlos, keine Kreditkarte"
   title_main: "Die Speisekarte Ihres Restaurants, "
   title_accent: "digital und immer aktuell"
   subtitle: "Ihre Kunden scannen einen QR-Code und sehen die Speisekarte sofort — in ihrer Sprache, mit Fotos, Allergenen und stets aktuellen Preisen. Sie bearbeiten sie über ein Panel, das sich in einer Minute verwalten lässt."
-  cta_primary: "1 Monat kostenlos testen →"
+  cta_primary: "7 Tage kostenlos testen →"
   cta_secondary: "Preise ansehen"
   note: "Keine Kreditkarte nötig. Jederzeit kündbar."
 
@@ -64,7 +64,7 @@ faq:
   title: "Bevor Sie fragen"
   q1:
     q: "Brauche ich eine Kreditkarte für die Testphase?"
-    a: "Nein. Die 1-monatige Testphase ist völlig kostenlos, ohne Kreditkarte und ohne Verpflichtung."
+    a: "Nein. Die 7-tägige Testphase ist völlig kostenlos, ohne Kreditkarte und ohne Verpflichtung."
   q2:
     q: "Kann ich meine bestehende Speisekarte importieren?"
     a: "Ja. Laden Sie ein Foto Ihrer aktuellen Speisekarte hoch, und die KI ordnet sie automatisch nach Kategorien und Gerichten."
@@ -75,11 +75,11 @@ faq:
     q: "In wie vielen Sprachen kann meine Speisekarte angezeigt werden?"
     a: "Sie wird automatisch in 20 Sprachen übersetzt, ohne dass Sie etwas tun müssen."
   q5:
-    q: "Was passiert, wenn der Testmonat endet?"
+    q: "Was passiert, wenn die Testphase endet?"
     a: "Ihre Speisekarte wird pausiert, bis Sie einen Tarif wählen. Es wird nichts automatisch abgebucht, denn wir fragen nicht nach Ihrer Kreditkarte."
   price:
     q: "Was kostet es?"
-    a: "%monthly% pro Monat oder %yearly% pro Jahr, inkl. MwSt. Ein einziger Tarif mit allem inklusive – und der erste Monat ist kostenlos, ohne Kreditkarte."
+    a: "%monthly% pro Monat oder %yearly% pro Jahr, inkl. MwSt. Ein einziger Tarif mit allem inklusive – und die ersten 7 Tage sind kostenlos, ohne Kreditkarte."
 
 features:
   eyebrow: "Funktionen"
@@ -126,7 +126,7 @@ steps:
 pricing:
   eyebrow: "Preise"
   title: "Ein Tarif, alles inklusive"
-  subtitle: "Starten Sie mit einem kostenlosen Monat. Danach zahlen Sie monatlich oder jährlich."
+  subtitle: "Starten Sie mit 7 kostenlosen Tagen. Danach zahlen Sie monatlich oder jährlich."
   period_label: "Abrechnungszeitraum"
   monthly: "Monatlich"
   yearly: "Jährlich"
@@ -142,11 +142,11 @@ pricing:
   inc4: "14 offizielle Allergene und 20 Sprachen"
   inc5: "Mehrere Währungen und visuelle Themes"
   inc6: "Statistiken zu Ihrer Speisekarte"
-  cta: "1 Monat kostenlos testen"
+  cta: "7 Tage kostenlos testen"
   no_card: "Keine Kreditkarte nötig"
 
 cta:
-  title: "Testen Sie QR Menu 1 Monat lang kostenlos"
+  title: "Testen Sie QR Menu 7 Tage lang kostenlos"
   subtitle: "Keine Kreditkarte nötig. Richten Sie Ihre Speisekarte noch heute ein."
   button: "Kostenloses Konto erstellen →"
 

@@ -47,6 +47,8 @@ status:
 complete:
     title_published: 'Votre carte est en ligne'
     subtitle_published: 'Nous avons ajouté vos plats et vos clients peuvent déjà les voir.'
+    title_published_off: 'Votre carte est prête'
+    subtitle_published_off: 'Nous avons ajouté vos plats. Vos clients la verront dès que la formule sera activée.'
     review_title: 'Vérifiez votre carte'
     review_text: 'Jetez-y un œil pour vérifier que tout est correct : noms, prix, descriptions et allergènes. Vous pouvez modifier n''importe quel plat depuis Carte.'
     review_hidden_singular: '%count% plat sans prix reste masqué jusqu''à ce que vous lui en donniez un.'

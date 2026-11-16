@@ -15,6 +15,12 @@ trait PaidPeriodTrait
     public const PLAN_MONTHLY = 'monthly';
     public const PLAN_YEARLY  = 'yearly';
 
+    /**
+     * /platform and /partners: "Vencen en N días" and the orange date from
+     * this many days left (the owner's own notices keep their 7 days).
+     */
+    public const LIST_EXPIRING_SOON_DAYS = 3;
+
     /** How far each plan extends paidUntil (keys: PLAN_MONTHLY, PLAN_YEARLY — a trait constant can't refer to self::). */
     public const PLAN_MONTHS = ['monthly' => 1, 'yearly' => 12];
 

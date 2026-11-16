@@ -87,7 +87,7 @@ flash:
 summary:
     active: "Active"
     pending: "Awaiting payment"
-    expiring_soon: "Expire within 7 days"
+    expiring_soon: "Expire within %count% days"
     expired: "Expired"
 
 status:

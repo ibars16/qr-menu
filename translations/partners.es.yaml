@@ -87,7 +87,7 @@ flash:
 summary:
     active: "Activos"
     pending: "Pendiente de pago"
-    expiring_soon: "Vencen en 7 días"
+    expiring_soon: "Vencen en %count% días"
     expired: "Vencidos"
 
 status:

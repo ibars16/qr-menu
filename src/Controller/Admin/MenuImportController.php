@@ -2,10 +2,12 @@
 
 namespace App\Controller\Admin;
 
+use App\Attribute\RequiresAi;
 use App\Entity\MenuImportBatch;
 use App\Entity\MenuImportPage;
 use App\Entity\Restaurant;
 use App\Enum\MenuImportBatchStatus;
+use App\Service\AiAccess;
 use App\Service\BatchProcessingTriggerInterface;
 use App\Service\DishPhoto\AiPhotoBatch;
 use App\Service\DishPhoto\DishPhotoQuota;
@@ -70,6 +72,7 @@ class MenuImportController extends AbstractController
     }
 
     #[Route('/upload', name: 'upload', methods: ['POST'])]
+    #[RequiresAi(AiAccess::IMPORT, redirectRoute: 'admin_menu_import_new')]
     public function upload(Request $request, EntityManagerInterface $em): Response
     {
         $restaurant = $this->restaurant();
@@ -283,7 +286,7 @@ class MenuImportController extends AbstractController
     }
 
     #[Route('/{id}/complete', name: 'complete', methods: ['GET'])]
-    public function complete(MenuImportBatch $batch, EntityManagerInterface $em, AiPhotoBatch $aiPhotoBatch, DishPhotoQuota $quota): Response
+    public function complete(MenuImportBatch $batch, EntityManagerInterface $em, AiPhotoBatch $aiPhotoBatch, DishPhotoQuota $quota, AiAccess $aiAccess): Response
     {
         $this->assertOwner($batch);
 
@@ -321,8 +324,21 @@ class MenuImportController extends AbstractController
             $aiPhotoBatch->markTrial($batch);
         }
 
+        // Its public menu is off (expired, or "Pendiente de pago" while its
+        // reseller prepares it): "Tu carta está lista", and the AI photo
+        // box only if AiAccess still allows the free photos — else just
+        // "N platos no tienen foto".
+        $restaurant = $batch->getRestaurant();
+        $menuOff = $restaurant->isExpired();
+        $aiPhotoBox = $menuOff
+            ? $aiPhotoRemaining > 0 && $aiPhotoBatch->isAvailable() && $aiAccess->allows($restaurant, AiAccess::PHOTOS)
+            // Also with nothing left to do while the trial's photos are used
+            // up: "Ya has usado tus 2 fotos con IA gratis" after every import.
+            : $aiPhotoRemaining > 0 || ($aiPhotoBatch->isAvailable() && $quota->trialRemaining($restaurant) === 0);
+
         return $this->render('admin/menu_import_complete.html.twig', [
             'batch' => $batch,
+            'menuOff' => $menuOff,
             'categoriesCreated' => $categoriesCreated,
             'productsCreated' => $productsCreated,
             'published' => $productsVisible > 0,
@@ -336,9 +352,7 @@ class MenuImportController extends AbstractController
             'temporaryFailure' => $failedPages !== [] && array_filter($failedPages, static fn (MenuImportPage $p) => !$p->isTemporaryFailure()) === [],
             'totalPageCount' => $batch->getPages()->count(),
             'aiPhotoRemaining' => $aiPhotoRemaining,
-            // Also with nothing left to do while the trial's photos are used
-            // up: "Ya has usado tus 2 fotos con IA gratis" after every import.
-            'aiPhotoBox' => $aiPhotoRemaining > 0 || ($aiPhotoBatch->isAvailable() && $quota->trialRemaining($batch->getRestaurant()) === 0),
+            'aiPhotoBox' => $aiPhotoBox,
         ]);
     }
 
@@ -348,6 +362,7 @@ class MenuImportController extends AbstractController
      * it again until done — like the main-language change.
      */
     #[Route('/{id}/language/translate', name: 'language_translate', methods: ['POST'])]
+    #[RequiresAi(AiAccess::IMPORT)]
     public function translateLanguage(MenuImportBatch $batch, Request $request, MenuImportLanguageNotice $notice): JsonResponse
     {
         $this->assertOwner($batch);

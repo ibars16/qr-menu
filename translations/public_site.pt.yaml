@@ -1,9 +1,9 @@
 title: "QR Menu — Ementa digital para o seu restaurante"
 
 meta:
-  description: "Crie a ementa digital do seu restaurante em minutos: ementa por QR, painel de administração, chat com IA para os seus clientes e estatísticas. Experimente grátis durante 1 mês, sem cartão de crédito."
+  description: "Crie a ementa digital do seu restaurante em minutos: ementa por QR, painel de administração, chat com IA para os seus clientes e estatísticas. Experimente grátis durante 7 dias, sem cartão de crédito."
   og_title: "QR Menu — Ementa digital para o seu restaurante"
-  og_description: "Ementa por QR, painel de administração, chat com IA e estatísticas para o seu restaurante. Experimente grátis durante 1 mês, sem cartão de crédito."
+  og_description: "Ementa por QR, painel de administração, chat com IA e estatísticas para o seu restaurante. Experimente grátis durante 7 dias, sem cartão de crédito."
 
 nav:
   login: "Iniciar sessão"
@@ -19,11 +19,11 @@ nav:
   light_mode: "Modo claro"
 
 hero:
-  badge: "1 mês grátis, sem cartão"
+  badge: "7 dias grátis, sem cartão"
   title_main: "A ementa do seu restaurante, "
   title_accent: "digital e sempre atualizada"
   subtitle: "Os seus clientes leem um QR e veem a ementa na hora — no seu idioma, com fotos, alergénios e preços sempre atualizados. Edite-a a partir de um painel pensado para se gerir num minuto."
-  cta_primary: "Experimente grátis durante 1 mês →"
+  cta_primary: "Experimente grátis durante 7 dias →"
   cta_secondary: "Ver preços"
   note: "Sem cartão de crédito. Cancele quando quiser."
 
@@ -64,7 +64,7 @@ faq:
   title: "Antes que pergunte"
   q1:
     q: "Preciso de cartão de crédito para o teste?"
-    a: "Não. O teste de 1 mês é totalmente gratuito, sem cartão nem compromisso."
+    a: "Não. O teste de 7 dias é totalmente gratuito, sem cartão nem compromisso."
   q2:
     q: "Posso importar a ementa que já tenho?"
     a: "Sim. Carregue uma foto da sua ementa atual e a IA organiza-a automaticamente por categorias e pratos."
@@ -75,11 +75,11 @@ faq:
     q: "Em quantos idiomas pode ser mostrada a minha ementa?"
     a: "É traduzida automaticamente para 20 idiomas, sem que tenha de fazer nada."
   q5:
-    q: "O que acontece quando termina o mês de teste?"
+    q: "O que acontece quando termina o teste?"
     a: "A sua ementa fica em pausa até escolher um plano. Não é cobrado nada automaticamente, porque não lhe pedimos o cartão."
   price:
     q: "Quanto custa?"
-    a: "%monthly% por mês ou %yearly% por ano, IVA incluído. Um único plano com tudo incluído, e o primeiro mês é grátis, sem cartão."
+    a: "%monthly% por mês ou %yearly% por ano, IVA incluído. Um único plano com tudo incluído, e os primeiros 7 dias são grátis, sem cartão."
 
 features:
   eyebrow: "Funcionalidades"
@@ -126,7 +126,7 @@ steps:
 pricing:
   eyebrow: "Preços"
   title: "Um só plano, com tudo incluído"
-  subtitle: "Comece com um mês grátis. Depois, escolha pagar ao mês ou ao ano."
+  subtitle: "Comece com 7 dias grátis. Depois, escolha pagar ao mês ou ao ano."
   period_label: "Período de faturação"
   monthly: "Mensal"
   yearly: "Anual"
@@ -142,11 +142,11 @@ pricing:
   inc4: "14 alergénios oficiais e 20 idiomas"
   inc5: "Multi-moeda e temas visuais"
   inc6: "Estatísticas da sua ementa"
-  cta: "Experimente grátis durante 1 mês"
+  cta: "Experimente grátis durante 7 dias"
   no_card: "Sem cartão de crédito"
 
 cta:
-  title: "Experimente o QR Menu grátis durante 1 mês"
+  title: "Experimente o QR Menu grátis durante 7 dias"
   subtitle: "Sem cartão de crédito. Configure a sua ementa ainda hoje."
   button: "Criar a minha conta grátis →"
 

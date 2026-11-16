@@ -48,7 +48,7 @@
         <div class="summary">
             <div class="summary-card"><div class="summary-value">{{ summary.active }}</div><div class="summary-label">{{ 'summary.active'|trans({}, 'partners') }}</div></div>
             <div class="summary-card"><div class="summary-value">{{ summary.pending }}</div><div class="summary-label">{{ 'summary.pending'|trans({}, 'partners') }}</div></div>
-            <div class="summary-card"><div class="summary-value">{{ summary.expiringSoon }}</div><div class="summary-label">{{ 'summary.expiring_soon'|trans({}, 'partners') }}</div></div>
+            <div class="summary-card"><div class="summary-value">{{ summary.expiringSoon }}</div><div class="summary-label">{{ 'summary.expiring_soon'|trans({'%count%': constant('App\\Entity\\Restaurant::LIST_EXPIRING_SOON_DAYS')}, 'partners') }}</div></div>
             <div class="summary-card"><div class="summary-value">{{ summary.expired }}</div><div class="summary-label">{{ 'summary.expired'|trans({}, 'partners') }}</div></div>
         </div>
 
@@ -378,14 +378,14 @@
     </td>
 {% endmacro %}
 
-{# /platform's "Válida hasta": orange at 7 days or fewer, red once expired. #}
+{# /platform's "Válida hasta": orange at Restaurant::LIST_EXPIRING_SOON_DAYS days or fewer, red once expired. #}
 {% macro until_cell(r) %}
     {% if r.awaitingFirstPayment %}
         {# Never active: no date to show. #}
         <td data-label="{{ 'list.until'|trans({}, 'partners') }}" class="until"><div>—</div></td>
     {% else %}
     {% set days = r.daysLeft %}
-    <td data-label="{{ 'list.until'|trans({}, 'partners') }}" class="until {{ days < 0 ? 'until-expired' : (days <= 7 ? 'until-soon' : '') }}">
+    <td data-label="{{ 'list.until'|trans({}, 'partners') }}" class="until {{ days < 0 ? 'until-expired' : (days <= constant('App\\Entity\\Restaurant::LIST_EXPIRING_SOON_DAYS') ? 'until-soon' : '') }}">
         <div>{{ r.paidUntil|date('d/m/Y') }}</div>
         <div class="sub">
             {%- if days < 0 -%}
