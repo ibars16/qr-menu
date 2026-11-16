@@ -194,12 +194,18 @@
            needs a JS change (tabindex + keydown), out of scope for this
            visual-only pass. */
         .upload-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+        /* "Eliminar logo" / "Eliminar foto de cabecera": a real button, same
+           size as .upload-btn above, in the panel's error red — it used to be
+           small grey text that was hard to spot. --err-text on --bg-input
+           7.91:1 (dark) / 5.76:1 (light); --err-border as its outline. */
         .remove-logo-btn {
-            font-size: var(--fs-sm); color: var(--tx-muted); background: none;
-            border: none; cursor: pointer; padding: 0; text-align: left;
-            transition: color 0.15s;
+            display: inline-flex; align-items: center; gap: var(--sp-2);
+            padding: var(--sp-2) var(--sp-4); border-radius: var(--r-md); font-size: var(--fs-base);
+            font-weight: 500; cursor: pointer; text-align: left;
+            border: 1px solid var(--err-border); background: var(--bg-input); color: var(--err-text);
+            transition: border-color 0.15s, background 0.15s;
         }
-        .remove-logo-btn:hover { color: #F0997B; }
+        .remove-logo-btn:hover { border-color: var(--err-text); background: color-mix(in srgb, var(--err-text) 8%, var(--bg-input)); }
         .remove-logo-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
         /* Hero-image quality warning — amber, matches .flash-warning's
