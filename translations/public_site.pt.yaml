@@ -67,7 +67,7 @@ faq:
     a: "Não. O teste de 7 dias é totalmente gratuito, sem cartão nem compromisso."
   q2:
     q: "Posso importar a ementa que já tenho?"
-    a: "Sim. Carregue uma foto da sua ementa atual e a IA organiza-a automaticamente por categorias e pratos."
+    a: "Sim. Carregue uma fotografia ou o PDF da sua ementa atual e a IA organiza-a automaticamente por categorias e pratos."
   q3:
     q: "Os meus clientes têm de instalar alguma coisa?"
     a: "Não. Basta lerem o código QR e veem a ementa diretamente no navegador do telemóvel."
@@ -89,8 +89,8 @@ features:
     title: "Ementa digital por QR"
     desc: "Um código QR por mesa leva diretamente à sua ementa, sem apps nem downloads para o cliente."
   import:
-    title: "Importe a sua ementa com uma fotografia"
-    desc: "Tire uma fotografia à sua ementa em papel: a IA lê-a e organiza-a por categorias e pratos. Só tem de a rever."
+    title: "Importe a sua ementa com uma fotografia ou um PDF"
+    desc: "Tire uma fotografia à sua ementa em papel ou carregue o PDF: a IA lê-a e organiza-a por categorias e pratos. Só tem de a rever."
   smart_waiter:
     title: "Empregado de mesa com IA"
     desc: "Os seus clientes perguntam sobre alergénios, ingredientes ou recomendações e recebem resposta instantânea."
@@ -137,7 +137,7 @@ pricing:
   saving: "Poupa %saving% face ao pagamento mensal"
   included_title: "Tudo incluído:"
   inc1: "Ementa digital por QR, sem apps para os seus clientes"
-  inc2: "Importação da sua ementa com uma fotografia"
+  inc2: "Importação da sua ementa com uma fotografia ou um PDF"
   inc3: "Empregado de mesa com IA para os seus clientes"
   inc4: "14 alergénios oficiais e 20 idiomas"
   inc5: "Multi-moeda e temas visuais"

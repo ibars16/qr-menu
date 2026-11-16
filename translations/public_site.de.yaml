@@ -67,7 +67,7 @@ faq:
     a: "Nein. Die 7-tägige Testphase ist völlig kostenlos, ohne Kreditkarte und ohne Verpflichtung."
   q2:
     q: "Kann ich meine bestehende Speisekarte importieren?"
-    a: "Ja. Laden Sie ein Foto Ihrer aktuellen Speisekarte hoch, und die KI ordnet sie automatisch nach Kategorien und Gerichten."
+    a: "Ja. Laden Sie ein Foto oder das PDF Ihrer aktuellen Speisekarte hoch, und die KI ordnet sie automatisch nach Kategorien und Gerichten."
   q3:
     q: "Müssen meine Kunden etwas installieren?"
     a: "Nein. Sie scannen den QR-Code und sehen die Speisekarte direkt im Browser ihres Handys."
@@ -89,8 +89,8 @@ features:
     title: "Digitale Speisekarte per QR"
     desc: "Ein QR-Code pro Tisch führt direkt zu Ihrer Speisekarte — ohne App, ohne Download für den Kunden."
   import:
-    title: "Speisekarte per Foto importieren"
-    desc: "Fotografieren Sie Ihre gedruckte Speisekarte: Die KI liest sie und ordnet sie nach Kategorien und Gerichten. Sie prüfen nur noch."
+    title: "Speisekarte per Foto oder PDF importieren"
+    desc: "Fotografieren Sie Ihre gedruckte Speisekarte oder laden Sie das PDF hoch: Die KI liest sie und ordnet sie nach Kategorien und Gerichten. Sie prüfen nur noch."
   smart_waiter:
     title: "KI-Kellner"
     desc: "Ihre Kunden fragen nach Allergenen, Zutaten oder Empfehlungen und erhalten sofort eine Antwort."
@@ -137,7 +137,7 @@ pricing:
   saving: "Sie sparen %saving% gegenüber monatlicher Zahlung"
   included_title: "Alles inklusive:"
   inc1: "Digitale Speisekarte per QR, ohne App für Ihre Kunden"
-  inc2: "Import Ihrer Speisekarte per Foto"
+  inc2: "Import Ihrer Speisekarte per Foto oder PDF"
   inc3: "KI-Kellner für Ihre Kunden"
   inc4: "14 offizielle Allergene und 20 Sprachen"
   inc5: "Mehrere Währungen und visuelle Themes"

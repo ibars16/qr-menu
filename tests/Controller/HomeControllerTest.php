@@ -143,7 +143,7 @@ final class HomeControllerTest extends WebTestCase
         $titles = $page->filter('#funcionalidades .feature-card h3')->each(static fn ($h): string => $h->text());
 
         self::assertSame([
-            'Carta digital por QR', 'Importa tu carta con una foto', 'Camarero con IA', '14 alérgenos oficiales',
+            'Carta digital por QR', 'Importa tu carta con una foto o un PDF', 'Camarero con IA', '14 alérgenos oficiales',
             '20 idiomas', 'Multidivisas', 'Estadísticas', 'Temas visuales',
         ], $titles);
         self::assertStringNotContainsString('más de 20', $page->text());

@@ -26,7 +26,7 @@ common:
 
 empty:
     title: A sua ementa está vazia
-    subtitle: 'Crie a sua primeira categoria (Entradas, Pizzas, Sobremesas…) e depois adicione os seus pratos. Ou importe toda a ementa a partir de uma foto com IA.'
+    subtitle: 'Crie a sua primeira categoria (Entradas, Pizzas, Sobremesas…) e depois adicione os seus pratos. Ou importe toda a ementa a partir de uma foto ou de um PDF com IA.'
     import_ai: Importar ementa com IA
     create_first_category: Criar primeira categoria
 

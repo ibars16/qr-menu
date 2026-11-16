@@ -111,7 +111,7 @@ final class AiAccessGateTest extends WebTestCase
         $this->client->request('POST', '/admin/products/ai-photo/generate', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode(['name' => '']));
     }
 
-    /** The upload with no files: past the gate it's "elige al menos una foto", never the AI. */
+    /** The upload with no files: past the gate it's "Elige al menos una foto o un PDF", never the AI. */
     private function uploadPageAfterImport(): string
     {
         $this->client->request('POST', '/admin/menu/import/upload');

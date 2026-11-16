@@ -67,7 +67,7 @@ faq:
     a: "No. La prova di 7 giorni è completamente gratuita, senza carta né impegno."
   q2:
     q: "Posso importare il menu che ho già?"
-    a: "Sì. Carica una foto del tuo menu attuale e l'IA lo organizza automaticamente per categorie e piatti."
+    a: "Sì. Carica una foto o il PDF del tuo menu attuale e l'IA lo organizza automaticamente per categorie e piatti."
   q3:
     q: "I miei clienti devono installare qualcosa?"
     a: "No. Scansionano il codice QR e vedono il menu direttamente nel browser del cellulare."
@@ -89,8 +89,8 @@ features:
     title: "Menu digitale tramite QR"
     desc: "Un QR code per tavolo porta direttamente al tuo menu, senza app né download per il cliente."
   import:
-    title: "Importa il menu con una foto"
-    desc: "Scatta una foto del tuo menu cartaceo: l'IA lo legge e lo organizza in categorie e piatti. Tu devi solo controllarlo."
+    title: "Importa il menu con una foto o un PDF"
+    desc: "Scatta una foto del tuo menu cartaceo o carica il PDF: l'IA lo legge e lo organizza in categorie e piatti. Tu devi solo controllarlo."
   smart_waiter:
     title: "Cameriere IA"
     desc: "I tuoi clienti chiedono di allergeni, ingredienti o consigli e ricevono una risposta immediata."
@@ -137,7 +137,7 @@ pricing:
   saving: "Risparmi %saving% rispetto al pagamento mensile"
   included_title: "Tutto incluso:"
   inc1: "Menu digitale tramite QR, senza app per i tuoi clienti"
-  inc2: "Importazione del menu con una foto"
+  inc2: "Importazione del menu con una foto o un PDF"
   inc3: "Cameriere IA per i tuoi clienti"
   inc4: "14 allergeni ufficiali e 20 lingue"
   inc5: "Multivaluta e temi visivi"

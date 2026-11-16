@@ -8,13 +8,13 @@ upload:
     drop_text: 'Ziehe die Fotos oder das PDF deiner Speisekarte hierher oder tippe, um Dateien auszuwählen'
     drop_hint: 'Bis zu 30 Seiten (Fotos oder PDF), jeweils höchstens 15 MB pro Datei.'
     submit: Speisekarte jetzt einlesen
-    uploading: Deine Fotos werden hochgeladen…
+    uploading: Deine Speisekarte wird hochgeladen…
     upload_failed: Hochladen fehlgeschlagen — bitte prüfe deine Verbindung und versuche es erneut.
     retry: Erneut versuchen
     remove_file: '%name% entfernen'
     error:
-        no_files: Bitte wähle mindestens ein Foto aus.
-        total_too_large: 'Die Fotos sind insgesamt zu groß. Lade sie in mehreren Durchgängen hoch (höchstens etwa 60 MB pro Upload).'
+        no_files: Wähle mindestens ein Foto oder ein PDF aus.
+        total_too_large: 'Die Dateien sind insgesamt zu groß. Lade sie in mehreren Durchgängen hoch (höchstens etwa 60 MB pro Upload).'
         too_many_files: 'Pro Upload passen höchstens %max% Seiten (Fotos und PDF-Seiten). Lade sie in mehreren Durchgängen hoch.'
         invalid_file: '„%name%" konnte nicht hochgeladen werden — bitte versuche es erneut.'
         unsupported_type: '„%name%" ist kein unterstützter Dateityp. Bitte verwende JPEG, PNG, WebP oder PDF.'
@@ -58,11 +58,11 @@ complete:
     duplicates_more: '… und %count% weitere'
     title_success: Deine Speisekarte ist bereit zur Überprüfung
     subtitle_success: Wir haben deine Gerichte zur Speisekarte hinzugefügt — für Kunden unsichtbar, bis du sie überprüfst.
-    subtitle_partial_failure: ' Wir konnten %failed% von %total% Fotos nicht lesen — du kannst diese separat erneut hochladen.'
+    subtitle_partial_failure: ' Wir konnten %failed% von %total% Seiten nicht lesen — du kannst diese separat erneut hochladen.'
     stat_categories: Kategorien
     stat_products: Gerichte
     button_continue: Speisekarte ansehen
     title_failed: Wir konnten deine Speisekarte nicht lesen
-    subtitle_failed: Keines deiner Fotos konnte verarbeitet werden. Bitte prüfe, ob es sich um klare, gut beleuchtete Fotos einer Speisekarte handelt, und versuche es erneut.
-    subtitle_failed_temporary: 'Der Dienst zum Lesen von Speisekarten ist gerade überlastet. Dein Foto ist in Ordnung: Versuche es in ein paar Minuten erneut.'
+    subtitle_failed: Keine deiner Seiten konnte verarbeitet werden. Bitte prüfe, ob es sich um klare, gut beleuchtete Seiten einer Speisekarte handelt, und versuche es erneut.
+    subtitle_failed_temporary: 'Der Dienst zum Lesen von Speisekarten ist gerade überlastet. Deine Speisekarte ist in Ordnung: Versuche es in ein paar Minuten erneut.'
     button_retry: Erneut versuchen

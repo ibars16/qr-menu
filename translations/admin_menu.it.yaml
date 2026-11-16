@@ -26,7 +26,7 @@ common:
 
 empty:
     title: Il tuo menu è vuoto
-    subtitle: 'Crea la tua prima categoria (Antipasti, Pizze, Dolci…) e poi aggiungi i tuoi piatti. Oppure importa l''intero menu da una foto con l''IA.'
+    subtitle: 'Crea la tua prima categoria (Antipasti, Pizze, Dolci…) e poi aggiungi i tuoi piatti. Oppure importa l''intero menu da una foto o da un PDF con l''IA.'
     import_ai: Importa menu con IA
     create_first_category: Crea la prima categoria
 

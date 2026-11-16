@@ -26,7 +26,7 @@ common:
 
 empty:
     title: Votre carte est vide
-    subtitle: 'Créez votre première catégorie (Entrées, Pizzas, Desserts…) puis ajoutez vos plats. Ou importez toute la carte à partir d''une photo avec l''IA.'
+    subtitle: 'Créez votre première catégorie (Entrées, Pizzas, Desserts…) puis ajoutez vos plats. Ou importez toute la carte à partir d''une photo ou d''un PDF avec l''IA.'
     import_ai: Importer la carte avec l'IA
     create_first_category: Créer la première catégorie
 

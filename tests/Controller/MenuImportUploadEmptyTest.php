@@ -12,7 +12,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 /**
  * "Importar carta con IA" upload that arrives with no files. PHP drops
  * $_FILES entirely when the body is over post_max_size, so a too-heavy
- * upload must say so instead of "Por favor, elige al menos una foto." —
+ * upload must say so instead of "Elige al menos una foto o un PDF." —
  * which stays for a genuinely empty submit. Neither path creates a batch
  * or stores anything.
  */
@@ -84,8 +84,8 @@ final class MenuImportUploadEmptyTest extends WebTestCase
 
         self::assertResponseRedirects('/admin/menu/import');
         $this->client->followRedirect();
-        self::assertSelectorTextContains('.flash-error', 'Las fotos pesan demasiado en total. Súbelas en varias veces (máximo unos 60 MB por envío).');
-        self::assertSelectorTextNotContains('.flash-error', 'elige al menos una foto');
+        self::assertSelectorTextContains('.flash-error', 'Los archivos pesan demasiado en total. Súbelos en varias veces (máximo unos 60 MB por envío).');
+        self::assertSelectorTextNotContains('.flash-error', 'al menos una foto o un PDF');
     }
 
     public function testEmptySubmitUnderTheLimitKeepsTheUsualMessage(): void
@@ -96,7 +96,7 @@ final class MenuImportUploadEmptyTest extends WebTestCase
 
         self::assertResponseRedirects('/admin/menu/import');
         $this->client->followRedirect();
-        self::assertSelectorTextContains('.flash-error', 'Por favor, elige al menos una foto.');
+        self::assertSelectorTextContains('.flash-error', 'Elige al menos una foto o un PDF.');
         self::assertSelectorTextNotContains('.flash-error', 'pesan demasiado');
     }
 

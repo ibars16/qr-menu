@@ -26,7 +26,7 @@ common:
 
 empty:
     title: Your menu is empty
-    subtitle: 'Create your first category (Starters, Pizzas, Desserts…) and then add your dishes. Or import your whole menu from a photo with AI.'
+    subtitle: 'Create your first category (Starters, Pizzas, Desserts…) and then add your dishes. Or import your whole menu from a photo or a PDF with AI.'
     import_ai: Import menu with AI
     create_first_category: Create first category
 

@@ -93,7 +93,7 @@ final class MenuImportExtractionRetryTest extends TestCase
     public function testTheSaturatedMessageExistsInTheSixAdminLanguages(): void
     {
         $expected = [
-            'es' => 'El servicio de lectura de menús está saturado en este momento. Tu foto está bien: inténtalo de nuevo en unos minutos.',
+            'es' => 'El servicio de lectura de menús está saturado en este momento. Tu carta está bien: inténtalo de nuevo en unos minutos.',
         ];
         foreach (['es', 'en', 'fr', 'de', 'it', 'pt'] as $locale) {
             $yaml = Yaml::parseFile(dirname(__DIR__, 2) . "/translations/admin_menu_import.$locale.yaml");

@@ -8,13 +8,13 @@ upload:
     drop_text: 'Glissez ici les photos ou le PDF de votre carte, ou touchez pour choisir des fichiers'
     drop_hint: 'Jusqu''à 30 pages (photos ou PDF), 15 Mo maximum par fichier.'
     submit: Commencer à lire mon menu
-    uploading: Téléversement de vos photos…
+    uploading: Téléversement de votre carte…
     upload_failed: Le téléversement a échoué — vérifiez votre connexion et réessayez.
     retry: Réessayer
     remove_file: 'Retirer %name%'
     error:
-        no_files: Veuillez choisir au moins une photo.
-        total_too_large: 'Les photos sont trop lourdes au total. Envoyez-les en plusieurs fois (environ 60 Mo maximum par envoi).'
+        no_files: Choisissez au moins une photo ou un PDF.
+        total_too_large: 'Les fichiers sont trop lourds au total. Envoyez-les en plusieurs fois (environ 60 Mo maximum par envoi).'
         too_many_files: 'Un envoi peut contenir %max% pages au maximum (photos et pages de PDF). Envoyez-les en plusieurs fois.'
         invalid_file: '« %name% » n''a pas pu être téléversée — veuillez réessayer.'
         unsupported_type: '« %name% » n''est pas un type de fichier pris en charge. Utilisez JPEG, PNG, WebP ou PDF.'
@@ -58,11 +58,11 @@ complete:
     duplicates_more: '… et %count% de plus'
     title_success: Votre menu est prêt à être vérifié
     subtitle_success: Nous avons ajouté vos plats au menu, masqués aux clients jusqu'à ce que vous les vérifiiez.
-    subtitle_partial_failure: ' Nous n''avons pas pu lire %failed% de vos %total% photos — vous pouvez essayer de les téléverser à nouveau séparément.'
+    subtitle_partial_failure: ' Nous n''avons pas pu lire %failed% de vos %total% pages — vous pouvez essayer de les téléverser à nouveau séparément.'
     stat_categories: Catégories
     stat_products: Plats
     button_continue: Voir mon menu
     title_failed: Nous n'avons pas pu lire votre menu
-    subtitle_failed: Aucune de vos photos n'a pu être traitée. Vérifiez qu'il s'agit de photos claires et bien éclairées d'un menu, puis réessayez.
-    subtitle_failed_temporary: 'Le service de lecture des menus est saturé en ce moment. Votre photo est correcte : réessayez dans quelques minutes.'
+    subtitle_failed: Aucune de vos pages n'a pu être traitée. Vérifiez qu'il s'agit de pages claires et bien éclairées d'un menu, puis réessayez.
+    subtitle_failed_temporary: 'Le service de lecture des menus est saturé en ce moment. Votre carte est correcte : réessayez dans quelques minutes.'
     button_retry: Réessayer

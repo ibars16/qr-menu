@@ -26,7 +26,7 @@ common:
 
 empty:
     title: Tu carta está vacía
-    subtitle: 'Crea tu primera categoría (Entrantes, Pizzas, Postres…) y después añade tus platos. O importa toda la carta desde una foto con IA.'
+    subtitle: 'Crea tu primera categoría (Entrantes, Pizzas, Postres…) y después añade tus platos. O importa toda la carta desde una foto o un PDF con IA.'
     import_ai: Importar carta con IA
     create_first_category: Crear primera categoría
 

@@ -8,13 +8,13 @@ upload:
     drop_text: 'Arrastra aquí las fotos o el PDF de tu carta, o toca para elegir archivos'
     drop_hint: 'Hasta 30 páginas (fotos o PDF), de 15 MB como máximo cada archivo.'
     submit: Empezar a leer mi menú
-    uploading: Subiendo tus fotos…
+    uploading: Subiendo tu carta…
     upload_failed: No se pudo subir — comprueba tu conexión e inténtalo de nuevo.
     retry: Intentar de nuevo
     remove_file: 'Quitar %name%'
     error:
-        no_files: Por favor, elige al menos una foto.
-        total_too_large: 'Las fotos pesan demasiado en total. Súbelas en varias veces (máximo unos 60 MB por envío).'
+        no_files: Elige al menos una foto o un PDF.
+        total_too_large: 'Los archivos pesan demasiado en total. Súbelos en varias veces (máximo unos 60 MB por envío).'
         too_many_files: 'Caben %max% páginas como máximo por envío (fotos y páginas de PDF). Súbelas en varias veces.'
         invalid_file: '"%name%" no se pudo subir — inténtalo de nuevo.'
         unsupported_type: '"%name%" no es un tipo de archivo compatible. Usa JPEG, PNG, WebP o PDF.'
@@ -58,11 +58,11 @@ complete:
     duplicates_more: '… y %count% más'
     title_success: Tu menú está listo para revisar
     subtitle_success: Hemos añadido tus platos al menú, ocultos para los clientes hasta que los revises.
-    subtitle_partial_failure: ' No pudimos leer %failed% de tus %total% fotos — puedes volver a subirlas por separado.'
+    subtitle_partial_failure: ' No pudimos leer %failed% de tus %total% páginas — puedes volver a subirlas por separado.'
     stat_categories: Categorías
     stat_products: Platos
     button_continue: Ver mi menú
     title_failed: No pudimos leer tu menú
-    subtitle_failed: No se pudo procesar ninguna de tus fotos. Comprueba que sean fotos claras y bien iluminadas de un menú, e inténtalo de nuevo.
-    subtitle_failed_temporary: 'El servicio de lectura de menús está saturado en este momento. Tu foto está bien: inténtalo de nuevo en unos minutos.'
+    subtitle_failed: No se pudo procesar ninguna de tus páginas. Comprueba que sean páginas claras y bien iluminadas de un menú, e inténtalo de nuevo.
+    subtitle_failed_temporary: 'El servicio de lectura de menús está saturado en este momento. Tu carta está bien: inténtalo de nuevo en unos minutos.'
     button_retry: Intentar de nuevo

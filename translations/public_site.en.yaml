@@ -67,7 +67,7 @@ faq:
     a: "No. The 7-day trial is completely free, no card and no commitment."
   q2:
     q: "Can I import the menu I already have?"
-    a: "Yes. Upload a photo of your current menu and the AI organizes it into categories and dishes automatically."
+    a: "Yes. Upload a photo or the PDF of your current menu and the AI organizes it into categories and dishes automatically."
   q3:
     q: "Do my customers have to install anything?"
     a: "No. They scan the QR code and see the menu directly in their phone's browser."
@@ -89,8 +89,8 @@ features:
     title: "Digital menu via QR"
     desc: "A QR code on each table takes customers straight to your menu — no apps, no downloads."
   import:
-    title: "Import your menu from a photo"
-    desc: "Take a photo of your printed menu: the AI reads it and organizes it into categories and dishes. You just review it."
+    title: "Import your menu from a photo or a PDF"
+    desc: "Take a photo of your printed menu or upload the PDF: the AI reads it and organizes it into categories and dishes. You just review it."
   smart_waiter:
     title: "AI Waiter"
     desc: "Your customers ask about allergens, ingredients or recommendations and get an instant answer."
@@ -137,7 +137,7 @@ pricing:
   saving: "You save %saving% compared to paying monthly"
   included_title: "Everything included:"
   inc1: "Digital QR menu, no apps for your customers"
-  inc2: "Menu import from a photo"
+  inc2: "Menu import from a photo or a PDF"
   inc3: "AI Waiter for your customers"
   inc4: "14 official allergens and 20 languages"
   inc5: "Multi-currency and visual themes"

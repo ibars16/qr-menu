@@ -26,7 +26,7 @@ common:
 
 empty:
     title: Deine Speisekarte ist leer
-    subtitle: 'Erstelle deine erste Kategorie (Vorspeisen, Pizzen, Desserts…) und füge dann deine Gerichte hinzu. Oder importiere die gesamte Speisekarte per Foto mit KI.'
+    subtitle: 'Erstelle deine erste Kategorie (Vorspeisen, Pizzen, Desserts…) und füge dann deine Gerichte hinzu. Oder importiere die gesamte Speisekarte per Foto oder PDF mit KI.'
     import_ai: Speisekarte mit KI importieren
     create_first_category: Erste Kategorie erstellen
 

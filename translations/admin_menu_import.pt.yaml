@@ -8,13 +8,13 @@ upload:
     drop_text: 'Arraste as fotos ou o PDF da sua ementa para aqui, ou toque para escolher ficheiros'
     drop_hint: 'Até 30 páginas (fotos ou PDF), com 15 MB no máximo por ficheiro.'
     submit: Começar a ler a minha ementa
-    uploading: A carregar as suas fotos…
+    uploading: A carregar a sua ementa…
     upload_failed: O carregamento falhou — verifique a sua ligação e tente novamente.
     retry: Tentar novamente
     remove_file: 'Retirar %name%'
     error:
-        no_files: Escolha pelo menos uma foto.
-        total_too_large: 'As fotos pesam demasiado no total. Carregue-as em várias vezes (máximo de cerca de 60 MB por envio).'
+        no_files: Escolha pelo menos uma foto ou um PDF.
+        total_too_large: 'Os ficheiros pesam demasiado no total. Carregue-os em várias vezes (máximo de cerca de 60 MB por envio).'
         too_many_files: 'Cabem no máximo %max% páginas por envio (fotos e páginas de PDF). Carregue-as em várias vezes.'
         invalid_file: '"%name%" não pôde ser carregada — tente novamente.'
         unsupported_type: '"%name%" não é um tipo de ficheiro suportado. Use JPEG, PNG, WebP ou PDF.'
@@ -58,11 +58,11 @@ complete:
     duplicates_more: '… e mais %count%'
     title_success: A sua ementa está pronta para revisão
     subtitle_success: Adicionámos os seus pratos à ementa, ocultos dos clientes até os rever.
-    subtitle_partial_failure: ' Não conseguimos ler %failed% das suas %total% fotos — pode tentar carregá-las novamente em separado.'
+    subtitle_partial_failure: ' Não conseguimos ler %failed% das suas %total% páginas — pode tentar carregá-las novamente em separado.'
     stat_categories: Categorias
     stat_products: Pratos
     button_continue: Ver a minha ementa
     title_failed: Não conseguimos ler a sua ementa
-    subtitle_failed: Nenhuma das suas fotos pôde ser processada. Verifique se são fotos nítidas e bem iluminadas de uma ementa, e tente novamente.
-    subtitle_failed_temporary: 'O serviço de leitura de ementas está sobrecarregado neste momento. A sua fotografia está bem: tente novamente dentro de alguns minutos.'
+    subtitle_failed: Nenhuma das suas páginas pôde ser processada. Verifique se são páginas nítidas e bem iluminadas de uma ementa, e tente novamente.
+    subtitle_failed_temporary: 'O serviço de leitura de ementas está sobrecarregado neste momento. A sua ementa está bem: tente novamente dentro de alguns minutos.'
     button_retry: Tentar novamente

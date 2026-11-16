@@ -67,7 +67,7 @@ faq:
     a: "No. La prueba de 7 días es completamente gratuita, sin tarjeta ni compromiso."
   q2:
     q: "¿Puedo importar la carta que ya tengo?"
-    a: "Sí. Sube una foto de tu carta actual y la IA la organiza por categorías y platos automáticamente."
+    a: "Sí. Sube una foto o el PDF de tu carta actual y la IA la organiza por categorías y platos automáticamente."
   q3:
     q: "¿Mis clientes tienen que instalar algo?"
     a: "No. Escanean el código QR y ven la carta directamente en el navegador del móvil."
@@ -89,8 +89,8 @@ features:
     title: "Carta digital por QR"
     desc: "Un código QR por mesa lleva directo a tu carta, sin apps ni descargas para el cliente."
   import:
-    title: "Importa tu carta con una foto"
-    desc: "Haz una foto de tu carta en papel: la IA la lee y la organiza en categorías y platos. Tú solo la revisas."
+    title: "Importa tu carta con una foto o un PDF"
+    desc: "Haz una foto de tu carta en papel o sube el PDF: la IA la lee y la organiza en categorías y platos. Tú solo la revisas."
   smart_waiter:
     title: "Camarero con IA"
     desc: "Tus clientes preguntan por alérgenos, ingredientes o recomendaciones y reciben respuesta al instante."
@@ -137,7 +137,7 @@ pricing:
   saving: "Ahorras %saving% frente al pago mensual"
   included_title: "Todo incluido:"
   inc1: "Carta digital por QR, sin apps para tus clientes"
-  inc2: "Importación de tu carta con una foto"
+  inc2: "Importación de tu carta con una foto o un PDF"
   inc3: "Camarero con IA para tus clientes"
   inc4: "14 alérgenos oficiales y 20 idiomas"
   inc5: "Multidivisas y temas visuales"
