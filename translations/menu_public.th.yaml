@@ -92,3 +92,6 @@ footer:
         sun: "อา."
 unavailable:
     message: "ขณะนี้ไม่สามารถดูเมนูได้"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "อื่นๆ"

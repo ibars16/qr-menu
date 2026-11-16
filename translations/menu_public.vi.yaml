@@ -92,3 +92,6 @@ footer:
         sun: "CN"
 unavailable:
     message: "Thực đơn hiện không khả dụng"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "Khác"

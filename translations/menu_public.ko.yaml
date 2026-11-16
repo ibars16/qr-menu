@@ -92,3 +92,6 @@ footer:
         sun: "일"
 unavailable:
     message: "현재 메뉴를 이용할 수 없습니다"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "기타"

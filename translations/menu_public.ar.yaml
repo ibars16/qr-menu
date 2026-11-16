@@ -94,3 +94,6 @@ footer:
         sun: "الأحد"
 unavailable:
     message: "القائمة غير متاحة حاليًا"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "أخرى"

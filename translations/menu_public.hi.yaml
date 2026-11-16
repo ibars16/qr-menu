@@ -92,3 +92,6 @@ footer:
         sun: "रवि"
 unavailable:
     message: "मेन्यू इस समय उपलब्ध नहीं है"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "अन्य"

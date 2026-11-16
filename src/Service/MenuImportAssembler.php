@@ -20,6 +20,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\GlobalIngredientRepository;
 use App\Repository\IngredientRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Turns a MenuImportBatch's already-extracted page JSON (see
@@ -40,6 +41,11 @@ use Doctrine\ORM\EntityManagerInterface;
  * created, but always hidden and marked importDuplicate, so Carta shows
  * "Repetido" on it until the owner reviews it (MenuImportReview::confirm()).
  *
+ * A category the AI read without a name: its dishes go to "Otros" in the
+ * carta's main language (menu_public's category.fallback_name), reusing
+ * one the carta already has — same visibility and repeated-dish rules,
+ * counted like any other dish. Never dropped silently.
+ *
  * Deliberately reuses, unmodified, the exact ingredient-resolution and
  * category/product conventions MenuAdminController::saveProduct() already
  * established for manual entry — an imported dish's data ends up
@@ -53,6 +59,7 @@ final class MenuImportAssembler
         private readonly CategoryRepository $categoryRepository,
         private readonly IngredientRepository $ingredientRepository,
         private readonly GlobalIngredientRepository $globalIngredientRepository,
+        private readonly TranslatorInterface $translator,
     ) {}
 
     public function assemble(MenuImportBatch $batch): MenuImportAssemblyResult
@@ -96,7 +103,11 @@ final class MenuImportAssembler
             foreach ($categories as $categoryData) {
                 $name = trim((string) ($categoryData['name'] ?? ''));
                 if ($name === '') {
-                    continue;
+                    if (empty($categoryData['products'])) {
+                        continue; // nothing to rescue: no empty "Otros"
+                    }
+                    // No name read: its dishes go to "Otros" (see the class docblock).
+                    $name = $this->translator->trans('category.fallback_name', [], 'menu_public', $locale);
                 }
 
                 [$category, $wasCreated] = $this->resolveCategory($restaurant, $name, $locale, $batch, $categoriesThisRun, $publish);

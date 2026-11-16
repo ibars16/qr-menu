@@ -92,3 +92,6 @@ footer:
         sun: "Dom"
 unavailable:
     message: "Menù non disponibile al momento"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "Altro"

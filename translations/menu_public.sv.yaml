@@ -92,3 +92,6 @@ footer:
         sun: "Sön"
 unavailable:
     message: "Menyn är inte tillgänglig just nu"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "Övrigt"

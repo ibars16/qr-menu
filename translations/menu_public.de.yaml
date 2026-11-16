@@ -92,3 +92,6 @@ footer:
         sun: "So"
 unavailable:
     message: "Speisekarte derzeit nicht verfügbar"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "Sonstiges"

@@ -92,3 +92,6 @@ footer:
         sun: "周日"
 unavailable:
     message: "菜单暂时无法查看"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "其他"

@@ -92,3 +92,6 @@ footer:
         sun: "Nd"
 unavailable:
     message: "Menu jest obecnie niedostępne"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "Inne"

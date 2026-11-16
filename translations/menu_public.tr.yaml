@@ -92,3 +92,6 @@ footer:
         sun: "Paz"
 unavailable:
     message: "Menü şu anda kullanılamıyor"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "Diğer"

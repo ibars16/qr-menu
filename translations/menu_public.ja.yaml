@@ -92,3 +92,6 @@ footer:
         sun: "日"
 unavailable:
     message: "現在メニューはご利用いただけません"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "その他"

@@ -92,3 +92,6 @@ footer:
         sun: "Min"
 unavailable:
     message: "Menu sedang tidak tersedia saat ini"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "Lainnya"

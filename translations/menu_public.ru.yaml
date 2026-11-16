@@ -92,3 +92,6 @@ footer:
         sun: "Вс"
 unavailable:
     message: "Меню сейчас недоступно"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "Другое"

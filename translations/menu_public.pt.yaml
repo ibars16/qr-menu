@@ -92,3 +92,6 @@ footer:
         sun: "Dom"
 unavailable:
     message: "Ementa indisponível de momento"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "Outros"

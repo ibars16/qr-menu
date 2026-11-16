@@ -92,3 +92,6 @@ footer:
         sun: "Zo"
 unavailable:
     message: "Menukaart is momenteel niet beschikbaar"
+# A dish the import read without a category (MenuImportAssembler).
+category:
+    fallback_name: "Overig"
