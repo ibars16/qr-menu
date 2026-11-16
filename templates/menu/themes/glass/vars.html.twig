@@ -160,4 +160,13 @@
         --hero-glow: radial-gradient(ellipse at center, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 42%, transparent 72%);
     }
 }
+/* Phones (<768): the compact hero (_structure.html.twig) puts the tagline
+   ~27px higher, closer to the glow's peak, when there's no hero photo.
+   Dimmed again (0.18→0.10, 0.06→0.035) so --hero-fg-2 keeps ≥5.5:1 there
+   even right at the peak. */
+@media (max-width: 767.98px) {
+    :root {
+        --hero-glow: radial-gradient(ellipse at center, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.035) 42%, transparent 72%);
+    }
+}
 </style>
