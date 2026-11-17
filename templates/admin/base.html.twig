@@ -7,7 +7,7 @@
     <link rel="icon" href="/favicon.ico" sizes="any">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}{{ 'title.default'|trans({}, 'admin_base') }}{% endblock %} — QR Menu</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/tabler-icons/3.31.0/tabler-icons.min.css') }}">
     <script>(function(){try{if(localStorage.getItem('admin-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
     <style>
         {% include 'admin/_styles_tokens.html.twig' %}

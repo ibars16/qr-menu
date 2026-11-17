@@ -247,7 +247,7 @@
 {% endblock %}
 
 {% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script src="{{ asset('vendor/sortablejs/1.15.2/Sortable.min.js') }}"></script>
     <script>
         const MSG_MENU_CREATED   = "{{ 'toast.menu_created'|trans({}, 'admin_menus')|e('js') }}";
         const MSG_MENU_DELETED   = "{{ 'toast.menu_deleted'|trans({}, 'admin_menus')|e('js') }}";

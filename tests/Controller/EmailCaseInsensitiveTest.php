@@ -137,6 +137,7 @@ final class EmailCaseInsensitiveTest extends WebTestCase
         $form['registration_form[email]'] = $email;
         $form['registration_form[password][first]'] = self::PASSWORD;
         $form['registration_form[password][second]'] = self::PASSWORD;
+        $form['registration_form[acceptTerms]']->tick();
         $form['registration_form[currency]'] = 'EUR';
         $form['registration_form[language]'] = 'es';
         $form['registration_form[adminLocale]'] = 'es';

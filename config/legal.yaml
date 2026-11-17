@@ -1,0 +1,29 @@
+# The service provider's legal details — the ONLY place they're written.
+# Every legal page (/aviso-legal, /terminos, /privacidad, /cookies), in
+# every language, and the small legal line under the sign-up, login,
+# billing and public-menu pages read them from here (App\Twig\LegalExtension).
+#
+# While a field is empty, the pages show a highlighted, translated gap
+# ("[NIF pendiente]") and the orange "draft" notice on top of the legal
+# pages — fill all of them in before going live.
+owner:
+    # Full name of the owner (autónomo, natural person).
+    name: ''
+    # NIF.
+    nif: ''
+    # Postal address (street, number, postcode, town, province).
+    address: ''
+    # Contact email: legal pages, privacy requests, account deletion.
+    email: ''
+    # Hosting provider of the site (name + country), named in the privacy policy.
+    hosting: ''
+
+# "Última actualización" of each legal page, fixed (Y-m-d). Change it only
+# when the page's text really changes. The terms' date is also their
+# version, saved on each new account (User::$termsVersion) when it ticks
+# "Acepto los términos…".
+updated:
+    legal: '2026-11-17'
+    terms: '2026-11-17'
+    privacy: '2026-11-17'
+    cookies: '2026-11-17'

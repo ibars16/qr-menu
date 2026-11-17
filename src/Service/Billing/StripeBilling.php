@@ -52,6 +52,18 @@ class StripeBilling
      * @param array<string, string> $resellerPriceIds plan => base Price id, and
      *        extra_<plan> => the extra restaurant's Price id
      */
+    /**
+     * Checkout asks for what an invoice needs: the billing address (always)
+     * and, optionally, a tax ID (NIF/CIF/VAT, "I'm buying as a business").
+     * customer_update saves both on the existing Stripe customer — required
+     * by Stripe when the session has a `customer` and collects a tax ID.
+     */
+    private const array INVOICE_DETAILS = [
+        'billing_address_collection' => 'required',
+        'tax_id_collection'          => ['enabled' => true],
+        'customer_update'            => ['name' => 'auto', 'address' => 'auto'],
+    ];
+
     public function __construct(
         private readonly StripeGatewayInterface $gateway,
         private readonly EntityManagerInterface $em,
@@ -91,7 +103,7 @@ class StripeBilling
             'subscription_data'   => ['metadata' => ['restaurant_id' => (string) $restaurant->getId()]],
             'success_url'         => $successUrl,
             'cancel_url'          => $cancelUrl,
-        ];
+        ] + self::INVOICE_DETAILS;
         if (($trialEnd = $this->trialEndFor($restaurant, $now)) !== null) {
             $params['subscription_data']['trial_end'] = $trialEnd;
             // Days already paid by hand. Checkout's own trial wording is easy to miss; the first charge date, said plainly.
@@ -181,7 +193,7 @@ class StripeBilling
             'subscription_data'   => ['metadata' => ['reseller_id' => (string) $reseller->getId()]],
             'success_url'         => $successUrl,
             'cancel_url'          => $cancelUrl,
-        ]);
+        ] + self::INVOICE_DETAILS);
     }
 
     /**

@@ -1,29 +1,40 @@
-<div class="legal-placeholder">
-    ⚠️ Dokument vor der Veröffentlichung in der Produktion zu vervollständigen: Es fehlen der rechtliche/steuerliche Name des Verantwortlichen und eine echte Kontakt-E-Mail für Datenschutzfragen. Ersetzen Sie die Felder in eckigen Klammern durch diese Angaben.
-</div>
-
 <h2>1. Verantwortlicher</h2>
-<p>[Rechtlicher Name ausstehend] ist Verantwortlicher für die Verarbeitung der über QR Menu erhobenen personenbezogenen Daten. Bei Fragen zu dieser Erklärung können Sie an [Kontakt-E-Mail ausstehend] schreiben.</p>
+<p>Verantwortlich für die in QR Menu verarbeiteten personenbezogenen Daten ist {{ legal('name', locale) }} (Steuernummer {{ legal('nif', locale) }}), Anschrift: {{ legal('address', locale) }}. Bei Fragen zum Datenschutz können Sie an {{ legal_email(locale) }} schreiben.</p>
 
-<h2>2. Welche Daten wir erheben</h2>
+<h2>2. Welche Daten wir verarbeiten und wozu</h2>
 <ul>
-    <li><strong>Daten Ihres Kontos:</strong> E-Mail-Adresse und Passwort (verschlüsselt gespeichert, nie im Klartext) sowie der Name Ihres Restaurants.</li>
-    <li><strong>Daten Ihrer Speisekarte:</strong> Kategorien, Gerichte, Preise, Beschreibungen und Bilder, die Sie für Ihre digitale Speisekarte hochladen.</li>
-    <li><strong>Nutzungsdaten Ihrer öffentlichen Speisekarte:</strong> welche Gerichte angesehen werden, um Ihnen Statistiken zu Ihrer eigenen Speisekarte anzeigen zu können.</li>
-    <li><strong>Interaktionen mit dem Assistenten Smart Waiter:</strong> Wir erfassen, dass ein Gespräch stattgefunden hat, und dessen Sprache, zu aggregierten statistischen Zwecken. Den Inhalt der Nachrichten, die Ihre Kunden schreiben, speichern wir nicht.</li>
+    <li><strong>Ihr Konto:</strong> E-Mail, Passwort (verschlüsselt gespeichert, nie im Klartext), Name des Restaurants und Sprache des Verwaltungsbereichs; wenn Sie Ihrem Team Zugang geben, auch dessen Name und E-Mail. Wir verwenden sie, um den Dienst zu erbringen und Ihnen die nötigen E-Mails zu senden (Kontobestätigung, Passwortänderung, Zahlungshinweise).</li>
+    <li><strong>Wiederverkäufer:</strong> Name des Unternehmens, Name der Kontaktperson und E-Mail.</li>
+    <li><strong>Zahlung und Rechnungen:</strong> Die Zahlung wickelt Stripe ab. Wir sehen und speichern Ihre Kartendaten nicht; wir speichern die Referenz Ihres Kunden und Ihres Abos bei Stripe. Stripe erfasst Ihren Namen oder Firmennamen, Ihre Rechnungsadresse und, falls angegeben, Ihre Steuernummer, um Rechnungen auszustellen.</li>
+    <li><strong>Ihre Speisekarte:</strong> Kategorien, Gerichte, Preise, Beschreibungen, Allergene, Fotos und Videos, die Sie hochladen.</li>
+    <li><strong>Aufrufe Ihrer öffentlichen Speisekarte:</strong> welche Gerichte wann geöffnet werden, um Ihnen Statistiken zu zeigen. Wir speichern nicht, wer sie öffnet.</li>
+    <li><strong>Virtueller Kellner (KI):</strong> Die Nachrichten Ihrer Gäste und die Antworten werden höchstens 30 Minuten im Zwischenspeicher des Servers gehalten (die letzten 12 Nachrichten), damit das Gespräch zusammenhängt, und an Groq oder Google Gemini gesendet, um die Antwort zu erzeugen. In unserer Datenbank bleibt nur, dass ein Gespräch stattfand, seine Sprache und technische Daten (Anbieter, Antwortzeit), nie der Text der Nachrichten.</li>
+    <li><strong>Technische Daten:</strong> Die IP-Adresse wird vorübergehend genutzt, um den Dienst vor Missbrauch zu schützen (Grenzen für Registrierungen und Nachrichten), und steht in den Server-Protokollen.</li>
 </ul>
+<p>Rechtsgrundlage sind die Erfüllung des Dienstvertrags mit Ihnen, unser berechtigtes Interesse an einem sicheren und besseren Dienst sowie gesetzliche Pflichten (zum Beispiel steuerliche).</p>
 
-<h2>3. Mit wem wir Daten teilen</h2>
-<p>Wir nutzen externe Anbieter künstlicher Intelligenz für Funktionen wie den Assistenten Smart Waiter und den Import von Speisekarten anhand eines Fotos. Diese Anbieter verarbeiten die für die Erbringung dieses Dienstes erforderlichen Inhalte nach ihren eigenen Datenverarbeitungsbedingungen. Wir verkaufen keine personenbezogenen Daten an Dritte.</p>
+<h2>3. An wen wir Daten weitergeben</h2>
+<p>Wir verkaufen keine personenbezogenen Daten. Wir geben sie nur an die Anbieter weiter, die wir für den Dienst brauchen und die sie in unserem Auftrag verarbeiten:</p>
+<ul>
+    <li><strong>Stripe</strong> (Zahlungen und Rechnungen).</li>
+    <li><strong>Google Gemini</strong> (künstliche Intelligenz: Speisekarten aus Foto oder PDF importieren, Übersetzungen, virtueller Kellner und Fotos von Gerichten).</li>
+    <li><strong>Groq</strong> (künstliche Intelligenz: virtueller Kellner und Übersetzungen).</li>
+    <li><strong>Brevo</strong> (E-Mail-Versand).</li>
+    <li><strong>Webhosting:</strong> {{ legal('hosting', locale) }}.</li>
+</ul>
+<p>Wir nutzen die kostenpflichtigen Versionen der KI-Dienste, deren Bedingungen es nicht erlauben, die an sie gesendeten Daten zum Training ihrer Modelle zu verwenden.</p>
 
-<h2>4. Cookies</h2>
+<h2>4. Übermittlungen außerhalb der Europäischen Union</h2>
+<p>Google, Groq und Stripe können Daten in den USA oder anderen Ländern außerhalb der Europäischen Union verarbeiten. Diese Übermittlungen erfolgen mit den von der DSGVO verlangten Garantien: dem EU-US-Datenschutzrahmen, wenn der Anbieter ihm beigetreten ist, oder den Standardvertragsklauseln der Europäischen Kommission.</p>
+
+<h2>5. Cookies</h2>
 <p>In unserer <a href="{{ path('app_cookies') }}">Cookie-Richtlinie</a> erfahren Sie, was wir verwenden und warum.</p>
 
-<h2>5. Ihre Rechte</h2>
-<p>Sie können Auskunft, Berichtigung, Löschung oder Übertragbarkeit Ihrer personenbezogenen Daten verlangen sowie der Verarbeitung widersprechen oder deren Einschränkung verlangen, indem Sie an [Kontakt-E-Mail ausstehend] schreiben.</p>
-
 <h2>6. Speicherdauer</h2>
-<p>Wir speichern Ihre Daten, solange Ihr Konto aktiv ist. Wenn Sie Ihr Konto löschen, werden die zugehörigen Daten gelöscht, sofern keine gesetzliche Pflicht besteht, sie länger aufzubewahren.</p>
+<p>Wir speichern Ihre Daten, solange Ihr Konto besteht. Wenn Sie es schließen möchten, schreiben Sie uns an die Kontakt-E-Mail, und wir löschen es mitsamt seinen Daten, außer denen, die wir gesetzlich länger aufbewahren müssen (zum Beispiel Rechnungen).</p>
 
-<h2>7. Änderungen dieser Erklärung</h2>
-<p>Wir können diese Erklärung aktualisieren, um Änderungen des Dienstes oder der geltenden Vorschriften Rechnung zu tragen. Relevante Änderungen veröffentlichen wir auf dieser Seite.</p>
+<h2>7. Ihre Rechte</h2>
+<p>Sie können Auskunft, Berichtigung, Löschung oder Übertragbarkeit Ihrer Daten verlangen sowie der Verarbeitung widersprechen oder ihre Einschränkung verlangen, indem Sie an {{ legal_email(locale) }} schreiben. Wenn Sie meinen, dass wir Ihre Daten nicht korrekt behandelt haben, können Sie sich bei der spanischen Datenschutzbehörde beschweren (aepd.es).</p>
+
+<h2>8. Änderungen dieser Erklärung</h2>
+<p>Wir können diese Erklärung aktualisieren, wenn sich der Dienst oder die Vorschriften ändern. Änderungen veröffentlichen wir auf dieser Seite, mit Datum.</p>

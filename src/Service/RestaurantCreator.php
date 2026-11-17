@@ -44,6 +44,7 @@ class RestaurantCreator
         string $adminLocale,
         ?Reseller $reseller = null,
         bool $confirmEmail = false,
+        ?string $acceptedTermsVersion = null,
     ): User {
         $restaurant = new Restaurant();
         $restaurant->setName($name);
@@ -77,6 +78,10 @@ class RestaurantCreator
         $user->setPassword($this->hasher->hashPassword($user, $plainPassword));
         $user->setRestaurant($restaurant);
         $user->setEmailConfirmationPending($confirmEmail);
+        // A self sign-up ticked "Acepto los términos…" (null otherwise).
+        if ($acceptedTermsVersion !== null) {
+            $user->acceptTerms($acceptedTermsVersion);
+        }
         $restaurant->getUsers()->add($user);
 
         $this->em->persist($user);

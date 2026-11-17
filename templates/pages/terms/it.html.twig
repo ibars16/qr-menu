@@ -1,33 +1,60 @@
-<div class="legal-placeholder">
-    ⚠️ Documento da completare prima della pubblicazione in produzione: mancano la denominazione legale/fiscale del fornitore del servizio, un vero indirizzo email di contatto e la giurisdizione applicabile. Sostituisci i campi tra parentesi quadre con questi dati.
-</div>
-
 <h2>1. Accettazione dei presenti termini</h2>
-<p>Creando un account su QR Menu accetti i presenti Termini di servizio e la nostra <a href="{{ path('app_privacy') }}">Informativa sulla privacy</a>.</p>
+<p>I presenti Termini di servizio regolano l'uso di QR Menu, fornito da {{ legal('name', locale) }} (NIF {{ legal('nif', locale) }}; altri dati nelle <a href="{{ path('app_legal') }}">Note legali</a>). Creando un account e spuntando la casella di accettazione, accetti questi termini e l'<a href="{{ path('app_privacy') }}">Informativa sulla privacy</a>. QR Menu è un servizio per professionisti della ristorazione.</p>
 
-<h2>2. Descrizione del servizio</h2>
-<p>QR Menu offre un menu digitale per ristoranti, accessibile tramite codice QR, insieme a un pannello di amministrazione per gestirlo. Offriamo una prova gratuita di 7 giorni, senza carta di credito.</p>
+<h2>2. Il servizio</h2>
+<p>QR Menu offre un menu digitale per ristoranti, accessibile tramite codice QR, e un pannello di amministrazione per gestirlo. Include funzioni di intelligenza artificiale: importare il menu da una foto o da un PDF, tradurlo, un cameriere virtuale che risponde ai tuoi clienti, e creare o migliorare le foto dei piatti.</p>
 
 <h2>3. Il tuo account</h2>
-<p>Sei responsabile della riservatezza della tua password e della veridicità dei dati che fornisci sul tuo ristorante.</p>
+<p>Sei responsabile di mantenere segreta la tua password, della veridicità dei dati del tuo ristorante e di ciò che fanno le persone a cui dai accesso al tuo pannello.</p>
 
 <h2>4. Prova gratuita</h2>
-<p>La prova gratuita dura 7 giorni dalla creazione dell'account. Le condizioni d'uso al termine della prova saranno comunicate con un preavviso ragionevole prima di essere applicate.</p>
+<p>Alla registrazione hai 7 giorni di prova gratuita, senza carta. Durante la prova alcune funzioni di IA hanno un limite d'uso (ad esempio, il numero di foto create con l'IA). Se alla fine della prova non scegli un piano, il tuo menu non sarà più visibile (vedi punto 7).</p>
 
-<h2>5. Contenuto del tuo menu</h2>
-<p>Il contenuto del tuo menu (piatti, prezzi, immagini, descrizioni) è di tua responsabilità. Devi disporre dei diritti necessari su qualsiasi immagine o testo che carichi.</p>
+<h2>5. Prezzi e pagamento</h2>
+<ul>
+    <li><strong>Piano mensile:</strong> {{ price_monthly }} al mese. <strong>Piano annuale:</strong> {{ price_yearly }} all'anno. IVA inclusa.</li>
+    <li>Il pagamento è anticipato, con carta, tramite Stripe.</li>
+    <li>Se ti abboni durante la prova gratuita, il primo addebito avviene subito e la prova termina.</li>
+    <li>Possiamo modificare i prezzi con un preavviso; la modifica si applica dal rinnovo successivo.</li>
+</ul>
 
-<h2>6. Uso consentito</h2>
-<p>Non devi utilizzare il servizio per pubblicare contenuti illegali, ingannevoli o che violino i diritti di terzi.</p>
+<h2>6. Rinnovo, disdetta e rimborsi</h2>
+<p>L'abbonamento si rinnova automaticamente alla fine di ogni periodo (mese o anno) e viene addebitato lo stesso piano, salvo disdetta. Puoi disdirlo in qualsiasi momento dal pannello: resterà attivo fino alla fine del periodo già pagato e non verrà più addebitato. Non sono previsti rimborsi, né totali né parziali, in caso di disdetta o disattivazione del servizio prima della fine di un periodo pagato.</p>
 
-<h2>7. Disponibilità e modifiche del servizio</h2>
-<p>Lavoriamo per mantenere il servizio disponibile, ma non garantiamo un funzionamento ininterrotto. Possiamo modificare o migliorare le funzionalità nel tempo.</p>
+<h2>7. Mancato pagamento e blocco del menu</h2>
+<p>Se il periodo pagato termina senza rinnovo, il tuo menu pubblico non è più visibile e le funzioni di IA vengono bloccate finché non paghi di nuovo. Se il rinnovo con carta non va a buon fine, hai un margine di 3 giorni per risolvere prima del blocco. I tuoi dati vengono conservati e il menu torna visibile non appena l'abbonamento viene riattivato.</p>
 
-<h2>8. Limitazione di responsabilità</h2>
-<p>Il servizio è offerto "così com'è". Nella misura consentita dalla legge, non saremo responsabili per danni indiretti derivanti dall'uso del servizio.</p>
+<h2>8. Ristoranti di un rivenditore</h2>
+<p>Se il tuo ristorante si è registrato tramite un rivenditore, prezzo, pagamento e rinnovo li concordi con quel rivenditore, non con noi. Se il rivenditore smette di pagare il proprio abbonamento, il menù del tuo ristorante può non essere più visibile finché non risolve la situazione.</p>
 
-<h2>9. Legge applicabile</h2>
-<p>I presenti termini sono regolati dalla legge di [giurisdizione da definire].</p>
+<h2>9. Rivenditori</h2>
+<p>I rivenditori (aziende che gestiscono il menu di più ristoranti) hanno condizioni economiche proprie:</p>
+<ul>
+    <li><strong>Piano mensile:</strong> {{ reseller_monthly }} al mese, con {{ reseller_included_restaurants }} ristoranti inclusi, e {{ reseller_extra_monthly }} al mese per ogni ristorante in più.</li>
+    <li><strong>Piano annuale:</strong> {{ reseller_yearly }} all'anno, con {{ reseller_included_restaurants }} ristoranti inclusi, e {{ reseller_extra_yearly }} all'anno per ogni ristorante in più.</li>
+    <li>IVA inclusa. Si applicano anche i punti 5, 6 e 7.</li>
+</ul>
 
-<h2>10. Contatti</h2>
-<p>Per qualsiasi dubbio su questi termini, scrivici a [email di contatto da definire].</p>
+<h2>10. Contenuto del tuo menu</h2>
+<p>Il contenuto del tuo menu (piatti, prezzi, descrizioni, allergeni, foto e video) è una tua responsabilità. Devi avere i diritti sulle immagini e sui testi che carichi e verificare che le informazioni sugli allergeni siano corrette.</p>
+
+<h2>11. Funzioni di intelligenza artificiale</h2>
+<p>I risultati dell'IA (menu importati, traduzioni, risposte del cameriere virtuale e foto create o migliorate) possono contenere errori. Controllali prima di pubblicarli: sei tu a decidere cosa si pubblica. Le foto create o migliorate con l'IA sono immagini illustrative generate automaticamente, non fotografie reali del tuo piatto; sei responsabile che non traggano in inganno i tuoi clienti. Le funzioni di IA possono avere limiti d'uso.</p>
+
+<h2>12. Uso consentito</h2>
+<p>Non devi usare il servizio per pubblicare contenuti illegali, ingannevoli o che violino diritti di terzi, né tentare di danneggiare o sovraccaricare il servizio. Possiamo sospendere un account che non rispetti questi termini.</p>
+
+<h2>13. Disponibilità e modifiche</h2>
+<p>Lavoriamo perché il servizio sia sempre disponibile, ma non possiamo garantire un funzionamento ininterrotto. Possiamo migliorare o modificare le funzioni. Se modifichiamo questi termini in modo rilevante, ti avviseremo in anticipo.</p>
+
+<h2>14. Limitazione di responsabilità</h2>
+<p>Nei limiti consentiti dalla legge, non rispondiamo di danni indiretti, come la perdita di vendite, derivanti dall'uso del servizio o dalla sua interruzione.</p>
+
+<h2>15. Chiusura dell'account</h2>
+<p>Per chiudere il tuo account e cancellare i tuoi dati, scrivi all'email di contatto. Lo spieghiamo nell'<a href="{{ path('app_privacy') }}">Informativa sulla privacy</a>.</p>
+
+<h2>16. Legge applicabile</h2>
+<p>I presenti termini sono regolati dalla legge spagnola.</p>
+
+<h2>17. Contatto</h2>
+<p>Per qualsiasi dubbio su questi termini, scrivici a {{ legal_email(locale) }}.</p>

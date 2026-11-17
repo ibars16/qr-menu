@@ -26,6 +26,12 @@ class PagesController extends AbstractController
         return $this->page($request, 'about');
     }
 
+    #[Route('/aviso-legal', name: 'app_legal')]
+    public function legal(Request $request): Response
+    {
+        return $this->page($request, 'legal');
+    }
+
     #[Route('/privacidad', name: 'app_privacy')]
     public function privacy(Request $request): Response
     {

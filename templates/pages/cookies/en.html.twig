@@ -1,14 +1,19 @@
 <h2>What we use</h2>
+<p>All the cookies and data stored in your browser that QR Menu uses are technical or store a preference you choose. They don't require your consent, which is why we don't show a cookie banner.</p>
 <ul>
-    <li><strong>Session cookie:</strong> needed to keep you signed in when you log in to the admin panel. It is purely technical — without it you couldn't use your account — and does not require your consent.</li>
-    <li><strong>Language preference (<code>site_lang</code>):</strong> a cookie that remembers the language you choose on these pages, for one year. It is only created if you change the language with the selector.</li>
-    <li><strong>Theme preference (light/dark):</strong> stored in your browser's local storage (not exactly a cookie) to remember how you prefer to see the panel.</li>
+    <li><strong>Session (<code>PHPSESSID</code>):</strong> keeps you signed in to the panel while you use it. It is deleted when you close the browser.</li>
+    <li><strong>Keep me signed in (<code>REMEMBERME</code>):</strong> only if you tick "Keep me signed in" when signing in; saves you from signing in again for 7 days.</li>
+    <li><strong>Form security (<code>csrf-token</code>):</strong> protects forms against forged submissions. It lasts as long as the session.</li>
+    <li><strong>Language of these pages (<code>site_lang</code>):</strong> remembers the language you pick with the selector, for one year. Only created if you change the language.</li>
+    <li><strong>Menu preferences (<code>menu_prefs</code>):</strong> remembers the language and currency you pick when viewing a restaurant's menu, for one year.</li>
+    <li><strong>Light or dark mode (<code>admin-theme</code>, <code>site-theme</code>):</strong> stored in your browser's local storage (not cookies) to remember how you prefer to see the panel and these pages.</li>
+    <li><strong>Conversation with the virtual waiter (<code>sw_conv_…</code>):</strong> stored in the tab's storage (not a cookie) to continue the conversation; deleted when you close the tab.</li>
 </ul>
 
 <h2>What we don't use</h2>
-<p>We do not use advertising or third-party tracking cookies.</p>
+<p>We don't use advertising, analytics or tracking cookies, neither our own nor third-party ones. Fonts and icons are served from our own server.</p>
 
 <h2>How to manage them</h2>
-<p>You can delete or block cookies in your browser settings. Note that blocking the session cookie will prevent you from logging in to the admin panel.</p>
+<p>You can delete or block cookies and local storage in your browser settings. If you block the session cookie, you won't be able to sign in to the panel.</p>
 
-<p>For more information on how we handle your data, see our <a href="{{ path('app_privacy') }}">Privacy Policy</a>.</p>
+<p>For more information on how we process your data, see our <a href="{{ path('app_privacy') }}">Privacy Policy</a>.</p>

@@ -170,11 +170,44 @@
         }
         .submit-btn:hover { opacity: 0.94; transform: translateY(-1px); box-shadow: 0 16px 32px -10px rgba(193,68,14,0.65); }
 
+        /* "¿Ya tienes cuenta? Inicia sesión": the link is an outlined button
+           in the brand colour so whoever already has an account finds it.
+           --accent-text on --bg-page 9.0:1 (dark) / 4.58:1 (light);
+           hover: white on --brand 5.2:1. */
         .login-link {
-            text-align: center;
-            margin-top: 16px;
-            font-size: 13px; color: var(--tx-sub);
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 10px;
+            margin-top: 18px;
+            font-size: 14px; color: var(--tx-sub);
         }
-        .login-link a { color: var(--tx-label); text-decoration: none; }
-        .login-link a:hover { color: var(--tx-hi); }
+        .login-link a {
+            display: inline-flex; align-items: center; min-height: 40px; padding: 8px 18px;
+            border: 1.5px solid var(--accent-text); border-radius: 10px;
+            color: var(--accent-text); font-weight: 600; text-decoration: none;
+            transition: background .15s, color .15s, border-color .15s;
+        }
+        .login-link a:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+        .login-link a:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+        /* "He leído y acepto…" (security/_accept_terms.html.twig): a real
+           checkbox, not the text-field look of .field input above. Text
+           --tx-hi, links --accent-text (#F0997B / #C1440E: 8.38:1 / 4.91:1
+           on --bg-card). */
+        .accept-terms { margin-top: 4px; }
+        .field .accept-terms-label {
+            display: flex; align-items: flex-start; gap: 10px; margin: 0;
+            font-size: 13px; font-weight: 400; line-height: 1.45; color: var(--tx-hi);
+            text-transform: none; letter-spacing: 0; cursor: pointer;
+        }
+        .field .accept-terms-label input[type="checkbox"] {
+            width: 18px; height: 18px; min-height: 0; padding: 0; margin: 1px 0 0; flex-shrink: 0;
+            appearance: auto; -webkit-appearance: checkbox; accent-color: var(--brand); cursor: pointer;
+        }
+        .field .accept-terms-label input[type="checkbox"]:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; box-shadow: none; }
+        /* Not ticked on submit: the message is at the top of the form; the box is ringed like an invalid field. */
+        .field .accept-terms-label input[type="checkbox"][aria-invalid="true"] { outline: 2px solid var(--brand); outline-offset: 2px; }
+        .accept-terms-label a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
+
+        /* Small legal line under the card (_legal_links.html.twig): --tx-sub
+           (5.73:1 dark / 5.13:1 light on --bg-page). */
+        .wrap { --legal-links-fg: var(--tx-sub); --legal-links-hover: var(--tx-hi); }
     </style>

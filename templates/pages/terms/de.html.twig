@@ -1,33 +1,60 @@
-<div class="legal-placeholder">
-    ⚠️ Dokument vor der Veröffentlichung in der Produktion zu vervollständigen: Es fehlen der rechtliche/steuerliche Name des Diensteanbieters, eine echte Kontakt-E-Mail und das anwendbare Recht. Ersetzen Sie die Felder in eckigen Klammern durch diese Angaben.
-</div>
-
 <h2>1. Annahme dieser Bedingungen</h2>
-<p>Mit der Erstellung eines Kontos bei QR Menu akzeptieren Sie diese Nutzungsbedingungen und unsere <a href="{{ path('app_privacy') }}">Datenschutzerklärung</a>.</p>
+<p>Diese Nutzungsbedingungen regeln die Nutzung von QR Menu, angeboten von {{ legal('name', locale) }} (Steuernummer {{ legal('nif', locale) }}; weitere Angaben im <a href="{{ path('app_legal') }}">Impressum</a>). Indem Sie ein Konto erstellen und das Kästchen zur Annahme ankreuzen, akzeptieren Sie diese Bedingungen und die <a href="{{ path('app_privacy') }}">Datenschutzerklärung</a>. QR Menu ist ein Dienst für Gastronomiebetriebe.</p>
 
-<h2>2. Beschreibung des Dienstes</h2>
-<p>QR Menu bietet Restaurants eine digitale Speisekarte, die per QR-Code aufrufbar ist, sowie ein Verwaltungspanel, um sie zu pflegen. Wir bieten eine kostenlose Testphase von 7 Tagen an, ohne Kreditkarte.</p>
+<h2>2. Der Dienst</h2>
+<p>QR Menu bietet Restaurants eine digitale Speisekarte, die per QR-Code aufgerufen wird, und einen Verwaltungsbereich, um sie zu pflegen. Dazu gehören Funktionen mit künstlicher Intelligenz: die Speisekarte aus einem Foto oder PDF importieren, sie übersetzen, ein virtueller Kellner, der Ihren Gästen antwortet, und Fotos Ihrer Gerichte erstellen oder verbessern.</p>
 
 <h2>3. Ihr Konto</h2>
-<p>Sie sind dafür verantwortlich, Ihr Passwort vertraulich zu behandeln und dass die Angaben zu Ihrem Restaurant zutreffen.</p>
+<p>Sie sind dafür verantwortlich, Ihr Passwort geheim zu halten, dass die Angaben zu Ihrem Restaurant stimmen, und für das, was die Personen tun, denen Sie Zugang zu Ihrem Verwaltungsbereich geben.</p>
 
 <h2>4. Kostenlose Testphase</h2>
-<p>Die kostenlose Testphase dauert 7 Tage ab der Erstellung des Kontos. Die Nutzungsbedingungen nach Ende der Testphase werden mit angemessener Vorlaufzeit mitgeteilt, bevor sie gelten.</p>
+<p>Nach der Registrierung können Sie den Dienst 7 Tage kostenlos testen, ohne Karte. Während der Testphase sind einige KI-Funktionen begrenzt (zum Beispiel die Anzahl der mit KI erstellten Fotos). Wenn Sie am Ende der Testphase keinen Tarif wählen, ist Ihre Speisekarte nicht mehr sichtbar (siehe Abschnitt 7).</p>
 
-<h2>5. Inhalte Ihrer Speisekarte</h2>
-<p>Für die Inhalte Ihrer Speisekarte (Gerichte, Preise, Bilder, Beschreibungen) sind Sie verantwortlich. Sie müssen über die erforderlichen Rechte an allen Bildern und Texten verfügen, die Sie hochladen.</p>
+<h2>5. Preise und Zahlung</h2>
+<ul>
+    <li><strong>Monatstarif:</strong> {{ price_monthly }} pro Monat. <strong>Jahrestarif:</strong> {{ price_yearly }} pro Jahr. Inklusive MwSt.</li>
+    <li>Die Zahlung erfolgt im Voraus per Karte über Stripe.</li>
+    <li>Wenn Sie während der kostenlosen Testphase ein Abo abschließen, wird sofort abgebucht und die Testphase endet.</li>
+    <li>Wir können die Preise nach vorheriger Ankündigung ändern; die Änderung gilt ab der nächsten Verlängerung.</li>
+</ul>
 
-<h2>6. Zulässige Nutzung</h2>
-<p>Sie dürfen den Dienst nicht nutzen, um rechtswidrige, irreführende oder die Rechte Dritter verletzende Inhalte zu veröffentlichen.</p>
+<h2>6. Verlängerung, Kündigung und Erstattungen</h2>
+<p>Das Abo verlängert sich am Ende jedes Zeitraums (Monat oder Jahr) automatisch zum selben Tarif, sofern Sie es nicht kündigen. Sie können jederzeit im Verwaltungsbereich kündigen: Das Abo bleibt bis zum Ende des bereits bezahlten Zeitraums aktiv, danach wird nicht mehr abgebucht. Bei Kündigung oder Deaktivierung vor Ende eines bezahlten Zeitraums erfolgt keine Erstattung, weder ganz noch teilweise.</p>
 
-<h2>7. Verfügbarkeit und Änderungen des Dienstes</h2>
-<p>Wir arbeiten daran, den Dienst verfügbar zu halten, garantieren jedoch keinen unterbrechungsfreien Betrieb. Wir können Funktionen im Laufe der Zeit ändern oder verbessern.</p>
+<h2>7. Nichtzahlung und Sperrung der Speisekarte</h2>
+<p>Endet der bezahlte Zeitraum ohne Verlängerung, ist Ihre öffentliche Speisekarte nicht mehr sichtbar und die KI-Funktionen werden gesperrt, bis Sie erneut bezahlen. Schlägt die Verlängerung per Karte fehl, haben Sie 3 Tage Zeit, dies zu beheben, bevor gesperrt wird. Ihre Daten bleiben erhalten, und die Speisekarte ist wieder sichtbar, sobald das Abo reaktiviert wird.</p>
 
-<h2>8. Haftungsbeschränkung</h2>
-<p>Der Dienst wird „wie besehen“ bereitgestellt. Soweit gesetzlich zulässig, haften wir nicht für mittelbare Schäden, die aus der Nutzung des Dienstes entstehen.</p>
+<h2>8. Restaurants eines Wiederverkäufers</h2>
+<p>Wenn Ihr Restaurant über einen Wiederverkäufer registriert wurde, vereinbaren Sie Preis, Zahlung und Verlängerung mit diesem Wiederverkäufer, nicht mit uns. Wenn der Wiederverkäufer sein Abonnement nicht mehr bezahlt, kann die Speisekarte Ihres Restaurants nicht mehr angezeigt werden, bis er dies geklärt hat.</p>
 
-<h2>9. Anwendbares Recht</h2>
-<p>Diese Bedingungen unterliegen dem Recht von [Rechtsordnung ausstehend].</p>
+<h2>9. Wiederverkäufer</h2>
+<p>Für Wiederverkäufer (Unternehmen, die die Speisekarten mehrerer Restaurants verwalten) gelten eigene Preise:</p>
+<ul>
+    <li><strong>Monatstarif:</strong> {{ reseller_monthly }} pro Monat mit {{ reseller_included_restaurants }} inklusiven Restaurants und {{ reseller_extra_monthly }} pro Monat für jedes weitere Restaurant.</li>
+    <li><strong>Jahrestarif:</strong> {{ reseller_yearly }} pro Jahr mit {{ reseller_included_restaurants }} inklusiven Restaurants und {{ reseller_extra_yearly }} pro Jahr für jedes weitere Restaurant.</li>
+    <li>Inklusive MwSt. Die Abschnitte 5, 6 und 7 gelten ebenfalls.</li>
+</ul>
 
-<h2>10. Kontakt</h2>
-<p>Bei Fragen zu diesen Bedingungen schreiben Sie uns an [Kontakt-E-Mail ausstehend].</p>
+<h2>10. Inhalt Ihrer Speisekarte</h2>
+<p>Für den Inhalt Ihrer Speisekarte (Gerichte, Preise, Beschreibungen, Allergene, Fotos und Videos) sind Sie verantwortlich. Sie müssen die Rechte an den hochgeladenen Bildern und Texten besitzen und prüfen, dass die Allergenangaben stimmen.</p>
+
+<h2>11. Funktionen mit künstlicher Intelligenz</h2>
+<p>Ergebnisse der KI (importierte Speisekarten, Übersetzungen, Antworten des virtuellen Kellners und erstellte oder verbesserte Fotos) können Fehler enthalten. Prüfen Sie sie vor der Veröffentlichung: Sie entscheiden, was veröffentlicht wird. Mit KI erstellte oder verbesserte Fotos sind automatisch erzeugte Beispielbilder, keine echten Fotos Ihres Gerichts; Sie sind dafür verantwortlich, dass sie Ihre Gäste nicht täuschen. KI-Funktionen können Nutzungsgrenzen haben.</p>
+
+<h2>12. Zulässige Nutzung</h2>
+<p>Sie dürfen den Dienst nicht nutzen, um rechtswidrige oder irreführende Inhalte oder Inhalte zu veröffentlichen, die Rechte Dritter verletzen, und nicht versuchen, den Dienst zu schädigen oder zu überlasten. Wir können ein Konto sperren, das gegen diese Bedingungen verstößt.</p>
+
+<h2>13. Verfügbarkeit und Änderungen</h2>
+<p>Wir sorgen dafür, dass der Dienst stets verfügbar ist, können aber keinen unterbrechungsfreien Betrieb garantieren. Wir können Funktionen verbessern oder ändern. Ändern wir diese Bedingungen wesentlich, informieren wir Sie im Voraus.</p>
+
+<h2>14. Haftungsbeschränkung</h2>
+<p>Soweit gesetzlich zulässig, haften wir nicht für mittelbare Schäden wie entgangene Umsätze, die aus der Nutzung des Dienstes oder seiner Unterbrechung entstehen.</p>
+
+<h2>15. Kontoschließung</h2>
+<p>Um Ihr Konto zu schließen und Ihre Daten zu löschen, schreiben Sie uns an die Kontakt-E-Mail. Mehr dazu in der <a href="{{ path('app_privacy') }}">Datenschutzerklärung</a>.</p>
+
+<h2>16. Anwendbares Recht</h2>
+<p>Für diese Bedingungen gilt spanisches Recht.</p>
+
+<h2>17. Kontakt</h2>
+<p>Bei Fragen zu diesen Bedingungen schreiben Sie uns an {{ legal_email(locale) }}.</p>

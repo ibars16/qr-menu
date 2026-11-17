@@ -126,7 +126,9 @@ final class ThemeStructureTest extends WebTestCase
 
         // The structure: its shape tokens, fonts, sheet markup and the chat bubble.
         self::assertStringContainsString('--card-radius: 6px;', $html);
-        self::assertStringContainsString('family=Fraunces', $html);
+        // Fonts served from our own server (public/fonts), never Google's.
+        self::assertStringContainsString('href="/fonts/fraunces-inter.css"', $html);
+        self::assertStringNotContainsString('fonts.googleapis.com', $html);
         self::assertCount(1, $crawler->filter('.dish-modal-scroll'));
         self::assertCount(1, $crawler->filter('.hero-inner > .cta-explore'));
         self::assertCount(1, $crawler->filter('#sw-widget'));

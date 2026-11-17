@@ -6,6 +6,7 @@ use App\Form\RegistrationFormType;
 use App\Service\AccountMailer;
 use App\Service\AdminLocaleResolver;
 use App\Security\SignupLimiter;
+use App\Service\LegalInfo;
 use App\Service\RestaurantCreator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -24,6 +25,7 @@ class RegistrationController extends AbstractController
         AdminLocaleResolver $adminLocaleResolver,
         AccountMailer $accountMailer,
         SignupLimiter $signupLimiter,
+        LegalInfo $legalInfo,
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_menu');
@@ -62,6 +64,7 @@ class RegistrationController extends AbstractController
                 $data['language'],
                 $adminLocaleResolver->resolve($data['adminLocale']),
                 confirmEmail: true,
+                acceptedTermsVersion: $legalInfo->termsVersion(),
             );
             $accountMailer->sendWelcome($user);
 

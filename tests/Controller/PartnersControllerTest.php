@@ -162,6 +162,7 @@ final class PartnersControllerTest extends WebTestCase
         $form['reseller_registration_form[email]'] = $email;
         $form['reseller_registration_form[password][first]'] = 'a-strong-password-1';
         $form['reseller_registration_form[password][second]'] = 'a-strong-password-1';
+        $form['reseller_registration_form[acceptTerms]']->tick();
         $form['reseller_registration_form[adminLocale]'] = 'en';
         $this->client->submit($form);
 
@@ -199,6 +200,7 @@ final class PartnersControllerTest extends WebTestCase
         $form['reseller_registration_form[email]'] = $this->owner->getEmail();
         $form['reseller_registration_form[password][first]'] = 'a-strong-password-1';
         $form['reseller_registration_form[password][second]'] = 'a-strong-password-1';
+        $form['reseller_registration_form[acceptTerms]']->tick();
         $this->client->submit($form);
 
         self::assertResponseIsUnprocessable();
@@ -216,6 +218,7 @@ final class PartnersControllerTest extends WebTestCase
         $form['reseller_registration_form[email]'] = 'not-an-email';
         $form['reseller_registration_form[password][first]'] = 'short';
         $form['reseller_registration_form[password][second]'] = 'short';
+        $form['reseller_registration_form[acceptTerms]']->tick();
         $this->client->submit($form);
 
         self::assertResponseIsUnprocessable();
@@ -251,6 +254,7 @@ final class PartnersControllerTest extends WebTestCase
         $form['reseller_registration_form[email]'] = 'partners-test-kept@example.test';
         $form['reseller_registration_form[password][first]'] = 'short';
         $form['reseller_registration_form[password][second]'] = 'short';
+        $form['reseller_registration_form[acceptTerms]']->tick();
         $form['reseller_registration_form[adminLocale]'] = 'it';
         $page = $this->client->submit($form);
 
@@ -275,6 +279,7 @@ final class PartnersControllerTest extends WebTestCase
         $form['reseller_registration_form[email]'] = 'partners-test-mismatch@example.test';
         $form['reseller_registration_form[password][first]'] = 'a-strong-password-1';
         $form['reseller_registration_form[password][second]'] = 'a-strong-password-2';
+        $form['reseller_registration_form[acceptTerms]']->tick();
         $page = $this->client->submit($form);
 
         self::assertResponseIsUnprocessable();
@@ -290,6 +295,7 @@ final class PartnersControllerTest extends WebTestCase
         $form['reseller_registration_form[email]'] = 'partners-test-expired@example.test';
         $form['reseller_registration_form[password][first]'] = 'a-strong-password-1';
         $form['reseller_registration_form[password][second]'] = 'a-strong-password-1';
+        $form['reseller_registration_form[acceptTerms]']->tick();
         $page = $this->client->submit($form, serverParameters: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
 
         self::assertResponseIsUnprocessable();

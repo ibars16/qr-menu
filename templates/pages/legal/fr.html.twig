@@ -1,0 +1,23 @@
+<h2>1. Éditeur du site</h2>
+<p>Conformément à la loi espagnole 34/2002 du 11 juillet sur les services de la société de l'information et le commerce électronique (LSSI), voici les informations sur le titulaire de QR Menu :</p>
+<ul>
+    <li><strong>Titulaire :</strong> {{ legal('name', locale) }}, personne physique exerçant en tant que travailleur indépendant (autónomo).</li>
+    <li><strong>NIF :</strong> {{ legal('nif', locale) }}</li>
+    <li><strong>Adresse :</strong> {{ legal('address', locale) }}</li>
+    <li><strong>E-mail de contact :</strong> {{ legal_email(locale) }}</li>
+</ul>
+
+<h2>2. Objet</h2>
+<p>Ce site présente et fournit QR Menu, un service de carte numérique pour les restaurants : un panneau d'administration pour créer et tenir à jour la carte, et une carte publique que les clients du restaurant consultent sur leur téléphone en scannant un code QR.</p>
+
+<h2>3. Conditions d'utilisation</h2>
+<p>L'utilisation du service par les restaurants est régie par les <a href="{{ path('app_terms') }}">Conditions d'utilisation</a>. Le traitement des données personnelles est expliqué dans la <a href="{{ path('app_privacy') }}">Politique de confidentialité</a>, et l'utilisation des cookies dans la <a href="{{ path('app_cookies') }}">Politique de cookies</a>.</p>
+
+<h2>4. Propriété intellectuelle</h2>
+<p>Le design, le code et les textes propres à QR Menu appartiennent à son titulaire. Le contenu de chaque carte (noms des plats, descriptions, prix, photos et logos) appartient au restaurant qui le publie, qui en est responsable.</p>
+
+<h2>5. Responsabilité</h2>
+<p>Le titulaire n'est pas responsable du contenu que chaque restaurant publie sur sa carte, y compris les informations sur les allergènes, que le restaurant doit vérifier. Si vous repérez un contenu illicite, écrivez à l'e-mail de contact et nous l'examinerons.</p>
+
+<h2>6. Droit applicable</h2>
+<p>Les présentes mentions légales sont régies par le droit espagnol.</p>

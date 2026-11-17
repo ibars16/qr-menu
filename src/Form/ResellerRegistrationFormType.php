@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Service\AdminLocaleResolver;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -12,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -71,6 +73,14 @@ class ResellerRegistrationFormType extends AbstractType
                 'choice_translation_domain' => false,
                 'data'                      => $options['detected_admin_locale'],
                 'invalid_message'           => 'register.error.admin_locale',
+            ])
+            // "Acepto los términos y la política de privacidad": required. The
+            // template renders its label (with the links) itself; the date and
+            // the terms' version are saved on the new User (User::acceptTerms()).
+            ->add('acceptTerms', CheckboxType::class, [
+                'label'       => false,
+                'required'    => true,
+                'constraints' => [new IsTrue(message: 'register.error.terms_required')],
             ])
         ;
     }

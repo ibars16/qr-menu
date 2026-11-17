@@ -1,0 +1,12 @@
+{# "Tienes que aceptar los términos…" at the TOP of the sign-up form (with
+   the form's own errors), not under the box: the box is the last field and
+   the page comes back scrolled to the top. The box itself stays marked
+   invalid and points here (aria-describedby, security/_accept_terms).
+   `field`: the form's acceptTerms; `domain`: its message's domain. #}
+{% if field.vars.errors|length > 0 %}
+    <ul class="errors form-errors accept-terms-errors" role="alert" id="{{ field.vars.id }}_errors">
+        {% for error in field.vars.errors %}
+            <li>{{ error.messageTemplate|trans(error.messageParameters, domain) }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}

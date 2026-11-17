@@ -54,6 +54,7 @@ final class RegistrationControllerTest extends WebTestCase
         $form['registration_form[email]'] = $email;
         $form['registration_form[password][first]'] = 'a-strong-password-1';
         $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[acceptTerms]']->tick();
         $form['registration_form[currency]'] = 'EUR';
         $form['registration_form[language]'] = 'es';
         $form['registration_form[adminLocale]'] = 'es';
@@ -139,6 +140,7 @@ final class RegistrationControllerTest extends WebTestCase
         $form['registration_form[email]'] = $email;
         $form['registration_form[password][first]'] = 'a-strong-password-1';
         $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[acceptTerms]']->tick();
         $form['registration_form[currency]'] = 'EUR';
         $form['registration_form[language]'] = 'it';
         $form['registration_form[adminLocale]'] = 'es';
@@ -159,7 +161,7 @@ final class RegistrationControllerTest extends WebTestCase
         $this->client->request('POST', '/register', ['registration_form' => [
             'restaurantName' => 'Registration Test Unknown', 'email' => $email,
             'password' => ['first' => 'a-strong-password-1', 'second' => 'a-strong-password-1'],
-            'currency' => 'EUR', 'language' => 'xx', 'adminLocale' => 'es', '_token' => $token,
+            'currency' => 'EUR', 'language' => 'xx', 'adminLocale' => 'es', 'acceptTerms' => '1', '_token' => $token,
         ]]);
 
         self::assertResponseStatusCodeSame(422);
@@ -180,6 +182,7 @@ final class RegistrationControllerTest extends WebTestCase
         $form['registration_form[email]'] = $existing->getEmail();
         $form['registration_form[password][first]'] = 'a-strong-password-1';
         $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[acceptTerms]']->tick();
         $form['registration_form[currency]'] = 'GBP';
         $form['registration_form[language]'] = 'fr';
         $form['registration_form[adminLocale]'] = 'es';
@@ -217,6 +220,7 @@ final class RegistrationControllerTest extends WebTestCase
         $form['registration_form[email]'] = $existing->getEmail();
         $form['registration_form[password][first]'] = 'a-strong-password-1';
         $form['registration_form[password][second]'] = 'another-password-2';
+        $form['registration_form[acceptTerms]']->tick();
         $page = $this->client->submit($form);
 
         self::assertResponseIsUnprocessable();
@@ -254,6 +258,7 @@ final class RegistrationControllerTest extends WebTestCase
         $form['registration_form[email]'] = 'registration-short@example.test';
         $form['registration_form[password][first]'] = 'short';
         $form['registration_form[password][second]'] = 'short';
+        $form['registration_form[acceptTerms]']->tick();
         $form['registration_form[currency]'] = 'GBP';
         $page = $this->client->submit($form);
 
@@ -274,6 +279,7 @@ final class RegistrationControllerTest extends WebTestCase
         $form['registration_form[email]'] = 'registration-expired@example.test';
         $form['registration_form[password][first]'] = 'a-strong-password-1';
         $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[acceptTerms]']->tick();
         $page = $this->client->submit($form);
 
         self::assertResponseIsUnprocessable();

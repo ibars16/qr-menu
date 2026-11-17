@@ -1,29 +1,40 @@
-<div class="legal-placeholder">
-    ⚠️ Document to be completed before going live in production: the legal/tax name of the data controller and a real contact email for privacy matters are missing. Replace the fields in square brackets with that information.
-</div>
-
 <h2>1. Data controller</h2>
-<p>[Legal name pending] is the controller of the personal data collected through QR Menu. For any questions about this policy, you can write to [contact email pending].</p>
+<p>The controller of the personal data processed in QR Menu is {{ legal('name', locale) }} (tax ID {{ legal('nif', locale) }}), with address at {{ legal('address', locale) }}. For any privacy question you can write to {{ legal_email(locale) }}.</p>
 
-<h2>2. What data we collect</h2>
+<h2>2. What data we process and why</h2>
 <ul>
-    <li><strong>Your account data:</strong> email and password (stored encrypted, never in plain text) and your restaurant's name.</li>
-    <li><strong>Your menu data:</strong> categories, dishes, prices, descriptions and images you upload for your digital menu.</li>
-    <li><strong>Usage data of your public menu:</strong> which dishes are viewed, so we can show you statistics about your own menu.</li>
-    <li><strong>Interactions with the Smart Waiter assistant:</strong> we record that a conversation took place and its language, for aggregated statistical purposes. We do not store the content of the messages your customers write.</li>
+    <li><strong>Your account:</strong> email, password (stored encrypted, never in plain text), restaurant name and panel language; if you give your team access, also their name and email. We use them to provide the service and send you the necessary emails (account confirmation, password change, payment notices).</li>
+    <li><strong>Resellers:</strong> company name, contact person's name and email.</li>
+    <li><strong>Payment and invoicing:</strong> payment is handled by Stripe. We never see or store your card details; we store the reference of your customer and subscription in Stripe. Stripe collects your name or company name, billing address and, if you provide it, your tax ID, to issue invoices.</li>
+    <li><strong>Your menu:</strong> categories, dishes, prices, descriptions, allergens, photos and videos you upload.</li>
+    <li><strong>Visits to your public menu:</strong> which dishes are opened and when, to show you statistics. We don't store who opens them.</li>
+    <li><strong>Virtual waiter (AI):</strong> the messages your customers write and the answers are kept in the server's temporary memory for up to 30 minutes (the last 12 messages) so the conversation makes sense, and are sent to Groq or Google Gemini to generate the answer. Our database only keeps that a conversation took place, its language and technical data (provider, response time), never the text of the messages.</li>
+    <li><strong>Technical data:</strong> the IP address is used temporarily to protect the service against abuse (limits on sign-ups and messages) and remains in the server logs.</li>
 </ul>
+<p>The legal basis is the performance of the service contract with you, our legitimate interest in keeping the service secure and improving it, and compliance with legal obligations (for example, tax obligations).</p>
 
 <h2>3. Who we share data with</h2>
-<p>We use external artificial intelligence providers for features such as the Smart Waiter assistant and importing menus from a photo. These providers process the content needed to deliver that service, under their own data processing terms. We do not sell personal data to third parties.</p>
+<p>We don't sell personal data. We only share it with the providers we need to provide the service, who process it on our behalf:</p>
+<ul>
+    <li><strong>Stripe</strong> (payments and invoices).</li>
+    <li><strong>Google Gemini</strong> (artificial intelligence: importing menus from a photo or PDF, translations, virtual waiter and dish photos).</li>
+    <li><strong>Groq</strong> (artificial intelligence: virtual waiter and translations).</li>
+    <li><strong>Brevo</strong> (sending emails).</li>
+    <li><strong>Web hosting:</strong> {{ legal('hosting', locale) }}.</li>
+</ul>
+<p>We use the paid versions of the AI services, whose terms don't allow the data we send them to be used to train their models.</p>
 
-<h2>4. Cookies</h2>
-<p>See our <a href="{{ path('app_cookies') }}">Cookie Policy</a> to find out what we use and why.</p>
+<h2>4. Transfers outside the European Union</h2>
+<p>Google, Groq and Stripe may process data in the United States or other countries outside the European Union. These transfers are made with the safeguards required by the GDPR: the EU-U.S. Data Privacy Framework when the provider has joined it, or the European Commission's standard contractual clauses.</p>
 
-<h2>5. Your rights</h2>
-<p>You can request access to, rectification, erasure or portability of your personal data, and object to or restrict its processing, by writing to [contact email pending].</p>
+<h2>5. Cookies</h2>
+<p>See our <a href="{{ path('app_cookies') }}">Cookie Policy</a> to learn what we use and why.</p>
 
-<h2>6. Data retention</h2>
-<p>We keep your data while your account is active. If you delete your account, the associated data is deleted unless there is a legal obligation to keep it for longer.</p>
+<h2>6. How long we keep it</h2>
+<p>We keep your data while your account exists. If you want to close it, write to the contact email and we will delete it together with its data, except the data the law requires us to keep for longer (for example, invoices).</p>
 
-<h2>7. Changes to this policy</h2>
-<p>We may update this policy to reflect changes in the service or in applicable law. We will publish any relevant change on this same page.</p>
+<h2>7. Your rights</h2>
+<p>You can request access to, rectification, erasure or portability of your data, and object to or ask us to restrict its processing, by writing to {{ legal_email(locale) }}. If you believe we haven't handled your data properly, you can lodge a complaint with the Spanish Data Protection Agency (aepd.es).</p>
+
+<h2>8. Changes to this policy</h2>
+<p>We may update this policy if the service or the regulations change. We will publish the changes on this page, with their date.</p>

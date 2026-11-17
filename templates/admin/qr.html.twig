@@ -107,9 +107,9 @@
 {% endblock %}
 
 {% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="{{ asset('vendor/qrcode/1.5.1/qrcode.js') }}"></script>
     <script>
-        const MENU_URL = {{ menuUrl|json_encode }};
+        const MENU_URL = "{{ menuUrl|e('js') }}";
         const MSG_QR_UNAVAILABLE = "{{ 'toast.qr_unavailable'|trans({}, 'admin_qr')|e('js') }}";
         const MSG_QR_DOWNLOADED  = "{{ 'toast.qr_downloaded'|trans({}, 'admin_qr')|e('js') }}";
         const MSG_URL_COPIED     = "{{ 'toast.url_copied'|trans({}, 'admin_qr')|e('js') }}";

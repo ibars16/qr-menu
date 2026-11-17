@@ -17,6 +17,7 @@ register:
     login: "Connectez-vous"
     theme_aria: "Basculer entre mode sombre et clair"
     error:
+        terms_required: "Pour créer le compte, vous devez accepter les conditions et la politique de confidentialité."
         company_blank: "Saisissez le nom de l'entreprise."
         company_length: "Le nom doit contenir entre 2 et 100 caractères."
         name_blank: "Saisissez votre nom."
@@ -122,6 +123,7 @@ billing:
         monthly: "/mois"
         yearly: "/an"
     amount: "%price% €"
+    vat: "TVA incluse"
     included: "%included% restaurants inclus"
     extra:
         monthly: "+%extra% €/mois par restaurant en plus"

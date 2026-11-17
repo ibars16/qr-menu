@@ -31,6 +31,7 @@ currency_choice:
     gbp: "Libra esterlina (£)"
     jpy: "Yen japonés (¥)"
 error:
+    terms_required: "Para crear la cuenta tienes que aceptar los términos y la política de privacidad."
     restaurant_blank: "Introduce el nombre del restaurante."
     restaurant_length: "El nombre debe tener entre 2 y 100 caracteres."
     email_blank: "Introduce tu email."

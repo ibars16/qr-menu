@@ -13,10 +13,8 @@
 {% endblock %}
 
 {% block stylesheets %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('vendor/tabler-icons/3.31.0/tabler-icons.min.css') }}">
+    <link href="{{ asset('fonts/plus-jakarta-sans.css') }}" rel="stylesheet">
     <script>(function(){try{if(localStorage.getItem('admin-theme')==='light'||localStorage.getItem('site-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
     {% include 'security/_auth_styles.html.twig' %}
 {% endblock %}
@@ -56,6 +54,7 @@
 
             {# Errors of the whole form (expired page, unexpected fields). #}
             {% if form.vars.errors|length > 0 %}{{ m.errors(form, 'errors form-errors') }}{% endif %}
+            {% include 'security/_accept_terms_errors.html.twig' with { field: form.acceptTerms, domain: 'partners' } only %}
 
             <div class="section-divider">{{ 'register.section_company'|trans({}, 'partners') }}</div>
 
@@ -98,6 +97,8 @@
                 {{ m.errors(form.password.second) }}
             </div>
 
+            {% include 'security/_accept_terms.html.twig' with { field: form.acceptTerms, domain: 'partners' } only %}
+
             <button type="submit" class="submit-btn">{{ 'register.submit'|trans({}, 'partners') }}</button>
 
             {{ form_end(form) }}
@@ -106,6 +107,8 @@
         <div class="login-link">
             {{ 'register.have_account'|trans({}, 'partners') }} <a href="{{ path('admin_login') }}">{{ 'register.login'|trans({}, 'partners') }}</a>
         </div>
+
+        {% include '_legal_links.html.twig' %}
 
     </div>
 

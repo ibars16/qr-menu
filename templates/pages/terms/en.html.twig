@@ -1,33 +1,60 @@
-<div class="legal-placeholder">
-    ⚠️ Document to be completed before going live in production: the legal/tax name of the service provider, a real contact email and the governing jurisdiction are missing. Replace the fields in square brackets with that information.
-</div>
-
 <h2>1. Acceptance of these terms</h2>
-<p>By creating an account on QR Menu you accept these Terms of Service and our <a href="{{ path('app_privacy') }}">Privacy Policy</a>.</p>
+<p>These Terms of Service govern the use of QR Menu, provided by {{ legal('name', locale) }} (tax ID {{ legal('nif', locale) }}; more details in the <a href="{{ path('app_legal') }}">Legal notice</a>). By creating an account and ticking the acceptance box, you accept these terms and the <a href="{{ path('app_privacy') }}">Privacy Policy</a>. QR Menu is a service for hospitality professionals.</p>
 
-<h2>2. Description of the service</h2>
-<p>QR Menu provides a digital menu for restaurants, accessible via QR code, together with an admin panel to manage it. We offer a free 7-day trial, with no credit card required.</p>
+<h2>2. The service</h2>
+<p>QR Menu provides a digital menu for restaurants, accessible by QR code, and an admin panel to manage it. It includes artificial intelligence features: importing the menu from a photo or a PDF, translating it, a virtual waiter that answers your customers, and creating or enhancing photos of your dishes.</p>
 
 <h2>3. Your account</h2>
-<p>You are responsible for keeping your password confidential and for the accuracy of the information you provide about your restaurant.</p>
+<p>You are responsible for keeping your password secret, for your restaurant's details being accurate, and for what the people you give access to your panel do.</p>
 
 <h2>4. Free trial</h2>
-<p>The free trial lasts 7 days from the creation of the account. The terms of use once the trial has ended will be communicated with reasonable notice before they apply.</p>
+<p>When you sign up you get a 7-day free trial, with no card required. During the trial some AI features have a usage limit (for example, the number of photos created with AI). If you don't choose a plan when the trial ends, your menu stops being visible (see section 7).</p>
 
-<h2>5. Your menu content</h2>
-<p>The content of your menu (dishes, prices, images, descriptions) is your responsibility. You must hold the necessary rights to any image or text you upload.</p>
+<h2>5. Prices and payment</h2>
+<ul>
+    <li><strong>Monthly plan:</strong> {{ price_monthly }} per month. <strong>Yearly plan:</strong> {{ price_yearly }} per year. VAT included.</li>
+    <li>Payment is in advance, by card, through Stripe.</li>
+    <li>If you subscribe during the free trial, the first charge is made at that moment and the trial ends.</li>
+    <li>We may change prices with prior notice; the change applies from the next renewal.</li>
+</ul>
 
-<h2>6. Acceptable use</h2>
-<p>You must not use the service to publish content that is illegal, misleading or that infringes the rights of third parties.</p>
+<h2>6. Renewal, cancellation and refunds</h2>
+<p>Your subscription renews automatically at the end of each period (month or year) and the same plan is charged, unless you cancel it. You can cancel at any time from the panel: it stays active until the end of the period already paid and you won't be charged again. No refunds, full or partial, are given for cancelling or deactivating the service before a paid period ends.</p>
 
-<h2>7. Availability and changes to the service</h2>
-<p>We work to keep the service available, but we do not guarantee uninterrupted operation. We may modify or improve features over time.</p>
+<h2>7. Non-payment and menu lock</h2>
+<p>If the paid period ends without being renewed, your public menu stops being visible and the AI features are blocked until you pay again. If a card renewal fails, you have a 3-day margin to sort it out before the lock. Your data is kept and the menu is visible again as soon as the subscription is reactivated.</p>
 
-<h2>8. Limitation of liability</h2>
-<p>The service is provided "as is". To the extent permitted by law, we will not be liable for indirect damages arising from the use of the service.</p>
+<h2>8. Restaurants of a reseller</h2>
+<p>If your restaurant signed up through a reseller, the price, payment and renewal are agreed with that reseller, not with us. If the reseller stops paying its subscription, your restaurant's menu may stop being shown until the reseller sorts it out.</p>
 
-<h2>9. Governing law</h2>
-<p>These terms are governed by the laws of [jurisdiction pending].</p>
+<h2>9. Resellers</h2>
+<p>Resellers (companies that manage the menus of several restaurants) have their own pricing:</p>
+<ul>
+    <li><strong>Monthly plan:</strong> {{ reseller_monthly }} per month, with {{ reseller_included_restaurants }} restaurants included, and {{ reseller_extra_monthly }} per month for each additional restaurant.</li>
+    <li><strong>Yearly plan:</strong> {{ reseller_yearly }} per year, with {{ reseller_included_restaurants }} restaurants included, and {{ reseller_extra_yearly }} per year for each additional restaurant.</li>
+    <li>VAT included. Sections 5, 6 and 7 also apply.</li>
+</ul>
 
-<h2>10. Contact</h2>
-<p>For any questions about these terms, write to us at [contact email pending].</p>
+<h2>10. Your menu's content</h2>
+<p>Your menu's content (dishes, prices, descriptions, allergens, photos and videos) is your responsibility. You must hold the rights to the images and texts you upload, and check that the allergen information is correct.</p>
+
+<h2>11. Artificial intelligence features</h2>
+<p>AI results (imported menus, translations, the virtual waiter's answers and created or enhanced photos) may contain mistakes. Review them before publishing: you decide what is published. Photos created or enhanced with AI are automatically generated illustrative images, not real photographs of your dish; you are responsible for making sure they don't mislead your customers. AI features may have usage limits.</p>
+
+<h2>12. Acceptable use</h2>
+<p>You must not use the service to publish illegal or misleading content or content that infringes third-party rights, nor try to harm or overload the service. We may suspend an account that breaches these terms.</p>
+
+<h2>13. Availability and changes</h2>
+<p>We work to keep the service always available, but we cannot guarantee uninterrupted operation. We may improve or change features. If we change these terms in a relevant way, we will let you know in advance.</p>
+
+<h2>14. Limitation of liability</h2>
+<p>To the extent permitted by law, we are not liable for indirect damages, such as lost sales, arising from the use of the service or its interruption.</p>
+
+<h2>15. Closing your account</h2>
+<p>To close your account and delete your data, write to the contact email. We explain it in the <a href="{{ path('app_privacy') }}">Privacy Policy</a>.</p>
+
+<h2>16. Applicable law</h2>
+<p>These terms are governed by Spanish law.</p>
+
+<h2>17. Contact</h2>
+<p>For any questions about these terms, write to us at {{ legal_email(locale) }}.</p>

@@ -1,33 +1,60 @@
-<div class="legal-placeholder">
-    ⚠️ Documento a completar antes de publicar em produção: faltam a denominação legal/fiscal do prestador do serviço, um email de contacto real e a jurisdição aplicável. Substitua os campos entre parênteses retos por esses dados.
-</div>
-
 <h2>1. Aceitação destes termos</h2>
-<p>Ao criar uma conta no QR Menu aceita estes Termos de Serviço e a nossa <a href="{{ path('app_privacy') }}">Política de Privacidade</a>.</p>
+<p>Estes Termos de Serviço regem a utilização do QR Menu, prestado por {{ legal('name', locale) }} (NIF {{ legal('nif', locale) }}; mais dados no <a href="{{ path('app_legal') }}">Aviso legal</a>). Ao criar uma conta e assinalar a caixa de aceitação, aceita estes termos e a <a href="{{ path('app_privacy') }}">Política de Privacidade</a>. O QR Menu é um serviço para profissionais da restauração.</p>
 
-<h2>2. Descrição do serviço</h2>
-<p>O QR Menu oferece uma carta digital para restaurantes, acessível por código QR, juntamente com um painel de administração para a gerir. Oferecemos um teste gratuito de 7 dias, sem necessidade de cartão de crédito.</p>
+<h2>2. O serviço</h2>
+<p>O QR Menu oferece uma ementa digital para restaurantes, acessível por código QR, e um painel de administração para a gerir. Inclui funções de inteligência artificial: importar a ementa a partir de uma fotografia ou de um PDF, traduzi-la, um empregado de mesa virtual que responde aos seus clientes, e criar ou melhorar fotografias dos pratos.</p>
 
 <h2>3. A sua conta</h2>
-<p>É responsável por manter a confidencialidade da sua palavra-passe e pela veracidade dos dados que fornecer sobre o seu restaurante.</p>
+<p>É responsável por manter a sua palavra-passe em segredo, pela veracidade dos dados do seu restaurante e pelo que fazem as pessoas a quem dá acesso ao seu painel.</p>
 
-<h2>4. Teste gratuito</h2>
-<p>O teste gratuito dura 7 dias a partir da criação da conta. As condições de utilização após o fim do teste serão comunicadas com uma antecedência razoável antes de se aplicarem.</p>
+<h2>4. Período experimental gratuito</h2>
+<p>Ao registar-se, tem 7 dias de experiência gratuita, sem cartão. Durante esse período, algumas funções de IA têm um limite de utilização (por exemplo, o número de fotografias criadas com IA). Se no fim do período experimental não escolher um plano, a sua ementa deixa de estar visível (ver ponto 7).</p>
 
-<h2>5. Conteúdo da sua carta</h2>
-<p>O conteúdo da sua carta (pratos, preços, imagens, descrições) é da sua responsabilidade. Deve ter os direitos necessários sobre qualquer imagem ou texto que carregar.</p>
+<h2>5. Preços e pagamento</h2>
+<ul>
+    <li><strong>Plano mensal:</strong> {{ price_monthly }} por mês. <strong>Plano anual:</strong> {{ price_yearly }} por ano. IVA incluído.</li>
+    <li>O pagamento é feito antecipadamente, com cartão, através da Stripe.</li>
+    <li>Se subscrever durante o período experimental gratuito, a primeira cobrança é feita nesse momento e o período experimental termina.</li>
+    <li>Podemos alterar os preços com aviso prévio; a alteração aplica-se a partir da renovação seguinte.</li>
+</ul>
 
-<h2>6. Utilização aceitável</h2>
-<p>Não deve utilizar o serviço para publicar conteúdo ilegal, enganoso ou que viole direitos de terceiros.</p>
+<h2>6. Renovação, cancelamento e reembolsos</h2>
+<p>A subscrição renova-se automaticamente no fim de cada período (mês ou ano) e é cobrado o mesmo plano, salvo se a cancelar. Pode cancelá-la a qualquer momento no painel: continua ativa até ao fim do período já pago e não volta a ser cobrada. Não são feitos reembolsos, totais ou parciais, por cancelar ou desativar o serviço antes do fim de um período pago.</p>
 
-<h2>7. Disponibilidade e alterações do serviço</h2>
-<p>Trabalhamos para manter o serviço disponível, mas não garantimos um funcionamento ininterrupto. Podemos alterar ou melhorar funcionalidades ao longo do tempo.</p>
+<h2>7. Falta de pagamento e bloqueio da ementa</h2>
+<p>Se o período pago terminar sem renovação, a sua ementa pública deixa de estar visível e as funções de IA ficam bloqueadas até voltar a pagar. Se a renovação com cartão falhar, tem uma margem de 3 dias para resolver a situação antes do bloqueio. Os seus dados são conservados e a ementa volta a estar visível assim que a subscrição for reativada.</p>
 
-<h2>8. Limitação de responsabilidade</h2>
-<p>O serviço é disponibilizado "tal como está". Na medida permitida por lei, não seremos responsáveis por danos indiretos decorrentes da utilização do serviço.</p>
+<h2>8. Restaurantes de um revendedor</h2>
+<p>Se o seu restaurante se registou através de um revendedor, o preço, o pagamento e a renovação são acordados com esse revendedor, e não connosco. Se o revendedor deixar de pagar a sua subscrição, a ementa do seu restaurante pode deixar de estar visível até que o revendedor resolva a situação.</p>
 
-<h2>9. Legislação aplicável</h2>
-<p>Estes termos regem-se pela legislação de [jurisdição pendente].</p>
+<h2>9. Revendedores</h2>
+<p>Os revendedores (empresas que gerem a ementa de vários restaurantes) têm condições próprias:</p>
+<ul>
+    <li><strong>Plano mensal:</strong> {{ reseller_monthly }} por mês, com {{ reseller_included_restaurants }} restaurantes incluídos, e {{ reseller_extra_monthly }} por mês por cada restaurante adicional.</li>
+    <li><strong>Plano anual:</strong> {{ reseller_yearly }} por ano, com {{ reseller_included_restaurants }} restaurantes incluídos, e {{ reseller_extra_yearly }} por ano por cada restaurante adicional.</li>
+    <li>IVA incluído. Aplicam-se também os pontos 5, 6 e 7.</li>
+</ul>
 
-<h2>10. Contacto</h2>
-<p>Para qualquer dúvida sobre estes termos, escreva-nos para [email de contacto pendente].</p>
+<h2>10. Conteúdo da sua ementa</h2>
+<p>O conteúdo da sua ementa (pratos, preços, descrições, alergénios, fotografias e vídeos) é da sua responsabilidade. Deve ter os direitos sobre as imagens e textos que carrega e confirmar que a informação sobre alergénios está correta.</p>
+
+<h2>11. Funções de inteligência artificial</h2>
+<p>Os resultados da IA (ementas importadas, traduções, respostas do empregado de mesa virtual e fotografias criadas ou melhoradas) podem conter erros. Reveja-os antes de os publicar: é quem decide o que é publicado. As fotografias criadas ou melhoradas com IA são imagens ilustrativas geradas automaticamente, e não fotografias reais do seu prato; é responsável por garantir que não induzem os seus clientes em erro. As funções de IA podem ter limites de utilização.</p>
+
+<h2>12. Utilização aceitável</h2>
+<p>Não deve utilizar o serviço para publicar conteúdo ilegal, enganoso ou que viole direitos de terceiros, nem tentar danificar ou sobrecarregar o serviço. Podemos suspender uma conta que não cumpra estes termos.</p>
+
+<h2>13. Disponibilidade e alterações</h2>
+<p>Trabalhamos para que o serviço esteja sempre disponível, mas não podemos garantir um funcionamento ininterrupto. Podemos melhorar ou alterar funções. Se alterarmos estes termos de forma relevante, avisaremos com antecedência.</p>
+
+<h2>14. Limitação de responsabilidade</h2>
+<p>Na medida em que a lei o permita, não respondemos por danos indiretos, como a perda de vendas, resultantes da utilização do serviço ou da sua interrupção.</p>
+
+<h2>15. Encerramento da conta</h2>
+<p>Para encerrar a sua conta e apagar os seus dados, escreva para o email de contacto. Explicamos tudo na <a href="{{ path('app_privacy') }}">Política de Privacidade</a>.</p>
+
+<h2>16. Legislação aplicável</h2>
+<p>Estes termos regem-se pela legislação espanhola.</p>
+
+<h2>17. Contacto</h2>
+<p>Para qualquer dúvida sobre estes termos, escreva-nos para {{ legal_email(locale) }}.</p>

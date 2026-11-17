@@ -8,6 +8,7 @@ use App\Form\ResellerRegistrationFormType;
 use App\Service\AdminLocaleResolver;
 use App\Service\AccountMailer;
 use App\Security\SignupLimiter;
+use App\Service\LegalInfo;
 use App\Service\RestaurantCreator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,6 +36,7 @@ class ResellerRegistrationController extends AbstractController
         AdminLocaleResolver $adminLocaleResolver,
         AccountMailer $accountMailer,
         SignupLimiter $signupLimiter,
+        LegalInfo $legalInfo,
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_menu');
@@ -65,6 +67,7 @@ class ResellerRegistrationController extends AbstractController
                 $user->setRoles([User::ROLE_RESELLER]);
                 $user->setPassword($hasher->hashPassword($user, $data['password']));
                 $user->setReseller($reseller);
+                $user->acceptTerms($legalInfo->termsVersion());
                 $em->persist($user);
                 $em->flush();
                 $accountMailer->sendWelcome($user);

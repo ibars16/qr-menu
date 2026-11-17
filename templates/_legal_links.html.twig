@@ -1,0 +1,29 @@
+{# One small line: Aviso legal · Privacidad · Cookies · Términos · email —
+   under the sign-ups, the login, /admin/billing and the public menu.
+   `locale`: the language of the labels (one of the public site's 6; the
+   pages themselves open in the visitor's site language). Colors come from
+   the host page: --legal-links-fg / --legal-links-hover, set there to one
+   of its AA text tokens. #}
+{% set locale = locale ?? app.request.locale %}
+{% set locale = locale in ['es', 'en', 'fr', 'de', 'it', 'pt'] ? locale : 'en' %}
+<nav class="legal-links" aria-label="{{ 'footer.legal'|trans({}, 'public_site', locale) }}">
+    <a href="{{ path('app_legal') }}">{{ 'footer.legal'|trans({}, 'public_site', locale) }}</a>
+    <span aria-hidden="true">·</span>
+    <a href="{{ path('app_privacy') }}">{{ 'footer.privacy'|trans({}, 'public_site', locale) }}</a>
+    <span aria-hidden="true">·</span>
+    <a href="{{ path('app_cookies') }}">{{ 'footer.cookies'|trans({}, 'public_site', locale) }}</a>
+    <span aria-hidden="true">·</span>
+    <a href="{{ path('app_terms') }}">{{ 'footer.terms'|trans({}, 'public_site', locale) }}</a>
+    <span aria-hidden="true">·</span>
+    {{ legal_email(locale) }}
+</nav>
+<style>
+    .legal-links {
+        display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 8px;
+        margin: 16px auto 0; font-size: 12px; line-height: 1.5; text-align: center;
+        color: var(--legal-links-fg, inherit);
+    }
+    .legal-links a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+    .legal-links a:hover { color: var(--legal-links-hover, inherit); }
+    .legal-links .legal-gap { background: #FFE58A; color: #1a1a1a; padding: 0 4px; border-radius: 3px; }
+</style>

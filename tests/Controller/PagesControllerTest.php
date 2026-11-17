@@ -17,6 +17,7 @@ final class PagesControllerTest extends WebTestCase
 {
     private const PAGES = [
         'about'   => '/sobre-nosotros',
+        'legal'   => '/aviso-legal',
         'privacy' => '/privacidad',
         'terms'   => '/terminos',
         'cookies' => '/cookies',
@@ -25,6 +26,7 @@ final class PagesControllerTest extends WebTestCase
     /** A heading of each page's text, per language: proof the body itself is translated. */
     private const FIRST_H2 = [
         'about'   => ['es' => 'Qué hacemos', 'en' => 'What we do', 'fr' => 'Ce que nous faisons', 'de' => 'Was wir machen', 'it' => 'Cosa facciamo', 'pt' => 'O que fazemos'],
+        'legal'   => ['es' => '1. Titular del sitio web', 'en' => '1. Website owner', 'fr' => '1. Éditeur du site', 'de' => '1. Anbieter der Website', 'it' => '1. Titolare del sito web', 'pt' => '1. Titular do sítio web'],
         'privacy' => ['es' => '1. Responsable del tratamiento', 'en' => '1. Data controller', 'fr' => '1. Responsable du traitement', 'de' => '1. Verantwortlicher', 'it' => '1. Titolare del trattamento', 'pt' => '1. Responsável pelo tratamento'],
         'terms'   => ['es' => '1. Aceptación de estos términos', 'en' => '1. Acceptance of these terms', 'fr' => '1. Acceptation des présentes conditions', 'de' => '1. Annahme dieser Bedingungen', 'it' => '1. Accettazione dei presenti termini', 'pt' => '1. Aceitação destes termos'],
         'cookies' => ['es' => 'Qué usamos', 'en' => 'What we use', 'fr' => 'Ce que nous utilisons', 'de' => 'Was wir verwenden', 'it' => 'Cosa utilizziamo', 'pt' => 'O que utilizamos'],

@@ -8,6 +8,7 @@ use App\Service\AdminLocaleResolver;
 use App\Service\Billing\StripeBilling;
 use App\Service\AccountMailer;
 use App\Security\SignupLimiter;
+use App\Service\LegalInfo;
 use App\Service\RestaurantCreator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -39,6 +40,7 @@ class ResellerSignupController extends AbstractController
         StripeBilling $billing,
         AccountMailer $accountMailer,
         SignupLimiter $signupLimiter,
+        LegalInfo $legalInfo,
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_menu');
@@ -78,6 +80,7 @@ class ResellerSignupController extends AbstractController
                 $adminLocaleResolver->resolve($data['adminLocale']),
                 $reseller,
                 confirmEmail: true,
+                acceptedTermsVersion: $legalInfo->termsVersion(),
             );
             $billing->syncResellerExtrasOrLog($reseller);
             $accountMailer->sendWelcome($user);

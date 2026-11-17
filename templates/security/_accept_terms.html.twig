@@ -1,0 +1,17 @@
+{# The required "He leído y acepto los Términos de Servicio y la Política de
+   Privacidad" box of the sign-ups (/register, /alta/{code} — security/
+   register.html.twig — and /partners/registro). `field` is the form's
+   acceptTerms (RegistrationFormType / ResellerRegistrationFormType),
+   `domain` the one its error message is in. The links open in a new tab
+   so a half-filled form isn't lost. Its error is shown at the top of the
+   form (security/_accept_terms_errors.html.twig, included there). Styles: security/_auth_styles.html.twig. #}
+{% set terms_link = '<a href="' ~ path('app_terms') ~ '" target="_blank" rel="noopener">' ~ ('legal.accept_terms_terms'|trans({}, 'public_site')|e) ~ '</a>' %}
+{% set privacy_link = '<a href="' ~ path('app_privacy') ~ '" target="_blank" rel="noopener">' ~ ('legal.accept_terms_privacy'|trans({}, 'public_site')|e) ~ '</a>' %}
+{% set invalid = field.vars.errors|length > 0 %}
+<div class="field accept-terms">
+    <label class="accept-terms-label" for="{{ field.vars.id }}">
+        {{ form_widget(field, { attr: invalid ? { 'aria-invalid': 'true', 'aria-describedby': field.vars.id ~ '_errors' } : {} }) }}
+        <span>{{ 'legal.accept_terms'|trans({'%terms%': terms_link, '%privacy%': privacy_link}, 'public_site')|raw }}</span>
+    </label>
+    {# Its error: at the top of the form (security/_accept_terms_errors). #}
+</div>

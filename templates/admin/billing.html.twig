@@ -31,4 +31,11 @@
             .billing-managed-by a { color: var(--tx-muted); }
         </style>
     {% endif %}
+    {# Aviso legal · Privacidad · Cookies · Términos · email, in the panel's language.
+       --tx-muted: 4.83:1+ dark / 4.69:1+ light on every panel surface. #}
+    <div class="billing-legal">{% include '_legal_links.html.twig' %}</div>
+    <style>
+        .billing-legal { max-width: 640px; margin-top: var(--sp-6); --legal-links-fg: var(--tx-muted); --legal-links-hover: var(--tx-1); }
+        .billing-legal .legal-links { justify-content: flex-start; text-align: start; margin: 0; }
+    </style>
 {% endblock %}

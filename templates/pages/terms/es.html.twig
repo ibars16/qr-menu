@@ -1,33 +1,60 @@
-<div class="legal-placeholder">
-    ⚠️ Documento pendiente de completar antes de publicar en producción: faltan el nombre legal/fiscal del prestador del servicio, un email de contacto real y la jurisdicción aplicable. Sustituye los campos entre corchetes por esos datos.
-</div>
-
 <h2>1. Aceptación de estos términos</h2>
-<p>Al crear una cuenta en QR Menu aceptas estos Términos de Servicio y nuestra <a href="{{ path('app_privacy') }}">Política de Privacidad</a>.</p>
+<p>Estos Términos de Servicio regulan el uso de QR Menu, prestado por {{ legal('name', locale) }} (NIF {{ legal('nif', locale) }}; más datos en el <a href="{{ path('app_legal') }}">Aviso legal</a>). Al crear una cuenta y marcar la casilla de aceptación, aceptas estos términos y la <a href="{{ path('app_privacy') }}">Política de Privacidad</a>. QR Menu es un servicio para profesionales de la hostelería.</p>
 
-<h2>2. Descripción del servicio</h2>
-<p>QR Menu ofrece una carta digital para restaurantes, accesible por código QR, junto con un panel de administración para gestionarla. Ofrecemos una prueba gratuita de 7 días, sin necesidad de tarjeta de crédito.</p>
+<h2>2. El servicio</h2>
+<p>QR Menu ofrece una carta digital para restaurantes, accesible por código QR, y un panel de administración para gestionarla. Incluye funciones con inteligencia artificial: importar la carta desde una foto o un PDF, traducirla, un camarero virtual que responde a tus clientes, y crear o mejorar fotos de los platos.</p>
 
 <h2>3. Tu cuenta</h2>
-<p>Eres responsable de mantener la confidencialidad de tu contraseña y de la veracidad de los datos que proporciones sobre tu restaurante.</p>
+<p>Eres responsable de mantener en secreto tu contraseña, de que los datos de tu restaurante sean ciertos y de lo que hagan las personas a las que des acceso a tu panel.</p>
 
 <h2>4. Prueba gratuita</h2>
-<p>La prueba gratuita dura 7 días desde la creación de la cuenta. Las condiciones de uso una vez finalizada la prueba se comunicarán con antelación razonable antes de aplicarse.</p>
+<p>Al registrarte tienes 7 días de prueba gratis, sin tarjeta. Durante la prueba algunas funciones de IA tienen un límite de uso (por ejemplo, el número de fotos creadas con IA). Si al acabar la prueba no eliges un plan, tu carta deja de verse (ver apartado 7).</p>
 
-<h2>5. Contenido de tu carta</h2>
-<p>El contenido de tu carta (platos, precios, imágenes, descripciones) es tu responsabilidad. Debes tener los derechos necesarios sobre cualquier imagen o texto que subas.</p>
+<h2>5. Precios y pago</h2>
+<ul>
+    <li><strong>Plan mensual:</strong> {{ price_monthly }} al mes. <strong>Plan anual:</strong> {{ price_yearly }} al año. IVA incluido.</li>
+    <li>El pago es por adelantado, con tarjeta, a través de Stripe.</li>
+    <li>Si te suscribes durante la prueba gratuita, el primer cobro se hace en ese momento y la prueba termina.</li>
+    <li>Podemos cambiar los precios avisándote con antelación; el cambio se aplica a partir de la siguiente renovación.</li>
+</ul>
 
-<h2>6. Uso aceptable</h2>
-<p>No debes usar el servicio para publicar contenido ilegal, engañoso o que infrinja derechos de terceros.</p>
+<h2>6. Renovación, cancelación y devoluciones</h2>
+<p>La suscripción se renueva automáticamente al final de cada periodo (mes o año) y se cobra el mismo plan, salvo que la canceles. Puedes cancelarla en cualquier momento desde el panel: seguirá activa hasta el final del periodo ya pagado y no se volverá a cobrar. No se hacen devoluciones, ni totales ni parciales, por cancelar o desactivar el servicio antes de que termine un periodo pagado.</p>
 
-<h2>7. Disponibilidad y cambios en el servicio</h2>
-<p>Trabajamos para mantener el servicio disponible, pero no garantizamos un funcionamiento ininterrumpido. Podemos modificar o mejorar funcionalidades con el tiempo.</p>
+<h2>7. Impago y bloqueo de la carta</h2>
+<p>Si el periodo pagado termina sin renovarse, tu carta pública deja de verse y las funciones de IA se bloquean hasta que vuelvas a pagar. Si la renovación con tarjeta falla, tienes un margen de 3 días para resolverlo antes del bloqueo. Tus datos se conservan y la carta vuelve a verse en cuanto se reactiva la suscripción.</p>
 
-<h2>8. Limitación de responsabilidad</h2>
-<p>El servicio se ofrece "tal cual". En la medida permitida por la ley, no seremos responsables de daños indirectos derivados del uso del servicio.</p>
+<h2>8. Restaurantes de un revendedor</h2>
+<p>Si tu restaurante se dio de alta a través de un revendedor, el precio, el pago y la renovación los acuerdas con ese revendedor, no con nosotros. Si el revendedor deja de pagar su suscripción, la carta de tu restaurante puede dejar de verse hasta que lo resuelva.</p>
 
-<h2>9. Legislación aplicable</h2>
-<p>Estos términos se rigen por la legislación de [jurisdicción pendiente].</p>
+<h2>9. Revendedores</h2>
+<p>Los revendedores (empresas que gestionan la carta de varios restaurantes) tienen sus propias condiciones económicas:</p>
+<ul>
+    <li><strong>Plan mensual:</strong> {{ reseller_monthly }} al mes, con {{ reseller_included_restaurants }} restaurantes incluidos, y {{ reseller_extra_monthly }} al mes por cada restaurante más.</li>
+    <li><strong>Plan anual:</strong> {{ reseller_yearly }} al año, con {{ reseller_included_restaurants }} restaurantes incluidos, y {{ reseller_extra_yearly }} al año por cada restaurante más.</li>
+    <li>IVA incluido. Se aplican también los apartados 5, 6 y 7.</li>
+</ul>
 
-<h2>10. Contacto</h2>
-<p>Para cualquier duda sobre estos términos, escríbenos a [email de contacto pendiente].</p>
+<h2>10. Contenido de tu carta</h2>
+<p>El contenido de tu carta (platos, precios, descripciones, alérgenos, fotos y vídeos) es tu responsabilidad. Debes tener los derechos sobre las imágenes y textos que subas, y comprobar que la información de alérgenos es correcta.</p>
+
+<h2>11. Funciones de inteligencia artificial</h2>
+<p>Los resultados de la IA (cartas importadas, traducciones, respuestas del camarero virtual y fotos creadas o mejoradas) pueden contener errores. Revísalos antes de publicarlos: tú decides qué se publica. Las fotos creadas o mejoradas con IA son imágenes orientativas generadas automáticamente, no fotografías reales de tu plato; eres responsable de que no induzcan a error a tus clientes. Las funciones de IA pueden tener límites de uso.</p>
+
+<h2>12. Uso aceptable</h2>
+<p>No debes usar el servicio para publicar contenido ilegal, engañoso o que infrinja derechos de terceros, ni para intentar dañar o saturar el servicio. Podemos suspender una cuenta que incumpla estos términos.</p>
+
+<h2>13. Disponibilidad y cambios</h2>
+<p>Trabajamos para que el servicio esté siempre disponible, pero no podemos garantizar un funcionamiento ininterrumpido. Podemos mejorar o cambiar funciones. Si cambiamos estos términos de forma relevante, te avisaremos con antelación.</p>
+
+<h2>14. Limitación de responsabilidad</h2>
+<p>En la medida en que lo permita la ley, no respondemos de daños indirectos, como la pérdida de ventas, derivados del uso del servicio o de su interrupción.</p>
+
+<h2>15. Baja</h2>
+<p>Para dar de baja tu cuenta y borrar tus datos, escríbenos al email de contacto. Lo explicamos en la <a href="{{ path('app_privacy') }}">Política de Privacidad</a>.</p>
+
+<h2>16. Legislación aplicable</h2>
+<p>Estos términos se rigen por la legislación española.</p>
+
+<h2>17. Contacto</h2>
+<p>Para cualquier duda sobre estos términos, escríbenos a {{ legal_email(locale) }}.</p>

@@ -3,6 +3,7 @@ twig:
     globals:
         billing_prices: '%app.billing_prices%'
         reseller_prices: '%app.reseller_prices%'
+        reseller_included_restaurants: '%app.reseller_included_restaurants%'
 
 when@test:
     twig:

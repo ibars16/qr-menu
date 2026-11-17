@@ -17,14 +17,12 @@
 {% endblock %}
 
 {% block stylesheets %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="{{ asset('vendor/tabler-icons/3.31.0/tabler-icons.min.css') }}">
     {# Same families as the public menu's shared structure
        (menu/layouts/standard/_fonts.html.twig): Fraunces for display,
        Inter for body — so the marketing site reads like the "Clásico claro"
        (maison) menu it sells. #}
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="{{ asset('fonts/fraunces-inter.css') }}" rel="stylesheet">
     {# Light (parchment) is the default now; only an explicit 'dark' choice
        drops the .light class. The key and the .light class keep their old
        meaning, so login/register (which read 'site-theme' === 'light')
@@ -266,6 +264,9 @@
         .legal li { font-size: 15px; color: var(--tx-2); line-height: 1.75; margin-bottom: 6px; }
         .legal a { color: var(--accent-text); text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 3px; }
         .legal a:hover { text-decoration-color: currentColor; }
+        /* An owner detail still empty in config/legal.yaml (LegalExtension):
+           dark text on yellow, the same in both themes — 14:1. */
+        .legal-gap { background: #FFE58A; color: #1a1a1a; padding: 0 4px; border-radius: 3px; }
         .legal-placeholder {
             background: rgba(176,137,76,0.10); border: 1px solid rgba(176,137,76,0.35);
             border-radius: 12px; padding: 14px 16px; font-size: 13px; color: var(--gold-text);

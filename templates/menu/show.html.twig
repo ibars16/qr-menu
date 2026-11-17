@@ -14,10 +14,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ restaurant.name }}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🍽️</text></svg>">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('vendor/tabler-icons/3.31.0/tabler-icons.min.css') }}">
+    <link href="{{ asset('fonts/plus-jakarta-sans.css') }}" rel="stylesheet">
     {% include 'menu/layouts/standard/_fonts.html.twig' %}
     {%- if dir == 'rtl' %}
         {# Arabic-script fallbacks for the theme fonts (none of Plus Jakarta
@@ -25,7 +23,7 @@
            theme's Latin font in each stack (layout's body rule, the shared
            structure's --font-body/--font-display), so digits and prices keep the theme
            font and only Arabic glyphs fall through to these. #}
-        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+        <link href="{{ asset('fonts/arabic.css') }}" rel="stylesheet">
     {%- endif %}
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }

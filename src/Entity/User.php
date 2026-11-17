@@ -73,6 +73,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ['default' => false])]
     private bool $emailConfirmationPending = false;
 
+    /**
+     * When this account ticked "Acepto los términos y la política de
+     * privacidad" at sign-up (/register, /alta/{code}, /partners/registro),
+     * and which terms it accepted: their date in config/legal.yaml
+     * (LegalInfo::termsVersion()). Null for accounts created by someone
+     * else (staff, the platform, a reseller) and for those from before.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $termsAcceptedAt = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $termsVersion = null;
+
     /** The reseller this user logs in for (ROLE_RESELLER); null for everyone else. */
     #[ORM\ManyToOne(targetEntity: Reseller::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'RESTRICT')]
@@ -173,6 +186,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmailConfirmationPending(bool $pending): void
     {
         $this->emailConfirmationPending = $pending;
+    }
+
+    public function getTermsAcceptedAt(): ?\DateTimeImmutable
+    {
+        return $this->termsAcceptedAt;
+    }
+
+    public function getTermsVersion(): ?string
+    {
+        return $this->termsVersion;
+    }
+
+    public function acceptTerms(string $version, ?\DateTimeImmutable $at = null): void
+    {
+        $this->termsVersion = $version;
+        $this->termsAcceptedAt = $at ?? new \DateTimeImmutable();
     }
 
     public function getRestaurant(): ?Restaurant

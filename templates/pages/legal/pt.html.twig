@@ -1,0 +1,23 @@
+<h2>1. Titular do sítio web</h2>
+<p>Nos termos da lei espanhola 34/2002, de 11 de julho, de Serviços da Sociedade da Informação e de Comércio Eletrónico (LSSI), informamos sobre os dados do titular do QR Menu:</p>
+<ul>
+    <li><strong>Titular:</strong> {{ legal('name', locale) }}, pessoa singular que exerce a atividade como trabalhador independente (autónomo).</li>
+    <li><strong>NIF:</strong> {{ legal('nif', locale) }}</li>
+    <li><strong>Morada:</strong> {{ legal('address', locale) }}</li>
+    <li><strong>Email de contacto:</strong> {{ legal_email(locale) }}</li>
+</ul>
+
+<h2>2. Objeto</h2>
+<p>Este sítio web apresenta e presta o QR Menu, um serviço de ementa digital para restaurantes: um painel de administração para criar e manter a ementa e uma ementa pública que os clientes do restaurante consultam no telemóvel ao ler um código QR.</p>
+
+<h2>3. Condições de utilização</h2>
+<p>A utilização do serviço pelos restaurantes rege-se pelos <a href="{{ path('app_terms') }}">Termos de Serviço</a>. O tratamento de dados pessoais é explicado na <a href="{{ path('app_privacy') }}">Política de Privacidade</a> e a utilização de cookies na <a href="{{ path('app_cookies') }}">Política de Cookies</a>.</p>
+
+<h2>4. Propriedade intelectual</h2>
+<p>O design, o código e os textos próprios do QR Menu pertencem ao seu titular. O conteúdo de cada ementa (nomes dos pratos, descrições, preços, fotografias e logótipos) pertence ao restaurante que o publica, que é responsável por ele.</p>
+
+<h2>5. Responsabilidade</h2>
+<p>O titular não é responsável pelo conteúdo que cada restaurante publica na sua ementa, incluindo a informação sobre alergénios, que o restaurante deve verificar. Se detetar um conteúdo ilícito, escreva para o email de contacto e iremos analisá-lo.</p>
+
+<h2>6. Legislação aplicável</h2>
+<p>Este aviso legal rege-se pela legislação espanhola.</p>

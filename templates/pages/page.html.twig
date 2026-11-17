@@ -1,6 +1,8 @@
-{# About and the legal pages (PagesController): title and "last updated"
-   from public_site.*.yaml, the text from pages/{page}/{locale}.html.twig —
-   one file per language, as they're long prose. #}
+{# About and the legal pages (PagesController): title from public_site.*.yaml,
+   "last updated" and the owner's details from config/legal.yaml (legal(),
+   legal_email(), legal_updated() — LegalExtension), the text from
+   pages/{page}/{locale}.html.twig — one file per language, as they're
+   long prose. #}
 {% extends 'public/base.html.twig' %}
 
 {% block title %}{{ ('pages.' ~ page ~ '.title')|trans({}, 'public_site', locale) }} — QR Menu{% endblock %}
@@ -13,8 +15,23 @@
     <div class="legal">
         <h1>{{ ('pages.' ~ page ~ '.title')|trans({}, 'public_site', locale) }}</h1>
         {% if page != 'about' %}
-            <div class="legal-updated">{{ 'pages.updated'|trans({'%date%': "now"|date("d/m/Y")}, 'public_site', locale) }}</div>
+            {# Fixed date per page, from config/legal.yaml (never "today"). #}
+            <div class="legal-updated">{{ 'pages.updated'|trans({'%date%': legal_updated(page)|date('d/m/Y')}, 'public_site', locale) }}</div>
+            {# Draft notice while config/legal.yaml's owner details are empty. #}
+            {% if legal_incomplete() %}
+                <div class="legal-placeholder">⚠️ {{ 'pages.draft'|trans({}, 'public_site', locale) }}</div>
+            {% endif %}
         {% endif %}
+        {# Prices for the terms, from the same config as the home and the
+           billing screens (app.billing_prices in cents, app.reseller_prices
+           in euros; VAT included). #}
+        {% import 'billing/_price.html.twig' as billing_price %}
+        {% set price_monthly = 'pricing.amount'|trans({'%price%': billing_price.amount(billing_prices.monthly, locale)}, 'public_site', locale) %}
+        {% set price_yearly = 'pricing.amount'|trans({'%price%': billing_price.amount(billing_prices.yearly, locale)}, 'public_site', locale) %}
+        {% set reseller_monthly = 'pricing.amount'|trans({'%price%': billing_price.amount(reseller_prices.monthly * 100, locale)}, 'public_site', locale) %}
+        {% set reseller_yearly = 'pricing.amount'|trans({'%price%': billing_price.amount(reseller_prices.yearly * 100, locale)}, 'public_site', locale) %}
+        {% set reseller_extra_monthly = 'pricing.amount'|trans({'%price%': billing_price.amount(reseller_prices.extra_monthly * 100, locale)}, 'public_site', locale) %}
+        {% set reseller_extra_yearly = 'pricing.amount'|trans({'%price%': billing_price.amount(reseller_prices.extra_yearly * 100, locale)}, 'public_site', locale) %}
         {% include 'pages/' ~ page ~ '/' ~ locale ~ '.html.twig' %}
     </div>
 {% endblock %}

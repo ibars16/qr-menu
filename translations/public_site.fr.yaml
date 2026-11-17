@@ -156,11 +156,17 @@ footer:
   privacy: "Confidentialité"
   terms: "Conditions"
   cookies: "Cookies"
+  legal: "Mentions légales"
+  contact: "Contact"
   login: "Se connecter"
   pricing: "Tarifs"
 
 pages:
   updated: "Dernière mise à jour : %date%"
+  draft: "Brouillon : certaines informations du titulaire manquent (surlignées en jaune). Elles seront complétées avant la publication."
+  legal:
+    title: "Mentions légales"
+    description: "Informations sur le titulaire de QR Menu et conditions d'utilisation de ce site."
   about:
     title: "À propos"
     description: "QR Menu aide les restaurants à avoir une carte digitale simple, toujours à jour, sans dépendre de personne pour la tenir à jour."
@@ -173,3 +179,14 @@ pages:
   cookies:
     title: "Politique de cookies"
     description: "Quels cookies QR Menu utilise et comment les gérer."
+
+legal:
+  gap:
+    name: "Nom du titulaire à compléter"
+    nif: "NIF à compléter"
+    address: "Adresse à compléter"
+    email: "E-mail de contact à compléter"
+    hosting: "Hébergeur à compléter"
+  accept_terms: "J'ai lu et j'accepte les %terms% et la %privacy%."
+  accept_terms_terms: "Conditions d'utilisation"
+  accept_terms_privacy: "Politique de confidentialité"

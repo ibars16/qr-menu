@@ -17,6 +17,7 @@ register:
     login: "Sign in"
     theme_aria: "Switch between dark and light mode"
     error:
+        terms_required: "To create the account you need to accept the terms and the privacy policy."
         company_blank: "Enter the company name."
         company_length: "The name must be 2 to 100 characters long."
         name_blank: "Enter your name."
@@ -122,6 +123,7 @@ billing:
         monthly: "/month"
         yearly: "/year"
     amount: "€%price%"
+    vat: "VAT included"
     included: "%included% restaurants included"
     extra:
         monthly: "+€%extra%/month for each one more"

@@ -62,6 +62,7 @@ final class SignUpConfirmationTest extends WebTestCase
         $form['registration_form[email]'] = $this->email;
         $form['registration_form[password][first]'] = 'a-strong-password-1';
         $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[acceptTerms]']->tick();
         $form['registration_form[currency]'] = 'EUR';
         $form['registration_form[language]'] = 'es';
         $form['registration_form[adminLocale]'] = 'es';

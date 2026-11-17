@@ -66,6 +66,7 @@ final class ResellerSignupTest extends WebTestCase
         $form['registration_form[email]'] = $email;
         $form['registration_form[password][first]'] = 'a-strong-password-1';
         $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[acceptTerms]']->tick();
         $form['registration_form[currency]'] = 'GBP';
         $form['registration_form[language]'] = 'fr';
         $form['registration_form[adminLocale]'] = 'en';
@@ -191,6 +192,7 @@ final class ResellerSignupTest extends WebTestCase
         $form['registration_form[email]'] = 'reseller-signup-test-it-' . uniqid() . '@example.test';
         $form['registration_form[password][first]'] = 'a-strong-password-1';
         $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[acceptTerms]']->tick();
         $form['registration_form[currency]'] = 'EUR';
         $form['registration_form[language]'] = 'it';
         $form['registration_form[adminLocale]'] = 'es';
@@ -232,6 +234,7 @@ final class ResellerSignupTest extends WebTestCase
         $form['registration_form[email]'] = 'reseller-signup-test-late-' . uniqid() . '@example.test';
         $form['registration_form[password][first]'] = 'a-strong-password-1';
         $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[acceptTerms]']->tick();
         $this->client->submit($form);
         self::assertResponseStatusCodeSame(404);
         self::assertNull($this->restaurantNamed('Reseller Signup Test Late'));
@@ -274,6 +277,7 @@ final class ResellerSignupTest extends WebTestCase
         $form['registration_form[email]'] = 'reseller-signup-test-short@example.test';
         $form['registration_form[password][first]'] = 'short';
         $form['registration_form[password][second]'] = 'short';
+        $form['registration_form[acceptTerms]']->tick();
         $page = $this->client->submit($form, serverParameters: ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
 
         self::assertResponseIsUnprocessable();

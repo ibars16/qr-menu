@@ -12,7 +12,7 @@
     {# Login is a Turbo page: see platform/index.html.twig. #}
     <meta name="turbo-visit-control" content="reload">
     <title>{% block title %}{{ reseller.name }}{% endblock %} — QR Menu</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/tabler-icons/3.31.0/tabler-icons.min.css') }}">
     <script>(function(){try{if(localStorage.getItem('admin-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
     <style>
         {% include 'admin/_styles_tokens.html.twig' %}
@@ -137,6 +137,8 @@
         .plan-price { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; text-align: right; }
         .plan-amount { font-size: var(--fs-2xl); font-weight: 800; color: var(--tx-hi); line-height: 1.1; letter-spacing: -0.5px; white-space: nowrap; }
         .plan-period { font-size: var(--fs-sm); color: var(--tx-muted); }
+        /* Reseller prices are VAT included (terms, section 9). */
+        .plan-vat { font-size: var(--fs-xs); color: var(--tx-muted); }
         .plan-note { margin: 0; font-size: var(--fs-sm); color: var(--tx-muted); line-height: 1.5; }
 
         @media (max-width: 767px) {

@@ -1,0 +1,23 @@
+<h2>1. Website owner</h2>
+<p>In accordance with Spanish Law 34/2002 of 11 July on Information Society Services and Electronic Commerce (LSSI), these are the details of the owner of QR Menu:</p>
+<ul>
+    <li><strong>Owner:</strong> {{ legal('name', locale) }}, a natural person working as a self-employed professional (autónomo).</li>
+    <li><strong>Tax ID (NIF):</strong> {{ legal('nif', locale) }}</li>
+    <li><strong>Address:</strong> {{ legal('address', locale) }}</li>
+    <li><strong>Contact email:</strong> {{ legal_email(locale) }}</li>
+</ul>
+
+<h2>2. Purpose</h2>
+<p>This website presents and provides QR Menu, a digital menu service for restaurants: an admin panel to create and maintain the menu, and a public menu that the restaurant's customers view on their phones by scanning a QR code.</p>
+
+<h2>3. Conditions of use</h2>
+<p>Restaurants' use of the service is governed by the <a href="{{ path('app_terms') }}">Terms of Service</a>. How personal data is processed is explained in the <a href="{{ path('app_privacy') }}">Privacy Policy</a>, and the use of cookies in the <a href="{{ path('app_cookies') }}">Cookie Policy</a>.</p>
+
+<h2>4. Intellectual property</h2>
+<p>QR Menu's own design, code and texts belong to its owner. The content of each menu (dish names, descriptions, prices, photos and logos) belongs to the restaurant that publishes it, which is responsible for it.</p>
+
+<h2>5. Liability</h2>
+<p>The owner is not responsible for the content each restaurant publishes on its menu, including allergen information, which the restaurant must check. If you find unlawful content, write to the contact email and we will review it.</p>
+
+<h2>6. Applicable law</h2>
+<p>This legal notice is governed by Spanish law.</p>

@@ -12,10 +12,8 @@
 {% endblock %}
 
 {% block stylesheets %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('vendor/tabler-icons/3.31.0/tabler-icons.min.css') }}">
+    <link href="{{ asset('fonts/plus-jakarta-sans.css') }}" rel="stylesheet">
     <script>(function(){try{if(localStorage.getItem('admin-theme')==='light'||localStorage.getItem('site-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
     {# Grey text tokens at WCAG AA, the same values as the "forgot password"
        screens (_reset_layout): #a1a1aa on #141414 (7:1) dark, #52525b on
@@ -234,6 +232,8 @@
         }
         .error-action:hover { text-decoration: underline; }
         .field input.is-invalid { border-color: var(--brand); }
+        /* _legal_links.html.twig: --tx-sub (#a1a1aa / #52525b), 7.72:1 / 6.91:1 on --bg-page. */
+        .login-wrap { --legal-links-fg: var(--tx-sub); --legal-links-hover: var(--tx-hi); }
     </style>
 {% endblock %}
 
@@ -331,6 +331,8 @@
                 </a>
             </div>
         </div>
+
+        {% include '_legal_links.html.twig' %}
 
     </div>
 

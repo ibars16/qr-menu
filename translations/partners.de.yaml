@@ -17,6 +17,7 @@ register:
     login: "Anmelden"
     theme_aria: "Zwischen dunklem und hellem Modus wechseln"
     error:
+        terms_required: "Um das Konto zu erstellen, müssen Sie die Nutzungsbedingungen und die Datenschutzerklärung akzeptieren."
         company_blank: "Geben Sie den Namen des Unternehmens ein."
         company_length: "Der Name muss 2 bis 100 Zeichen lang sein."
         name_blank: "Geben Sie Ihren Namen ein."
@@ -122,6 +123,7 @@ billing:
         monthly: "/Monat"
         yearly: "/Jahr"
     amount: "%price% €"
+    vat: "inkl. MwSt."
     included: "%included% Restaurants inklusive"
     extra:
         monthly: "+%extra% €/Monat je weiteres Restaurant"

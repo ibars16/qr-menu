@@ -1,33 +1,60 @@
-<div class="legal-placeholder">
-    ⚠️ Document à compléter avant la mise en production : il manque la dénomination légale/fiscale du prestataire du service, une véritable adresse email de contact et la juridiction applicable. Remplacez les champs entre crochets par ces informations.
-</div>
-
 <h2>1. Acceptation des présentes conditions</h2>
-<p>En créant un compte sur QR Menu, vous acceptez les présentes Conditions d'utilisation et notre <a href="{{ path('app_privacy') }}">Politique de confidentialité</a>.</p>
+<p>Les présentes Conditions d'utilisation régissent l'utilisation de QR Menu, fourni par {{ legal('name', locale) }} (NIF {{ legal('nif', locale) }} ; plus d'informations dans les <a href="{{ path('app_legal') }}">Mentions légales</a>). En créant un compte et en cochant la case d'acceptation, vous acceptez ces conditions et la <a href="{{ path('app_privacy') }}">Politique de confidentialité</a>. QR Menu est un service destiné aux professionnels de la restauration.</p>
 
-<h2>2. Description du service</h2>
-<p>QR Menu propose une carte digitale pour restaurants, accessible par QR code, ainsi qu'un panneau d'administration pour la gérer. Nous offrons un essai gratuit de 7 jours, sans carte bancaire.</p>
+<h2>2. Le service</h2>
+<p>QR Menu propose une carte numérique pour les restaurants, accessible par code QR, et un panneau d'administration pour la gérer. Il comprend des fonctions d'intelligence artificielle : importer la carte à partir d'une photo ou d'un PDF, la traduire, un serveur virtuel qui répond à vos clients, et créer ou améliorer des photos de vos plats.</p>
 
 <h2>3. Votre compte</h2>
-<p>Vous êtes responsable de la confidentialité de votre mot de passe et de l'exactitude des informations que vous fournissez sur votre restaurant.</p>
+<p>Vous êtes responsable de garder votre mot de passe secret, de l'exactitude des informations sur votre restaurant et de ce que font les personnes à qui vous donnez accès à votre panneau.</p>
 
 <h2>4. Essai gratuit</h2>
-<p>L'essai gratuit dure 7 jours à compter de la création du compte. Les conditions d'utilisation applicables à la fin de l'essai seront communiquées avec un préavis raisonnable avant de s'appliquer.</p>
+<p>À l'inscription, vous bénéficiez de 7 jours d'essai gratuit, sans carte. Pendant l'essai, certaines fonctions d'IA ont une limite d'utilisation (par exemple, le nombre de photos créées avec l'IA). Si vous ne choisissez pas de formule à la fin de l'essai, votre carte n'est plus visible (voir l'article 7).</p>
 
-<h2>5. Contenu de votre carte</h2>
-<p>Le contenu de votre carte (plats, prix, images, descriptions) relève de votre responsabilité. Vous devez détenir les droits nécessaires sur toute image ou tout texte que vous téléversez.</p>
+<h2>5. Prix et paiement</h2>
+<ul>
+    <li><strong>Formule mensuelle :</strong> {{ price_monthly }} par mois. <strong>Formule annuelle :</strong> {{ price_yearly }} par an. TVA incluse.</li>
+    <li>Le paiement se fait à l'avance, par carte, via Stripe.</li>
+    <li>Si vous vous abonnez pendant l'essai gratuit, le premier prélèvement a lieu immédiatement et l'essai prend fin.</li>
+    <li>Nous pouvons modifier les prix en vous prévenant à l'avance ; le changement s'applique à partir du renouvellement suivant.</li>
+</ul>
 
-<h2>6. Utilisation acceptable</h2>
-<p>Vous ne devez pas utiliser le service pour publier un contenu illégal, trompeur ou portant atteinte aux droits de tiers.</p>
+<h2>6. Renouvellement, résiliation et remboursements</h2>
+<p>L'abonnement se renouvelle automatiquement à la fin de chaque période (mois ou année) et la même formule est facturée, sauf si vous le résiliez. Vous pouvez le résilier à tout moment depuis le panneau : il reste actif jusqu'à la fin de la période déjà payée et aucun nouveau prélèvement n'est effectué. Aucun remboursement, total ou partiel, n'est accordé en cas de résiliation ou de désactivation du service avant la fin d'une période payée.</p>
 
-<h2>7. Disponibilité et évolution du service</h2>
-<p>Nous nous efforçons de maintenir le service disponible, mais nous ne garantissons pas un fonctionnement ininterrompu. Nous pouvons modifier ou améliorer les fonctionnalités au fil du temps.</p>
+<h2>7. Impayé et blocage de la carte</h2>
+<p>Si la période payée prend fin sans renouvellement, votre carte publique n'est plus visible et les fonctions d'IA sont bloquées jusqu'à un nouveau paiement. Si le renouvellement par carte échoue, vous disposez d'un délai de 3 jours pour régulariser avant le blocage. Vos données sont conservées et la carte redevient visible dès que l'abonnement est réactivé.</p>
 
-<h2>8. Limitation de responsabilité</h2>
-<p>Le service est fourni « en l'état ». Dans la mesure permise par la loi, nous ne serons pas responsables des dommages indirects résultant de l'utilisation du service.</p>
+<h2>8. Restaurants d'un revendeur</h2>
+<p>Si votre restaurant s'est inscrit par l'intermédiaire d'un revendeur, le prix, le paiement et le renouvellement sont convenus avec ce revendeur, et non avec nous. Si le revendeur cesse de payer son abonnement, la carte de votre restaurant peut ne plus être visible jusqu'à ce qu'il régularise la situation.</p>
 
-<h2>9. Droit applicable</h2>
-<p>Les présentes conditions sont régies par le droit de [juridiction à compléter].</p>
+<h2>9. Revendeurs</h2>
+<p>Les revendeurs (entreprises qui gèrent la carte de plusieurs restaurants) ont leurs propres conditions tarifaires :</p>
+<ul>
+    <li><strong>Formule mensuelle :</strong> {{ reseller_monthly }} par mois, avec {{ reseller_included_restaurants }} restaurants inclus, et {{ reseller_extra_monthly }} par mois pour chaque restaurant supplémentaire.</li>
+    <li><strong>Formule annuelle :</strong> {{ reseller_yearly }} par an, avec {{ reseller_included_restaurants }} restaurants inclus, et {{ reseller_extra_yearly }} par an pour chaque restaurant supplémentaire.</li>
+    <li>TVA incluse. Les articles 5, 6 et 7 s'appliquent également.</li>
+</ul>
 
-<h2>10. Contact</h2>
-<p>Pour toute question sur ces conditions, écrivez-nous à [email de contact à compléter].</p>
+<h2>10. Contenu de votre carte</h2>
+<p>Le contenu de votre carte (plats, prix, descriptions, allergènes, photos et vidéos) relève de votre responsabilité. Vous devez détenir les droits sur les images et textes que vous publiez, et vérifier que les informations sur les allergènes sont exactes.</p>
+
+<h2>11. Fonctions d'intelligence artificielle</h2>
+<p>Les résultats de l'IA (cartes importées, traductions, réponses du serveur virtuel et photos créées ou améliorées) peuvent contenir des erreurs. Vérifiez-les avant de les publier : c'est vous qui décidez de ce qui est publié. Les photos créées ou améliorées avec l'IA sont des images d'illustration générées automatiquement, et non de vraies photos de votre plat ; vous êtes responsable de veiller à ce qu'elles n'induisent pas vos clients en erreur. Les fonctions d'IA peuvent avoir des limites d'utilisation.</p>
+
+<h2>12. Utilisation acceptable</h2>
+<p>Vous ne devez pas utiliser le service pour publier un contenu illégal, trompeur ou portant atteinte aux droits de tiers, ni tenter de nuire au service ou de le surcharger. Nous pouvons suspendre un compte qui ne respecte pas ces conditions.</p>
+
+<h2>13. Disponibilité et modifications</h2>
+<p>Nous faisons en sorte que le service soit toujours disponible, mais nous ne pouvons pas garantir un fonctionnement ininterrompu. Nous pouvons améliorer ou modifier des fonctions. Si nous modifions ces conditions de manière significative, nous vous préviendrons à l'avance.</p>
+
+<h2>14. Limitation de responsabilité</h2>
+<p>Dans la mesure permise par la loi, nous ne sommes pas responsables des dommages indirects, comme une perte de ventes, liés à l'utilisation du service ou à son interruption.</p>
+
+<h2>15. Clôture du compte</h2>
+<p>Pour clôturer votre compte et supprimer vos données, écrivez à l'e-mail de contact. Nous l'expliquons dans la <a href="{{ path('app_privacy') }}">Politique de confidentialité</a>.</p>
+
+<h2>16. Droit applicable</h2>
+<p>Les présentes conditions sont régies par le droit espagnol.</p>
+
+<h2>17. Contact</h2>
+<p>Pour toute question sur ces conditions, écrivez-nous à {{ legal_email(locale) }}.</p>

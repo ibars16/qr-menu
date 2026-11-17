@@ -1,14 +1,19 @@
 <h2>Was wir verwenden</h2>
+<p>Alle Cookies und im Browser gespeicherten Daten, die QR Menu verwendet, sind technisch notwendig oder speichern eine Einstellung, die Sie selbst wählen. Sie erfordern keine Einwilligung, deshalb zeigen wir keinen Cookie-Hinweis.</p>
 <ul>
-    <li><strong>Sitzungs-Cookie:</strong> erforderlich, damit Sie nach der Anmeldung im Verwaltungspanel angemeldet bleiben. Es ist rein technisch — ohne es könnten Sie Ihr Konto nicht nutzen — und erfordert keine Einwilligung.</li>
-    <li><strong>Spracheinstellung (<code>site_lang</code>):</strong> ein Cookie, das sich ein Jahr lang die Sprache merkt, die Sie auf diesen Seiten wählen. Es wird nur gesetzt, wenn Sie die Sprache über die Auswahl ändern.</li>
-    <li><strong>Design-Einstellung (hell/dunkel):</strong> wird im lokalen Speicher Ihres Browsers gespeichert (kein Cookie im engeren Sinn), um sich zu merken, wie Sie das Panel sehen möchten.</li>
+    <li><strong>Sitzung (<code>PHPSESSID</code>):</strong> hält Sie im Verwaltungsbereich angemeldet, solange Sie ihn nutzen. Wird beim Schließen des Browsers gelöscht.</li>
+    <li><strong>Angemeldet bleiben (<code>REMEMBERME</code>):</strong> nur wenn Sie beim Anmelden „Angemeldet bleiben" ankreuzen; erspart Ihnen 7 Tage lang die erneute Anmeldung.</li>
+    <li><strong>Formularsicherheit (<code>csrf-token</code>):</strong> schützt Formulare vor gefälschten Übermittlungen. Gilt für die Dauer der Sitzung.</li>
+    <li><strong>Sprache dieser Seiten (<code>site_lang</code>):</strong> merkt sich die mit der Auswahl gewählte Sprache ein Jahr lang. Wird nur angelegt, wenn Sie die Sprache wechseln.</li>
+    <li><strong>Einstellungen der Speisekarte (<code>menu_prefs</code>):</strong> merkt sich die Sprache und Währung, die Sie beim Ansehen der Speisekarte eines Restaurants wählen, ein Jahr lang.</li>
+    <li><strong>Heller oder dunkler Modus (<code>admin-theme</code>, <code>site-theme</code>):</strong> im lokalen Speicher Ihres Browsers abgelegt (keine Cookies), um sich zu merken, wie Sie den Verwaltungsbereich und diese Seiten sehen möchten.</li>
+    <li><strong>Gespräch mit dem virtuellen Kellner (<code>sw_conv_…</code>):</strong> im Speicher des Tabs abgelegt (kein Cookie), um das Gespräch fortzusetzen; wird beim Schließen des Tabs gelöscht.</li>
 </ul>
 
 <h2>Was wir nicht verwenden</h2>
-<p>Wir verwenden keine Werbe-Cookies und keine Tracking-Cookies von Drittanbietern.</p>
+<p>Wir verwenden keine Werbe-, Analyse- oder Tracking-Cookies, weder eigene noch von Dritten. Schriften und Symbole werden von unserem eigenen Server geladen.</p>
 
-<h2>Wie Sie sie verwalten</h2>
-<p>Sie können Cookies in den Einstellungen Ihres Browsers löschen oder blockieren. Beachten Sie, dass Sie sich ohne das Sitzungs-Cookie nicht im Verwaltungspanel anmelden können.</p>
+<h2>So verwalten Sie sie</h2>
+<p>Sie können Cookies und den lokalen Speicher in den Einstellungen Ihres Browsers löschen oder blockieren. Wenn Sie das Sitzungs-Cookie blockieren, können Sie sich nicht im Verwaltungsbereich anmelden.</p>
 
-<p>Weitere Informationen zum Umgang mit Ihren Daten finden Sie in unserer <a href="{{ path('app_privacy') }}">Datenschutzerklärung</a>.</p>
+<p>Mehr dazu, wie wir Ihre Daten verarbeiten, finden Sie in unserer <a href="{{ path('app_privacy') }}">Datenschutzerklärung</a>.</p>

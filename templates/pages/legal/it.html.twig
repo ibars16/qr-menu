@@ -1,0 +1,23 @@
+<h2>1. Titolare del sito web</h2>
+<p>Ai sensi della legge spagnola 34/2002 dell'11 luglio sui servizi della società dell'informazione e il commercio elettronico (LSSI), ti informiamo sui dati del titolare di QR Menu:</p>
+<ul>
+    <li><strong>Titolare:</strong> {{ legal('name', locale) }}, persona fisica che esercita come lavoratore autonomo (autónomo).</li>
+    <li><strong>NIF:</strong> {{ legal('nif', locale) }}</li>
+    <li><strong>Indirizzo:</strong> {{ legal('address', locale) }}</li>
+    <li><strong>Email di contatto:</strong> {{ legal_email(locale) }}</li>
+</ul>
+
+<h2>2. Oggetto</h2>
+<p>Questo sito presenta e fornisce QR Menu, un servizio di menu digitale per ristoranti: un pannello di amministrazione per creare e aggiornare il menu e un menu pubblico che i clienti del ristorante consultano dal telefono inquadrando un codice QR.</p>
+
+<h2>3. Condizioni d'uso</h2>
+<p>L'uso del servizio da parte dei ristoranti è regolato dai <a href="{{ path('app_terms') }}">Termini di servizio</a>. Il trattamento dei dati personali è spiegato nell'<a href="{{ path('app_privacy') }}">Informativa sulla privacy</a> e l'uso dei cookie nella <a href="{{ path('app_cookies') }}">Cookie Policy</a>.</p>
+
+<h2>4. Proprietà intellettuale</h2>
+<p>Il design, il codice e i testi propri di QR Menu appartengono al suo titolare. Il contenuto di ogni menu (nomi dei piatti, descrizioni, prezzi, foto e loghi) appartiene al ristorante che lo pubblica, che ne è responsabile.</p>
+
+<h2>5. Responsabilità</h2>
+<p>Il titolare non è responsabile dei contenuti che ogni ristorante pubblica nel proprio menu, comprese le informazioni sugli allergeni, che il ristorante deve verificare. Se noti un contenuto illecito, scrivi all'email di contatto e lo esamineremo.</p>
+
+<h2>6. Legge applicabile</h2>
+<p>Le presenti note legali sono regolate dalla legge spagnola.</p>

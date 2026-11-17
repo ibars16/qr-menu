@@ -165,8 +165,8 @@ final class MenuTextDirectionTest extends WebTestCase
         self::assertStringContainsString('مستوى التوابل الحارة', $html);
         self::assertStringContainsString('ناري', $html);
         self::assertStringNotContainsString('درجة الحرارة', $html);
-        self::assertStringContainsString('family=IBM+Plex+Sans+Arabic', $html);
-        self::assertStringContainsString('family=Noto+Naskh+Arabic', $html);
+        // IBM Plex Sans Arabic + Noto Naskh Arabic, served from our server.
+        self::assertStringContainsString('href="/fonts/arabic.css"', $html);
         self::assertMatchesRegularExpression('#class="more-hint">[^<]*<i class="ti ti-chevron-left"#u', $html, '"Ver más" points the reading way');
         self::assertDoesNotMatchRegularExpression('#class="more-hint">[^<]*<i class="ti ti-chevron-right"#u', $html);
         // Not translated (nothing behind the loading screen ran): the
@@ -186,7 +186,7 @@ final class MenuTextDirectionTest extends WebTestCase
         $html = $this->render($this->makeRestaurant($theme), 'es');
 
         self::assertStringContainsString('<html lang="es" dir="ltr">', $html);
-        self::assertStringNotContainsString('IBM+Plex+Sans+Arabic', $html);
+        self::assertStringNotContainsString('/fonts/arabic.css', $html);
         self::assertStringNotContainsString('<bdi', $html);
         self::assertStringNotContainsString('dir="auto"', $html);
         self::assertMatchesRegularExpression('#class="more-hint">[^<]*<i class="ti ti-chevron-right"#u', $html);

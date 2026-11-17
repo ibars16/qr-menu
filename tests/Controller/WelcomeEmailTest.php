@@ -70,6 +70,7 @@ final class WelcomeEmailTest extends WebTestCase
         $form['registration_form[email]'] = $email;
         $form['registration_form[password][first]'] = 'a-strong-password-1';
         $form['registration_form[password][second]'] = 'a-strong-password-1';
+        $form['registration_form[acceptTerms]']->tick();
         $form['registration_form[currency]'] = 'EUR';
         $form['registration_form[language]'] = 'es';
         $form['registration_form[adminLocale]'] = $adminLocale;
@@ -139,6 +140,7 @@ final class WelcomeEmailTest extends WebTestCase
         $form['reseller_registration_form[email]'] = $email;
         $form['reseller_registration_form[password][first]'] = 'a-strong-password-1';
         $form['reseller_registration_form[password][second]'] = 'a-strong-password-1';
+        $form['reseller_registration_form[acceptTerms]']->tick();
         $form['reseller_registration_form[adminLocale]'] = 'de';
         $this->client->submit($form);
         self::assertResponseRedirects();

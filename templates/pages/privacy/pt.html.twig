@@ -1,29 +1,40 @@
-<div class="legal-placeholder">
-    ⚠️ Documento a completar antes de publicar em produção: falta a denominação legal/fiscal do responsável pelo tratamento e um email de contacto real para questões de privacidade. Substitua os campos entre parênteses retos por esses dados.
-</div>
-
 <h2>1. Responsável pelo tratamento</h2>
-<p>[Denominação legal pendente] é responsável pelo tratamento dos dados pessoais recolhidos através do QR Menu. Para qualquer questão sobre esta política, pode escrever para [email de contacto pendente].</p>
+<p>O responsável pelos dados pessoais tratados no QR Menu é {{ legal('name', locale) }} (NIF {{ legal('nif', locale) }}), com morada em {{ legal('address', locale) }}. Para qualquer questão sobre privacidade, pode escrever para {{ legal_email(locale) }}.</p>
 
-<h2>2. Que dados recolhemos</h2>
+<h2>2. Que dados tratamos e para quê</h2>
 <ul>
-    <li><strong>Dados da sua conta:</strong> email e palavra-passe (guardada de forma cifrada, nunca em texto simples) e o nome do seu restaurante.</li>
-    <li><strong>Dados da sua carta:</strong> categorias, pratos, preços, descrições e imagens que carregar para a sua carta digital.</li>
-    <li><strong>Dados de utilização da sua carta pública:</strong> que pratos são vistos, para lhe podermos mostrar estatísticas sobre a sua própria carta.</li>
-    <li><strong>Interações com o assistente Smart Waiter:</strong> registamos que ocorreu uma conversa e o seu idioma, para fins estatísticos agregados. Não guardamos o conteúdo das mensagens escritas pelos seus clientes.</li>
+    <li><strong>A sua conta:</strong> email, palavra-passe (guardada cifrada, nunca em texto simples), nome do restaurante e idioma do painel; se der acesso à sua equipa, também o nome e o email dos seus membros. Usamo-los para prestar o serviço e enviar os emails necessários (confirmação da conta, alteração da palavra-passe, avisos de pagamento).</li>
+    <li><strong>Revendedores:</strong> nome da empresa, nome da pessoa de contacto e email.</li>
+    <li><strong>Pagamento e faturação:</strong> o pagamento é gerido pela Stripe. Não vemos nem guardamos os dados do seu cartão; guardamos a referência do seu cliente e da sua subscrição na Stripe. A Stripe recolhe o seu nome ou denominação social, a morada de faturação e, se o indicar, o seu NIF, para emitir as faturas.</li>
+    <li><strong>A sua ementa:</strong> categorias, pratos, preços, descrições, alergénios, fotografias e vídeos que carregar.</li>
+    <li><strong>Visitas à sua ementa pública:</strong> que pratos são abertos e quando, para lhe mostrar estatísticas. Não guardamos quem os abre.</li>
+    <li><strong>Empregado de mesa virtual (IA):</strong> as mensagens escritas pelos seus clientes e as respostas ficam na memória temporária do servidor durante 30 minutos no máximo (as últimas 12 mensagens), para que a conversa faça sentido, e são enviadas à Groq ou à Google Gemini para gerar a resposta. Na nossa base de dados fica apenas registado que houve uma conversa, o seu idioma e dados técnicos (fornecedor, tempo de resposta), nunca o texto das mensagens.</li>
+    <li><strong>Dados técnicos:</strong> o endereço IP é usado temporariamente para proteger o serviço contra abusos (limites de registos e de mensagens) e fica nos registos do servidor.</li>
 </ul>
+<p>A base legal é a execução do contrato de serviço consigo, o nosso interesse legítimo em manter o serviço seguro e melhorá-lo, e o cumprimento de obrigações legais (por exemplo, fiscais).</p>
 
 <h2>3. Com quem partilhamos dados</h2>
-<p>Utilizamos fornecedores externos de inteligência artificial para funções como o assistente Smart Waiter e a importação de cartas a partir de uma fotografia. Estes fornecedores tratam o conteúdo necessário para prestar esse serviço, segundo as suas próprias condições de tratamento de dados. Não vendemos dados pessoais a terceiros.</p>
+<p>Não vendemos dados pessoais. Só os partilhamos com os fornecedores de que precisamos para prestar o serviço, que os tratam por nossa conta:</p>
+<ul>
+    <li><strong>Stripe</strong> (pagamentos e faturas).</li>
+    <li><strong>Google Gemini</strong> (inteligência artificial: importar ementas a partir de uma fotografia ou PDF, traduções, empregado de mesa virtual e fotografias de pratos).</li>
+    <li><strong>Groq</strong> (inteligência artificial: empregado de mesa virtual e traduções).</li>
+    <li><strong>Brevo</strong> (envio de emails).</li>
+    <li><strong>Alojamento web:</strong> {{ legal('hosting', locale) }}.</li>
+</ul>
+<p>Usamos as versões pagas dos serviços de IA, cujas condições não permitem usar os dados que lhes enviamos para treinar os seus modelos.</p>
 
-<h2>4. Cookies</h2>
-<p>Consulte a nossa <a href="{{ path('app_cookies') }}">Política de Cookies</a> para saber o que utilizamos e porquê.</p>
+<h2>4. Transferências para fora da União Europeia</h2>
+<p>A Google, a Groq e a Stripe podem tratar dados nos Estados Unidos ou noutros países fora da União Europeia. Estas transferências são feitas com as garantias exigidas pelo RGPD: o Quadro de Privacidade de Dados UE-EUA, quando o fornecedor a ele aderiu, ou as cláusulas contratuais-tipo da Comissão Europeia.</p>
 
-<h2>5. Os seus direitos</h2>
-<p>Pode pedir o acesso, a retificação, o apagamento ou a portabilidade dos seus dados pessoais, bem como opor-se ao seu tratamento ou pedir a sua limitação, escrevendo para [email de contacto pendente].</p>
+<h2>5. Cookies</h2>
+<p>Consulte a nossa <a href="{{ path('app_cookies') }}">Política de Cookies</a> para saber o que usamos e porquê.</p>
 
-<h2>6. Conservação dos dados</h2>
-<p>Conservamos os seus dados enquanto a sua conta estiver ativa. Se eliminar a sua conta, os dados associados são apagados, salvo se existir uma obrigação legal de os conservar durante mais tempo.</p>
+<h2>6. Durante quanto tempo os conservamos</h2>
+<p>Conservamos os seus dados enquanto a sua conta existir. Se a quiser encerrar, escreva para o email de contacto e apagamo-la juntamente com os seus dados, exceto os que a lei nos obrigue a conservar durante mais tempo (por exemplo, as faturas).</p>
 
-<h2>7. Alterações a esta política</h2>
-<p>Podemos atualizar esta política para refletir alterações no serviço ou na legislação aplicável. Publicaremos qualquer alteração relevante nesta mesma página.</p>
+<h2>7. Os seus direitos</h2>
+<p>Pode pedir o acesso, a retificação, o apagamento ou a portabilidade dos seus dados, e opor-se ao seu tratamento ou pedir a sua limitação, escrevendo para {{ legal_email(locale) }}. Se considerar que não tratámos bem os seus dados, pode apresentar reclamação à Agência Espanhola de Proteção de Dados (aepd.es).</p>
+
+<h2>8. Alterações a esta política</h2>
+<p>Podemos atualizar esta política se o serviço ou a legislação mudarem. Publicaremos as alterações nesta página, com a respetiva data.</p>

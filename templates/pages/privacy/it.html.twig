@@ -1,29 +1,40 @@
-<div class="legal-placeholder">
-    ⚠️ Documento da completare prima della pubblicazione in produzione: mancano la denominazione legale/fiscale del titolare del trattamento e un vero indirizzo email di contatto per le questioni di privacy. Sostituisci i campi tra parentesi quadre con questi dati.
-</div>
-
 <h2>1. Titolare del trattamento</h2>
-<p>[Denominazione legale da definire] è titolare del trattamento dei dati personali raccolti tramite QR Menu. Per qualsiasi domanda su questa informativa puoi scrivere a [email di contatto da definire].</p>
+<p>Il titolare dei dati personali trattati in QR Menu è {{ legal('name', locale) }} (NIF {{ legal('nif', locale) }}), con domicilio in {{ legal('address', locale) }}. Per qualsiasi domanda sulla privacy puoi scrivere a {{ legal_email(locale) }}.</p>
 
-<h2>2. Quali dati raccogliamo</h2>
+<h2>2. Quali dati trattiamo e perché</h2>
 <ul>
-    <li><strong>Dati del tuo account:</strong> email e password (conservata in forma cifrata, mai in chiaro) e il nome del tuo ristorante.</li>
-    <li><strong>Dati del tuo menu:</strong> categorie, piatti, prezzi, descrizioni e immagini che carichi per il tuo menu digitale.</li>
-    <li><strong>Dati di utilizzo del tuo menu pubblico:</strong> quali piatti vengono visualizzati, per poterti mostrare statistiche sul tuo menu.</li>
-    <li><strong>Interazioni con l'assistente Smart Waiter:</strong> registriamo che è avvenuta una conversazione e la sua lingua, a fini statistici aggregati. Non conserviamo il contenuto dei messaggi scritti dai tuoi clienti.</li>
+    <li><strong>Il tuo account:</strong> email, password (conservata cifrata, mai in chiaro), nome del ristorante e lingua del pannello; se dai accesso al tuo team, anche il loro nome ed email. Li usiamo per fornirti il servizio e inviarti le email necessarie (conferma dell'account, cambio password, avvisi di pagamento).</li>
+    <li><strong>Rivenditori:</strong> nome dell'azienda, nome della persona di contatto ed email.</li>
+    <li><strong>Pagamento e fatturazione:</strong> il pagamento è gestito da Stripe. Non vediamo né conserviamo i dati della tua carta; conserviamo il riferimento del tuo cliente e del tuo abbonamento in Stripe. Stripe raccoglie il tuo nome o ragione sociale, l'indirizzo di fatturazione e, se lo fornisci, il tuo codice fiscale, per emettere le fatture.</li>
+    <li><strong>Il tuo menu:</strong> categorie, piatti, prezzi, descrizioni, allergeni, foto e video che carichi.</li>
+    <li><strong>Visite al tuo menu pubblico:</strong> quali piatti vengono aperti e quando, per mostrarti statistiche. Non conserviamo chi li apre.</li>
+    <li><strong>Cameriere virtuale (IA):</strong> i messaggi scritti dai tuoi clienti e le risposte restano nella memoria temporanea del server per un massimo di 30 minuti (gli ultimi 12 messaggi), perché la conversazione abbia senso, e vengono inviati a Groq o a Google Gemini per generare la risposta. Nel nostro database resta solo che c'è stata una conversazione, la sua lingua e dati tecnici (fornitore, tempo di risposta), mai il testo dei messaggi.</li>
+    <li><strong>Dati tecnici:</strong> l'indirizzo IP viene usato temporaneamente per proteggere il servizio dagli abusi (limiti di registrazioni e messaggi) e rimane nei log del server.</li>
 </ul>
+<p>La base giuridica è l'esecuzione del contratto di servizio con te, il nostro legittimo interesse a mantenere il servizio sicuro e a migliorarlo, e l'adempimento di obblighi di legge (ad esempio, fiscali).</p>
 
 <h2>3. Con chi condividiamo i dati</h2>
-<p>Utilizziamo fornitori esterni di intelligenza artificiale per funzioni come l'assistente Smart Waiter e l'importazione dei menu da una foto. Questi fornitori trattano i contenuti necessari a prestare tale servizio, secondo le proprie condizioni di trattamento dei dati. Non vendiamo dati personali a terzi.</p>
+<p>Non vendiamo dati personali. Li condividiamo solo con i fornitori di cui abbiamo bisogno per fornire il servizio, che li trattano per nostro conto:</p>
+<ul>
+    <li><strong>Stripe</strong> (pagamenti e fatture).</li>
+    <li><strong>Google Gemini</strong> (intelligenza artificiale: importazione di menu da foto o PDF, traduzioni, cameriere virtuale e foto dei piatti).</li>
+    <li><strong>Groq</strong> (intelligenza artificiale: cameriere virtuale e traduzioni).</li>
+    <li><strong>Brevo</strong> (invio di email).</li>
+    <li><strong>Hosting web:</strong> {{ legal('hosting', locale) }}.</li>
+</ul>
+<p>Usiamo le versioni a pagamento dei servizi di IA, le cui condizioni non consentono di usare i dati che inviamo loro per addestrare i propri modelli.</p>
 
-<h2>4. Cookie</h2>
-<p>Consulta la nostra <a href="{{ path('app_cookies') }}">Cookie Policy</a> per sapere cosa utilizziamo e perché.</p>
+<h2>4. Trasferimenti fuori dall'Unione europea</h2>
+<p>Google, Groq e Stripe possono trattare dati negli Stati Uniti o in altri paesi fuori dall'Unione europea. Questi trasferimenti avvengono con le garanzie richieste dal GDPR: il Data Privacy Framework UE-USA quando il fornitore vi aderisce, oppure le clausole contrattuali tipo della Commissione europea.</p>
 
-<h2>5. I tuoi diritti</h2>
-<p>Puoi chiedere l'accesso, la rettifica, la cancellazione o la portabilità dei tuoi dati personali, nonché opporti al loro trattamento o chiederne la limitazione, scrivendo a [email di contatto da definire].</p>
+<h2>5. Cookie</h2>
+<p>Consulta la nostra <a href="{{ path('app_cookies') }}">Cookie Policy</a> per sapere cosa usiamo e perché.</p>
 
-<h2>6. Conservazione dei dati</h2>
-<p>Conserviamo i tuoi dati finché il tuo account è attivo. Se elimini il tuo account, i dati associati vengono cancellati, salvo obblighi di legge che ne impongano una conservazione più lunga.</p>
+<h2>6. Per quanto tempo li conserviamo</h2>
+<p>Conserviamo i tuoi dati finché esiste il tuo account. Se vuoi chiuderlo, scrivi all'email di contatto e lo cancelleremo insieme ai suoi dati, salvo quelli che la legge ci obbliga a conservare più a lungo (ad esempio, le fatture).</p>
 
-<h2>7. Modifiche a questa informativa</h2>
-<p>Possiamo aggiornare questa informativa per riflettere modifiche al servizio o alla normativa applicabile. Pubblicheremo ogni modifica rilevante su questa stessa pagina.</p>
+<h2>7. I tuoi diritti</h2>
+<p>Puoi chiedere l'accesso, la rettifica, la cancellazione o la portabilità dei tuoi dati, e opporti al loro trattamento o chiederne la limitazione, scrivendo a {{ legal_email(locale) }}. Se ritieni che non abbiamo trattato correttamente i tuoi dati, puoi presentare reclamo all'Agenzia spagnola per la protezione dei dati (aepd.es).</p>
+
+<h2>8. Modifiche a questa informativa</h2>
+<p>Possiamo aggiornare questa informativa se cambiano il servizio o la normativa. Pubblicheremo le modifiche in questa pagina, con la loro data.</p>
