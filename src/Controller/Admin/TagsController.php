@@ -74,6 +74,15 @@ class TagsController extends AbstractController
         ]);
     }
 
+    /**
+     * Only "#rrggbb": the color is printed inside style="…" (tags.html.twig),
+     * so anything else could inject CSS there. The color picker always sends it.
+     */
+    private static function isValidColor(mixed $color): bool
+    {
+        return is_string($color) && preg_match('/^#[0-9a-fA-F]{6}$/', $color) === 1;
+    }
+
     #[Route('/tags/create', name: 'tag_create', methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $em, TranslatorInterface $translator): JsonResponse
     {
@@ -85,11 +94,16 @@ class TagsController extends AbstractController
             return $this->json(['error' => $translator->trans('error.name_required', domain: 'admin_tags')], 400);
         }
 
+        $color = $data['color'] ?? '#666666';
+        if (!self::isValidColor($color)) {
+            return $this->json(['error' => $translator->trans('error.color_invalid', domain: 'admin_tags')], 400);
+        }
+
         $code = $this->uniqueCodeFor($restaurant, strtolower(preg_replace('/[^a-z0-9]+/', '-', mb_strtolower($name))));
 
         $tag = new ProductTag($restaurant, $code);
         $tag->setIcon(mb_substr(trim($data['icon'] ?? '🏷️'), 0, 10) ?: '🏷️'); // product_tag.icon is VARCHAR(50); 10 covers any emoji sequence, same as the inputs' maxlength
-        $tag->setColor($data['color'] ?? '#666666');
+        $tag->setColor($color);
         $tag->setPosition($restaurant->getProductTags()->count());
 
         $t = new ProductTagTranslation();
@@ -128,8 +142,13 @@ class TagsController extends AbstractController
             return $this->json(['error' => $translator->trans('error.name_required', domain: 'admin_tags')], 400);
         }
 
+        $color = $data['color'] ?? $tag->getColor();
+        if (!self::isValidColor($color)) {
+            return $this->json(['error' => $translator->trans('error.color_invalid', domain: 'admin_tags')], 400);
+        }
+
         $tag->setIcon(mb_substr(trim($data['icon'] ?? $tag->getIcon()), 0, 10) ?: $tag->getIcon());
-        $tag->setColor($data['color'] ?? $tag->getColor());
+        $tag->setColor($color);
 
         $locale = $tag->getRestaurant()->getDefaultLanguage();
         $t      = $tag->getTranslation($locale);

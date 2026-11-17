@@ -53,6 +53,12 @@ parameters:
     # this is an extra (Controller\Partners\PartnersController).
     app.reseller_included_restaurants: 5
 
+    # The anti-abuse limits against fake sign-ups spending AI: sign-ups per
+    # IP (rate_limiter.yaml's signup_ip_*) and the daily menu-import quota
+    # (Service\MenuImportQuota). On in prod and in tests; off in dev
+    # (when@dev below) so the owner can try things without being blocked.
+    app.abuse_limits: true
+
     # Stripe (see App\Service\Billing\StripeBilling). Values go in
     # .env.local; empty defaults here so the app still boots without them.
     env(STRIPE_SECRET_KEY): ''
@@ -296,6 +302,10 @@ when@test:
         app.test.menu_warm_limiter_pool:
             class: Symfony\Component\Cache\Adapter\ArrayAdapter
             autoconfigure: false
+        # Same for the Smart Waiter daily caps and the sign-up limits.
+        app.test.limiter_pool:
+            class: Symfony\Component\Cache\Adapter\ArrayAdapter
+            autoconfigure: false
         App\Service\Billing\StripeGatewayInterface:
             alias: App\Tests\Support\FakeStripeGateway
 
@@ -312,3 +322,7 @@ when@test:
             arguments:
                 $apiKey: '%env(GEMINI_IMAGE_API_KEY)%'
                 $model: '%env(GEMINI_IMAGE_MODEL)%'
+
+when@dev:
+    parameters:
+        app.abuse_limits: false

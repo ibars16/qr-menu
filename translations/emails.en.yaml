@@ -28,3 +28,10 @@ email_changed:
     subject: "Your login email has changed"
     intro: "From now on this account logs in with %new%. This email can no longer be used to log in."
     not_you: "If this wasn't you, contact %app% support as soon as possible."
+smart_waiter_down:
+    subject: "Your menu's assistant isn't answering right now"
+    hello: "Hello,"
+    intro: "The AI assistant on %restaurant%'s menu isn't answering right now because of a technical problem. We already know about it."
+    meanwhile: "In the meantime, ask your team to answer customers' questions about dishes, ingredients, allergens or recommendations in person."
+    at_most: "We'll send you at most one notice like this a day."
+    signature: "The %app% team"

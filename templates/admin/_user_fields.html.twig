@@ -18,7 +18,9 @@
     <input type="text" id="user-last-name" autocomplete="off">
 </div>
 
-<div class="field">
+{# Hidden when editing an owner: an owner's password is only changed in
+   "Mi cuenta" or with "¿Has olvidado tu contraseña?" (UsersController::update()). #}
+<div class="field" id="user-password-field">
     <div class="field-label">
         {{ 'field.password'|trans({}, 'admin_users') }} <span class="req" id="user-password-req">*</span>
     </div>

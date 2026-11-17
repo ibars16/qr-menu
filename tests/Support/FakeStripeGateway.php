@@ -71,6 +71,9 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public static bool $failInvoices = false;
 
+    /** Thrown by every retrieve*() while set, like the real Stripe client would (e.g. ApiConnectionException). */
+    public static ?\Throwable $retrieveFailure = null;
+
     public static function reset(): void
     {
         self::$objects = [];
@@ -88,6 +91,7 @@ class FakeStripeGateway implements StripeGatewayInterface
         self::$accountLog = [];
         self::$fail = false;
         self::$failInvoices = false;
+        self::$retrieveFailure = null;
     }
 
     public function createCustomer(string $email, string $name, array $metadata): string
@@ -111,18 +115,27 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public function retrieveCheckoutSession(string $id): array
     {
+        if (self::$retrieveFailure !== null) {
+            throw self::$retrieveFailure;
+        }
         $this->log('retrieveCheckoutSession');
         return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
     }
 
     public function retrieveInvoice(string $id): array
     {
+        if (self::$retrieveFailure !== null) {
+            throw self::$retrieveFailure;
+        }
         $this->log('retrieveInvoice');
         return self::$objects[$id] ?? throw new \RuntimeException("No fake object $id");
     }
 
     public function retrieveSubscription(string $id, array $expand = []): array
     {
+        if (self::$retrieveFailure !== null) {
+            throw self::$retrieveFailure;
+        }
         $this->log('retrieveSubscription');
         $this->maybeFail();
 
@@ -288,6 +301,9 @@ class FakeStripeGateway implements StripeGatewayInterface
 
     public function retrieveConnectedAccount(string $accountId): array
     {
+        if (self::$retrieveFailure !== null) {
+            throw self::$retrieveFailure;
+        }
         $this->maybeFail();
 
         return self::$accounts[$accountId] ?? throw new \RuntimeException("No fake account $accountId");

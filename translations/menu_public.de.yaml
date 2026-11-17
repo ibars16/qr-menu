@@ -69,6 +69,7 @@ chat:
     send: "Senden"
     disclaimer: "KI-generierte Antworten. Bei schweren Allergien bitte beim Personal nachfragen."
     error_fallback: "Entschuldigung, im Moment keine Antwort möglich — bitte fragen Sie unser Personal."
+    daily_limit: "Ich habe heute schon viele Fragen beantwortet; unser Personal hilft Ihnen gerne weiter."
     # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
     # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
     staff:

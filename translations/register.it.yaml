@@ -44,6 +44,7 @@ error:
     admin_locale: "Scegli una lingua dall'elenco."
     expired: "La pagina è scaduta. Invia di nuovo il modulo."
     general: "Impossibile inviare il modulo. Ricarica la pagina e riprova."
+    too_many_signups: "Sono stati creati troppi account da questa connessione. Riprova più tardi."
 unavailable:
     title: "Link non disponibile"
     heading: "Questo link non è disponibile"

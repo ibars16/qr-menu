@@ -44,6 +44,7 @@ error:
     admin_locale: "Wählen Sie eine Sprache aus der Liste."
     expired: "Die Seite ist abgelaufen. Senden Sie das Formular erneut."
     general: "Das Formular konnte nicht gesendet werden. Laden Sie die Seite neu und versuchen Sie es erneut."
+    too_many_signups: "Von dieser Verbindung aus wurden zu viele Konten erstellt. Bitte versuchen Sie es später erneut."
 unavailable:
     title: "Link nicht verfügbar"
     heading: "Dieser Link ist nicht verfügbar"

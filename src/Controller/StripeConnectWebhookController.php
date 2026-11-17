@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\Billing\StripeBilling;
+use App\Service\Billing\StripeWebhookFailure;
 use Psr\Log\LoggerInterface;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
@@ -18,7 +19,8 @@ use Symfony\Component\Routing\Attribute\Route;
  * — StripeBilling re-reads each object there and only applies it to a
  * restaurant of the reseller owning that account. The accounts' own
  * changes arrive at /stripe/connect-account-events instead.
- * Always 200 once the signature is valid — a failure to apply is logged.
+ * Once the signature is valid: 200, and a failure to apply is logged —
+ * except a passing one (StripeWebhookFailure): 500, so Stripe retries it.
  */
 class StripeConnectWebhookController
 {
@@ -59,6 +61,11 @@ class StripeConnectWebhookController
             };
         } catch (\Throwable $e) {
             $this->logger->error('Stripe Connect webhook not applied', ['type' => $event->type, 'account' => $account, 'object' => $objectId, 'exception' => $e]);
+
+            // Passing failure (Stripe or the database): 500, Stripe sends it again.
+            if (StripeWebhookFailure::isTransient($e)) {
+                return new Response('', Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
         }
 
         return new Response();

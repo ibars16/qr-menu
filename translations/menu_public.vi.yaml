@@ -69,6 +69,7 @@ chat:
     send: "Gửi"
     disclaimer: "Câu trả lời do AI tạo ra. Nếu bạn bị dị ứng nặng, vui lòng xác nhận với nhân viên."
     error_fallback: "Xin lỗi, hiện tại tôi gặp sự cố khi trả lời — vui lòng hỏi nhân viên của chúng tôi."
+    daily_limit: "Hôm nay tôi đã trả lời rất nhiều câu hỏi; nhân viên của chúng tôi sẵn lòng giúp bạn."
     # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
     # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
     staff:

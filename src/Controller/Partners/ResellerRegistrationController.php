@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Form\ResellerRegistrationFormType;
 use App\Service\AdminLocaleResolver;
 use App\Service\AccountMailer;
+use App\Security\SignupLimiter;
 use App\Service\RestaurantCreator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,6 +34,7 @@ class ResellerRegistrationController extends AbstractController
         RestaurantCreator $restaurantCreator,
         AdminLocaleResolver $adminLocaleResolver,
         AccountMailer $accountMailer,
+        SignupLimiter $signupLimiter,
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_menu');
@@ -48,7 +50,11 @@ class ResellerRegistrationController extends AbstractController
 
             if ($restaurantCreator->isEmailTaken($data['email'])) {
                 $form->get('email')->addError(new FormError('register.error.email_taken', 'register.error.email_taken'));
+            } elseif (!$signupLimiter->allows($request)) {
+                // Too many sign-ups from this IP (SignupLimiter).
+                $form->addError(new FormError('register.error.too_many_signups', 'register.error.too_many_signups'));
             } else {
+                $signupLimiter->count($request);
                 $reseller = new Reseller($data['company']);
                 $reseller->setAdminLocale($adminLocaleResolver->resolve($data['adminLocale']));
                 $em->persist($reseller);

@@ -15,6 +15,7 @@ use App\Service\MenuImportLanguageNotice;
 use App\Service\MenuImportPdfError;
 use App\Service\MenuImportPdfException;
 use App\Service\MenuImportPdfSplitter;
+use App\Service\MenuImportQuota;
 use App\Service\Upload\UploadProfile;
 use App\Service\Upload\UploadValidationError;
 use App\Service\Upload\UploadValidator;
@@ -52,6 +53,7 @@ class MenuImportController extends AbstractController
         private readonly BatchProcessingTriggerInterface $processingTrigger,
         private readonly UploadValidator $uploadValidator,
         private readonly MenuImportPdfSplitter $pdfSplitter,
+        private readonly MenuImportQuota $importQuota,
     ) {}
 
     private function restaurant(): Restaurant
@@ -91,6 +93,11 @@ class MenuImportController extends AbstractController
                 : 'upload.error.no_files';
             $this->addFlash('error', $this->translator->trans($key, domain: 'admin_menu_import'));
             return $this->redirectToRoute('admin_menu_import_new');
+        }
+
+        // Today's quota already used up (MenuImportQuota): nothing is read.
+        if ($refusal = $this->importQuota->refusal($restaurant)) {
+            return $this->uploadError(...$refusal);
         }
 
         if (count($files) > self::MAX_PAGES_PER_UPLOAD) {
@@ -142,6 +149,11 @@ class MenuImportController extends AbstractController
                 ]);
             }
             return $this->uploadError('upload.error.too_many_files', ['%max%' => self::MAX_PAGES_PER_UPLOAD]);
+        }
+
+        // More pages than today's quota has left.
+        if ($refusal = $this->importQuota->refusal($restaurant, $totalPages)) {
+            return $this->uploadError(...$refusal);
         }
 
         // 2) Turn each PDF into one JPEG per page (in a temp folder, always

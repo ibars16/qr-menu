@@ -69,6 +69,7 @@ chat:
     send: "보내기"
     disclaimer: "AI가 생성한 답변입니다. 심각한 알레르기가 있다면 직원에게 확인해 주세요."
     error_fallback: "죄송합니다, 지금은 답변드리기 어렵습니다 — 직원에게 문의해 주세요."
+    daily_limit: "오늘은 이미 많은 질문에 답변드렸습니다. 저희 직원이 기꺼이 도와드리겠습니다."
     # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
     # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
     staff:

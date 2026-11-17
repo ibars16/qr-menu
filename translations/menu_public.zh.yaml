@@ -69,6 +69,7 @@ chat:
     send: "发送"
     disclaimer: "回答由AI生成。如有严重过敏，请务必与工作人员确认。"
     error_fallback: "抱歉，目前暂时无法回答 —— 请咨询我们的工作人员。"
+    daily_limit: "今天我已经回答了很多问题；我们的工作人员很乐意为您服务。"
     # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
     # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
     staff:

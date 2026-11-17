@@ -218,7 +218,10 @@ trait SmartWaiterFakeAiTrait
             $factory,
             $this->store,
             // No from address: the failure alert sends nothing.
-            new SmartWaiterFailureAlertMailer($this->createStub(TransportInterface::class), new NullLogger(), '', ''),
+            new SmartWaiterFailureAlertMailer(
+                $this->createStub(TransportInterface::class), new NullLogger(), '', '',
+                new Translator('es'), new \App\Service\AdminLocaleResolver(dirname(__DIR__, 2)), new ArrayAdapter(), new \Symfony\Component\Clock\NativeClock(),
+            ),
             $em,
             new SmartWaiterReplyCleaner(),
             $this->needsDetector($factory),

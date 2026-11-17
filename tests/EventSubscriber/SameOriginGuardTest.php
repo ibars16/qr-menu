@@ -187,4 +187,108 @@ final class SameOriginGuardTest extends WebTestCase
 
         $this->assertNotRefusedByTheGuard();
     }
+
+    // ── Cerrar sesión / Entrar como: plain GET links that change the session ──
+
+    /** Who the session is logged in as now: read back from the session itself, by a fresh panel request. */
+    private function currentUserEmail(): ?string
+    {
+        $this->client->request('GET', '/admin/qr');
+        $serialized = $this->client->getRequest()->getSession()->get('_security_main');
+        $token = is_string($serialized) ? unserialize($serialized) : null;
+        $user = $token?->getUser();
+
+        return $user instanceof User ? $user->getEmail() : null;
+    }
+
+    private function ownerEmail(): string
+    {
+        $this->em->clear();
+        $restaurant = $this->em->find(Restaurant::class, $this->restaurantId);
+
+        return $this->em->getRepository(User::class)->findOneBy(['restaurant' => $restaurant])->getEmail();
+    }
+
+    /** @param array<string, string> $headers */
+    #[DataProvider('anotherSite')]
+    public function testLogoutFromAnotherSiteKeepsTheSession(array $headers): void
+    {
+        $this->client->request('GET', '/admin/logout', server: $headers);
+
+        self::assertResponseRedirects('/admin', 303);
+        self::assertSame($this->ownerEmail(), $this->currentUserEmail(), 'still logged in');
+        $this->client->request('GET', '/admin/menu');
+        self::assertResponseIsSuccessful();
+    }
+
+    /** @param array<string, string> $headers */
+    #[DataProvider('thisSite')]
+    public function testLogoutFromThisSiteWorks(array $headers): void
+    {
+        $this->client->request('GET', '/admin/logout', server: $headers);
+
+        self::assertResponseRedirects();
+        self::assertStringEndsWith('/admin/login', (string) $this->client->getResponse()->headers->get('Location'));
+        $this->client->request('GET', '/admin/menu');
+        self::assertResponseRedirects();
+        self::assertStringEndsWith('/admin/login', (string) $this->client->getResponse()->headers->get('Location'));
+    }
+
+    private function loginAsSuperAdmin(): string
+    {
+        $superAdmin = new User();
+        $superAdmin->setEmail('same-origin-guard-super-' . uniqid() . '@example.test');
+        $superAdmin->setPassword('unused-in-tests');
+        $superAdmin->setRoles([User::ROLE_SUPER_ADMIN]);
+        $this->em->persist($superAdmin);
+        $this->em->flush();
+        $this->superAdminId = $superAdmin->getId();
+        $this->client->loginUser($superAdmin);
+
+        return $superAdmin->getEmail();
+    }
+
+    private ?int $superAdminId = null;
+
+    /** @param array<string, string> $headers */
+    #[DataProvider('anotherSite')]
+    public function testEnterAsFromAnotherSiteDoesNotSwitch(array $headers): void
+    {
+        $superAdminEmail = $this->loginAsSuperAdmin();
+        $ownerEmail = $this->ownerEmail();
+
+        $this->client->request('GET', '/admin/menu?_switch_user=' . urlencode($ownerEmail), server: $headers);
+
+        self::assertResponseRedirects('/admin', 303);
+        self::assertSame($superAdminEmail, $this->currentUserEmail(), 'not switched');
+    }
+
+    public function testEnterAsFromThisSiteSwitchesAndExitsAsBefore(): void
+    {
+        $superAdminEmail = $this->loginAsSuperAdmin();
+        $ownerEmail = $this->ownerEmail();
+
+        $this->client->request('GET', '/admin/menu?_switch_user=' . urlencode($ownerEmail), server: ['HTTP_SEC_FETCH_SITE' => 'same-origin']);
+        self::assertResponseRedirects();
+        self::assertSame($ownerEmail, $this->currentUserEmail(), 'now "como" the owner');
+
+        // "Volver a mi panel" from another site: still the owner.
+        $this->client->request('GET', '/platform?_switch_user=_exit', server: ['HTTP_SEC_FETCH_SITE' => 'cross-site']);
+        self::assertResponseRedirects('/admin', 303);
+        self::assertSame($ownerEmail, $this->currentUserEmail());
+
+        $this->client->request('GET', '/platform?_switch_user=_exit', server: ['HTTP_SEC_FETCH_SITE' => 'same-origin']);
+        self::assertResponseRedirects();
+        self::assertSame($superAdminEmail, $this->currentUserEmail(), 'back as itself');
+    }
+
+    #[\PHPUnit\Framework\Attributes\After]
+    public function removeSuperAdmin(): void
+    {
+        if ($this->superAdminId !== null) {
+            $this->em->clear();
+            $this->em->remove($this->em->find(User::class, $this->superAdminId));
+            $this->em->flush();
+        }
+    }
 }

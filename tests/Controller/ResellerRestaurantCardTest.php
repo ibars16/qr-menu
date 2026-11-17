@@ -417,6 +417,23 @@ final class ResellerRestaurantCardTest extends WebTestCase
         self::assertSame(['retrieveInvoice', $this->account()], FakeStripeGateway::$accountLog[0]);
     }
 
+    /** Stripe down: 500 so Stripe retries; the retry applies it (StripeWebhookFailure). */
+    public function testPassingStripeFailureAnswers500AndTheRetryApplies(): void
+    {
+        $this->subscribed();
+        $periodEnd = strtotime('+40 days');
+        FakeStripeGateway::invoice('in_card', 'sub_card', $periodEnd, 2500, time());
+
+        FakeStripeGateway::$retrieveFailure = \Stripe\Exception\ApiConnectionException::factory('Could not connect to Stripe');
+        $this->postEvent('invoice.paid', 'in_card', $this->account());
+        self::assertResponseStatusCodeSame(500);
+
+        FakeStripeGateway::$retrieveFailure = null;
+        $this->postEvent('invoice.paid', 'in_card', $this->account());
+        self::assertResponseIsSuccessful();
+        self::assertSame(gmdate('Y-m-d', $periodEnd), $this->reloaded()->getPaidUntil()->format('Y-m-d'));
+    }
+
     public function testFirstCardPaymentAddsItToTheResellersExtraLine(): void
     {
         // The reseller pays its own plan with 5 restaurants already paid;

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Form\RegistrationFormType;
 use App\Service\AccountMailer;
 use App\Service\AdminLocaleResolver;
+use App\Security\SignupLimiter;
 use App\Service\RestaurantCreator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -22,6 +23,7 @@ class RegistrationController extends AbstractController
         RestaurantCreator $restaurantCreator,
         AdminLocaleResolver $adminLocaleResolver,
         AccountMailer $accountMailer,
+        SignupLimiter $signupLimiter,
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_menu');
@@ -43,8 +45,14 @@ class RegistrationController extends AbstractController
             $form->get('email')->addError(new FormError('error.email_taken', 'error.email_taken'));
         }
 
+        // Too many sign-ups from this IP (SignupLimiter): the form says so.
+        if ($form->isSubmitted() && $form->isValid() && !$signupLimiter->allows($request)) {
+            $form->addError(new FormError('error.too_many_signups', 'error.too_many_signups'));
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
+            $signupLimiter->count($request);
 
             $user = $restaurantCreator->create(
                 $data['restaurantName'],

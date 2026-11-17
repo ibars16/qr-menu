@@ -16,6 +16,9 @@ upload:
         no_files: Choose at least one photo or a PDF.
         total_too_large: 'The files are too large in total. Upload them in several goes (about 60 MB max per upload).'
         too_many_files: 'At most %max% pages fit in one upload (photos and PDF pages). Upload them in several goes.'
+        daily_limit: 'You''ve already imported the maximum number of menus today. You can import again tomorrow.'
+        daily_pages: 'You can only import %left% more pages today. Upload fewer pages or try again tomorrow.'
+        daily_unconfirmed: 'Until you confirm your email you can import %max% times a day. Confirm it with the link we sent you to import more.'
         invalid_file: '"%name%" couldn''t be uploaded — please try again.'
         unsupported_type: '"%name%" isn''t a supported file type. Please use JPEG, PNG, WebP or PDF.'
         too_large: '"%name%" is too large (max 15 MB).'

@@ -245,4 +245,63 @@ final class SmartWaiterChatTest extends WebTestCase
         self::assertSame('?', $setDish['allergens']);
         self::assertStringNotContainsString('unknown (', $prompt, 'no quotable phrase for unknown allergens anywhere');
     }
+
+    /** Same key as SmartWaiterController: restaurant + IP + browser. */
+    private function visitorKey(string $userAgent): string
+    {
+        return sprintf('%d-%s', $this->restaurant->getId(), hash('sha256', '127.0.0.1|' . $userAgent));
+    }
+
+    private function askAs(string $userAgent): array
+    {
+        $this->client->setServerParameter('HTTP_USER_AGENT', $userAgent);
+
+        return $this->ask('¿Qué entrantes hay?');
+    }
+
+    /**
+     * 40 messages a day per visitor (IP + browser): the 41st gets
+     * "daily_limit" and never reaches the AI; another phone on the same
+     * wifi (same IP, another browser) still can ask.
+     */
+    public function testAVisitorHasADailyCap(): void
+    {
+        $this->client->disableReboot(); // keeps this test's limiter counts (in memory) and the fake AI
+
+        self::assertSame('De primero hay sopa.', $this->askAs('Phone A')['reply']);
+        $limiter = static::getContainer()->get('limiter.smart_waiter_visitor_day')->create($this->visitorKey('Phone A'));
+        self::assertTrue($limiter->consume(39)->isAccepted(), 'the first message counted as 1 of 40');
+
+        $aiCalls = count($this->requests);
+        $data = $this->askAs('Phone A');
+        self::assertResponseStatusCodeSame(429);
+        self::assertSame('daily_limit', $data['error']);
+        self::assertCount($aiCalls, $this->requests, 'the AI is not called');
+
+        self::assertSame('De primero hay sopa.', $this->askAs('Phone B')['reply']);
+    }
+
+    /** 500 messages a day per restaurant, whoever asks. */
+    public function testARestaurantHasADailyCap(): void
+    {
+        $this->client->disableReboot();
+
+        $limiter = static::getContainer()->get('limiter.smart_waiter_restaurant_day')->create((string) $this->restaurant->getId());
+        self::assertTrue($limiter->consume(499)->isAccepted());
+
+        self::assertSame('De primero hay sopa.', $this->askAs('Phone A')['reply'], 'the 500th still answered');
+        $aiCalls = count($this->requests);
+        self::assertSame('daily_limit', $this->askAs('Phone B')['error']);
+        self::assertResponseStatusCodeSame(429);
+        self::assertCount($aiCalls, $this->requests);
+    }
+
+    /** The chat shows its own sentence for "daily_limit", in the menu's language. */
+    public function testTheDailyLimitSentenceIsInTheChat(): void
+    {
+        $html = static::getContainer()->get('twig')->render('menu/_smart_waiter.html.twig', ['restaurant' => $this->restaurant, 'locale' => 'fr']);
+
+        self::assertStringContainsString(json_encode("J'ai déjà répondu à beaucoup de questions aujourd'hui ; notre personnel se fera un plaisir de vous aider."), $html);
+        self::assertStringContainsString("data.error === 'daily_limit'", $html);
+    }
 }

@@ -30,6 +30,7 @@ field:
 
 error:
     name_required: The name is required.
+    color_invalid: "The color must use the #rrggbb format (for example, #2e7d32)."
     system_tag_cannot_delete: "System tags can't be deleted. You can still customize this tag or simply not assign it to any dishes."
 
 label:

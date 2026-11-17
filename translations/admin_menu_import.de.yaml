@@ -16,6 +16,9 @@ upload:
         no_files: Wähle mindestens ein Foto oder ein PDF aus.
         total_too_large: 'Die Dateien sind insgesamt zu groß. Lade sie in mehreren Durchgängen hoch (höchstens etwa 60 MB pro Upload).'
         too_many_files: 'Pro Upload passen höchstens %max% Seiten (Fotos und PDF-Seiten). Lade sie in mehreren Durchgängen hoch.'
+        daily_limit: 'Du hast heute bereits die maximale Anzahl an Karten importiert. Morgen kannst du wieder importieren.'
+        daily_pages: 'Du kannst heute nur noch %left% Seiten importieren. Lade weniger Seiten hoch oder versuche es morgen erneut.'
+        daily_unconfirmed: 'Bis du deine E-Mail bestätigst, kannst du %max%-mal am Tag importieren. Bestätige sie über den Link, den wir dir geschickt haben, um mehr zu importieren.'
         invalid_file: '„%name%" konnte nicht hochgeladen werden — bitte versuche es erneut.'
         unsupported_type: '„%name%" ist kein unterstützter Dateityp. Bitte verwende JPEG, PNG, WebP oder PDF.'
         too_large: '„%name%" ist zu groß (max. 15 MB).'

@@ -232,6 +232,24 @@ final class PartnersConnectTest extends WebTestCase
         self::assertFalse($this->reloaded()->isConnectReady());
     }
 
+    /** Stripe down: 500 so Stripe retries; the retry applies it (StripeWebhookFailure). */
+    public function testAccountEventWithStripeDownAnswers500AndTheRetryApplies(): void
+    {
+        $reseller = $this->connected(false);
+        FakeStripeGateway::connectedAccount($reseller->getConnectAccountId(), true);
+        $related = ['id' => $reseller->getConnectAccountId(), 'type' => 'v2.core.account', 'url' => '/v2/core/accounts/' . $reseller->getConnectAccountId()];
+
+        FakeStripeGateway::$retrieveFailure = \Stripe\Exception\ApiConnectionException::factory('Could not connect to Stripe');
+        $this->postEvent('v2.core.account[requirements].updated', $related);
+        self::assertResponseStatusCodeSame(500);
+        self::assertFalse($this->reloaded()->isConnectReady());
+
+        FakeStripeGateway::$retrieveFailure = null;
+        $this->postEvent('v2.core.account[requirements].updated', $related);
+        self::assertResponseIsSuccessful();
+        self::assertTrue($this->reloaded()->isConnectReady());
+    }
+
     public function testAccountEventWithBadSignatureIsRejected(): void
     {
         $reseller = $this->connected(false);

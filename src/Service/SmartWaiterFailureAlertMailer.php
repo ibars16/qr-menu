@@ -3,20 +3,34 @@
 namespace App\Service;
 
 use App\Entity\Restaurant;
+use App\Entity\User;
 use App\Service\AI\AIProviderAttempt;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Fires when AIModelRouter has exhausted every configured provider for a
  * chat request — i.e. the customer is about to see the generic "I'm having
  * trouble answering, please ask staff" fallback (see
- * _smart_waiter.html.twig's errorFallback). Two separate emails: the
- * platform owner (technical detail, so it can actually be fixed) and this
- * restaurant's own account holder(s) (a plain heads-up, so real staff can
- * step in for customers right now).
+ * _smart_waiter.html.twig's errorFallback). Two separate emails, each
+ * throttled so an outage (every message of every restaurant failing) never
+ * floods anyone:
+ *
+ *  - the platform owner: technical detail, so it can actually be fixed —
+ *    at most one an hour in total (an outage usually hits every
+ *    restaurant at once);
+ *  - this restaurant's owners (ROLE_OWNER, not staff): a plain heads-up in
+ *    the restaurant's panel language (Restaurant::$adminLocale), so real
+ *    staff can step in — at most one a day per restaurant.
+ *
+ * The "already sent" marks live in the app cache (OWNER_KEY / PLATFORM_KEY,
+ * by calendar day / hour), set before sending: a mailer failure doesn't
+ * make every next chat message retry it.
  *
  * Sent via the raw mailer TransportInterface, not MailerInterface — this
  * app's messenger.yaml routes Symfony\Component\Mailer\Messenger\
@@ -32,33 +46,57 @@ use Symfony\Component\Mime\Email;
  */
 final class SmartWaiterFailureAlertMailer
 {
+    private const OWNER_KEY = 'smart_waiter_alert_owner_r%d_%s';
+    private const PLATFORM_KEY = 'smart_waiter_alert_platform_%s';
+
     public function __construct(
         private readonly TransportInterface $mailerTransport,
         private readonly LoggerInterface $logger,
         private readonly string $fromEmail,
         private readonly string $platformAdminEmail,
+        private readonly TranslatorInterface $translator,
+        private readonly AdminLocaleResolver $locales,
+        private readonly CacheItemPoolInterface $cache,
+        private readonly ClockInterface $clock,
     ) {}
 
     /** @param AIProviderAttempt[] $attempts every provider tried, in order, all failed */
     public function alert(Restaurant $restaurant, array $attempts): void
     {
-        $this->sendOwnerAlert($restaurant, $attempts);
-        $this->sendStaffAlert($restaurant);
+        if ($this->fromEmail === '') {
+            return; // not configured — see .env's MAILER_FROM_EMAIL
+        }
+
+        $now = $this->clock->now();
+        if ($this->platformAdminEmail !== '' && $this->firstTime(sprintf(self::PLATFORM_KEY, $now->format('YmdH')), 2 * 3600)) {
+            $this->sendPlatformAlert($restaurant, $attempts, $now);
+        }
+        if ($this->firstTime(sprintf(self::OWNER_KEY, (int) $restaurant->getId(), $now->format('Ymd')), 2 * 86400)) {
+            $this->sendOwnerAlert($restaurant);
+        }
+    }
+
+    /** True the first time a mark is seen (and sets it). */
+    private function firstTime(string $key, int $ttl): bool
+    {
+        $item = $this->cache->getItem($key);
+        if ($item->isHit()) {
+            return false;
+        }
+        $this->cache->save($item->set(true)->expiresAfter($ttl));
+
+        return true;
     }
 
     /** @param AIProviderAttempt[] $attempts */
-    private function sendOwnerAlert(Restaurant $restaurant, array $attempts): void
+    private function sendPlatformAlert(Restaurant $restaurant, array $attempts, \DateTimeImmutable $now): void
     {
-        if ($this->fromEmail === '' || $this->platformAdminEmail === '') {
-            return; // not configured — see .env's MAILER_FROM_EMAIL / PLATFORM_ADMIN_EMAIL
-        }
-
         $lines = array_map(
             static fn (AIProviderAttempt $a) => sprintf('- %s: %s — %s', $a->providerId, $a->reason->value, $a->message),
             $attempts
         );
         $attemptsText = $lines === [] ? '(ningún proveedor estaba configurado)' : implode("\n", $lines);
-        $timestamp = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $timestamp = $now->format('Y-m-d H:i:s');
 
         $body = <<<TEXT
             El asistente del menú (Smart Waiter) no ha podido responder a un cliente porque todos los proveedores de IA configurados han fallado.
@@ -70,6 +108,7 @@ final class SmartWaiterFailureAlertMailer
             {$attemptsText}
 
             Revisa las claves de API y las cuotas de cada proveedor (config/ai_providers.yaml).
+            Como mucho recibes un aviso como este por hora, aunque fallen más restaurantes.
             TEXT;
 
         $this->send(
@@ -79,32 +118,22 @@ final class SmartWaiterFailureAlertMailer
         );
     }
 
-    private function sendStaffAlert(Restaurant $restaurant): void
+    private function sendOwnerAlert(Restaurant $restaurant): void
     {
-        if ($this->fromEmail === '') {
-            return;
-        }
+        $locale = $this->locales->resolve($restaurant->getAdminLocale());
+        $t = fn (string $key): string => $this->translator->trans('smart_waiter_down.' . $key, [
+            '%restaurant%' => $restaurant->getName(),
+            '%app%'        => AccountMailer::APP_NAME,
+        ], 'emails', $locale);
 
-        $body = <<<TEXT
-            Hola,
-
-            El asistente de IA de vuestra carta digital no está respondiendo en este momento por un problema técnico.
-
-            Mientras se soluciona, os pedimos que atendáis directamente cualquier pregunta que os hagan los clientes sobre el menú, ingredientes, alérgenos o recomendaciones.
-
-            Un saludo,
-            El equipo de QR Menu
-            TEXT;
+        $body = implode("\n\n", [$t('hello'), $t('intro'), $t('meanwhile'), $t('at_most'), $t('signature')]);
 
         foreach ($restaurant->getUsers() as $user) {
-            $this->send(
-                to: $user->getEmail(),
-                subject: 'El asistente del menú no está disponible ahora mismo',
-                body: $body,
-            );
+            if (in_array(User::ROLE_OWNER, $user->getRoles(), true)) {
+                $this->send(to: $user->getEmail(), subject: $t('subject'), body: $body);
+            }
         }
     }
-
     private function send(string $to, string $subject, string $body): void
     {
         $email = (new Email())

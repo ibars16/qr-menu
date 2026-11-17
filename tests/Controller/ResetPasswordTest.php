@@ -263,6 +263,8 @@ final class ResetPasswordTest extends WebTestCase
     public function testChangingAStaffPasswordFromTheTeamScreenKillsTheirLink(): void
     {
         $staff = $this->user();
+        $staff->setRoles([User::ROLE_STAFF]); // only a staff member's password is set from Usuarios
+        $this->em->flush();
         $link = $this->linkIn($this->ask($staff->getEmail())[0]);
 
         $owner = new User();

@@ -213,4 +213,73 @@ final class UsersControllerTest extends WebTestCase
             self::assertResponseIsSuccessful("owner must reach {$ownerPath}");
         }
     }
+
+    /** Another owner's password, or one's own, can't be set from Usuarios (no current password asked there). */
+    public function testAnOwnersPasswordCannotBeChangedFromUsers(): void
+    {
+        $restaurant = $this->makeRestaurant('Owner Password Test');
+        $owner = $this->makeUser($restaurant, User::ROLE_OWNER);
+        $coOwner = $this->makeUser($restaurant, User::ROLE_OWNER);
+        $this->em->flush();
+        $this->client->loginUser($owner);
+
+        foreach ([$coOwner, $owner] as $target) {
+            $this->client->request(
+                'POST', "/admin/usuarios/{$target->getId()}/editar", [], [], ['CONTENT_TYPE' => 'application/json'],
+                json_encode(['firstName' => 'X', 'lastName' => '', 'role' => 'owner', 'password' => 'a-brand-new-password'])
+            );
+            self::assertSame(400, $this->client->getResponse()->getStatusCode());
+            self::assertStringContainsString('Mi cuenta', json_decode($this->client->getResponse()->getContent(), true)['error']);
+        }
+
+        $this->em->clear();
+        foreach ([$coOwner, $owner] as $target) {
+            $fresh = $this->em->getRepository(User::class)->find($target->getId());
+            self::assertTrue($this->hasher->isPasswordValid($fresh, 'irrelevant-password-1'), 'the owner keeps its password');
+            self::assertNull($fresh->getFirstName(), 'nothing else is saved either');
+        }
+
+        // Editing an owner without touching the password still works.
+        $owner = $this->em->getRepository(User::class)->find($owner->getId());
+        $this->client->loginUser($owner);
+        $this->client->request(
+            'POST', "/admin/usuarios/{$coOwner->getId()}/editar", [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['firstName' => 'Lola', 'lastName' => '', 'role' => 'owner'])
+        );
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testAStaffMembersPasswordCanStillBeSetFromUsers(): void
+    {
+        $restaurant = $this->makeRestaurant('Staff Password Test');
+        $owner = $this->makeUser($restaurant, User::ROLE_OWNER);
+        $staff = $this->makeUser($restaurant, User::ROLE_STAFF);
+        $this->em->flush();
+        $this->client->loginUser($owner);
+
+        $this->client->request(
+            'POST', "/admin/usuarios/{$staff->getId()}/editar", [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['firstName' => '', 'lastName' => '', 'role' => 'staff', 'password' => 'a-brand-new-password'])
+        );
+        self::assertResponseIsSuccessful();
+
+        $this->em->clear();
+        $fresh = $this->em->getRepository(User::class)->find($staff->getId());
+        self::assertTrue($this->hasher->isPasswordValid($fresh, 'a-brand-new-password'));
+    }
+
+    /** The edit form hides the password field for owner rows. */
+    public function testThePasswordFieldIsHiddenForOwnerRows(): void
+    {
+        $restaurant = $this->makeRestaurant('Owner Password Field Test');
+        $owner = $this->makeUser($restaurant, User::ROLE_OWNER);
+        $this->em->flush();
+        $this->client->loginUser($owner);
+
+        $this->client->request('GET', '/admin/usuarios');
+        self::assertResponseIsSuccessful();
+        $html = (string) $this->client->getResponse()->getContent();
+        self::assertStringContainsString('id="user-password-field"', $html);
+        self::assertStringContainsString("[id=\"user-password-field\"]').forEach(el => el.style.display = role === 'owner' ? 'none' : '')", $html);
+    }
 }

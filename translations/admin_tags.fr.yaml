@@ -30,6 +30,7 @@ field:
 
 error:
     name_required: Le nom est obligatoire.
+    color_invalid: "La couleur doit être au format #rrggbb (par exemple, #2e7d32)."
     system_tag_cannot_delete: "Les étiquettes système ne peuvent pas être supprimées. Vous pouvez toujours la personnaliser ou simplement ne l'attribuer à aucun plat."
 
 label:

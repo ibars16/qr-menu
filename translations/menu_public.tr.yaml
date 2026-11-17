@@ -69,6 +69,7 @@ chat:
     send: "Gönder"
     disclaimer: "Yanıtlar yapay zeka tarafından oluşturulmuştur. Ciddi bir alerjiniz varsa lütfen personelle teyit edin."
     error_fallback: "Üzgünüm, şu anda yanıt vermekte sorun yaşıyorum — lütfen personelimize sorun."
+    daily_limit: "Bugün zaten birçok soruyu yanıtladım; personelimiz size memnuniyetle yardımcı olur."
     # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
     # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
     staff:

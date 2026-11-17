@@ -69,6 +69,7 @@ chat:
     send: "Send"
     disclaimer: "AI-generated answers. Please confirm with staff if you have a severe allergy."
     error_fallback: "Sorry, I'm having trouble answering right now — please ask a member of staff."
+    daily_limit: "I've already answered a lot of questions today; our staff will be happy to help you."
     # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
     # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
     staff:

@@ -69,6 +69,7 @@ chat:
     send: "Kirim"
     disclaimer: "Jawaban dihasilkan oleh AI. Jika Anda memiliki alergi parah, mohon konfirmasi dengan staf."
     error_fallback: "Maaf, saat ini kami mengalami kendala menjawab — silakan tanya staf kami."
+    daily_limit: "Hari ini saya sudah menjawab banyak pertanyaan; staf kami dengan senang hati akan membantu Anda."
     # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
     # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
     staff:

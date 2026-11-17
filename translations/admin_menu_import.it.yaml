@@ -16,6 +16,9 @@ upload:
         no_files: Scegli almeno una foto o un PDF.
         total_too_large: 'I file pesano troppo in totale. Caricali in più volte (massimo circa 60 MB per invio).'
         too_many_files: 'In un invio stanno al massimo %max% pagine (foto e pagine di PDF). Caricale in più volte.'
+        daily_limit: 'Oggi hai già importato il numero massimo di menù. Potrai importare di nuovo domani.'
+        daily_pages: 'Oggi puoi importare solo altre %left% pagine. Carica meno pagine o riprova domani.'
+        daily_unconfirmed: 'Finché non confermi la tua email puoi importare %max% volte al giorno. Confermala con il link che ti abbiamo inviato per importare di più.'
         invalid_file: '"%name%" non è stato caricato — riprova.'
         unsupported_type: '"%name%" non è un tipo di file supportato. Usa JPEG, PNG, WebP o PDF.'
         too_large: '"%name%" è troppo grande (max 15 MB).'

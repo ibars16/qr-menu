@@ -27,6 +27,7 @@ register:
         password_blank: "Saisissez un mot de passe."
         password_short: "8 caractères minimum."
         password_mismatch: "Les mots de passe ne correspondent pas."
+        too_many_signups: "Trop de comptes ont été créés depuis cette connexion. Réessayez plus tard."
         admin_locale: "Choisissez une langue dans la liste."
         expired: "La page a expiré. Veuillez renvoyer le formulaire."
         general: "Le formulaire n'a pas pu être envoyé. Rechargez la page et réessayez."

@@ -69,6 +69,7 @@ chat:
     send: "भेजें"
     disclaimer: "AI द्वारा दिए गए उत्तर। गंभीर एलर्जी होने पर कृपया स्टाफ से पुष्टि करें।"
     error_fallback: "क्षमा करें, अभी जवाब देने में समस्या हो रही है — कृपया स्टाफ से पूछें।"
+    daily_limit: "आज मैं पहले ही बहुत से सवालों के जवाब दे चुका हूँ; हमारा स्टाफ खुशी से आपकी मदद करेगा।"
     # Fixed closing sentence our code adds when the customer has an allergy (SmartWaiterStaffNote).
     # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
     staff:

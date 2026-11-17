@@ -8,8 +8,10 @@ use App\Service\MenuPreferencesResolver;
 use App\Service\SmartWaiterService;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
@@ -18,6 +20,11 @@ use Symfony\Component\Routing\Attribute\Route;
  * anything in the request body. That's what makes cross-restaurant data
  * leakage structurally impossible rather than something a prompt has to
  * prevent (see MenuContextBuilder's class docblock).
+ *
+ * Limits: 20 messages a minute per IP and restaurant (allowRequest()), and
+ * the daily caps of rate_limiter.yaml — 40 a day per visitor (IP + browser)
+ * and 500 a day per restaurant. Past a daily cap: 429 "daily_limit", which
+ * the chat shows as its own sentence (chat.daily_limit, 20 languages).
  */
 class SmartWaiterController extends AbstractController
 {
@@ -34,6 +41,8 @@ class SmartWaiterController extends AbstractController
         MenuPreferencesResolver $menuPreferencesResolver,
         CacheItemPoolInterface $cache,
         AiAccess $aiAccess,
+        #[Autowire(service: 'limiter.smart_waiter_visitor_day')] RateLimiterFactoryInterface $visitorDayLimiter,
+        #[Autowire(service: 'limiter.smart_waiter_restaurant_day')] RateLimiterFactoryInterface $restaurantDayLimiter,
     ): JsonResponse {
         $restaurant = $restaurantRepo->findOneBy(['slug' => $slug]);
         if (!$restaurant) {
@@ -57,6 +66,14 @@ class SmartWaiterController extends AbstractController
         }
         if (mb_strlen($message) > self::MAX_MESSAGE_LENGTH) {
             return $this->json(['error' => 'message_too_long'], 400);
+        }
+
+        // Daily caps (rate_limiter.yaml): this visitor's first, so one
+        // visitor past its own limit doesn't use up the restaurant's.
+        $visitor = sprintf('%d-%s', $restaurant->getId(), hash('sha256', ($request->getClientIp() ?? 'unknown') . '|' . $request->headers->get('User-Agent', '')));
+        if (!$visitorDayLimiter->create($visitor)->consume()->isAccepted()
+            || !$restaurantDayLimiter->create((string) $restaurant->getId())->consume()->isAccepted()) {
+            return $this->json(['error' => 'daily_limit'], 429);
         }
 
         // Same locale resolution as the public menu itself (menu_prefs

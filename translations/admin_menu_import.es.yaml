@@ -16,6 +16,9 @@ upload:
         no_files: Elige al menos una foto o un PDF.
         total_too_large: 'Los archivos pesan demasiado en total. Súbelos en varias veces (máximo unos 60 MB por envío).'
         too_many_files: 'Caben %max% páginas como máximo por envío (fotos y páginas de PDF). Súbelas en varias veces.'
+        daily_limit: 'Hoy ya has importado el máximo de cartas. Podrás volver a importar mañana.'
+        daily_pages: 'Hoy solo puedes importar %left% páginas más. Sube menos páginas o vuelve a intentarlo mañana.'
+        daily_unconfirmed: 'Hasta que confirmes tu email puedes importar %max% veces al día. Confírmalo con el enlace que te hemos enviado para importar más.'
         invalid_file: '"%name%" no se pudo subir — inténtalo de nuevo.'
         unsupported_type: '"%name%" no es un tipo de archivo compatible. Usa JPEG, PNG, WebP o PDF.'
         too_large: '"%name%" es demasiado grande (máx. 15 MB).'

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\Billing\ResellerConnect;
+use App\Service\Billing\StripeWebhookFailure;
 use Psr\Log\LoggerInterface;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\WebhookSignature;
@@ -17,7 +18,8 @@ use Symfony\Component\Routing\Attribute\Route;
  * and the related account's id; ResellerConnect re-reads the account
  * itself, so which v2.core.account* event it is doesn't matter. Charges in
  * those accounts (step 2) arrive at /stripe/connect-webhook instead.
- * Always 200 once the signature is valid — a failure to apply is logged.
+ * Once the signature is valid: 200, and a failure to apply is logged —
+ * except a passing one (StripeWebhookFailure): 500, so Stripe retries it.
  */
 class StripeConnectAccountEventsController
 {
@@ -55,6 +57,11 @@ class StripeConnectAccountEventsController
             $this->connect->syncAccount($related['id']);
         } catch (\Throwable $e) {
             $this->logger->error('Stripe Connect account event not applied', ['type' => $type, 'account' => $related['id'], 'exception' => $e]);
+
+            // Passing failure (Stripe or the database): 500, Stripe sends it again.
+            if (StripeWebhookFailure::isTransient($e)) {
+                return new Response('', Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
         }
 
         return new Response();

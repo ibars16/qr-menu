@@ -36,6 +36,7 @@ error:
     email_invalid: Inserisci un indirizzo email valido.
     email_taken: Questa email è già utilizzata da un altro account.
     password_too_short: La password deve contenere almeno 8 caratteri.
+    password_owner: "La password di un proprietario non si cambia da qui: ogni proprietario la cambia in «Il mio account» o con «Password dimenticata?»."
     invalid_role: Ruolo non valido.
     cannot_demote_last_owner: Non puoi togliere il ruolo di proprietario all'unico proprietario del ristorante.
     cannot_delete_last_owner: Non puoi eliminare l'unico proprietario del ristorante.

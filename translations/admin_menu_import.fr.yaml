@@ -16,6 +16,9 @@ upload:
         no_files: Choisissez au moins une photo ou un PDF.
         total_too_large: 'Les fichiers sont trop lourds au total. Envoyez-les en plusieurs fois (environ 60 Mo maximum par envoi).'
         too_many_files: 'Un envoi peut contenir %max% pages au maximum (photos et pages de PDF). Envoyez-les en plusieurs fois.'
+        daily_limit: 'Vous avez déjà importé le nombre maximum de cartes aujourd''hui. Vous pourrez importer à nouveau demain.'
+        daily_pages: 'Vous ne pouvez plus importer que %left% pages aujourd''hui. Envoyez moins de pages ou réessayez demain.'
+        daily_unconfirmed: 'Tant que vous n''avez pas confirmé votre e-mail, vous pouvez importer %max% fois par jour. Confirmez-le avec le lien que nous vous avons envoyé pour importer davantage.'
         invalid_file: '« %name% » n''a pas pu être téléversée — veuillez réessayer.'
         unsupported_type: '« %name% » n''est pas un type de fichier pris en charge. Utilisez JPEG, PNG, WebP ou PDF.'
         too_large: '« %name% » est trop volumineuse (max. 15 Mo).'

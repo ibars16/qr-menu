@@ -308,6 +308,7 @@
                 this._reset();
                 setFieldDisabled('user-email', false);
                 document.querySelectorAll('[id="user-email-hint"]').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('[id="user-password-field"]').forEach(el => el.style.display = '');
                 document.querySelectorAll('[id="user-password-req"]').forEach(el => el.style.display = '');
                 document.querySelectorAll('[id="user-password-hint"]').forEach(el => el.style.display = 'none');
                 this._open();
@@ -324,6 +325,7 @@
                 setFieldVal('user-role', role);
                 setFieldDisabled('user-email', false);
                 document.querySelectorAll('[id="user-email-hint"]').forEach(el => el.style.display = '');
+                document.querySelectorAll('[id="user-password-field"]').forEach(el => el.style.display = role === 'owner' ? 'none' : '');
                 document.querySelectorAll('[id="user-password-req"]').forEach(el => el.style.display = 'none');
                 document.querySelectorAll('[id="user-password-hint"]').forEach(el => el.style.display = '');
                 this._open();

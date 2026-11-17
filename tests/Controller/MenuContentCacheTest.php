@@ -138,4 +138,36 @@ final class MenuContentCacheTest extends WebTestCase
         self::assertStringContainsString('Nombre actualizado', $content);
         self::assertStringNotContainsString('Nombre original', $content);
     }
+
+    /**
+     * ?preview_theme= / ?preview_layout= skip the content cache only for the
+     * restaurant's own team (their live preview). Anyone else adding them
+     * still goes through the cache — the params alone can't force uncached
+     * loads on every request. Checked on the result-cache pool itself: the
+     * dishes query's entry (MenuController::menuCacheKeyPrefix() . '_active').
+     */
+    public function testPreviewParamsSkipTheCacheOnlyForTheRestaurantsTeam(): void
+    {
+        $slug = $this->restaurant->getSlug();
+        $key = sprintf('menu_v%d_r%d_es_active', $this->restaurant->getMenuContentVersion(), $this->restaurant->getId());
+
+        foreach (['preview_theme=maison', 'preview_layout=standard', 'preview_theme=maison&preview_layout=standard'] as $params) {
+            $pool = static::getContainer()->get('doctrine.result_cache_pool');
+            $pool->deleteItem($key);
+            $this->client->request('GET', "/r/{$slug}?lang=es&{$params}");
+            self::assertResponseIsSuccessful();
+            self::assertTrue(static::getContainer()->get('doctrine.result_cache_pool')->hasItem($key), "a visitor with ?{$params} goes through the cache");
+        }
+
+        $this->em->clear();
+        $this->client->loginUser($this->em->getRepository(User::class)->find($this->owner->getId()));
+        static::getContainer()->get('doctrine.result_cache_pool')->deleteItem($key);
+        $this->client->request('GET', "/r/{$slug}?lang=es&preview_theme=maison");
+        self::assertResponseIsSuccessful();
+        self::assertFalse(static::getContainer()->get('doctrine.result_cache_pool')->hasItem($key), "the owner's preview skips the cache");
+
+        // The owner's own plain load (no preview params) still uses it.
+        $this->client->request('GET', "/r/{$slug}?lang=es");
+        self::assertTrue(static::getContainer()->get('doctrine.result_cache_pool')->hasItem($key));
+    }
 }

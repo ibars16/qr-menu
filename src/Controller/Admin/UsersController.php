@@ -145,6 +145,13 @@ class UsersController extends AbstractController
         }
 
         $password = (string) ($data['password'] ?? '');
+        // Only a staff member's password is set from here. An owner's (one's
+        // own included) only through "Mi cuenta", which asks for the current
+        // one, or "¿Has olvidado tu contraseña?" — so neither a co-owner nor
+        // someone "Entrar como" the owner can take an owner's account over.
+        if ($password !== '' && in_array(User::ROLE_OWNER, $user->getRoles(), true)) {
+            return $this->json(['error' => $translator->trans('error.password_owner', domain: 'admin_users')], 400);
+        }
         if ($password !== '' && mb_strlen($password) < 8) {
             return $this->json(['error' => $translator->trans('error.password_too_short', domain: 'admin_users')], 400);
         }

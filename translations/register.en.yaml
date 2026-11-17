@@ -44,6 +44,7 @@ error:
     admin_locale: "Choose a language from the list."
     expired: "The page has expired. Please submit the form again."
     general: "The form could not be sent. Reload the page and try again."
+    too_many_signups: "Too many accounts have been created from this connection. Please try again later."
 unavailable:
     title: "Link unavailable"
     heading: "This link is not available"

@@ -16,6 +16,9 @@ upload:
         no_files: Escolha pelo menos uma foto ou um PDF.
         total_too_large: 'Os ficheiros pesam demasiado no total. Carregue-os em várias vezes (máximo de cerca de 60 MB por envio).'
         too_many_files: 'Cabem no máximo %max% páginas por envio (fotos e páginas de PDF). Carregue-as em várias vezes.'
+        daily_limit: 'Hoje já importou o número máximo de ementas. Poderá importar novamente amanhã.'
+        daily_pages: 'Hoje só pode importar mais %left% páginas. Carregue menos páginas ou tente novamente amanhã.'
+        daily_unconfirmed: 'Até confirmar o seu email pode importar %max% vezes por dia. Confirme-o com a ligação que lhe enviámos para importar mais.'
         invalid_file: '"%name%" não pôde ser carregada — tente novamente.'
         unsupported_type: '"%name%" não é um tipo de ficheiro suportado. Use JPEG, PNG, WebP ou PDF.'
         too_large: '"%name%" é demasiado grande (máx. 15 MB).'

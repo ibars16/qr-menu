@@ -49,16 +49,24 @@ class MenuController extends AbstractController
 
     /**
      * True whenever this request must never read or write the menu-content
-     * cache — the owner's own live layout/theme preview, the one path where
-     * "always exactly current" matters more than speed. Bypasses on the
-     * mere presence of either query param, not just when preview actually
-     * activates (the auth check for that happens later): preview traffic is
-     * rare and always admin-only, so erring toward "don't cache" here costs
-     * nothing.
+     * cache — the restaurant's own team on its live layout/theme preview
+     * (?preview_layout= / ?preview_theme=), the one path where "always
+     * exactly current" matters more than speed. Anyone else adding those
+     * params gets the ordinary cached menu: the params alone never bypass
+     * the cache (same team check as the preview itself, renderMenu()).
      */
-    private function shouldBypassMenuCache(Request $request): bool
+    private function shouldBypassMenuCache(Request $request, \App\Entity\Restaurant $restaurant): bool
     {
-        return $request->query->has('preview_layout') || $request->query->has('preview_theme');
+        return ($request->query->has('preview_layout') || $request->query->has('preview_theme'))
+            && $this->isOwnTeam($restaurant);
+    }
+
+    /** Logged in as one of this restaurant's own users (owner or staff, or someone "como" them). */
+    private function isOwnTeam(\App\Entity\Restaurant $restaurant): bool
+    {
+        $user = $this->getUser();
+
+        return $user instanceof \App\Entity\User && $user->getRestaurant()?->getId() === $restaurant->getId();
     }
 
     /**
@@ -83,12 +91,7 @@ class MenuController extends AbstractController
      */
     private function hiddenUntilEmailConfirmed(\App\Entity\Restaurant $restaurant): bool
     {
-        if (!$restaurant->isAwaitingEmailConfirmation()) {
-            return false;
-        }
-        $user = $this->getUser();
-
-        return !($user instanceof \App\Entity\User && $user->getRestaurant()?->getId() === $restaurant->getId());
+        return $restaurant->isAwaitingEmailConfirmation() && !$this->isOwnTeam($restaurant);
     }
 
     #[Route('/r/{slug}', name: 'menu_show')]
@@ -334,10 +337,10 @@ class MenuController extends AbstractController
         $queryLang = $request->query->get('lang');
         $locale    = $this->resolveLocale($restaurant, $request, $menuPreferencesResolver);
 
-        // null on the owner's own live preview request — every cache read/
+        // null on the team's own live preview request — every cache read/
         // write below is skipped entirely in that case (see
         // shouldBypassMenuCache()'s own docblock).
-        $cacheKeyPrefix = $this->shouldBypassMenuCache($request)
+        $cacheKeyPrefix = $this->shouldBypassMenuCache($request, $restaurant)
             ? null
             : $this->menuCacheKeyPrefix($restaurant, $locale);
 
@@ -604,8 +607,7 @@ class MenuController extends AbstractController
         $previewTheme  = $request->query->get('preview_theme');
 
         if ($previewLayout || $previewTheme) {
-            $user = $this->getUser();
-            if ($user && method_exists($user, 'getRestaurant') && $user->getRestaurant() === $restaurant) {
+            if ($this->isOwnTeam($restaurant)) {
                 if ($previewLayout && in_array($previewLayout, $validLayouts)) {
                     $layout    = $previewLayout;
                     $isPreview = true;

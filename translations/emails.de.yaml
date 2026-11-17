@@ -28,3 +28,10 @@ email_changed:
     subject: "Deine Anmelde-E-Mail wurde geändert"
     intro: "Ab jetzt meldet sich dieses Konto mit %new% an. Mit dieser E-Mail ist keine Anmeldung mehr möglich."
     not_you: "Wenn du das nicht warst, kontaktiere so schnell wie möglich den %app%-Support."
+smart_waiter_down:
+    subject: "Der Assistent Ihrer Karte antwortet gerade nicht"
+    hello: "Hallo,"
+    intro: "Der KI-Assistent der Karte von %restaurant% antwortet wegen eines technischen Problems gerade nicht. Wir sind bereits informiert."
+    meanwhile: "Bitten Sie in der Zwischenzeit Ihr Team, die Fragen der Gäste zu Gerichten, Zutaten, Allergenen oder Empfehlungen persönlich zu beantworten."
+    at_most: "Wir senden Ihnen höchstens einen solchen Hinweis pro Tag."
+    signature: "Ihr %app%-Team"

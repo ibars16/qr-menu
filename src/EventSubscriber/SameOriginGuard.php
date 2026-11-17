@@ -3,6 +3,7 @@
 namespace App\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -22,6 +23,13 @@ use Symfony\Component\HttpKernel\KernelEvents;
  *  - Neither header (very old browsers, curl, scripts): passes. A CSRF
  *    attack only comes through a browser, and those send them.
  *
+ * And the two plain links that change the session without a token —
+ * "Cerrar sesión" (GET /admin/logout) and "Entrar" (any GET with
+ * ?_switch_user=, switch_user's own parameter, "_exit" included) — run
+ * only when they come from this site, by the same rule: another site's
+ * link or redirect to them just lands on the panel (/admin), with the
+ * session left as it was. Ours look and work exactly as before.
+ *
  * Everything else is untouched: the public menu (/r/…), the Stripe
  * webhooks, /register and /alta (with their own form token).
  */
@@ -29,6 +37,8 @@ final class SameOriginGuard implements EventSubscriberInterface
 {
     private const PANEL_PATH = '#^/(admin|partners|platform)(/|$)#';
     private const UNSAFE_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
+    private const LOGOUT_PATH = '/admin/logout';
+    private const SWITCH_USER_PARAMETER = '_switch_user';
 
     public static function getSubscribedEvents(): array
     {
@@ -43,6 +53,14 @@ final class SameOriginGuard implements EventSubscriberInterface
         }
 
         $request = $event->getRequest();
+        if (self::changesTheSession($request)) {
+            if (self::isFromAnotherSite($request)) {
+                $event->setResponse(new RedirectResponse($request->getBasePath() . '/admin', Response::HTTP_SEE_OTHER));
+            }
+
+            return;
+        }
+
         if (!in_array($request->getMethod(), self::UNSAFE_METHODS, true) || !preg_match(self::PANEL_PATH, $request->getPathInfo())) {
             return;
         }
@@ -50,6 +68,14 @@ final class SameOriginGuard implements EventSubscriberInterface
         if (self::isFromAnotherSite($request)) {
             $event->setResponse(new Response('Forbidden', Response::HTTP_FORBIDDEN, ['Content-Type' => 'text/plain; charset=UTF-8']));
         }
+    }
+
+    /** "Cerrar sesión" or "Entrar como" / "Volver a mi panel" (switch_user). */
+    private static function changesTheSession(Request $request): bool
+    {
+        return $request->getPathInfo() === self::LOGOUT_PATH
+            || $request->query->has(self::SWITCH_USER_PARAMETER)
+            || $request->request->has(self::SWITCH_USER_PARAMETER);
     }
 
     private static function isFromAnotherSite(Request $request): bool

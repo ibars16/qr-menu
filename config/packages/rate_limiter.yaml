@@ -40,6 +40,33 @@ framework:
             interval: '10 minutes'
             cache_pool: cache.menu_warm_limiter
 
+        # Smart Waiter's daily caps (SmartWaiterController), on top of its
+        # 20 a minute: 500 messages a day per restaurant (a busy one uses
+        # about 150; at most ~0,50 $ of AI a day) and 40 a day per visitor
+        # — IP + browser, so a restaurant's shared wifi doesn't stop every
+        # table at once (the longest real conversation was 22). Past
+        # either: the chat answers with its "daily_limit" sentence.
+        smart_waiter_restaurant_day:
+            policy: fixed_window
+            limit: 500
+            interval: '1 day'
+        smart_waiter_visitor_day:
+            policy: fixed_window
+            limit: 40
+            interval: '1 day'
+
+        # Sign-ups (RegistrationController, ResellerSignupController,
+        # ResellerRegistrationController — one count for the three): 3 an
+        # hour and 10 a day per IP. Off in dev (app.abuse_limits).
+        signup_ip_hour:
+            policy: sliding_window
+            limit: 3
+            interval: '1 hour'
+        signup_ip_day:
+            policy: sliding_window
+            limit: 10
+            interval: '1 day'
+
 when@test:
     framework:
         rate_limiter:
@@ -51,3 +78,25 @@ when@test:
                 limit: 20
                 interval: '10 minutes'
                 cache_pool: app.test.menu_warm_limiter_pool
+            # The same limits, counted in memory for one test's kernel only
+            # (services.yaml, when@test), like menu_warm_ip above.
+            smart_waiter_restaurant_day:
+                policy: fixed_window
+                limit: 500
+                interval: '1 day'
+                cache_pool: app.test.limiter_pool
+            smart_waiter_visitor_day:
+                policy: fixed_window
+                limit: 40
+                interval: '1 day'
+                cache_pool: app.test.limiter_pool
+            signup_ip_hour:
+                policy: sliding_window
+                limit: 3
+                interval: '1 hour'
+                cache_pool: app.test.limiter_pool
+            signup_ip_day:
+                policy: sliding_window
+                limit: 10
+                interval: '1 day'
+                cache_pool: app.test.limiter_pool

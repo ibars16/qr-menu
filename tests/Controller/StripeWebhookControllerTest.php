@@ -179,4 +179,46 @@ final class StripeWebhookControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
     }
+
+    /** @return iterable<string, array{\Throwable}> */
+    public static function passingFailures(): iterable
+    {
+        yield 'Stripe unreachable' => [\Stripe\Exception\ApiConnectionException::factory('Could not connect to Stripe')];
+        yield "Stripe's 429" => [\Stripe\Exception\RateLimitException::factory('Too many requests', 429)];
+        yield "Stripe's 500" => [\Stripe\Exception\UnknownApiErrorException::factory('Internal error', 500)];
+        yield "Stripe's 503" => [\Stripe\Exception\UnknownApiErrorException::factory('Service unavailable', 503)];
+    }
+
+    /**
+     * A passing failure answers 500 so Stripe retries; the retry, once
+     * Stripe is back, applies the invoice exactly once (same end date).
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('passingFailures')]
+    public function testPassingFailureAnswers500AndTheRetryAppliesItOnce(\Throwable $failure): void
+    {
+        FakeStripeGateway::subscription('sub_1', $this->restaurant->getId(), 'price_test_monthly');
+        FakeStripeGateway::invoice('in_1', 'sub_1', strtotime('+40 days'), 3999, time());
+        $before = $this->reloaded()->getPaidUntil()?->format('Y-m-d');
+
+        FakeStripeGateway::$retrieveFailure = $failure;
+        $this->post('invoice.paid', 'in_1');
+        self::assertResponseStatusCodeSame(500);
+        self::assertSame($before, $this->reloaded()->getPaidUntil()?->format('Y-m-d'), 'nothing applied yet');
+
+        FakeStripeGateway::$retrieveFailure = null;
+        $this->post('invoice.paid', 'in_1');
+        $this->post('invoice.paid', 'in_1'); // Stripe may deliver it once more
+        self::assertResponseIsSuccessful();
+        self::assertSame(gmdate('Y-m-d', strtotime('+40 days')), $this->reloaded()->getPaidUntil()->format('Y-m-d'));
+    }
+
+    /** A failure that would happen again on every retry: logged, 200 (as before). */
+    public function testPermanentStripeErrorStillAnswers200(): void
+    {
+        FakeStripeGateway::$retrieveFailure = \Stripe\Exception\InvalidRequestException::factory('No such invoice', 404);
+
+        $this->post('invoice.paid', 'in_1');
+
+        self::assertResponseIsSuccessful();
+    }
 }

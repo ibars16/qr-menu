@@ -44,6 +44,7 @@ error:
     admin_locale: "Escolha um idioma da lista."
     expired: "A página expirou. Volte a enviar o formulário."
     general: "Não foi possível enviar o formulário. Recarregue a página e tente novamente."
+    too_many_signups: "Foram criadas demasiadas contas a partir desta ligação. Tente novamente mais tarde."
 unavailable:
     title: "Link indisponível"
     heading: "Este link não está disponível"

@@ -19,6 +19,7 @@
     close: 'common.close'|trans({}, 'menu_public', locale),
     disclaimer: 'chat.disclaimer'|trans({}, 'menu_public', locale),
     errorFallback: 'chat.error_fallback'|trans({}, 'menu_public', locale),
+    dailyLimit: 'chat.daily_limit'|trans({}, 'menu_public', locale),
 } %}
 
 <style>
@@ -202,10 +203,16 @@
                 locale: locale,
             }),
         })
-            .then(res => res.ok ? res.json() : Promise.reject(new Error('http_' + res.status)))
+            .then(res => res.ok ? res.json() : res.json().catch(() => ({})).then(data => {
+                // Today's limit reached (SmartWaiterController): its own short sentence.
+                if (data.error === 'daily_limit') return data;
+                return Promise.reject(new Error('http_' + res.status));
+            }))
             .then(data => {
                 if (data.conversationId) setConversationId(data.conversationId);
-                if (data.error || !data.reply) {
+                if (data.error === 'daily_limit') {
+                    appendMessage('assistant', SW_STRINGS.dailyLimit);
+                } else if (data.error || !data.reply) {
                     appendMessage('assistant', SW_STRINGS.errorFallback);
                 } else {
                     appendMessage('assistant', data.reply);
