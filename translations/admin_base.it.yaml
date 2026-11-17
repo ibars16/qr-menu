@@ -13,7 +13,7 @@ nav:
         restaurant: Ristorante
     item:
         menu: Menu
-        menus: Menù fissi
+        menus: Menu fissi
         categories: Categorie
         tags: Etichette
         theme: Personalizza il menu
@@ -46,9 +46,9 @@ bottom_nav:
 
 subscription_expired: "Il tuo abbonamento è scaduto il %date%"
 reseller_inactive: "Questo ristorante non è attivo"
-choose_plan: "Scegli un piano per attivare il tuo menù"
-expired_menu_hidden: "Nel frattempo i tuoi clienti non vedono il tuo menù. Rinnova per mostrarlo di nuovo."
-first_payment_menu_hint: "I tuoi clienti vedranno il tuo menù appena scegli un piano."
+choose_plan: "Scegli un piano per attivare il tuo menu"
+expired_menu_hidden: "Nel frattempo i tuoi clienti non vedono il tuo menu. Rinnova per mostrarlo di nuovo."
+first_payment_menu_hint: "I tuoi clienti vedranno il tuo menu appena scegli un piano."
 reseller_inactive_hint: "Contatta %name%."
 ai_blocked: "Il tuo abbonamento non è attivo. Scegli un piano per continuare a usare l'IA."
 
@@ -87,15 +87,15 @@ billing:
     charges_now: "L'addebito avviene oggi e il tuo piano inizia ora (la tua prova gratuita termina)."
 
 header:
-    view_menu_short: "Vedi menù"
+    view_menu_short: "Vedi menu"
     subscription_aria: "Abbonamento"
     logout_aria: "Esci"
 email_confirmation:
-    banner: "Conferma la tua email perché i tuoi clienti vedano il tuo menù. Abbiamo inviato un link a %email%."
+    banner: "Conferma la tua email perché i tuoi clienti vedano il tuo menu. Abbiamo inviato un link a %email%."
     resend: "Invia di nuovo"
     sent: "Abbiamo inviato un altro link a %email%."
     wait: "Aspetta un minuto prima di chiedere un altro link."
-    done: "Email confermata: il tuo menù ora è visibile ai tuoi clienti."
+    done: "Email confermata: il tuo menu ora è visibile ai tuoi clienti."
 # Errors returned as JSON and shown in a toast.
 json_error:
     forbidden: "Non hai il permesso di farlo."

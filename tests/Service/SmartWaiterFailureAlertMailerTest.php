@@ -122,7 +122,7 @@ final class SmartWaiterFailureAlertMailerTest extends TestCase
             'en' => "Your menu's assistant isn't answering right now",
             'de' => 'Der Assistent Ihrer Karte antwortet gerade nicht',
             'fr' => "L'assistant de votre carte ne répond pas pour le moment",
-            'it' => "L'assistente del tuo menù non risponde in questo momento",
+            'it' => "L'assistente del tuo menu non risponde in questo momento",
             'pt' => 'O assistente da sua ementa não está a responder neste momento',
         ];
         foreach ($expected as $locale => $subject) {

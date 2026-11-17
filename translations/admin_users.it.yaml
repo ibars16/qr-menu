@@ -1,6 +1,6 @@
 title: Utenti
 
-info_banner: I proprietari hanno accesso completo. Il personale può solo gestire il menu e visualizzare le statistiche.
+info_banner: "I proprietari hanno accesso completo. Il personale può solo gestire il menu, personalizzarlo e visualizzare le statistiche."
 
 action:
     add_user: Aggiungi utente
@@ -14,6 +14,7 @@ aria:
 
 field:
     email: Email
+    email_placeholder: "nome@ristorante.it"
     first_name: Nome
     last_name: Cognome
     password: Password
@@ -22,7 +23,7 @@ field:
 hint:
     email_edit: "Verrà inviato un link alla nuova email; il cambio avviene quando quella persona lo conferma."
     password_edit: Lascia vuoto per mantenere la password attuale.
-    role: 'Proprietario: accesso completo. Personale: solo menu, categorie, etichette, personalizzazione e statistiche.'
+    role: "I proprietari hanno accesso completo. Il personale può solo gestire il menu, personalizzarlo e visualizzare le statistiche."
 
 role:
     owner: Proprietario
@@ -30,7 +31,7 @@ role:
 
 label:
     pending_email: "In attesa di conferma: %email%"
-    you: Tu
+    you: "(tu)"
 
 error:
     email_invalid: Inserisci un indirizzo email valido.

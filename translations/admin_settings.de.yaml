@@ -49,7 +49,7 @@ action:
     save_section: Abschnitt speichern
 
 hint:
-    drop_image: "Tippe zum Auswählen oder ziehe ein Bild hierher."
+    drop_image: "Tippen Sie zum Auswählen oder ziehen Sie ein Bild hierher."
     logo_format: 'PNG oder JPG, max. 2 MB'
     hero_image_format: 'PNG, JPG oder WebP, max. %max_mb% MB (mind. %min%x%min% px, max. %max%x%max% px; empfohlen: %recommended% px Breite oder mehr)'
     hero_image: "Wird in jedem Design als Fotoband im Kopfbereich der öffentlichen Speisekarte angezeigt."
@@ -75,7 +75,7 @@ flash:
     hero_image_upload_error: Fehler beim Hochladen des Header-Fotos.
     hero_image_unsupported_type: Bildformat wird nicht unterstützt. Bitte JPEG, PNG oder WebP verwenden.
     hero_image_too_large: Das Header-Foto ist zu groß (max. 8 MB).
-    hero_image_dimensions_too_small: 'Das Bild ist zu klein. Lade eines mit mindestens %min% px Breite und Höhe hoch.'
+    hero_image_dimensions_too_small: 'Das Bild ist zu klein. Laden Sie eines mit mindestens %min% px Breite und Höhe hoch.'
     hero_image_dimensions_too_large: Das Bild ist zu groß (max. 5000x5000 px).
     hero_image_warning_dimensions: "Dieses Bild ist %width% × %height% px groß und könnte auf großen Bildschirmen unscharf wirken (mindestens %min% × %min% px; empfohlen: %recommended% px Breite oder mehr)."
     hero_image_warning_portrait: Es ist sehr hochformatig — der Hero-Bereich schneidet die Seiten ab.
@@ -99,10 +99,10 @@ hours:
     open_aria: "%day%, Zeitraum %n%, Öffnung"
     close_aria: "%day%, Zeitraum %n%, Schließung"
     copy_monday: "Montag auf alle Tage übertragen"
-    empty: "Du hast deine Öffnungszeiten noch nicht angegeben. Trage sie ein, damit deine Gäste wissen, wann du geöffnet hast."
+    empty: "Sie haben Ihre Öffnungszeiten noch nicht angegeben. Tragen Sie sie ein, damit Ihre Gäste wissen, wann Sie geöffnet haben."
     create: "Öffnungszeiten anlegen"
     clear: "Öffnungszeiten löschen"
-    clear_confirm: "Öffnungszeiten löschen? Die Speisekarte zeigt dann nicht mehr, wann du geöffnet hast."
+    clear_confirm: "Öffnungszeiten löschen? Die Speisekarte zeigt dann nicht mehr, wann Sie geöffnet haben."
 
 day:
     mon: "Montag"

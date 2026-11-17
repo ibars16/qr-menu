@@ -4,29 +4,29 @@ action:
     back_to_menu: Zurück zur Speisekarte
 
 upload:
-    intro: 'Lade Fotos oder das PDF deiner Speisekarte hoch — wir lesen sie für dich ein. Ein Foto pro Seite reicht.'
-    drop_text: 'Ziehe die Fotos oder das PDF deiner Speisekarte hierher oder tippe, um Dateien auszuwählen'
+    intro: 'Laden Sie Fotos oder das PDF Ihrer Speisekarte hoch — wir lesen sie für Sie ein. Ein Foto pro Seite reicht.'
+    drop_text: 'Ziehen Sie die Fotos oder das PDF Ihrer Speisekarte hierher oder tippen Sie, um Dateien auszuwählen'
     drop_hint: 'Bis zu 30 Seiten (Fotos oder PDF), jeweils höchstens 15 MB pro Datei.'
     submit: Speisekarte jetzt einlesen
-    uploading: Deine Speisekarte wird hochgeladen…
-    upload_failed: Hochladen fehlgeschlagen — bitte prüfe deine Verbindung und versuche es erneut.
+    uploading: Ihre Speisekarte wird hochgeladen…
+    upload_failed: Hochladen fehlgeschlagen — bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.
     retry: Erneut versuchen
     remove_file: '%name% entfernen'
     error:
-        no_files: Wähle mindestens ein Foto oder ein PDF aus.
-        total_too_large: 'Die Dateien sind insgesamt zu groß. Lade sie in mehreren Durchgängen hoch (höchstens etwa 60 MB pro Upload).'
-        too_many_files: 'Pro Upload passen höchstens %max% Seiten (Fotos und PDF-Seiten). Lade sie in mehreren Durchgängen hoch.'
-        daily_limit: 'Du hast heute bereits die maximale Anzahl an Karten importiert. Morgen kannst du wieder importieren.'
-        daily_pages: 'Du kannst heute nur noch %left% Seiten importieren. Lade weniger Seiten hoch oder versuche es morgen erneut.'
-        daily_unconfirmed: 'Bis du deine E-Mail bestätigst, kannst du %max%-mal am Tag importieren. Bestätige sie über den Link, den wir dir geschickt haben, um mehr zu importieren.'
-        invalid_file: '„%name%" konnte nicht hochgeladen werden — bitte versuche es erneut.'
-        unsupported_type: '„%name%" ist kein unterstützter Dateityp. Bitte verwende JPEG, PNG, WebP oder PDF.'
-        too_large: '„%name%" ist zu groß (max. 15 MB).'
-        storage_failed: '„%name%" konnte nicht gespeichert werden — bitte versuche es erneut.'
-        pdf_too_many_pages: '„%name%" hat %pages% Seiten, in diesen Upload passen höchstens %max%. Lade es in mehreren Durchgängen hoch oder entferne Seiten.'
-        pdf_password: '„%name%" ist passwortgeschützt. Entferne das Passwort oder lade Fotos der Speisekarte hoch.'
-        pdf_unreadable: '„%name%" konnte nicht geöffnet werden. Prüfe, ob es ein gültiges PDF ist, oder lade Fotos der Speisekarte hoch.'
-        pdf_no_pages: '„%name%" hat keine Seiten.'
+        no_files: Wählen Sie mindestens ein Foto oder ein PDF aus.
+        total_too_large: 'Die Dateien sind insgesamt zu groß. Laden Sie sie in mehreren Durchgängen hoch (höchstens etwa 60 MB pro Upload).'
+        too_many_files: 'Pro Upload passen höchstens %max% Seiten (Fotos und PDF-Seiten). Laden Sie sie in mehreren Durchgängen hoch.'
+        daily_limit: 'Sie haben heute bereits die maximale Anzahl an Karten importiert. Morgen können Sie wieder importieren.'
+        daily_pages: 'Sie können heute nur noch %left% Seiten importieren. Laden Sie weniger Seiten hoch oder versuchen Sie es morgen erneut.'
+        daily_unconfirmed: 'Bis Sie Ihre E-Mail bestätigen, können Sie %max%-mal am Tag importieren. Bestätigen Sie sie über den Link, den wir Ihnen geschickt haben, um mehr zu importieren.'
+        invalid_file: '„%name%“ konnte nicht hochgeladen werden — bitte versuchen Sie es erneut.'
+        unsupported_type: '„%name%“ ist kein unterstützter Dateityp. Bitte verwenden Sie JPEG, PNG, WebP oder PDF.'
+        too_large: '„%name%“ ist zu groß (max. 15 MB).'
+        storage_failed: '„%name%“ konnte nicht gespeichert werden — bitte versuchen Sie es erneut.'
+        pdf_too_many_pages: '„%name%“ hat %pages% Seiten, in diesen Upload passen höchstens %max%. Laden Sie es in mehreren Durchgängen hoch oder entfernen Sie Seiten.'
+        pdf_password: '„%name%“ ist passwortgeschützt. Entfernen Sie das Passwort oder laden Sie Fotos der Speisekarte hoch.'
+        pdf_unreadable: '„%name%“ konnte nicht geöffnet werden. Prüfen Sie, ob es ein gültiges PDF ist, oder laden Sie Fotos der Speisekarte hoch.'
+        pdf_no_pages: '„%name%“ hat keine Seiten.'
 
 status:
     reading:
@@ -35,11 +35,11 @@ status:
         sub_slow_page: Diese Seite hat viele Details — wir lesen noch.
         sub_slow_global: Das dauert etwas länger als gewöhnlich — größere Speisekarten können ein paar Minuten dauern.
     organizing:
-        title: Deine Gerichte werden organisiert
+        title: Ihre Gerichte werden organisiert
         sub: Kategorien werden gruppiert und Zutaten zugeordnet.
     done_title: Fertig
     reconnecting: Verbindung wird wiederhergestellt…
-    trust: 'Du kannst diesen Tab bedenkenlos verlassen — wir arbeiten im Hintergrund weiter.'
+    trust: 'Sie können diesen Tab bedenkenlos verlassen — wir arbeiten im Hintergrund weiter.'
     page_label: 'Seite %position%'
     page_status:
         pending: Wartend
@@ -48,24 +48,24 @@ status:
         failed: Fehlgeschlagen
 
 complete:
-    title_published: 'Deine Karte ist online'
-    subtitle_published: 'Wir haben deine Gerichte hinzugefügt und deine Gäste können sie schon sehen.'
-    title_published_off: 'Deine Karte ist fertig'
-    subtitle_published_off: 'Wir haben deine Gerichte hinzugefügt. Deine Gäste sehen sie, sobald der Tarif aktiv ist.'
-    review_title: 'Prüfe deine Karte'
-    review_text: 'Schau einmal drüber, ob alles stimmt: Namen, Preise, Beschreibungen und Allergene. Jedes Gericht kannst du unter Speisekarte ändern.'
-    review_hidden_singular: '%count% Gericht ohne Preis bleibt verborgen, bis du ihm einen gibst.'
-    review_hidden_plural: '%count% Gerichte ohne Preis bleiben verborgen, bis du ihnen einen gibst.'
+    title_published: 'Ihre Karte ist online'
+    subtitle_published: 'Wir haben Ihre Gerichte hinzugefügt und Ihre Gäste können sie schon sehen.'
+    title_published_off: 'Ihre Karte ist fertig'
+    subtitle_published_off: 'Wir haben Ihre Gerichte hinzugefügt. Ihre Gäste sehen sie, sobald der Tarif aktiv ist.'
+    review_title: 'Prüfen Sie Ihre Karte'
+    review_text: 'Schauen Sie einmal drüber, ob alles stimmt: Namen, Preise, Beschreibungen und Allergene. Jedes Gericht können Sie unter Speisekarte ändern.'
+    review_hidden_singular: '%count% Gericht ohne Preis bleibt verborgen, bis Sie ihm einen geben.'
+    review_hidden_plural: '%count% Gerichte ohne Preis bleiben verborgen, bis Sie ihnen einen geben.'
     duplicates_singular: '1 doppeltes Gericht wurde ausgeblendet angelegt: %names%.'
     duplicates_plural: '%count% doppelte Gerichte wurden ausgeblendet angelegt: %names%.'
     duplicates_more: '… und %count% weitere'
-    title_success: Deine Speisekarte ist bereit zur Überprüfung
-    subtitle_success: Wir haben deine Gerichte zur Speisekarte hinzugefügt — für Kunden unsichtbar, bis du sie überprüfst.
-    subtitle_partial_failure: ' Wir konnten %failed% von %total% Seiten nicht lesen — du kannst diese separat erneut hochladen.'
+    title_success: Ihre Speisekarte ist bereit zur Überprüfung
+    subtitle_success: Wir haben Ihre Gerichte zur Speisekarte hinzugefügt — für Kunden unsichtbar, bis Sie sie überprüfen.
+    subtitle_partial_failure: ' Wir konnten %failed% von %total% Seiten nicht lesen — Sie können diese separat erneut hochladen.'
     stat_categories: Kategorien
     stat_products: Gerichte
     button_continue: Speisekarte ansehen
-    title_failed: Wir konnten deine Speisekarte nicht lesen
-    subtitle_failed: Keine deiner Seiten konnte verarbeitet werden. Bitte prüfe, ob es sich um klare, gut beleuchtete Seiten einer Speisekarte handelt, und versuche es erneut.
-    subtitle_failed_temporary: 'Der Dienst zum Lesen von Speisekarten ist gerade überlastet. Deine Speisekarte ist in Ordnung: Versuche es in ein paar Minuten erneut.'
+    title_failed: Wir konnten Ihre Speisekarte nicht lesen
+    subtitle_failed: Keine Ihrer Seiten konnte verarbeitet werden. Bitte prüfen Sie, ob es sich um klare, gut beleuchtete Seiten einer Speisekarte handelt, und versuchen Sie es erneut.
+    subtitle_failed_temporary: 'Der Dienst zum Lesen von Speisekarten ist gerade überlastet. Ihre Speisekarte ist in Ordnung: Versuchen Sie es in ein paar Minuten erneut.'
     button_retry: Erneut versuchen

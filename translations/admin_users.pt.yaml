@@ -1,6 +1,6 @@
 title: Utilizadores
 
-info_banner: Os proprietários têm acesso total. A equipa só pode gerir a ementa e ver as estatísticas.
+info_banner: "Os proprietários têm acesso total. A equipa só pode gerir a ementa, personalizá-la e ver as estatísticas."
 
 action:
     add_user: Adicionar utilizador
@@ -14,6 +14,7 @@ aria:
 
 field:
     email: Email
+    email_placeholder: "nome@restaurante.pt"
     first_name: Nome
     last_name: Apelido
     password: Palavra-passe
@@ -22,7 +23,7 @@ field:
 hint:
     email_edit: "Será enviada uma ligação para o novo email; a alteração é feita quando essa pessoa a confirmar."
     password_edit: Deixe em branco para manter a palavra-passe atual.
-    role: 'Proprietário: acesso total. Equipa: apenas ementa, categorias, etiquetas, personalização e estatísticas.'
+    role: "Os proprietários têm acesso total. A equipa só pode gerir a ementa, personalizá-la e ver as estatísticas."
 
 role:
     owner: Proprietário
@@ -30,7 +31,7 @@ role:
 
 label:
     pending_email: "A aguardar confirmação: %email%"
-    you: Eu
+    you: "(eu)"
 
 error:
     email_invalid: Introduza um email válido.

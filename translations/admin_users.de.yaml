@@ -1,6 +1,6 @@
 title: Benutzer
 
-info_banner: Inhaber haben vollen Zugriff. Personal kann nur die Speisekarte verwalten und Statistiken einsehen.
+info_banner: "Inhaber haben vollen Zugriff. Personal kann nur die Speisekarte verwalten, sie anpassen und Statistiken einsehen."
 
 action:
     add_user: Benutzer hinzufügen
@@ -14,6 +14,7 @@ aria:
 
 field:
     email: E-Mail
+    email_placeholder: "name@restaurant.de"
     first_name: Vorname
     last_name: Nachname
     password: Passwort
@@ -22,7 +23,7 @@ field:
 hint:
     email_edit: "Ein Link wird an die neue E-Mail gesendet; die Änderung erfolgt, wenn diese Person ihn bestätigt."
     password_edit: Leer lassen, um das aktuelle Passwort beizubehalten.
-    role: 'Inhaber: voller Zugriff. Personal: nur Speisekarte, Kategorien, Tags, Anpassung und Statistiken.'
+    role: "Inhaber haben vollen Zugriff. Personal kann nur die Speisekarte verwalten, sie anpassen und Statistiken einsehen."
 
 role:
     owner: Inhaber
@@ -30,17 +31,17 @@ role:
 
 label:
     pending_email: "Wartet auf Bestätigung: %email%"
-    you: Du
+    you: "(Sie)"
 
 error:
-    email_invalid: Gib eine gültige E-Mail-Adresse ein.
+    email_invalid: Geben Sie eine gültige E-Mail-Adresse ein.
     email_taken: Diese E-Mail wird bereits von einem anderen Konto verwendet.
     password_too_short: Das Passwort muss mindestens 8 Zeichen lang sein.
     password_owner: "Das Passwort eines Inhabers lässt sich hier nicht ändern: Jeder Inhaber ändert es unter „Mein Konto“ oder über „Passwort vergessen?“."
     invalid_role: Ungültige Rolle.
-    cannot_demote_last_owner: Du kannst dem einzigen Inhaber des Restaurants die Inhaber-Rolle nicht entziehen.
-    cannot_delete_last_owner: Du kannst den einzigen Inhaber des Restaurants nicht löschen.
-    cannot_delete_self: Du kannst dein eigenes Konto nicht löschen.
+    cannot_demote_last_owner: Sie können dem einzigen Inhaber des Restaurants die Inhaber-Rolle nicht entziehen.
+    cannot_delete_last_owner: Sie können den einzigen Inhaber des Restaurants nicht löschen.
+    cannot_delete_self: Sie können Ihr eigenes Konto nicht löschen.
 
 toast:
     email_change_sent: "Link an %email% gesendet. Die E-Mail ändert sich nach der Bestätigung."

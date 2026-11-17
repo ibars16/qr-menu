@@ -23,11 +23,11 @@ email_change:
     intro: "Pediu para entrar no %app% com %new% em vez de %old%. Confirme para que a alteração seja feita."
     button: "Confirmar o novo email"
     expiry: "A ligação expira em 7 dias. Até confirmar, continua a entrar com o seu email atual."
-    ignore: "Se não foi você que pediu, ignore este email: nada muda."
+    ignore: "Se não fez este pedido, ignore este email: nada muda."
 email_changed:
     subject: "O seu email de acesso foi alterado"
     intro: "A partir de agora esta conta entra com %new%. Este email já não serve para entrar."
-    not_you: "Se não foi você, contacte o suporte do %app% o mais depressa possível."
+    not_you: "Se não fez esta alteração, contacte o suporte do %app% o mais depressa possível."
 smart_waiter_down:
     subject: "O assistente da sua ementa não está a responder neste momento"
     hello: "Olá,"

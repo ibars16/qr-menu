@@ -25,8 +25,8 @@ common:
     help: Hilfe
 
 empty:
-    title: Deine Speisekarte ist leer
-    subtitle: 'Erstelle deine erste Kategorie (Vorspeisen, Pizzen, Desserts…) und füge dann deine Gerichte hinzu. Oder importiere die gesamte Speisekarte per Foto oder PDF mit KI.'
+    title: Ihre Speisekarte ist leer
+    subtitle: 'Erstellen Sie Ihre erste Kategorie (Vorspeisen, Pizzen, Desserts…) und fügen Sie dann Ihre Gerichte hinzu. Oder importieren Sie die gesamte Speisekarte per Foto oder PDF mit KI.'
     import_ai: Speisekarte mit KI importieren
     create_first_category: Erste Kategorie erstellen
 
@@ -36,14 +36,14 @@ field:
     nutrition_toggle: Nährwertangaben hinzufügen
     nutrition_collapse: Nährwertangaben einklappen
     nutrition_visible_label: In der öffentlichen Speisekarte anzeigen
-    nutrition_visible_hint: Wenn du dies deaktivierst, werden diese Angaben nicht in deiner öffentlichen Speisekarte angezeigt, bleiben aber hier gespeichert.
+    nutrition_visible_hint: Wenn Sie dies deaktivieren, werden diese Angaben nicht in Ihrer öffentlichen Speisekarte angezeigt, bleiben aber hier gespeichert.
     fat: Fett
     protein: Eiweiß
     carbohydrates: Kohlenhydrate
     sugars: Zucker
     category: Kategorie
     description: Beschreibung
-    description_placeholder: 'Beschreibe kurz das Gericht, die Hauptzutaten und die Zubereitungsart…'
+    description_placeholder: 'Beschreiben Sie kurz das Gericht, die Hauptzutaten und die Zubereitungsart…'
     ingredients: Zutaten
     photo: 'Foto oder Video des Gerichts'
     price: 'Preis (%currency%)'
@@ -77,14 +77,14 @@ ingredients:
     source_restaurant: Restaurant
 
 allergens:
-    computed_title: Aus deinen Zutaten
-    computed_hint: Wird automatisch aus den untenstehenden Zutaten berechnet — bearbeite die Allergene einer Zutat oder füge bei Bedarf eine gerichtsspezifische Ausnahme hinzu.
+    computed_title: Aus Ihren Zutaten
+    computed_hint: Wird automatisch aus den untenstehenden Zutaten berechnet — bearbeiten Sie die Allergene einer Zutat oder fügen Sie bei Bedarf eine gerichtsspezifische Ausnahme hinzu.
     computed_empty: In den aktuellen Zutaten wurden keine Allergene erkannt.
-    computed_refresh_error: Konnte nicht aktualisiert werden — speichere das Gericht, um es neu zu berechnen.
-    your_ingredients_title: Allergene deiner Zutaten
-    scope_all_dishes: Alle deine Gerichte
+    computed_refresh_error: Konnte nicht aktualisiert werden — speichern Sie das Gericht, um es neu zu berechnen.
+    your_ingredients_title: Allergene Ihrer Zutaten
+    scope_all_dishes: Alle Ihre Gerichte
     your_ingredients_hint: Wird mit jedem anderen Gericht geteilt, das dieselbe Zutat verwendet.
-    new_ingredient_hint: Speichere das Gericht zuerst, um Allergene für neu hinzugefügte Zutaten zu markieren.
+    new_ingredient_hint: Speichern Sie das Gericht zuerst, um Allergene für neu hinzugefügte Zutaten zu markieren.
     overrides_title: Gerichtsspezifische Ausnahmen
     add_exception: Ausnahme hinzufügen
     select_allergen: Allergen auswählen…
@@ -95,29 +95,29 @@ allergens:
     remove: Entfernen
     advanced_title: Besondere Allergenfälle
     scope_this_dish: Nur dieses Gericht
-    advanced_hint: Nutze diesen Bereich nur, wenn die automatisch erkannten Allergene nicht ausreichen — zum Beispiel bei Kreuzkontamination oder wenn dieses Gericht eine zertifizierte allergenfreie Alternativzutat verwendet.
-    help_computed: Diese Allergene werden automatisch anhand der Zutaten dieses Gerichts erkannt. In den meisten Fällen musst du nichts ändern.
-    help_presence_legend: 'Enthält: das Gericht enthält dieses Allergen. Kann Spuren enthalten: Risiko einer Kreuzkontamination — zum Beispiel durch eine gemeinsam genutzte Fritteuse, einen Ofen oder einen Zubereitungsbereich. Bestätigt frei von: nur wenn du wirklich sicher bist (z. B. durch eine zertifizierte Zutat) — das ist eine Ausnahme, nicht die Standardwahl.'
+    advanced_hint: Nutzen Sie diesen Bereich nur, wenn die automatisch erkannten Allergene nicht ausreichen — zum Beispiel bei Kreuzkontamination oder wenn dieses Gericht eine zertifizierte allergenfreie Alternativzutat verwendet.
+    help_computed: Diese Allergene werden automatisch anhand der Zutaten dieses Gerichts erkannt. In den meisten Fällen müssen Sie nichts ändern.
+    help_presence_legend: 'Enthält: das Gericht enthält dieses Allergen. Kann Spuren enthalten: Risiko einer Kreuzkontamination — zum Beispiel durch eine gemeinsam genutzte Fritteuse, einen Ofen oder einen Zubereitungsbereich. Bestätigt frei von: nur wenn Sie wirklich sicher sind (z. B. durch eine zertifizierte Zutat) — das ist eine Ausnahme, nicht die Standardwahl.'
 
 js:
     category_created: 'Kategorie erstellt ✓'
     category_deleted: Kategorie gelöscht
     category_updated: 'Kategorie aktualisiert ✓'
-    confirm_delete_category: 'Kategorie „%name%" löschen?'
-    confirm_delete_category_with_products: '„%name%" und die dazugehörigen %count% Gerichte löschen? Dies kann nicht rückgängig gemacht werden.'
-    confirm_delete_product: '„%name%" löschen? Dies kann nicht rückgängig gemacht werden.'
+    confirm_delete_category: 'Kategorie „%name%“ löschen?'
+    confirm_delete_category_with_products: '„%name%“ und die dazugehörigen %count% Gerichte löschen? Dies kann nicht rückgängig gemacht werden.'
+    confirm_delete_product: '„%name%“ löschen? Dies kann nicht rückgängig gemacht werden.'
     default_product_name: dieses Gericht
     error_loading_product: Fehler beim Laden des Gerichts
-    fill_required_fields: Bitte fülle die Pflichtfelder aus
+    fill_required_fields: Bitte füllen Sie die Pflichtfelder aus
     new_ingredient_label: '· Neu erstellen'
     product_created: 'Gericht erstellt ✓'
     product_deleted: Gericht gelöscht
     product_saved: 'Gericht gespeichert ✓'
     allergen_override_added: 'Ausnahme hinzugefügt'
-    allergen_note_required: 'Bitte füge eine Notiz hinzu, warum dies als "frei von" markiert ist'
+    allergen_note_required: 'Bitte fügen Sie eine Notiz hinzu, warum dies als "frei von" markiert ist'
     ingredient_allergens_saved: 'Allergene gespeichert ✓'
     confirm_delete_all_products_step1: 'Alle Gerichte (%count%) der Speisekarte löschen? Die Kategorien bleiben erhalten.'
-    confirm_delete_all_products_step2: 'Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden. Möchtest du wirklich alle löschen?'
+    confirm_delete_all_products_step2: 'Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden. Möchten Sie wirklich alle löschen?'
     all_products_deleted: 'Alle Gerichte wurden gelöscht'
 
 modal:
@@ -130,9 +130,9 @@ modal:
     close_aria: Schließen
 
 language_notice:
-    text: 'Diese Speisekarte scheint auf %language% zu sein, deine Speisekarte ist auf %main%.'
-    text_singular: 'Diese Speisekarte scheint auf %language% zu sein, deine Speisekarte ist auf %main%: %count% Gericht.'
-    text_plural: 'Diese Speisekarte scheint auf %language% zu sein, deine Speisekarte ist auf %main%: %count% Gerichte.'
+    text: 'Diese Speisekarte scheint auf %language% zu sein, Ihre Speisekarte ist auf %main%.'
+    text_singular: 'Diese Speisekarte scheint auf %language% zu sein, Ihre Speisekarte ist auf %main%: %count% Gericht.'
+    text_plural: 'Diese Speisekarte scheint auf %language% zu sein, Ihre Speisekarte ist auf %main%: %count% Gerichte.'
     translate: 'Auf %main% übersetzen'
     continue: 'Übersetzung fortsetzen'
     show_dishes_singular: 'Gericht zeigen'
@@ -141,20 +141,20 @@ language_notice:
     toggle_aria: 'Optionen des Hinweises ein- oder ausblenden'
     working: 'Wird auf %language% übersetzt … noch %count%.'
     half_done: 'Halb übersetzt: noch %count%.'
-    error: 'Die Übersetzung hat gerade nicht geklappt. Versuche es in ein paar Minuten erneut.'
+    error: 'Die Übersetzung hat gerade nicht geklappt. Versuchen Sie es in ein paar Minuten erneut.'
     done: 'Die importierten Gerichte und Kategorien wurden auf %language% übersetzt.'
 
 notice:
-    missing_photos_singular: '%count% Gericht ohne Foto in deiner Speisekarte'
-    missing_photos_plural: '%count% Gerichte ohne Foto in deiner Speisekarte'
-    not_on_menu_singular: '%count% Gericht wird in deiner Speisekarte nicht angezeigt'
-    not_on_menu_plural: '%count% Gerichte werden in deiner Speisekarte nicht angezeigt'
+    missing_photos_singular: '%count% Gericht ohne Foto in Ihrer Speisekarte'
+    missing_photos_plural: '%count% Gerichte ohne Foto in Ihrer Speisekarte'
+    not_on_menu_singular: '%count% Gericht wird in Ihrer Speisekarte nicht angezeigt'
+    not_on_menu_plural: '%count% Gerichte werden in Ihrer Speisekarte nicht angezeigt'
     unmark: 'Markierung entfernen'
 
 product:
     add_to_category: 'Gericht zu %category% hinzufügen'
     duplicate_badge: 'Doppelt'
-    duplicate_title: 'In dieser Kategorie gibt es schon ein Gericht mit diesem Namen. Wenn du es nicht willst, lösche es; sonst mach es sichtbar.'
+    duplicate_title: 'In dieser Kategorie gibt es schon ein Gericht mit diesem Namen. Wenn Sie es nicht wollen, löschen Sie es; sonst machen Sie es sichtbar.'
     hidden: Ausgeblendet
     hidden_reason:
         category_hidden: die Kategorie ist ausgeblendet
@@ -205,7 +205,7 @@ smart_waiter:
 
 upload:
     aria: 'Foto oder Video des Gerichts hochladen'
-    hint: 'Tippe oder ziehe ein Foto oder ein kurzes Video hierher'
+    hint: 'Tippen Sie oder ziehen Sie ein Foto oder ein kurzes Video hierher'
     limits_photo: 'Foto: JPEG, PNG oder WebP (max. 8 MB)'
     limits_video: 'Video: MP4 (max. 60 MB). Nur die ersten 6 Sekunden werden verwendet.'
     small_photo: 'Dieses Foto ist klein und kann auf der Speisekarte unscharf wirken.'
@@ -219,34 +219,34 @@ clip:
     processing: 'Video wird hochgeladen und verarbeitet…'
     trimmed: 'Gericht gespeichert. Das Video wurde auf die ersten 6 Sekunden gekürzt.'
     frame_badge: 'Zum Ausrichten ziehen'
-    frame_hint: 'Ziehe das Video, um den sichtbaren Ausschnitt zu wählen. Tipp: Im Querformat aufnehmen, damit mehr davon zu sehen ist.'
+    frame_hint: 'Ziehen Sie das Video, um den sichtbaren Ausschnitt zu wählen. Tipp: Im Querformat aufnehmen, damit mehr davon zu sehen ist.'
 
 error:
     category_name_required: Der Name ist erforderlich.
     product_not_found: Gericht nicht gefunden.
     translation_name_required: Der Name ist erforderlich.
     category_not_found: Kategorie nicht gefunden.
-    allergen_free_from_note_required: Bitte füge eine kurze Notiz hinzu, warum dieses Allergen als "frei von" markiert ist.
+    allergen_free_from_note_required: Bitte fügen Sie eine kurze Notiz hinzu, warum dieses Allergen als "frei von" markiert ist.
     image_invalid: Kein gültiges Bild ausgewählt.
     image_unsupported_type: Bildformat wird nicht unterstützt. Bitte JPEG, PNG oder WebP verwenden.
     image_too_large: Das Bild ist zu groß (max. 8 MB).
     image_dimensions_too_small: Das Bild ist zu klein (mind. 400x400 px).
     image_dimensions_too_large: Das Bild ist zu groß (max. 5000x5000 px).
-    image_upload_failed: Das Bild konnte nicht hochgeladen werden. Bitte versuche es erneut.
+    image_upload_failed: Das Bild konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.
     clip_invalid: Es wurde kein gültiges Video ausgewählt.
-    clip_unsupported_type: Nicht unterstütztes Videoformat. Verwende MP4.
+    clip_unsupported_type: Nicht unterstütztes Videoformat. Verwenden Sie MP4.
     clip_too_large: 'Das Video ist zu groß (max. 60 MB).'
     clip_duration_too_long: 'Das Video ist zu lang (max. 60 s).'
-    clip_upload_failed: Das Video konnte nicht hochgeladen werden. Bitte versuche es erneut.
-    unexpected: Etwas ist schiefgelaufen. Bitte versuche es erneut.
-    reorder_stale: 'Die Speisekarte hat sich beim Sortieren geändert. Lade die Seite neu und versuche es noch einmal.'
+    clip_upload_failed: Das Video konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.
+    unexpected: Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.
+    reorder_stale: 'Die Speisekarte hat sich beim Sortieren geändert. Laden Sie die Seite neu und versuchen Sie es noch einmal.'
     nutrition_value_invalid: 'Der Wert muss eine Zahl zwischen 0 und 9999.9 mit höchstens einer Dezimalstelle sein.'
     price_variants_invalid: 'Bezeichnung und Preis für jede Variante ausfüllen (mindestens 2 Preise).'
 
 sort:
     open: 'Sortieren'
     title: 'Speisekarte sortieren'
-    hint: 'Ziehe eine Kategorie oder ein Gericht, um die Reihenfolge zu ändern (am Handy gedrückt halten und ziehen). Gespeichert wird beim Loslassen.'
+    hint: 'Ziehen Sie eine Kategorie oder ein Gericht, um die Reihenfolge zu ändern (am Handy gedrückt halten und ziehen). Gespeichert wird beim Loslassen.'
     done: 'Fertig'
     saved: 'Reihenfolge gespeichert'
     drag_category: 'Ziehen, um die Kategorie %name% zu verschieben'
@@ -271,10 +271,10 @@ ai_photo:
     revert: 'Zurück zum Original'
     reverted: 'Das Originalfoto ist wieder da.'
     saved: 'KI-Foto erstellt und beim Gericht gespeichert.'
-    trial_remaining: 'Du hast noch %count% von %limit% kostenlosen KI-Fotos.'
-    trial_used: 'Du hast deine %limit% kostenlosen KI-Fotos verbraucht. Wähle einen Tarif, um mehr zu erstellen.'
-    trial_used_card: 'Du hast deine %limit% kostenlosen KI-Fotos verbraucht. Du bekommst mehr Fotos, sobald dein Tarif beginnt.'
-    card_pending: 'Du bekommst mehr Fotos, sobald dein Tarif beginnt.'
+    trial_remaining: 'Sie haben noch %count% von %limit% kostenlosen KI-Fotos.'
+    trial_used: 'Sie haben Ihre %limit% kostenlosen KI-Fotos verbraucht. Wählen Sie einen Tarif, um mehr zu erstellen.'
+    trial_used_card: 'Sie haben Ihre %limit% kostenlosen KI-Fotos verbraucht. Sie bekommen mehr Fotos, sobald Ihr Tarif beginnt.'
+    card_pending: 'Sie bekommen mehr Fotos, sobald Ihr Tarif beginnt.'
     # Month names for error.monthly_limit's %month% (no intl extension).
     months:
         1: 'Januar'
@@ -291,18 +291,18 @@ ai_photo:
         12: 'Dezember'
     choose_plan: 'Tarif wählen'
     error:
-        name_required: 'Gib zuerst den Namen des Gerichts ein.'
-        trial_limit: 'Wähle einen Tarif, um weitere KI-Fotos zu erstellen.'
-        card_pending: 'Du hast deine %limit% kostenlosen KI-Fotos verbraucht. Du bekommst mehr Fotos, sobald dein Tarif beginnt.'
-        monthly_limit: 'Du hast das KI-Foto-Limit für diesen Monat erreicht. Es erneuert sich am 1. %month%.'
-        rate_limited: 'Du hast viele Fotos hintereinander erstellt. Warte kurz und versuche es erneut.'
-        refused: 'Für dieses Gericht konnten wir kein Foto erstellen. Ändere die Beschreibung oder lade ein eigenes hoch.'
-        timeout: 'Das dauert zu lange, bitte versuche es erneut.'
-        unavailable: 'Das Foto kann gerade nicht erstellt werden, versuche es in ein paar Minuten erneut.'
-        not_configured: 'Das Foto kann gerade nicht erstellt werden, versuche es in ein paar Minuten erneut.'
-        draft_expired: 'Das KI-Foto ist abgelaufen. Erstelle es bitte neu.'
+        name_required: 'Geben Sie zuerst den Namen des Gerichts ein.'
+        trial_limit: 'Wählen Sie einen Tarif, um weitere KI-Fotos zu erstellen.'
+        card_pending: 'Sie haben Ihre %limit% kostenlosen KI-Fotos verbraucht. Sie bekommen mehr Fotos, sobald Ihr Tarif beginnt.'
+        monthly_limit: 'Sie haben das KI-Foto-Limit für diesen Monat erreicht. Es erneuert sich am 1. %month%.'
+        rate_limited: 'Sie haben viele Fotos hintereinander erstellt. Warten Sie kurz und versuchen Sie es erneut.'
+        refused: 'Für dieses Gericht konnten wir kein Foto erstellen. Ändern Sie die Beschreibung oder laden Sie ein eigenes hoch.'
+        timeout: 'Das dauert zu lange, bitte versuchen Sie es erneut.'
+        unavailable: 'Das Foto kann gerade nicht erstellt werden, versuchen Sie es in ein paar Minuten erneut.'
+        not_configured: 'Das Foto kann gerade nicht erstellt werden, versuchen Sie es in ein paar Minuten erneut.'
+        draft_expired: 'Das KI-Foto ist abgelaufen. Erstellen Sie es bitte neu.'
         no_owner_photo: 'Nur selbst hochgeladene Fotos können verbessert werden.'
-        enhance_refused: 'Dieses Foto konnten wir nicht verbessern. Versuche es mit einem anderen Foto des Gerichts.'
+        enhance_refused: 'Dieses Foto konnten wir nicht verbessern. Versuchen Sie es mit einem anderen Foto des Gerichts.'
         no_original: 'Das Originalfoto ist nicht mehr verfügbar.'
     batch:
         offer_singular: '%count% Gericht hat kein Foto'
@@ -310,20 +310,20 @@ ai_photo:
         button: 'Ihre Fotos mit KI erstellen'
         trial_button_singular: '%count% Beispielfoto erstellen'
         trial_button_plural: '%count% Beispielfotos erstellen'
-        trial_title: 'Dein kostenloser Test enthält %limit% KI-Fotos'
-        trial_explain: 'Der Test bleibt kostenlos. Mit einem Tarif bekommst du jeden Monat mehr KI-Fotos.'
-        trial_end_singular: 'Gefällt es dir? Wähle einen Tarif und erstelle das Foto für das restliche Gericht.'
-        trial_end_plural: 'Gefallen sie dir? Wähle einen Tarif und erstelle die Fotos für die restlichen %count% Gerichte.'
-        trial_used_singular: 'Du hast deine %limit% kostenlosen KI-Fotos verbraucht. Wähle einen Tarif, um das Foto für das restliche Gericht zu erstellen.'
-        trial_used_plural: 'Du hast deine %limit% kostenlosen KI-Fotos verbraucht. Wähle einen Tarif, um die Fotos für die restlichen %count% Gerichte zu erstellen.'
+        trial_title: 'Ihr kostenloser Test enthält %limit% KI-Fotos'
+        trial_explain: 'Der Test bleibt kostenlos. Mit einem Tarif bekommen Sie jeden Monat mehr KI-Fotos.'
+        trial_end_singular: 'Gefällt es Ihnen? Wählen Sie einen Tarif und erstellen Sie das Foto für das restliche Gericht.'
+        trial_end_plural: 'Gefallen sie Ihnen? Wählen Sie einen Tarif und erstellen Sie die Fotos für die restlichen %count% Gerichte.'
+        trial_used_singular: 'Sie haben Ihre %limit% kostenlosen KI-Fotos verbraucht. Wählen Sie einen Tarif, um das Foto für das restliche Gericht zu erstellen.'
+        trial_used_plural: 'Sie haben Ihre %limit% kostenlosen KI-Fotos verbraucht. Wählen Sie einen Tarif, um die Fotos für die restlichen %count% Gerichte zu erstellen.'
         progress: 'Fotos werden erstellt…'
         count: '%done% von %total%'
-        close_hint: 'Du kannst dieses Fenster schließen: Es geht unter Speisekarte weiter.'
+        close_hint: 'Sie können dieses Fenster schließen: Es geht unter Speisekarte weiter.'
         skipped_singular: '%count% Gericht übersprungen (Foto konnte nicht erstellt werden)'
         skipped_plural: '%count% Gerichte übersprungen (Fotos konnten nicht erstellt werden)'
         done: 'Fotos erstellt.'
-        created_singular: 'Wir haben %count% KI-Foto erstellt. Es ist schon in deiner Karte.'
-        created_plural: 'Wir haben %count% KI-Fotos erstellt. Sie sind schon in deiner Karte.'
+        created_singular: 'Wir haben %count% KI-Foto erstellt. Es ist schon in Ihrer Karte.'
+        created_plural: 'Wir haben %count% KI-Fotos erstellt. Sie sind schon in Ihrer Karte.'
         retry: 'Erneut versuchen'
         view_menu: 'Meine Speisekarte ansehen'
     notice:
@@ -331,5 +331,5 @@ ai_photo:
         text_plural: 'KI-Fotos halb fertig: noch %count% Gerichte.'
         continue: 'Fortsetzen'
         dismiss: 'So lassen'
-        imported_singular: '%count% Gericht ohne Foto aus deiner importierten Karte'
-        imported_plural: '%count% Gerichte ohne Foto aus deiner importierten Karte'
+        imported_singular: '%count% Gericht ohne Foto aus Ihrer importierten Karte'
+        imported_plural: '%count% Gerichte ohne Foto aus Ihrer importierten Karte'

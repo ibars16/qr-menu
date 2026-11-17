@@ -1,11 +1,11 @@
-title: Menù fissi
+title: Menu fissi
 
 action:
-    new_menu: Crea menù
-    create_first_menu: Crea il primo menù fisso
-    back_to_menus: Torna ai Menù fissi
-    edit_menu: Modifica menù fisso
-    delete_menu: Elimina menù fisso
+    new_menu: Crea menu
+    create_first_menu: Crea il primo menu fisso
+    back_to_menus: Torna ai Menu fissi
+    edit_menu: Modifica menu fisso
+    delete_menu: Elimina menu fisso
     delete_all: Elimina tutti
     add_section: Aggiungi sezione
     delete_section: Elimina sezione
@@ -20,22 +20,22 @@ common:
     unnamed: (senza nome)
 
 empty_state:
-    title: Nessun menù fisso
-    subtitle: 'Crea un menù fisso (menù del giorno, menù degustazione…) per raggruppare più piatti con un unico prezzo.'
+    title: Nessun menu fisso
+    subtitle: 'Crea un menu fisso (menu del giorno, menu degustazione…) per raggruppare più piatti con un unico prezzo.'
     no_sections_title: Inizia creando la tua prima sezione
 
 modal:
-    new_title: Nuovo menù
-    edit_title: Modifica menù fisso
+    new_title: Nuovo menu
+    edit_title: Modifica menu fisso
     section_new_title: Nuova sezione
     section_edit_title: Modifica sezione
 
 field:
     name: Nome
-    name_placeholder: 'Es.: Menù del giorno, Menù degustazione…'
+    name_placeholder: 'Es.: Menu del giorno, Menu degustazione…'
     name_required: Il nome è obbligatorio
-    menu_price: 'Prezzo del menù fisso (%currency%)'
-    menu_price_required: Il prezzo del menù fisso è obbligatorio
+    menu_price: 'Prezzo del menu fisso (%currency%)'
+    menu_price_required: Il prezzo del menu fisso è obbligatorio
     menu_description: Descrizione
     menu_description_placeholder: 'Es.: Include pane e bevanda · Solo nei giorni feriali'
     section_name_placeholder: 'Es.: Antipasti, Primi, Dolci…'
@@ -49,25 +49,25 @@ status:
     hidden: Nascosto
 
 hint:
-    drag_reorder: Trascina i menù fissi per cambiarne l'ordine
+    drag_reorder: Trascina i menu fissi per cambiarne l'ordine
     empty_sections: 'Crea la tua prima sezione (Antipasti, Primi, Dolci…) per iniziare ad aggiungere piatti.'
     empty_dishes_in_section: Aggiungi il primo piatto di questa sezione.
 
 toast:
-    menu_created: 'Menù fisso creato ✓'
-    menu_updated: 'Menù fisso aggiornato ✓'
-    menu_deleted: Menù fisso eliminato
+    menu_created: 'Menu fisso creato ✓'
+    menu_updated: 'Menu fisso aggiornato ✓'
+    menu_deleted: Menu fisso eliminato
     section_created: 'Sezione creata ✓'
     section_updated: 'Sezione aggiornata ✓'
     section_deleted: Sezione eliminata
-    all_menus_deleted: 'Tutti i menù fissi sono stati eliminati'
+    all_menus_deleted: 'Tutti i menu fissi sono stati eliminati'
 
 confirm:
     delete_menu_with_dishes: 'Eliminare "%name%" e i suoi %count% piatti? Azione irreversibile.'
-    delete_menu_simple: 'Eliminare il menù fisso "%name%"?'
+    delete_menu_simple: 'Eliminare il menu fisso "%name%"?'
     delete_section_with_dishes: 'Eliminare la sezione "%name%" e i suoi %count% piatti? Azione irreversibile.'
     delete_section_simple: 'Eliminare la sezione "%name%"?'
-    delete_all_step1: 'Eliminare tutti i menù fissi (%count%) e tutti i loro piatti?'
+    delete_all_step1: 'Eliminare tutti i menu fissi (%count%) e tutti i loro piatti?'
     delete_all_step2: "Questa azione è definitiva e non può essere annullata. Confermi di volerli eliminare tutti?"
 
 error:

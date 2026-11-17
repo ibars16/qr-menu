@@ -1,6 +1,6 @@
 title: Utilisateurs
 
-info_banner: Les propriétaires ont un accès complet. Le personnel peut uniquement gérer la carte et consulter les statistiques.
+info_banner: "Les propriétaires ont un accès complet. Le personnel peut uniquement gérer la carte, la personnaliser et consulter les statistiques."
 
 action:
     add_user: Ajouter un utilisateur
@@ -14,6 +14,7 @@ aria:
 
 field:
     email: Email
+    email_placeholder: "nom@restaurant.fr"
     first_name: Prénom
     last_name: Nom
     password: Mot de passe
@@ -22,7 +23,7 @@ field:
 hint:
     email_edit: "Un lien sera envoyé au nouvel e-mail ; le changement se fait quand cette personne le confirme."
     password_edit: Laissez ce champ vide pour conserver le mot de passe actuel.
-    role: 'Propriétaire : accès complet. Personnel : carte, catégories, étiquettes, personnalisation et statistiques uniquement.'
+    role: "Les propriétaires ont un accès complet. Le personnel peut uniquement gérer la carte, la personnaliser et consulter les statistiques."
 
 role:
     owner: Propriétaire
@@ -30,7 +31,7 @@ role:
 
 label:
     pending_email: "En attente de confirmation : %email%"
-    you: Toi
+    you: "(vous)"
 
 error:
     email_invalid: Saisissez une adresse email valide.

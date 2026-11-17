@@ -58,7 +58,7 @@ field:
     product_name_placeholder: 'Es: Pizza Margherita'
     remove_extra_price: Rimuovi
     spicy_level: Livello di piccantezza
-    supplement_hint: 'Sovrapprezzo fisso sul prezzo di un menù fisso (es. +2€).'
+    supplement_hint: 'Sovrapprezzo fisso sul prezzo di un menu fisso (es. +2€).'
     supplement_price: 'Supplemento (%currency%)'
     supplement_toggle: Aggiungi supplemento
     tags: Etichette
@@ -239,13 +239,13 @@ error:
     clip_duration_too_long: 'Il video è troppo lungo (max 60 s).'
     clip_upload_failed: Impossibile caricare il video. Riprova.
     unexpected: Qualcosa è andato storto. Riprova.
-    reorder_stale: 'Il menù è cambiato mentre lo ordinavi. Ricarica la pagina e riprova.'
+    reorder_stale: 'Il menu è cambiato mentre lo ordinavi. Ricarica la pagina e riprova.'
     nutrition_value_invalid: 'Il valore deve essere un numero compreso tra 0 e 9999.9, con al massimo un decimale.'
     price_variants_invalid: 'Completa l''etichetta e il prezzo di ogni variante (minimo 2 prezzi).'
 
 sort:
     open: 'Ordina'
-    title: 'Ordina il menù'
+    title: 'Ordina il menu'
     hint: 'Trascina una categoria o un piatto per cambiare l''ordine (sul telefono, tieni premuto e trascina). Si salva quando rilasci.'
     done: 'Fatto'
     saved: 'Ordine salvato'
@@ -322,14 +322,14 @@ ai_photo:
         skipped_singular: '%count% piatto saltato (non è stato possibile crearne la foto)'
         skipped_plural: '%count% piatti saltati (non è stato possibile crearne le foto)'
         done: 'Foto create.'
-        created_singular: 'Abbiamo creato %count% foto IA. È già nel tuo menù.'
-        created_plural: 'Abbiamo creato %count% foto IA. Sono già nel tuo menù.'
+        created_singular: 'Abbiamo creato %count% foto IA. È già nel tuo menu.'
+        created_plural: 'Abbiamo creato %count% foto IA. Sono già nel tuo menu.'
         retry: 'Riprova'
-        view_menu: 'Vedi il mio menù'
+        view_menu: 'Vedi il mio menu'
     notice:
         text_singular: 'Foto IA a metà: manca %count% piatto.'
         text_plural: 'Foto IA a metà: mancano %count% piatti.'
         continue: 'Continua'
         dismiss: 'Lascia così'
-        imported_singular: '%count% piatto senza foto del tuo menù importato'
-        imported_plural: '%count% piatti senza foto del tuo menù importato'
+        imported_singular: '%count% piatto senza foto del tuo menu importato'
+        imported_plural: '%count% piatti senza foto del tuo menu importato'

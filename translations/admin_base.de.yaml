@@ -79,23 +79,23 @@ billing:
     plan_yearly: "Jährlich · %price% €/Jahr"
     cancel: "Abbrechen"
     go_to_payment: "Zur Zahlung"
-    inc_ai_photos: "KI-Fotos deiner Gerichte"
+    inc_ai_photos: "KI-Fotos Ihrer Gerichte"
     close_aria: "Schließen"
     staff_expired: "Bitten Sie den Inhaber, das Abonnement zu verlängern"
     error: "Verbindung zu Stripe fehlgeschlagen. Bitte versuchen Sie es erneut."
     checkout_no_charge_until: "Keine Abbuchung bis zum %date%"
-    charges_now: "Die Abbuchung erfolgt heute und dein Tarif beginnt jetzt (deine kostenlose Testphase endet)."
+    charges_now: "Die Abbuchung erfolgt heute und Ihr Tarif beginnt jetzt (Ihre kostenlose Testphase endet)."
 
 header:
     view_menu_short: "Karte ansehen"
     subscription_aria: "Abonnement"
     logout_aria: "Abmelden"
 email_confirmation:
-    banner: "Bestätige deine E-Mail, damit deine Gäste deine Karte sehen. Wir haben einen Link an %email% geschickt."
+    banner: "Bestätigen Sie Ihre E-Mail, damit Ihre Gäste Ihre Karte sehen. Wir haben einen Link an %email% geschickt."
     resend: "Erneut senden"
     sent: "Wir haben einen weiteren Link an %email% geschickt."
-    wait: "Warte eine Minute, bevor du einen neuen Link anforderst."
-    done: "E-Mail bestätigt: Deine Karte ist jetzt für deine Gäste sichtbar."
+    wait: "Warten Sie eine Minute, bevor Sie einen neuen Link anfordern."
+    done: "E-Mail bestätigt: Ihre Karte ist jetzt für Ihre Gäste sichtbar."
 # Errors returned as JSON and shown in a toast.
 json_error:
     forbidden: "Keine Berechtigung für diese Aktion."

@@ -1,6 +1,6 @@
 title: Usuarios
 
-info_banner: Los propietarios tienen acceso total. El personal solo puede gestionar la carta y ver las estadísticas.
+info_banner: "Los propietarios tienen acceso total. El personal solo puede gestionar la carta, personalizarla y ver las estadísticas."
 
 action:
     add_user: Añadir usuario
@@ -14,6 +14,7 @@ aria:
 
 field:
     email: Email
+    email_placeholder: "nombre@restaurante.com"
     first_name: Nombre
     last_name: Apellidos
     password: Contraseña
@@ -22,7 +23,7 @@ field:
 hint:
     email_edit: "Se enviará un enlace al nuevo email; el cambio se hace cuando esa persona lo confirme."
     password_edit: Deja este campo en blanco para no cambiar la contraseña.
-    role: 'Propietario: acceso total. Personal: solo carta, categorías, etiquetas, personalización y estadísticas.'
+    role: "Los propietarios tienen acceso total. El personal solo puede gestionar la carta, personalizarla y ver las estadísticas."
 
 role:
     owner: Propietario
@@ -30,7 +31,7 @@ role:
 
 label:
     pending_email: "Pendiente de confirmar: %email%"
-    you: Tú
+    you: "(tú)"
 
 error:
     email_invalid: Introduce un email válido.

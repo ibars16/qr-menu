@@ -1,13 +1,13 @@
-title: Importa menù
+title: Importa menu
 
 action:
-    back_to_menu: Torna al menù
+    back_to_menu: Torna al menu
 
 upload:
-    intro: 'Carica le foto o il PDF del tuo menù e lo leggeremo per te — va bene una foto per pagina.'
-    drop_text: 'Trascina qui le foto o il PDF del tuo menù, oppure tocca per scegliere i file'
+    intro: 'Carica le foto o il PDF del tuo menu e lo leggeremo per te — va bene una foto per pagina.'
+    drop_text: 'Trascina qui le foto o il PDF del tuo menu, oppure tocca per scegliere i file'
     drop_hint: 'Fino a 30 pagine (foto o PDF), massimo 15 MB per file.'
-    submit: Inizia a leggere il mio menù
+    submit: Inizia a leggere il mio menu
     uploading: Caricamento del tuo menu…
     upload_failed: Caricamento non riuscito — controlla la connessione e riprova.
     retry: Riprova
@@ -16,7 +16,7 @@ upload:
         no_files: Scegli almeno una foto o un PDF.
         total_too_large: 'I file pesano troppo in totale. Caricali in più volte (massimo circa 60 MB per invio).'
         too_many_files: 'In un invio stanno al massimo %max% pagine (foto e pagine di PDF). Caricale in più volte.'
-        daily_limit: 'Oggi hai già importato il numero massimo di menù. Potrai importare di nuovo domani.'
+        daily_limit: 'Oggi hai già importato il numero massimo di menu. Potrai importare di nuovo domani.'
         daily_pages: 'Oggi puoi importare solo altre %left% pagine. Carica meno pagine o riprova domani.'
         daily_unconfirmed: 'Finché non confermi la tua email puoi importare %max% volte al giorno. Confermala con il link che ti abbiamo inviato per importare di più.'
         invalid_file: '"%name%" non è stato caricato — riprova.'
@@ -24,8 +24,8 @@ upload:
         too_large: '"%name%" è troppo grande (max 15 MB).'
         storage_failed: '"%name%" non è stato salvato — riprova.'
         pdf_too_many_pages: '"%name%" ha %pages% pagine e in questo invio ne stanno al massimo %max%. Caricalo in più volte o togli alcune pagine.'
-        pdf_password: '"%name%" è protetto da password. Rimuovila o carica le foto del menù.'
-        pdf_unreadable: 'Non è stato possibile aprire "%name%". Controlla che sia un PDF valido o carica le foto del menù.'
+        pdf_password: '"%name%" è protetto da password. Rimuovila o carica le foto del menu.'
+        pdf_unreadable: 'Non è stato possibile aprire "%name%". Controlla che sia un PDF valido o carica le foto del menu.'
         pdf_no_pages: '"%name%" non ha pagine.'
 
 status:
@@ -33,7 +33,7 @@ status:
         title: 'Lettura della pagina %position% di %total%'
         sub: Stiamo leggendo ogni piatto con attenzione.
         sub_slow_page: Questa pagina ha molti dettagli — lettura in corso.
-        sub_slow_global: Ci vuole un po' più del solito — i menù più grandi possono richiedere un paio di minuti.
+        sub_slow_global: Ci vuole un po' più del solito — i menu più grandi possono richiedere un paio di minuti.
     organizing:
         title: Organizzazione dei tuoi piatti
         sub: Raggruppamento delle categorie e abbinamento degli ingredienti.
@@ -48,24 +48,24 @@ status:
         failed: Non riuscita
 
 complete:
-    title_published: 'Il tuo menù è online'
+    title_published: 'Il tuo menu è online'
     subtitle_published: 'Abbiamo aggiunto i tuoi piatti e i tuoi clienti possono già vederli.'
-    title_published_off: 'Il tuo menù è pronto'
+    title_published_off: 'Il tuo menu è pronto'
     subtitle_published_off: 'Abbiamo aggiunto i tuoi piatti. I tuoi clienti lo vedranno quando il piano sarà attivo.'
-    review_title: 'Controlla il tuo menù'
+    review_title: 'Controlla il tuo menu'
     review_text: 'Dagli un''occhiata per verificare che sia tutto corretto: nomi, prezzi, descrizioni e allergeni. Puoi modificare qualsiasi piatto da Menu.'
     review_hidden_singular: '%count% piatto senza prezzo resta nascosto finché non gliene dai uno.'
     review_hidden_plural: '%count% piatti senza prezzo restano nascosti finché non gliene dai uno.'
     duplicates_singular: '1 piatto duplicato è stato creato nascosto: %names%.'
     duplicates_plural: '%count% piatti duplicati sono stati creati nascosti: %names%.'
     duplicates_more: '… e altri %count%'
-    title_success: Il tuo menù è pronto per la revisione
-    subtitle_success: Abbiamo aggiunto i tuoi piatti al menù, nascosti ai clienti finché non li rivedi.
+    title_success: Il tuo menu è pronto per la revisione
+    subtitle_success: Abbiamo aggiunto i tuoi piatti al menu, nascosti ai clienti finché non li rivedi.
     subtitle_partial_failure: ' Non siamo riusciti a leggere %failed% delle tue %total% pagine — puoi provare a ricaricarle separatamente.'
     stat_categories: Categorie
     stat_products: Piatti
-    button_continue: Vedi il mio menù
-    title_failed: Non siamo riusciti a leggere il tuo menù
-    subtitle_failed: Nessuna delle tue pagine è stata elaborata. Controlla che siano pagine chiare e ben illuminate di un menù, poi riprova.
-    subtitle_failed_temporary: 'Il servizio di lettura dei menù è sovraccarico in questo momento. Il tuo menu va bene: riprova tra qualche minuto.'
+    button_continue: Vedi il mio menu
+    title_failed: Non siamo riusciti a leggere il tuo menu
+    subtitle_failed: Nessuna delle tue pagine è stata elaborata. Controlla che siano pagine chiare e ben illuminate di un menu, poi riprova.
+    subtitle_failed_temporary: 'Il servizio di lettura dei menu è sovraccarico in questo momento. Il tuo menu va bene: riprova tra qualche minuto.'
     button_retry: Riprova

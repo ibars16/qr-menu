@@ -1,7 +1,7 @@
 # Reseller sign-up (/partners/registro) and panel (/partners).
 register:
     title: "Registrazione rivenditore"
-    tagline: "Menù digitali per i ristoranti che gestisci"
+    tagline: "Menu digitali per i ristoranti che gestisci"
     subtitle: "Crea l'account della tua azienda. Potrai aggiungere ristoranti quando l'abbonamento sarà attivo."
     section_company: "La tua azienda"
     section_account: "Il tuo account"
@@ -33,7 +33,7 @@ register:
         general: "Impossibile inviare il modulo. Ricarica la pagina e riprova."
 
 logout: "Esci"
-inactive: "Il tuo account non è attivo. Nel frattempo non puoi creare, aprire né archiviare ristoranti, e i loro menù non si vedono."
+inactive: "Il tuo account non è attivo. Nel frattempo non puoi creare, aprire né archiviare ristoranti, e i loro menu non si vedono."
 
 count:
     included: "Ristoranti: <strong>%total%</strong> su %included% inclusi"
@@ -42,10 +42,10 @@ count:
 list:
     restaurant: "Ristorante"
     no_owner: "Senza titolare"
-    view_menu: "Vedi menù"
+    view_menu: "Vedi menu"
     enter: "Entra"
     archive: "Archivia"
-    archive_confirm: "Archiviare %name%? Il menù non si vedrà più."
+    archive_confirm: "Archiviare %name%? Il menu non si vedrà più."
     archive_confirm_card: "Archiviare %name%? Questo ristorante paga con carta. Il suo abbonamento verrà annullato e non gli verrà più addebitato nulla."
     restore: "Ripristina"
     archived_title: "Archiviati"
@@ -55,7 +55,7 @@ list:
     last_paid: "Ultimo pagamento %date%"
     no_payments: "Nessun pagamento"
     deactivate: "Disattiva"
-    deactivate_confirm: "Disattivare %name%? Il suo menù non sarà più visibile finché non registri un pagamento. Continuerà a essere conteggiato nel tuo abbonamento. Se non è più tuo cliente, usa Archivia."
+    deactivate_confirm: "Disattivare %name%? Il suo menu non sarà più visibile finché non registri un pagamento. Continuerà a essere conteggiato nel tuo abbonamento. Se non è più tuo cliente, usa Archivia."
     deactivate_confirm_card: "Disattivare %name%? Questo ristorante paga con carta. Il suo abbonamento verrà annullato e non gli verrà più addebitato nulla."
     copy_link: "Copia link di pagamento"
     copied: "Copiato ✓"
@@ -78,11 +78,11 @@ new:
         email_taken: "Esiste già un account con questa email. Usane un'altra per il titolare."
 
 flash:
-    created: "%name% creato. Entra per preparare il suo menù. Si attiverà quando pagherà."
-    archived: "%name% archiviato: il menù non si vede più."
+    created: "%name% creato. Entra per preparare il suo menu. Si attiverà quando pagherà."
+    archived: "%name% archiviato: il menu non si vede più."
     restored: "%name% ripristinato."
     paid: "Pagamento registrato: %name% è attivo fino al %date%."
-    deactivated: "%name% disattivato: il suo menù non è più visibile."
+    deactivated: "%name% disattivato: il suo menu non è più visibile."
     cancel_failed: "Non è stato possibile annullare l'abbonamento di %name% in Stripe. Non è cambiato nulla; riprova tra qualche minuto."
 
 summary:
@@ -156,7 +156,7 @@ connect:
         price: "Inserisci un prezzo tra %min% e %max%, per esempio 25 o 25,50."
         stripe: "Impossibile contattare Stripe. Riprova tra qualche minuto."
     # The product in the reseller's Stripe account (Checkout, invoices).
-    product_name: "Menù digitale QR"
+    product_name: "Menu digitale QR"
 signup_link:
     title: "Il tuo link di registrazione per i clienti"
     text: "Invialo a un ristorante: si registra da solo e compare nella tua lista, in attesa di pagamento."

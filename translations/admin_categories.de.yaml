@@ -54,8 +54,8 @@ confirm:
     delete_with_products: '"%name%" und die %count% zugehörigen Gerichte löschen? Dies kann nicht rückgängig gemacht werden.'
     delete_simple: 'Kategorie "%name%" löschen?'
     delete_all_step1: 'Alle Kategorien (%count%) und all ihre Gerichte löschen?'
-    delete_all_step2: 'Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden. Möchtest du wirklich alle löschen?'
+    delete_all_step2: 'Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden. Möchten Sie wirklich alle löschen?'
 
 error:
     select_category_required: Bitte wählen Sie eine Kategorie aus, um fortzufahren.
-    unexpected: Etwas ist schiefgelaufen. Bitte versuche es erneut.
+    unexpected: Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.

@@ -68,8 +68,8 @@ confirm:
     delete_section_with_dishes: 'Abschnitt "%name%" und die %count% zugehörigen Gerichte löschen? Dies kann nicht rückgängig gemacht werden.'
     delete_section_simple: 'Abschnitt "%name%" löschen?'
     delete_all_step1: 'Alle Set-Menüs (%count%) und all ihre Gerichte löschen?'
-    delete_all_step2: 'Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden. Möchtest du wirklich alle löschen?'
+    delete_all_step2: 'Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden. Möchten Sie wirklich alle löschen?'
 
 error:
     section_label_required: Der Name des Abschnitts ist erforderlich.
-    unexpected: Etwas ist schiefgelaufen. Bitte versuche es erneut.
+    unexpected: Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.

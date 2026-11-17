@@ -29,7 +29,7 @@ allergen:
 results:
     none: "Nessun piatto trovato"
     empty: "Nessun prodotto disponibile."
-    no_dishes: "Questo menù non ha ancora piatti."
+    no_dishes: "Questo menu non ha ancora piatti."
 dish:
     popular: "Popolare"
     supplement: "Supplemento"
@@ -62,9 +62,9 @@ nav:
 common:
     close: "Chiudi"
 chat:
-    bubble: "Chiedi sul menù"
-    title: "Assistente del menù"
-    greeting: "Ciao! Chiedimi qualsiasi cosa sul menù: consigli, ingredienti, allergie o altro."
+    bubble: "Chiedi sul menu"
+    title: "Assistente del menu"
+    greeting: "Ciao! Chiedimi qualsiasi cosa sul menu: consigli, ingredienti, allergie o altro."
     placeholder: "Scrivi la tua domanda…"
     send: "Invia"
     disclaimer: "Risposte generate dall'IA. In caso di allergie gravi, verifica con il personale."
@@ -74,8 +74,8 @@ chat:
     # Impersonal on purpose: it must fit every form of address. %allergens% = config/allergens.yaml's names.
     staff:
         confirm: "Prima di ordinare, è bene verificarlo con il personale."
-        none_confirmed: "Nessun piatto del nostro menù è confermato senza %allergens%."
-        none_confirmed_allergy: "Nessun piatto del nostro menù è confermato come adatto a questa allergia."
+        none_confirmed: "Nessun piatto del nostro menu è confermato senza %allergens%."
+        none_confirmed_allergy: "Nessun piatto del nostro menu è confermato come adatto a questa allergia."
         and: " e "
 footer:
     visit: "Vieni a trovarci"
@@ -93,7 +93,7 @@ footer:
         sat: "Sab"
         sun: "Dom"
 unavailable:
-    message: "Menù non disponibile al momento"
+    message: "Menu non disponibile al momento"
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "Altro"

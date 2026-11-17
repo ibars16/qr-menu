@@ -1,6 +1,6 @@
 title: Users
 
-info_banner: Owners have full access. Staff can only manage the menu and view statistics.
+info_banner: "Owners have full access. Staff can only manage the menu, customize it and view statistics."
 
 action:
     add_user: Add user
@@ -14,6 +14,7 @@ aria:
 
 field:
     email: Email
+    email_placeholder: "name@restaurant.com"
     first_name: First name
     last_name: Last name
     password: Password
@@ -22,7 +23,7 @@ field:
 hint:
     email_edit: "A link will be sent to the new email; the change happens when that person confirms it."
     password_edit: Leave this blank to keep the current password.
-    role: 'Owner: full access. Staff: menu, categories, tags, customization and stats only.'
+    role: "Owners have full access. Staff can only manage the menu, customize it and view statistics."
 
 role:
     owner: Owner
@@ -30,7 +31,7 @@ role:
 
 label:
     pending_email: "Waiting for confirmation: %email%"
-    you: You
+    you: "(you)"
 
 error:
     email_invalid: Enter a valid email address.

@@ -5,7 +5,7 @@ welcome:
     button: "Accedi al tuo pannello"
     login_with: "Accedi con questa email: %email%"
     forgot: "Se dimentichi la password, usa «Password dimenticata?» nella schermata di accesso."
-    confirm_intro: "Conferma la tua email per pubblicare il tuo menù: fino ad allora solo tu puoi vederlo."
+    confirm_intro: "Conferma la tua email per pubblicare il tuo menu: fino ad allora solo tu puoi vederlo."
 reset:
     subject: "Cambia la tua password"
     intro: "Abbiamo ricevuto una richiesta per cambiare la password del tuo account."
@@ -14,7 +14,7 @@ reset:
     ignore: "Se non l'hai richiesto tu, ignora questa email: la tua password non cambia."
 confirm:
     subject: "Conferma la tua email"
-    intro: "Conferma che questa è la tua email perché i tuoi clienti possano vedere il tuo menù."
+    intro: "Conferma che questa è la tua email perché i tuoi clienti possano vedere il tuo menu."
     button: "Conferma la mia email"
     expiry: "Il link scade tra 7 giorni. Se scade, chiedine uno nuovo dal tuo pannello."
     ignore: "Se non hai creato tu questo account, ignora questa email."
@@ -29,9 +29,9 @@ email_changed:
     intro: "D'ora in poi questo account accede con %new%. Questa email non serve più per accedere."
     not_you: "Se non sei stato tu, contatta al più presto l'assistenza di %app%."
 smart_waiter_down:
-    subject: "L'assistente del tuo menù non risponde in questo momento"
+    subject: "L'assistente del tuo menu non risponde in questo momento"
     hello: "Ciao,"
-    intro: "L'assistente IA del menù di %restaurant% non risponde in questo momento per un problema tecnico. Siamo già stati avvisati."
+    intro: "L'assistente IA del menu di %restaurant% non risponde in questo momento per un problema tecnico. Siamo già stati avvisati."
     meanwhile: "Nel frattempo, chiedi al tuo staff di rispondere di persona alle domande dei clienti su piatti, ingredienti, allergeni o consigli."
     at_most: "Ti invieremo al massimo un avviso come questo al giorno."
     signature: "Il team di %app%"

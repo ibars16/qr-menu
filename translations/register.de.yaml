@@ -51,7 +51,7 @@ unavailable:
     text: "Bitten Sie die Person, die ihn Ihnen geschickt hat, um einen neuen Link."
 email_confirmed:
     title: "E-Mail bestätigt"
-    text: "Danke. Deine Karte ist jetzt für deine Gäste sichtbar."
+    text: "Danke. Ihre Karte ist jetzt für Ihre Gäste sichtbar."
     invalid_title: "Ungültiger Link"
-    invalid_text: "Der Link ist abgelaufen oder nicht korrekt. Melde dich in deinem Panel an und tippe auf „Erneut senden“, um einen neuen zu erhalten."
+    invalid_text: "Der Link ist abgelaufen oder nicht korrekt. Melden Sie sich in Ihrem Panel an und tippen Sie auf „Erneut senden“, um einen neuen zu erhalten."
     login: "Zu meinem Panel"
