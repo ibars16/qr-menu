@@ -2,6 +2,9 @@
 <html lang="{{ app.request.locale }}">
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.ico" sizes="any">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}{{ 'title.default'|trans({}, 'admin_base') }}{% endblock %} — QR Menu</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
@@ -133,7 +136,13 @@
             border-radius: 10px; padding: 10px 18px;
             font-size: 13px; color: var(--tx-1); z-index: 9999;
             opacity: 0; transition: opacity 0.2s, transform 0.2s;
-            white-space: nowrap; pointer-events: none;
+            pointer-events: none;
+            /* Long messages (a whole sentence + an email in German…) wrap
+               inside the screen instead of running off both sides on a
+               phone. max-content keeps short ones on one line: with
+               left:50% the box would otherwise shrink to half the screen. */
+            width: max-content; max-width: calc(100vw - 32px);
+            text-align: center; line-height: 1.4; overflow-wrap: anywhere;
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         .toast.success { border-color: rgba(99,153,34,0.4); color: #7aad40; }

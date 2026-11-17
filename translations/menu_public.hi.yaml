@@ -29,6 +29,7 @@ allergen:
 results:
     none: "कोई व्यंजन नहीं मिला"
     empty: "कोई उत्पाद उपलब्ध नहीं है।"
+    no_dishes: "इस मेन्यू में अभी कोई व्यंजन नहीं है।"
 dish:
     popular: "लोकप्रिय"
     supplement: "अतिरिक्त शुल्क"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "अन्य"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "पेज नहीं मिला"
+    not_found_text: "आप जो पेज ढूँढ रहे हैं वह मौजूद नहीं है या अब उपलब्ध नहीं है।"
+    forbidden_title: "पहुँच की अनुमति नहीं"
+    forbidden_text: "आपको यह पेज देखने की अनुमति नहीं है।"
+    server_title: "कुछ गलत हो गया"
+    server_text: "एक अप्रत्याशित त्रुटि हुई। कृपया कुछ मिनट बाद फिर से कोशिश करें।"
+    back_home: "होम पर वापस जाएँ"

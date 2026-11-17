@@ -1,0 +1,55 @@
+{# Custom error page for every status (404, 403, 500…) — only used when
+   APP_DEBUG=0; in dev, preview it at /_error/404, /_error/403, /_error/500.
+   Same look as the menu's "not available" page (menu/unavailable.html.twig),
+   in the visitor's menu language (error_locale(): ?lang= → menu cookie →
+   browser → Spanish). Colours: title #fff (18:1), text #b8aed6 (9:1),
+   button #150d2e on #fff (18:1) — all on #150d2e. #}
+{% set locale = error_locale() %}
+{% set kind = status_code == 404 ? 'not_found' : (status_code == 403 ? 'forbidden' : 'server') %}
+<!DOCTYPE html>
+<html lang="{{ locale }}" dir="{{ menu_dir(locale) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>{{ ('error_page.' ~ kind ~ '_title')|trans({}, 'menu_public', locale) }}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #150d2e;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            text-align: center;
+            padding: 24px;
+        }
+        .name { font-size: 22px; font-weight: 600; }
+        .text { font-size: 15px; color: #b8aed6; max-width: 420px; line-height: 1.5; }
+        .home {
+            margin-top: 12px;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 999px;
+            background: #fff;
+            color: #150d2e;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .home:hover { background: #e9e5f5; }
+        .home:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+    </style>
+</head>
+<body>
+    <h1 class="name">{{ ('error_page.' ~ kind ~ '_title')|trans({}, 'menu_public', locale) }}</h1>
+    <p class="text">{{ ('error_page.' ~ kind ~ '_text')|trans({}, 'menu_public', locale) }}</p>
+    <a class="home" href="{{ path('app_home') }}">{{ 'error_page.back_home'|trans({}, 'menu_public', locale) }}</a>
+</body>
+</html>

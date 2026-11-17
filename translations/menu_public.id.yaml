@@ -29,6 +29,7 @@ allergen:
 results:
     none: "Hidangan tidak ditemukan"
     empty: "Tidak ada produk yang tersedia."
+    no_dishes: "Menu ini belum memiliki hidangan."
 dish:
     popular: "Populer"
     supplement: "Tambahan"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "Lainnya"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "Halaman tidak ditemukan"
+    not_found_text: "Halaman yang Anda cari tidak ada atau sudah tidak tersedia."
+    forbidden_title: "Akses tidak diizinkan"
+    forbidden_text: "Anda tidak memiliki izin untuk melihat halaman ini."
+    server_title: "Terjadi masalah"
+    server_text: "Terjadi kesalahan tak terduga. Silakan coba lagi dalam beberapa menit."
+    back_home: "Kembali ke beranda"

@@ -29,6 +29,7 @@ allergen:
 results:
     none: "Inga rätter hittades"
     empty: "Inga produkter tillgängliga."
+    no_dishes: "Den här menyn har inga rätter än."
 dish:
     popular: "Populär"
     supplement: "Tillägg"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "Övrigt"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "Sidan hittades inte"
+    not_found_text: "Sidan du letar efter finns inte eller är inte längre tillgänglig."
+    forbidden_title: "Åtkomst nekad"
+    forbidden_text: "Du har inte behörighet att visa den här sidan."
+    server_title: "Något gick fel"
+    server_text: "Ett oväntat fel inträffade. Försök igen om några minuter."
+    back_home: "Tillbaka till startsidan"

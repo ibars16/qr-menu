@@ -29,6 +29,7 @@ allergen:
 results:
     none: "Yemek bulunamadı"
     empty: "Ürün bulunmuyor."
+    no_dishes: "Bu menüde henüz yemek yok."
 dish:
     popular: "Popüler"
     supplement: "Ek ücret"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "Diğer"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "Sayfa bulunamadı"
+    not_found_text: "Aradığınız sayfa mevcut değil veya artık kullanılamıyor."
+    forbidden_title: "Erişim izni yok"
+    forbidden_text: "Bu sayfayı görüntüleme izniniz yok."
+    server_title: "Bir sorun oluştu"
+    server_text: "Beklenmeyen bir hata oluştu. Lütfen birkaç dakika sonra tekrar deneyin."
+    back_home: "Ana sayfaya dön"

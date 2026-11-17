@@ -68,16 +68,17 @@ class CategoriesController extends AbstractController
      * 'ai'). A changed main-language name redoes its AI translations, as
      * renaming it on the Carta does (MenuAdminController::editCategory()).
      */
-    #[Route('/categories/{id}/translations/save', name: 'category_translations_save', methods: ['POST'])]
+    #[Route('/categories/{id}/translations/save', name: 'category_translations_save', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function saveTranslations(
         Category $category,
         Request $request,
         EntityManagerInterface $em,
         MenuPreferencesResolver $menuPreferences,
         CategoryTranslationService $categoryTranslationService,
+        TranslatorInterface $translator,
     ): JsonResponse {
         if ($category->getRestaurant() !== $this->restaurant()) {
-            return $this->json(['error' => 'Forbidden'], 403);
+            return $this->json(['error' => $translator->trans('json_error.forbidden', [], 'admin_base')], 403);
         }
 
         $data          = json_decode($request->getContent(), true);

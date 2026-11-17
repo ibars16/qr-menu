@@ -84,7 +84,7 @@ class MenusController extends AbstractController
         ]);
     }
 
-    #[Route('/menus/{id}', name: 'menus_edit', requirements: ['id' => '\d+'])]
+    #[Route('/menus/{id}', name: 'menus_edit', requirements: ['id' => '\d{1,9}'])]
     public function edit(Category $menu): Response
     {
         $this->assertOwner($menu->getRestaurant());
@@ -152,7 +152,7 @@ class MenusController extends AbstractController
         return $this->json(['id' => $menu->getId()]);
     }
 
-    #[Route('/menus/{id}/edit', name: 'menus_update', methods: ['POST'])]
+    #[Route('/menus/{id}/edit', name: 'menus_update', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function update(Category $menu, Request $request, EntityManagerInterface $em, CategoryTranslationService $categoryTranslationService): JsonResponse
     {
         $this->assertOwner($menu->getRestaurant());
@@ -247,7 +247,7 @@ class MenusController extends AbstractController
 
     // ── Sections (Primeros/Segundos/Postres…) ────────────────────────────────
 
-    #[Route('/menus/{id}/sections/create', name: 'menus_section_create', methods: ['POST'])]
+    #[Route('/menus/{id}/sections/create', name: 'menus_section_create', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function createSection(Category $menu, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $this->assertOwner($menu->getRestaurant());
@@ -273,7 +273,7 @@ class MenusController extends AbstractController
         return $this->json(['id' => $section->getId(), 'label' => $label]);
     }
 
-    #[Route('/menu-sections/{id}/rename', name: 'menus_section_rename', methods: ['POST'])]
+    #[Route('/menu-sections/{id}/rename', name: 'menus_section_rename', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function renameSection(MenuSection $section, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $this->assertOwner($section->getCategory()->getRestaurant());
@@ -292,7 +292,7 @@ class MenusController extends AbstractController
         return $this->json(['id' => $section->getId(), 'label' => $label]);
     }
 
-    #[Route('/menu-sections/{id}/delete', name: 'menus_section_delete', methods: ['POST'])]
+    #[Route('/menu-sections/{id}/delete', name: 'menus_section_delete', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function deleteSection(MenuSection $section, EntityManagerInterface $em): JsonResponse
     {
         $this->assertOwner($section->getCategory()->getRestaurant());
@@ -313,7 +313,7 @@ class MenusController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
-    #[Route('/menus/{id}/sections/reorder', name: 'menus_sections_reorder', methods: ['POST'])]
+    #[Route('/menus/{id}/sections/reorder', name: 'menus_sections_reorder', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function reorderSections(Category $menu, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $this->assertOwner($menu->getRestaurant());
@@ -337,7 +337,7 @@ class MenusController extends AbstractController
 
     // ── Dishes within/between sections ───────────────────────────────────────
 
-    #[Route('/menus/{id}/dishes/reorder', name: 'menus_dishes_reorder', methods: ['POST'])]
+    #[Route('/menus/{id}/dishes/reorder', name: 'menus_dishes_reorder', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function reorderDishes(Category $menu, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $this->assertOwner($menu->getRestaurant());

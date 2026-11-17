@@ -88,6 +88,20 @@ class ProductRepository extends ServiceEntityRepository
      * @param int[] $excludeIds
      * @return Product[]
      */
+    /** Dishes findActiveExcludingIds() can return at all (active dish in an active category). */
+    public function countActive(Restaurant $restaurant): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->innerJoin('p.category', 'c')
+            ->andWhere('c.restaurant = :restaurant')
+            ->andWhere('p.active = true')
+            ->andWhere('c.active = true')
+            ->setParameter('restaurant', $restaurant)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function findActiveExcludingIds(Restaurant $restaurant, array $excludeIds): array
     {
         $qb = $this->createQueryBuilder('p')

@@ -1,2 +1,5 @@
 User-agent: *
+Disallow: /admin
+Disallow: /partners
+Disallow: /platform
 Allow: /

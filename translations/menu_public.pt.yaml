@@ -29,6 +29,7 @@ allergen:
 results:
     none: "Não foram encontrados pratos"
     empty: "Não há produtos disponíveis."
+    no_dishes: "Esta ementa ainda não tem pratos."
 dish:
     popular: "Popular"
     supplement: "Suplemento"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "Outros"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "Página não encontrada"
+    not_found_text: "A página que procura não existe ou já não está disponível."
+    forbidden_title: "Acesso não permitido"
+    forbidden_text: "Não tem permissão para ver esta página."
+    server_title: "Algo correu mal"
+    server_text: "Ocorreu um erro inesperado. Tente novamente dentro de alguns minutos."
+    back_home: "Voltar ao início"

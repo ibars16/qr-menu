@@ -87,7 +87,7 @@ class PartnersController extends AbstractController
         return $this->redirectToRoute('partners_index');
     }
 
-    #[Route('/restaurantes/{id}/archivar', name: 'restaurant_archive', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/restaurantes/{id}/archivar', name: 'restaurant_archive', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function archive(int $id, Request $request): Response
     {
         $restaurant = $this->ownRestaurant($id);
@@ -110,7 +110,7 @@ class PartnersController extends AbstractController
         return $this->redirectToRoute('partners_index');
     }
 
-    #[Route('/restaurantes/{id}/restaurar', name: 'restaurant_restore', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/restaurantes/{id}/restaurar', name: 'restaurant_restore', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function restore(int $id, Request $request): Response
     {
         $restaurant = $this->ownRestaurant($id);
@@ -125,7 +125,7 @@ class PartnersController extends AbstractController
         return $this->redirectToRoute('partners_index');
     }
 
-    #[Route('/restaurantes/{id}/pago', name: 'restaurant_register_payment', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/restaurantes/{id}/pago', name: 'restaurant_register_payment', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function registerPayment(int $id, Request $request): Response
     {
         $restaurant = $this->ownRestaurant($id);
@@ -157,7 +157,7 @@ class PartnersController extends AbstractController
         return $this->redirectToRoute('partners_index');
     }
 
-    #[Route('/restaurantes/{id}/desactivar', name: 'restaurant_deactivate', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/restaurantes/{id}/desactivar', name: 'restaurant_deactivate', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function deactivate(int $id, Request $request): Response
     {
         $restaurant = $this->ownRestaurant($id);

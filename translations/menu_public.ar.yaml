@@ -29,6 +29,7 @@ allergen:
 results:
     none: "لم يتم العثور على أطباق"
     empty: "لا توجد منتجات متاحة."
+    no_dishes: "لا تحتوي هذه القائمة على أطباق بعد."
 dish:
     popular: "الأكثر طلبًا"
     supplement: "إضافة"
@@ -97,3 +98,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "أخرى"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "الصفحة غير موجودة"
+    not_found_text: "الصفحة التي تبحث عنها غير موجودة أو لم تعد متاحة."
+    forbidden_title: "الوصول غير مسموح"
+    forbidden_text: "ليس لديك إذن لعرض هذه الصفحة."
+    server_title: "حدث خطأ ما"
+    server_text: "حدث خطأ غير متوقع. يُرجى المحاولة مرة أخرى بعد بضع دقائق."
+    back_home: "العودة إلى الصفحة الرئيسية"

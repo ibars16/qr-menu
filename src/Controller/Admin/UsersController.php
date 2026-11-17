@@ -119,7 +119,7 @@ class UsersController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
-    #[Route('/usuarios/{id}/editar', name: 'user_update', methods: ['POST'])]
+    #[Route('/usuarios/{id}/editar', name: 'user_update', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function update(
         User $user,
         Request $request,
@@ -130,7 +130,7 @@ class UsersController extends AbstractController
         EmailChange $emailChange,
     ): JsonResponse {
         if ($user->getRestaurant() !== $this->restaurant()) {
-            return $this->json(['error' => 'Forbidden'], 403);
+            return $this->json(['error' => $translator->trans('json_error.forbidden', [], 'admin_base')], 403);
         }
 
         $data = json_decode($request->getContent(), true);
@@ -184,11 +184,11 @@ class UsersController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
-    #[Route('/usuarios/{id}/eliminar', name: 'user_delete', methods: ['POST'])]
+    #[Route('/usuarios/{id}/eliminar', name: 'user_delete', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function delete(User $user, EntityManagerInterface $em, TranslatorInterface $translator): JsonResponse
     {
         if ($user->getRestaurant() !== $this->restaurant()) {
-            return $this->json(['error' => 'Forbidden'], 403);
+            return $this->json(['error' => $translator->trans('json_error.forbidden', [], 'admin_base')], 403);
         }
 
         if ($user === $this->getUser()) {

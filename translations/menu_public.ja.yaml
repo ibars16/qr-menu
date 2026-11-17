@@ -29,6 +29,7 @@ allergen:
 results:
     none: "料理が見つかりません"
     empty: "利用可能な商品がありません。"
+    no_dishes: "このメニューにはまだ料理がありません。"
 dish:
     popular: "人気"
     supplement: "追加料金"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "その他"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "ページが見つかりません"
+    not_found_text: "お探しのページは存在しないか、現在ご利用いただけません。"
+    forbidden_title: "アクセスできません"
+    forbidden_text: "このページを表示する権限がありません。"
+    server_title: "問題が発生しました"
+    server_text: "予期しないエラーが発生しました。数分後にもう一度お試しください。"
+    back_home: "ホームに戻る"

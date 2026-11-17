@@ -29,6 +29,7 @@ allergen:
 results:
     none: "Keine Gerichte gefunden"
     empty: "Keine Produkte verfügbar."
+    no_dishes: "Diese Speisekarte hat noch keine Gerichte."
 dish:
     popular: "Beliebt"
     supplement: "Zuschlag"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "Sonstiges"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "Seite nicht gefunden"
+    not_found_text: "Die gesuchte Seite existiert nicht oder ist nicht mehr verfügbar."
+    forbidden_title: "Zugriff verweigert"
+    forbidden_text: "Sie haben keine Berechtigung, diese Seite anzuzeigen."
+    server_title: "Etwas ist schiefgelaufen"
+    server_text: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es in ein paar Minuten erneut."
+    back_home: "Zur Startseite"

@@ -662,6 +662,10 @@
    own horizontal padding to keep the same gutter as everything above/
    below it — see .cat-tabs in this file's own <style> block and its
    _structure.html.twig override, both updated alongside this split. #}
+{# Categories with at least one dish on the menu — the same test as each
+   .cat-section below. An empty one gets neither a tab (it would jump
+   nowhere) nor a section; none at all shows results.no_dishes. #}
+{% set shownCategories = categories|filter(c => c.isFixedPriceMenu ? c.hasActiveMenuDishes : c.activeProductsSorted|length > 0) %}
 <nav class="cat-tabs" id="cat-tabs" aria-label="{{ 'nav.categories'|trans({}, 'menu_public', locale) }}">
     {# href="#cat-tabs" on "Todo" (rather than nothing, or "#") gives it a
        real same-page target for the no-JS fallback instead of an empty
@@ -672,7 +676,7 @@
        click handler and the scroll-spy IntersectionObserver keep it in
        sync (see _search_js.html.twig). #}
     <a href="#cat-tabs" class="cat-tab active" data-cat="all" aria-current="true">{{ 'tabs.all'|trans({}, 'menu_public', locale) }}</a>
-    {% for category in categories %}
+    {% for category in shownCategories %}
         {% if category.isFixedPriceMenu %}
             {{ setMenuMacro.pill(category, locale, restaurant, currencyDisplay) }}
         {% else %}
@@ -770,7 +774,7 @@
 
 <div class="content">
     <div class="no-results" id="no-results">{{ 'results.none'|trans({}, 'menu_public', locale) }}</div>
-    {% for category in categories %}
+    {% for category in shownCategories %}
         {% set catT = category.getTranslation(locale) %}
         {% if not catT %}{% set catT = category.getTranslation(restaurant.defaultLanguage) %}{% endif %}
         {% if not catT %}{% set catT = category.translations.first %}{% endif %}
@@ -923,7 +927,7 @@
             </section>
         {% endif %}
     {% else %}
-        <div class="empty-state">{{ 'results.empty'|trans({}, 'menu_public', locale) }}</div>
+        <div class="empty-state">{{ 'results.no_dishes'|trans({}, 'menu_public', locale) }}</div>
     {% endfor %}
 </div>
 </div>

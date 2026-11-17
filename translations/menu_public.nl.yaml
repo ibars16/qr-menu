@@ -29,6 +29,7 @@ allergen:
 results:
     none: "Geen gerechten gevonden"
     empty: "Geen producten beschikbaar."
+    no_dishes: "Deze menukaart heeft nog geen gerechten."
 dish:
     popular: "Populair"
     supplement: "Toeslag"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "Overig"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "Pagina niet gevonden"
+    not_found_text: "De pagina die je zoekt bestaat niet of is niet meer beschikbaar."
+    forbidden_title: "Geen toegang"
+    forbidden_text: "Je hebt geen toestemming om deze pagina te bekijken."
+    server_title: "Er is iets misgegaan"
+    server_text: "Er is een onverwachte fout opgetreden. Probeer het over een paar minuten opnieuw."
+    back_home: "Terug naar home"

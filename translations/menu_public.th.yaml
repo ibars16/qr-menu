@@ -29,6 +29,7 @@ allergen:
 results:
     none: "ไม่พบเมนูอาหาร"
     empty: "ไม่มีสินค้าให้บริการ"
+    no_dishes: "เมนูนี้ยังไม่มีรายการอาหาร"
 dish:
     popular: "ยอดนิยม"
     supplement: "ค่าเสริม"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "อื่นๆ"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "ไม่พบหน้านี้"
+    not_found_text: "หน้าที่คุณค้นหาไม่มีอยู่หรือไม่สามารถใช้งานได้แล้ว"
+    forbidden_title: "ไม่ได้รับอนุญาตให้เข้าถึง"
+    forbidden_text: "คุณไม่มีสิทธิ์ดูหน้านี้"
+    server_title: "เกิดข้อผิดพลาด"
+    server_text: "เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดลองอีกครั้งในอีกไม่กี่นาที"
+    back_home: "กลับหน้าแรก"

@@ -98,7 +98,7 @@ class PlatformController extends AbstractController
         return $this->render('platform/index.html.twig', ['rows' => $rows, 'resellerRows' => $resellerRows, 'summary' => $summary]);
     }
 
-    #[Route('/restaurants/{id}/register-payment', name: 'register_payment', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/restaurants/{id}/register-payment', name: 'register_payment', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function registerPayment(int $id, Request $request, EntityManagerInterface $em): Response
     {
         $restaurant = $this->ownBilledRestaurant($id, $em);
@@ -106,7 +106,7 @@ class PlatformController extends AbstractController
         return $this->registerPaymentFor($restaurant, $restaurant->getName(), 'platform-register-payment-' . $restaurant->getId(), $request, $em);
     }
 
-    #[Route('/restaurants/{id}/deactivate', name: 'deactivate', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/restaurants/{id}/deactivate', name: 'deactivate', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function deactivate(int $id, Request $request, EntityManagerInterface $em, StripeBilling $billing, LoggerInterface $logger): Response
     {
         $restaurant = $this->ownBilledRestaurant($id, $em);
@@ -114,7 +114,7 @@ class PlatformController extends AbstractController
         return $this->deactivateFor($restaurant, $restaurant->getName(), 'platform-deactivate-' . $restaurant->getId(), $request, $em, $billing, $logger);
     }
 
-    #[Route('/resellers/{id}/register-payment', name: 'reseller_register_payment', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/resellers/{id}/register-payment', name: 'reseller_register_payment', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function registerResellerPayment(int $id, Request $request, EntityManagerInterface $em, StripeBilling $billing): Response
     {
         $reseller = $em->find(Reseller::class, $id) ?? throw $this->createNotFoundException();
@@ -125,7 +125,7 @@ class PlatformController extends AbstractController
         return $response;
     }
 
-    #[Route('/resellers/{id}/deactivate', name: 'reseller_deactivate', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/resellers/{id}/deactivate', name: 'reseller_deactivate', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function deactivateReseller(int $id, Request $request, EntityManagerInterface $em, StripeBilling $billing, LoggerInterface $logger): Response
     {
         $reseller = $em->find(Reseller::class, $id) ?? throw $this->createNotFoundException();

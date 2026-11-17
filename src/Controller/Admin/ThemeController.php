@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/admin', name: 'admin_')]
 #[IsGranted('ROLE_STAFF')]
@@ -97,11 +98,11 @@ class ThemeController extends AbstractController
     }
 
     #[Route('/theme/apply', name: 'theme_apply', methods: ['POST'])]
-    public function apply(Request $request, EntityManagerInterface $em): JsonResponse
+    public function apply(Request $request, EntityManagerInterface $em, TranslatorInterface $translator): JsonResponse
     {
         $restaurant = $this->getUser()->getRestaurant();
         if (!$restaurant) {
-            return $this->json(['error' => 'No restaurant'], 403);
+            return $this->json(['error' => $translator->trans('json_error.no_restaurant', [], 'admin_base')], 403);
         }
 
         $data   = $request->toArray();
@@ -116,7 +117,7 @@ class ThemeController extends AbstractController
         }
 
         if (!$layout && !$theme) {
-            return $this->json(['error' => 'Nothing to update'], 400);
+            return $this->json(['error' => $translator->trans('json_error.nothing_to_update', [], 'admin_base')], 400);
         }
 
         $em->flush();

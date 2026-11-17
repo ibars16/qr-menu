@@ -29,6 +29,7 @@ allergen:
 results:
     none: "No dishes found"
     empty: "No products available."
+    no_dishes: "This menu doesn't have any dishes yet."
 dish:
     popular: "Popular"
     supplement: "Supplement"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "Other"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "Page not found"
+    not_found_text: "The page you're looking for doesn't exist or is no longer available."
+    forbidden_title: "Access denied"
+    forbidden_text: "You don't have permission to view this page."
+    server_title: "Something went wrong"
+    server_text: "An unexpected error occurred. Please try again in a few minutes."
+    back_home: "Back to home"

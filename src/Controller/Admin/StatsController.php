@@ -52,6 +52,8 @@ class StatsController extends AbstractController
             'totalViews' => $productViewRepo->totalViews($restaurant, $since),
             'conversations' => $exchangeLogRepo->countConversations($restaurant, $since),
             'neverViewed' => $neverViewed,
+            // No active dish at all: "all your dishes were viewed" would be false.
+            'hasActiveProducts' => $neverViewed !== [] || $productRepo->countActive($restaurant) > 0,
             'localeBreakdown' => $exchangeLogRepo->localeBreakdown($restaurant, $since),
         ]);
     }

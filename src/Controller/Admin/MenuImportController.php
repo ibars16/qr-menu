@@ -253,7 +253,7 @@ class MenuImportController extends AbstractController
         return $this->redirectToRoute('admin_menu_import_show', ['id' => $batch->getId()]);
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    #[Route('/{id}', name: 'show', requirements: ['id' => '\d{1,9}'], methods: ['GET'])]
     public function show(MenuImportBatch $batch): Response
     {
         $this->assertOwner($batch);
@@ -267,7 +267,7 @@ class MenuImportController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/status', name: 'status', methods: ['GET'])]
+    #[Route('/{id}/status', name: 'status', requirements: ['id' => '\d{1,9}'], methods: ['GET'])]
     public function statusJson(MenuImportBatch $batch): JsonResponse
     {
         $this->assertOwner($batch);
@@ -285,7 +285,7 @@ class MenuImportController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/complete', name: 'complete', methods: ['GET'])]
+    #[Route('/{id}/complete', name: 'complete', requirements: ['id' => '\d{1,9}'], methods: ['GET'])]
     public function complete(MenuImportBatch $batch, EntityManagerInterface $em, AiPhotoBatch $aiPhotoBatch, DishPhotoQuota $quota, AiAccess $aiAccess): Response
     {
         $this->assertOwner($batch);
@@ -361,7 +361,7 @@ class MenuImportController extends AbstractController
      * MenuImportLanguageNotice): one batch per request, the browser calls
      * it again until done — like the main-language change.
      */
-    #[Route('/{id}/language/translate', name: 'language_translate', methods: ['POST'])]
+    #[Route('/{id}/language/translate', name: 'language_translate', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     #[RequiresAi(AiAccess::IMPORT)]
     public function translateLanguage(MenuImportBatch $batch, Request $request, MenuImportLanguageNotice $notice): JsonResponse
     {
@@ -381,7 +381,7 @@ class MenuImportController extends AbstractController
     }
 
     /** "Dejarla así": nothing changes, the notice is gone for this import. */
-    #[Route('/{id}/language/dismiss', name: 'language_dismiss', methods: ['POST'])]
+    #[Route('/{id}/language/dismiss', name: 'language_dismiss', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function dismissLanguage(MenuImportBatch $batch, Request $request, MenuImportLanguageNotice $notice): Response
     {
         $this->assertOwner($batch);

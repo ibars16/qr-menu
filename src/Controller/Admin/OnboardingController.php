@@ -88,7 +88,7 @@ class OnboardingController extends AbstractController
                         $file->move($path, $name);
                     } catch (FileException) {
                         array_map(static fn (string $p) => is_file($p) && unlink($p), $moved);
-                        $errors['upload'] = $translator->trans('onboarding.upload_error', [], 'admin_onboarding');
+                        $errors['upload'] = $translator->trans('upload_error', [], 'admin_onboarding');
                         break;
                     }
                     $moved[] = $path . '/' . $name;
@@ -108,7 +108,7 @@ class OnboardingController extends AbstractController
                         }
                     }
                     if ($heroWarned) {
-                        $this->addFlash('warning', $translator->trans('onboarding.hero_quality', [], 'admin_onboarding'));
+                        $this->addFlash('warning', $translator->trans('hero_quality', [], 'admin_onboarding'));
                     }
 
                     return $this->redirectToRoute('admin_menu');

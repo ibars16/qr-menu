@@ -241,7 +241,7 @@ class MenuAdminController extends AbstractController
         return $this->json(['id' => $category->getId(), 'name' => $name]);
     }
 
-    #[Route('/categories/{id}/edit', name: 'category_edit', methods: ['POST'])]
+    #[Route('/categories/{id}/edit', name: 'category_edit', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function editCategory(Category $category, Request $request, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $this->assertOwner($category->getRestaurant());
@@ -281,7 +281,7 @@ class MenuAdminController extends AbstractController
         return $this->json(['id' => $category->getId(), 'name' => $name]);
     }
 
-    #[Route('/categories/{id}/toggle', name: 'category_toggle', methods: ['POST'])]
+    #[Route('/categories/{id}/toggle', name: 'category_toggle', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function toggleCategory(Category $category, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $this->assertOwner($category->getRestaurant());
@@ -295,7 +295,7 @@ class MenuAdminController extends AbstractController
         return $this->json(['active' => $category->isActive()]);
     }
 
-    #[Route('/categories/{id}/delete', name: 'category_delete', methods: ['POST'])]
+    #[Route('/categories/{id}/delete', name: 'category_delete', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function deleteCategory(Category $category, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $this->assertOwner($category->getRestaurant());
@@ -310,7 +310,7 @@ class MenuAdminController extends AbstractController
 
     // ── Products ─────────────────────────────────────────────────────────────
 
-    #[Route('/products/{id}', name: 'product_get', methods: ['GET'])]
+    #[Route('/products/{id}', name: 'product_get', requirements: ['id' => '\d{1,9}'], methods: ['GET'])]
     public function getProduct(Product $product, Request $request): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
@@ -529,7 +529,7 @@ class MenuAdminController extends AbstractController
      * ProductTranslationService::invalidateStale() the next time the
      * default-locale name/description changes — see that method's docblock.
      */
-    #[Route('/products/{id}/translations/{locale}', name: 'product_translation_save', methods: ['POST'])]
+    #[Route('/products/{id}/translations/{locale}', name: 'product_translation_save', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function saveProductTranslation(Product $product, string $locale, Request $request, EntityManagerInterface $em, MenuPreferencesResolver $menuPreferences): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
@@ -581,7 +581,7 @@ class MenuAdminController extends AbstractController
      * only after saveProduct() has returned the product's id (a brand-new
      * dish doesn't have one yet to upload against).
      */
-    #[Route('/products/{id}/image', name: 'product_image_upload', methods: ['POST'])]
+    #[Route('/products/{id}/image', name: 'product_image_upload', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function uploadProductImage(Product $product, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
@@ -627,7 +627,7 @@ class MenuAdminController extends AbstractController
      * clip, files deleted (ProductImageReplacer::remove()). Immediate, like
      * an AI photo — not held until Guardar.
      */
-    #[Route('/products/{id}/image/delete', name: 'product_image_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/products/{id}/image/delete', name: 'product_image_delete', methods: ['POST'], requirements: ['id' => '\d{1,9}'])]
     public function deleteProductImage(Product $product, EntityManagerInterface $em): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
@@ -651,7 +651,7 @@ class MenuAdminController extends AbstractController
      * All-or-nothing: if either step fails, every new file is deleted and
      * the product keeps its previous clip AND photo untouched.
      */
-    #[Route('/products/{id}/clip', name: 'product_clip_upload', methods: ['POST'])]
+    #[Route('/products/{id}/clip', name: 'product_clip_upload', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function uploadProductClip(Product $product, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
@@ -1243,7 +1243,7 @@ class MenuAdminController extends AbstractController
         ]);
     }
 
-    #[Route('/products/{id}/toggle', name: 'product_toggle', methods: ['POST'])]
+    #[Route('/products/{id}/toggle', name: 'product_toggle', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function toggleProduct(Product $product, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
@@ -1257,7 +1257,7 @@ class MenuAdminController extends AbstractController
         return $this->json(['active' => $product->isActive()]);
     }
 
-    #[Route('/products/{id}/delete', name: 'product_delete', methods: ['POST'])]
+    #[Route('/products/{id}/delete', name: 'product_delete', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function deleteProduct(Product $product, EntityManagerInterface $em, MenuImportReview $importReview): JsonResponse
     {
         $this->assertOwner($product->getCategory()->getRestaurant());
@@ -1372,7 +1372,7 @@ class MenuAdminController extends AbstractController
         return $this->json($result);
     }
 
-    #[Route('/ingredients/{id}/allergens', name: 'ingredients_allergens_save', methods: ['POST'])]
+    #[Route('/ingredients/{id}/allergens', name: 'ingredients_allergens_save', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function saveIngredientAllergens(Ingredient $ingredient, Request $request, EntityManagerInterface $em, AllergenReviewQueue $reviewQueue): JsonResponse
     {
         $this->assertOwner($ingredient->getRestaurant());

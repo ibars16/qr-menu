@@ -231,7 +231,7 @@ class BillingController extends AbstractController
      * comes back here, seeing exactly what the owner would; already "as"
      * another owner, Symfony exits that one first.
      */
-    #[Route('/pay/{id}', name: 'pay', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[Route('/pay/{id}', name: 'pay', requirements: ['id' => '\d{1,9}'], methods: ['GET'])]
     public function pay(int $id, EntityManagerInterface $em): Response
     {
         $restaurant = $this->getUser()?->getRestaurant();

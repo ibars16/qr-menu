@@ -29,6 +29,7 @@ allergen:
 results:
     none: "未找到菜品"
     empty: "暂无可用商品。"
+    no_dishes: "该菜单暂无菜品。"
 dish:
     popular: "热门"
     supplement: "加价"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "其他"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "页面未找到"
+    not_found_text: "您要查找的页面不存在或已不再可用。"
+    forbidden_title: "无权访问"
+    forbidden_text: "您没有查看此页面的权限。"
+    server_title: "出了点问题"
+    server_text: "发生了意外错误，请几分钟后重试。"
+    back_home: "返回首页"

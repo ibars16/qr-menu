@@ -117,6 +117,7 @@
             </div>
         </div>
 
+        {% if hasActiveProducts %}
         <div class="chart-card">
             <div class="chart-card-title">{{ 'chart.never_viewed'|trans({}, 'admin_stats') }}</div>
             <div class="chart-card-body">
@@ -141,6 +142,7 @@
                 {% endif %}
             </div>
         </div>
+        {% endif %}
     </div>
 {% endblock %}
 

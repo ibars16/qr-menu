@@ -29,6 +29,7 @@ allergen:
 results:
     none: "Không tìm thấy món ăn"
     empty: "Không có sản phẩm nào."
+    no_dishes: "Thực đơn này chưa có món nào."
 dish:
     popular: "Phổ biến"
     supplement: "Phụ thu"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "Khác"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "Không tìm thấy trang"
+    not_found_text: "Trang bạn đang tìm không tồn tại hoặc không còn khả dụng."
+    forbidden_title: "Không được phép truy cập"
+    forbidden_text: "Bạn không có quyền xem trang này."
+    server_title: "Đã xảy ra sự cố"
+    server_text: "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau vài phút."
+    back_home: "Về trang chủ"

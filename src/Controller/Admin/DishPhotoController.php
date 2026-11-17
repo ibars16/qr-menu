@@ -92,7 +92,7 @@ class DishPhotoController extends AbstractController
     }
 
     /** "Mejorar con IA": the dish's photo retouched and put on it at once (same quota as generate()). */
-    #[Route('/products/{id}/ai-photo/enhance', name: 'product_ai_photo_enhance', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/products/{id}/ai-photo/enhance', name: 'product_ai_photo_enhance', methods: ['POST'], requirements: ['id' => '\d{1,9}'])]
     #[RequiresAi(AiAccess::PHOTOS)]
     public function enhance(Product $product): JsonResponse
     {
@@ -119,7 +119,7 @@ class DishPhotoController extends AbstractController
     }
 
     /** "Volver a la original": the photo kept by enhance() back on the dish. */
-    #[Route('/products/{id}/image/original', name: 'product_image_original', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/products/{id}/image/original', name: 'product_image_original', methods: ['POST'], requirements: ['id' => '\d{1,9}'])]
     public function revert(Product $product): JsonResponse
     {
         if ($product->getCategory()->getRestaurant() !== $this->restaurant()) {
@@ -149,7 +149,7 @@ class DishPhotoController extends AbstractController
         return $response;
     }
 
-    #[Route('/products/{id}/image/ai', name: 'product_ai_photo_apply', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/products/{id}/image/ai', name: 'product_ai_photo_apply', methods: ['POST'], requirements: ['id' => '\d{1,9}'])]
     public function apply(Product $product, Request $request): JsonResponse
     {
         $restaurant = $this->restaurant();
@@ -169,7 +169,7 @@ class DishPhotoController extends AbstractController
         return $this->json(['image' => $filename, 'videoClip' => null, 'imageSource' => Product::IMAGE_SOURCE_AI, 'canRevert' => false]);
     }
 
-    #[Route('/menu/import/{id}/photos/step', name: 'menu_import_photos_step', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/menu/import/{id}/photos/step', name: 'menu_import_photos_step', methods: ['POST'], requirements: ['id' => '\d{1,9}'])]
     #[RequiresAi(AiAccess::PHOTOS)]
     public function importStep(MenuImportBatch $importBatch, Request $request): JsonResponse
     {
@@ -186,7 +186,7 @@ class DishPhotoController extends AbstractController
         ]);
     }
 
-    #[Route('/menu/import/{id}/photos/dismiss', name: 'menu_import_photos_dismiss', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[Route('/menu/import/{id}/photos/dismiss', name: 'menu_import_photos_dismiss', methods: ['POST'], requirements: ['id' => '\d{1,9}'])]
     public function importDismiss(MenuImportBatch $importBatch, Request $request): Response
     {
         $this->assertBatch($importBatch);

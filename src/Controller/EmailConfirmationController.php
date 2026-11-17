@@ -21,7 +21,7 @@ class EmailConfirmationController extends AbstractController
     /** Seconds between two "Reenviar" (per session). */
     private const RESEND_EVERY = 60;
 
-    #[Route('/confirmar-email/{id}/{check}', name: 'app_confirm_email', requirements: ['id' => '\d+', 'check' => '[0-9a-f]{16}'], methods: ['GET'])]
+    #[Route('/confirmar-email/{id}/{check}', name: 'app_confirm_email', requirements: ['id' => '\d{1,9}', 'check' => '[0-9a-f]{16}'], methods: ['GET'])]
     public function confirm(int $id, string $check, Request $request, EmailConfirmation $confirmation, AccountMailer $mailer, TranslatorInterface $translator): Response
     {
         $user = $confirmation->confirm($request, $id, $check);
@@ -42,7 +42,7 @@ class EmailConfirmationController extends AbstractController
     }
 
     /** The link a login email change sends to the new address (EmailChange). */
-    #[Route('/confirmar-cambio-email/{id}/{check}', name: 'app_confirm_email_change', requirements: ['id' => '\d+', 'check' => '[0-9a-f]{16}'], methods: ['GET'])]
+    #[Route('/confirmar-cambio-email/{id}/{check}', name: 'app_confirm_email_change', requirements: ['id' => '\d{1,9}', 'check' => '[0-9a-f]{16}'], methods: ['GET'])]
     public function confirmChange(int $id, string $check, Request $request, EmailChange $change, AccountMailer $mailer, TranslatorInterface $translator): Response
     {
         // Before confirm(): the firewall is lazy, and resolving the session's

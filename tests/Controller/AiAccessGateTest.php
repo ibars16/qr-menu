@@ -219,7 +219,7 @@ final class AiAccessGateTest extends WebTestCase
         $this->awaitingFirstPayment();
         $this->enterAs($this->resellerUser);
 
-        $this->client->request('POST', '/admin/menu/import/2147483647/language/translate');
+        $this->client->request('POST', '/admin/menu/import/999999999/language/translate');
 
         self::assertResponseStatusCodeSame(404, 'past the gate: the batch itself is looked up (none), no AI');
         self::assertStringNotContainsString(self::BLOCKED, (string) $this->client->getResponse()->getContent());

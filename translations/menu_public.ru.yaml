@@ -29,6 +29,7 @@ allergen:
 results:
     none: "Блюда не найдены"
     empty: "Нет доступных блюд."
+    no_dishes: "В этом меню пока нет блюд."
 dish:
     popular: "Популярное"
     supplement: "Доплата"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "Другое"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "Страница не найдена"
+    not_found_text: "Страница, которую вы ищете, не существует или больше недоступна."
+    forbidden_title: "Доступ запрещён"
+    forbidden_text: "У вас нет прав для просмотра этой страницы."
+    server_title: "Что-то пошло не так"
+    server_text: "Произошла непредвиденная ошибка. Попробуйте ещё раз через несколько минут."
+    back_home: "На главную"

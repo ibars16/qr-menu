@@ -29,6 +29,7 @@ allergen:
 results:
     none: "Ingen retter funnet"
     empty: "Ingen produkter tilgjengelig."
+    no_dishes: "Denne menyen har ingen retter ennå."
 dish:
     popular: "Populær"
     supplement: "Tillegg"
@@ -95,3 +96,12 @@ unavailable:
 # A dish the import read without a category (MenuImportAssembler).
 category:
     fallback_name: "Annet"
+# Custom error pages (templates/bundles/TwigBundle/Exception/error.html.twig).
+error_page:
+    not_found_title: "Fant ikke siden"
+    not_found_text: "Siden du leter etter finnes ikke eller er ikke lenger tilgjengelig."
+    forbidden_title: "Ingen tilgang"
+    forbidden_text: "Du har ikke tillatelse til å se denne siden."
+    server_title: "Noe gikk galt"
+    server_text: "Det oppstod en uventet feil. Prøv igjen om noen minutter."
+    back_home: "Tilbake til forsiden"

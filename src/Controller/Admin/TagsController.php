@@ -114,11 +114,11 @@ class TagsController extends AbstractController
         ]);
     }
 
-    #[Route('/tags/{id}/edit', name: 'tag_edit', methods: ['POST'])]
+    #[Route('/tags/{id}/edit', name: 'tag_edit', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function edit(ProductTag $tag, Request $request, EntityManagerInterface $em, TranslatorInterface $translator): JsonResponse
     {
         if ($tag->getRestaurant() !== $this->restaurant()) {
-            return $this->json(['error' => 'Forbidden'], 403);
+            return $this->json(['error' => $translator->trans('json_error.forbidden', [], 'admin_base')], 403);
         }
 
         $data  = json_decode($request->getContent(), true);
@@ -167,11 +167,11 @@ class TagsController extends AbstractController
         ]);
     }
 
-    #[Route('/tags/{id}/delete', name: 'tag_delete', methods: ['POST'])]
+    #[Route('/tags/{id}/delete', name: 'tag_delete', requirements: ['id' => '\d{1,9}'], methods: ['POST'])]
     public function delete(ProductTag $tag, EntityManagerInterface $em, TranslatorInterface $translator): JsonResponse
     {
         if ($tag->getRestaurant() !== $this->restaurant()) {
-            return $this->json(['error' => 'Forbidden'], 403);
+            return $this->json(['error' => $translator->trans('json_error.forbidden', [], 'admin_base')], 403);
         }
 
         if ($tag->isSystem()) {

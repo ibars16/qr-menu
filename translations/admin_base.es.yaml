@@ -96,3 +96,8 @@ email_confirmation:
     sent: "Te hemos enviado otro enlace a %email%."
     wait: "Espera un minuto antes de pedir otro enlace."
     done: "Email confirmado: tu carta ya es visible para tus clientes."
+# Errors returned as JSON and shown in a toast.
+json_error:
+    forbidden: "No tienes permiso para hacer esto."
+    no_restaurant: "Tu cuenta no tiene ningún restaurante asociado."
+    nothing_to_update: "No hay nada que guardar."
