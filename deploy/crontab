@@ -1,0 +1,22 @@
+# Tareas programadas de QR Menu — copiar al crontab del servidor
+# (crontab -e, o /etc/cron.d/qrmenu añadiendo el usuario tras la hora).
+# Ajustar /app y el usuario/contenedor al montar producción; si el PHP corre
+# en Docker, anteponer `docker exec <contenedor>` a cada `php`.
+#
+# flock -n: si la ejecución anterior sigue en marcha, la nueva no arranca.
+# Todo va a /var/log/qrmenu/cron.log (crear la carpeta; rotarla con logrotate).
+
+CRON_TZ=Europe/Madrid
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Revendedores: pausa / reanuda los cobros con tarjeta de sus restaurantes.
+0 4 * * *   flock -n /tmp/qrmenu-resellers.lock php /app/bin/console app:resellers:sync-billing --env=prod --no-interaction >> /var/log/qrmenu/cron.log 2>&1
+
+# Tipos de cambio de las monedas.
+30 5 * * *  flock -n /tmp/qrmenu-rates.lock php /app/bin/console app:update-exchange-rates --env=prod --no-interaction >> /var/log/qrmenu/cron.log 2>&1
+
+# Traducción de la biblioteca global de ingredientes (Groq, para sola en la
+# cuota diaria). PAUSADA: no quitar el «#» sin el OK del dueño. Comparte cupo
+# de Groq con las traducciones de las cartas, por eso va de madrugada.
+#30 2 * * * flock -n /tmp/qrmenu-ingredients.lock php /app/bin/console app:global-ingredients:translate --env=prod --no-interaction >> /var/log/qrmenu/cron.log 2>&1

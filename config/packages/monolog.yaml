@@ -39,8 +39,18 @@ when@prod:
                 action_level: error
                 handler: nested
                 excluded_http_codes: [404, 405]
-                channels: ["!deprecation"]
+                # smart_waiter / menu_import go to "ai_warnings" below instead
+                # (from warning up), so they aren't logged twice.
+                channels: ["!deprecation", "!smart_waiter", "!menu_import"]
                 buffer_size: 50 # How many messages should be saved? Prevent memory leaks
+            # AI provider fallbacks and menu-import failures are mostly
+            # warnings, which "main" (errors only) would drop.
+            ai_warnings:
+                type: stream
+                path: php://stderr
+                level: warning
+                channels: ["smart_waiter", "menu_import"]
+                formatter: monolog.formatter.json
             nested:
                 type: stream
                 path: php://stderr

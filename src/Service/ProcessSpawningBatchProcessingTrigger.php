@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\MenuImportBatch;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 
 /**
@@ -23,6 +24,13 @@ use Symfony\Component\Process\Process;
  * of scope, which happens the moment trigger() returns; without the wrapper,
  * the console command was being killed within milliseconds of starting.
  *
+ * The PHP binary comes from PhpExecutableFinder, not PHP_BINARY: under
+ * php-fpm PHP_BINARY is the php-fpm executable itself, which can't run
+ * bin/console, and since the spawn is backgrounded with its output thrown
+ * away the batch would just sit at UPLOADED forever, silently. Under
+ * `php -S` / CLI the finder returns PHP_BINARY as before; under fpm it finds
+ * the CLI php next to it (PHP_BINDIR/php), or the PHP_BINARY env var if set.
+ *
  * This is a real, working stand-in for a proper queue, not a shortcut
  * pretending to be one — see BatchProcessingTriggerInterface's docblock for
  * exactly what changes when a Messenger worker becomes available.
@@ -33,13 +41,22 @@ final class ProcessSpawningBatchProcessingTrigger implements BatchProcessingTrig
         private readonly string $projectDir,
         private readonly string $kernelEnvironment,
         private readonly LoggerInterface $logger,
+        private readonly PhpExecutableFinder $phpFinder = new PhpExecutableFinder(),
     ) {}
 
     public function trigger(MenuImportBatch $batch): void
     {
+        $php = $this->phpFinder->find(false);
+        if (false === $php || '' === $php) {
+            // Batch stays at UPLOADED; `app:menu-import:process-batch` can still finish it by hand.
+            $this->logger->error('No CLI PHP binary found to run background menu-import processing', ['batchId' => $batch->getId()]);
+
+            return;
+        }
+
         $commandLine = sprintf(
             'nohup %s %s app:menu-import:process-batch %d --env=%s > /dev/null 2>&1 &',
-            escapeshellarg(PHP_BINARY),
+            escapeshellarg($php),
             escapeshellarg($this->projectDir . '/bin/console'),
             $batch->getId(),
             escapeshellarg($this->kernelEnvironment),
