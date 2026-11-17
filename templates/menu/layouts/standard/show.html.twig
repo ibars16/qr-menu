@@ -222,7 +222,7 @@
     .cat-title { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; font-family: var(--font-display, inherit); font-size: 11px; font-weight: 800; color: var(--cat-title); text-transform: uppercase; letter-spacing: 0.15em; }
     .cat-title::before { content: ''; width: 3px; height: 14px; border-radius: 2px; background: var(--tab-act-bg); flex-shrink: 0; opacity: 0.8; }
     .cat-title::after { content: ''; flex: 1; height: 1px; background: var(--cat-sep, transparent); }
-    .no-results { display: none; text-align: center; padding: 80px 20px; color: var(--fg-3); font-size: 15px; }
+    .no-results { display: none; text-align: center; padding: 80px 20px; color: var(--fg-3-text); font-size: 15px; }
     .empty-state { text-align: center; padding: 90px 20px; color: var(--fg-3); font-size: 15px; }
 
     .cards-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
@@ -300,9 +300,9 @@
     .lbl { font-size: 12px; padding: 3px 10px; border-radius: var(--badge-radius, 8px); }
     .lbl-g { background: var(--lg-bg); color: var(--lg); border: 1px solid var(--lg-b); }
     .alg { font-size: 12px; padding: 3px 10px; border-radius: var(--badge-radius, 8px); border: 1px solid transparent; }
-    .alg-contains { background: rgba(220,38,38,0.12); color: #d64545; border-color: rgba(220,38,38,0.28); }
-    .alg-may_contain { background: transparent; color: #c78a3d; border: 1px dashed rgba(199,138,61,0.55); }
-    .alg-free_from { background: rgba(127,127,127,0.08); color: var(--btt); border-color: var(--bdiv); }
+    .alg-contains { background: rgba(220,38,38,0.12); color: var(--alg-contains-text); border-color: rgba(220,38,38,0.28); }
+    .alg-may_contain { background: transparent; color: var(--alg-may-text); border: 1px dashed rgba(199,138,61,0.55); }
+    .alg-free_from { background: rgba(127,127,127,0.08); color: var(--fg-3-text); border-color: var(--bdiv); }
     .allergen-disclaimer { font-size: 11px; color: var(--fg-3); padding-top: 10px; line-height: 1.5; }
     .nut { display: inline-flex; align-items: baseline; gap: 4px; background: var(--nut-bg); border: 1px solid var(--nut-b); border-radius: 10px; padding: 7px 14px; }
     .nut-v { font-size: 18px; font-weight: 700; color: var(--nut-v); font-variant-numeric: tabular-nums; }
@@ -318,9 +318,9 @@
     .set-menu-header { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
     .set-menu-name { font-family: var(--font-display, inherit); font-size: 22px; font-weight: 800; color: var(--cn); letter-spacing: -0.5px; }
     .set-menu-price { font-size: 22px; font-weight: 800; color: var(--cp); font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .set-menu-desc { font-size: 13px; color: var(--fg-3); line-height: 1.55; margin-top: 6px; }
+    .set-menu-desc { font-size: 13px; color: var(--fg-3-text); line-height: 1.55; margin-top: 6px; }
     .set-menu-group { margin-top: 26px; }
-    .set-menu-group-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-3); margin-bottom: 10px; }
+    .set-menu-group-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-3-text); margin-bottom: 10px; }
     .set-menu-row-wrap { perspective: 1400px; cursor: pointer; }
     .set-menu-row-wrap .card { height: 64px; }
     .set-menu-row-wrap .card-front { background: var(--surface); border-bottom: 1px solid var(--row-border); display: flex; align-items: center; padding: 0 8px; border-radius: 10px; transition: background 0.2s; }
@@ -329,8 +329,8 @@
     .set-menu-thumb { width: 52px; height: 52px; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
     .set-menu-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .set-menu-name.product-name { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; color: var(--cn); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .set-menu-supplement { font-size: 12.5px; font-weight: 600; color: var(--fg-3); white-space: nowrap; }
-    .set-menu-chevron { color: var(--fg-3); font-size: 14px; flex-shrink: 0; }
+    .set-menu-supplement { font-size: 12.5px; font-weight: 600; color: var(--fg-3-text); white-space: nowrap; }
+    .set-menu-chevron { color: var(--fg-3-text); font-size: 14px; flex-shrink: 0; }
 
     /* Horizontal back-scroll variant for set-menu dish detail — this
        layout's own back-scroll is vertical by default; set-menu rows use

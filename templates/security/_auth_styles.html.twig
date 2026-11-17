@@ -9,13 +9,18 @@
             --bg-card:        #141414;
             --bg-input:       #1a1a1a;
             --bd-card:        #242424;
-            --bd-input:       #2a2a2a;
+            /* AA: the greys below are the old ones a tone lighter.
+               --bd-input 3.41:1 on --bg-card / 3.22:1 on --bg-input (was
+               1.2:1); #8a8a8a 5.34:1 on --bg-card, 5.04:1 on --bg-input
+               (--tx-sub #555 was 2.47:1, --tx-muted #666 3.21:1, the
+               divider's #333 1.46:1, the placeholder's #444 1.79:1). */
+            --bd-input:       #6a6a6a;
             --tx-hi:          #fff;
             --tx-label:       #888;
-            --tx-sub:         #555;
-            --tx-muted:       #666;
-            --tx-faint:       #333;
-            --tx-placeholder: #444;
+            --tx-sub:         #8a8a8a;
+            --tx-muted:       #8a8a8a;
+            --tx-faint:       #8a8a8a;
+            --tx-placeholder: #8a8a8a;
             --accent-text:    #F0997B;
         }
         html.light {
@@ -23,13 +28,16 @@
             --bg-card:        #fafafa;
             --bg-input:       #efefef;
             --bd-card:        #d4d4d8;
-            --bd-input:       #d4d4d8;
+            /* --bd-input 3.01:1 on --bg-input (was 1.29:1); #666 4.99:1
+               on --bg-input, 5.5:1 on --bg-card (#777 was 4.29:1, #999
+               2.48–2.73:1). */
+            --bd-input:       #898994;
             --tx-hi:          #111;
-            --tx-label:       #777;
-            --tx-sub:         #777;
+            --tx-label:       #666;
+            --tx-sub:         #666;
             --tx-muted:       #666;
-            --tx-faint:       #999;
-            --tx-placeholder: #999;
+            --tx-faint:       #666;
+            --tx-placeholder: #666;
             --accent-text:    #C1440E;
         }
         .theme-icon-light { display: none; }

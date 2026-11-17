@@ -104,7 +104,7 @@
         }
         .info-banner span.info-banner-text { flex:1; }
         .info-banner i.ti-chevron-right,
-        .info-banner i.ti-x { font-size:14px; flex-shrink:0; color:var(--tx-6); }
+        .info-banner i.ti-x { font-size:14px; flex-shrink:0; color:var(--tx-muted); }
 
         /* Active mark (toggleMark() below): the notice whose dishes are
            marked wears the SAME ring as those rows (--brand border + 1px
@@ -165,7 +165,7 @@
         }
         .menu-search-input {
             width:100%; height:40px; padding:0 44px 0 38px; box-sizing:border-box;
-            background:var(--bg-nav); border:1px solid var(--bd-1); border-radius:var(--r-md);
+            background:var(--bg-nav); border:1px solid var(--bd-input); border-radius:var(--r-md);
             box-shadow:var(--shadow-sm);
             color:var(--tx-1); font-family:inherit; font-size:var(--fs-md);
             appearance:none; -webkit-appearance:none; transition:border-color 0.15s;
@@ -239,7 +239,7 @@
         .icon-btn {
             width:28px; height:28px; border-radius:var(--r-sm); border:1px solid var(--bd-3);
             background:var(--bg-input); display:flex; align-items:center; justify-content:center;
-            cursor:pointer; color:var(--tx-4); font-size:var(--fs-base);
+            cursor:pointer; color:var(--tx-muted); font-size:var(--fs-base);
             transition:color 0.1s, border-color 0.1s;
         }
         .icon-btn:hover        { color:var(--tx-1); border-color:var(--bd-2); }
@@ -284,7 +284,7 @@
             flex-shrink:0; min-width:58px;
         }
         .price-amount { font-size:var(--fs-base); font-weight:600; color:var(--tx-1); }
-        .price-currency { font-size:var(--fs-xs); font-weight:500; color:var(--tx-5); }
+        .price-currency { font-size:var(--fs-xs); font-weight:500; color:var(--tx-muted); }
         /* A hidden dish is dimmed part by part (not the whole row) so the
            "Repetido" chip below — always on a hidden dish — keeps full contrast. */
         .product-row.inactive > :not(.product-info),
@@ -575,8 +575,8 @@
                                         {% include 'admin/_product_menu_notice.html.twig' %}
                                     </div>
                                     <div class="product-price">
-                                        <span class="price-amount">{{ (product.basePrice / 100)|number_format(2) }}</span>
-                                        <span class="price-currency">{{ restaurant.currency }}</span>
+                                        <span class="price-amount">{{ (product.basePrice / 100)|menu_number(app.request.locale) }}</span>
+                                        <span class="price-currency">{{ restaurant.currency|currency_display }}</span>
                                     </div>
                                     <button class="toggle {{ product.isActive ? 'on' : '' }}"
                                             onclick="event.stopPropagation(); toggleProduct({{ product.id }}, this)"

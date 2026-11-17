@@ -27,8 +27,25 @@
 
             /* Secondary text that must stay readable (hints, URLs, quiet
                buttons) — distinct from the --tx-6/--tx-7 decorative-label
-               rungs of the grayscale, which are not guaranteed AA. */
-            --tx-muted:      #7e7e7e;
+               rungs of the grayscale, which are not guaranteed AA.
+               #8a8a8a: 4.83:1 on --bg-deep, 5.2:1+ on the other surfaces
+               (#7e7e7e fell to 4.11:1 on --bg-deep). */
+            --tx-muted:      #8a8a8a;
+
+            /* Input/select/textarea outline — --bd-2's grey, a tone
+               lighter, so the box is visible (WCAG 1.4.11, 3:1): 3.22:1 on
+               --bg-input, 3.41:1 on --bg-card, 3.08:1 on --bg-deep
+               (--bd-2 was 1.2–1.3:1). */
+            --bd-input:      #6a6a6a;
+
+            /* Brand orange as small text/icons on --bg-nav (the mobile
+               bottom nav's active tab): --brand is 3.69:1 on #111, this
+               lighter tone of it 4.96:1. Light mode keeps --brand (5.12:1). */
+            --brand-fg:      #E55111;
+
+            /* Success green text (.flash-success, .toast.success…):
+               dark 6.81:1 on .flash-success's fill, 6.25:1 on .toast. */
+            --ok-fg:         #7aad40;
 
             /* Error red — the product editor's required-field state
                (.field-error, input.error, #cat-select-error in
@@ -115,8 +132,17 @@
             --overlay:       rgba(0,0,0,0.4);
 
             /* Secondary text — same role as dark mode, recalibrated: the
-               dark-mode hex is too light to pass AA on white/near-white. */
-            --tx-muted:      #707070;
+               dark-mode hex is too light to pass AA on white/near-white.
+               #666: 4.69:1 on --bg-hover, 5.2:1+ elsewhere (#707070 fell
+               to 4.04–4.43:1 on --bg-hover/--bg-input/--bg-page). */
+            --tx-muted:      #666;
+            /* --bd-2 a tone darker: 3.01:1 on --bg-input, 3.31:1 on
+               --bg-card, 3.46:1 on white (--bd-2 was 1.3–1.4:1). */
+            --bd-input:      #898994;
+            --brand-fg:      #C1440E;
+            /* Same green, darker: 4.54:1 on .flash-success's fill over
+               --bg-page, 6.46:1 on .toast (#7aad40 was 1.72:1 / 2.44:1). */
+            --ok-fg:         #446124;
 
             /* Required-field error state — same recalibration as --tx-muted
                above and the same scope note (see :root). The dark-mode

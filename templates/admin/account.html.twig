@@ -46,12 +46,12 @@
         .field { display: flex; flex-direction: column; gap: var(--sp-2); }
         .field label { font-size: var(--fs-base); font-weight: 500; color: var(--tx-3); }
         .field input {
-            background: var(--bg-input); border: 1px solid var(--bd-2);
+            background: var(--bg-input); border: 1px solid var(--bd-input);
             color: var(--tx-hi); font-size: var(--fs-lg); padding: var(--sp-3) var(--sp-4);
             border-radius: var(--r-md); outline: none; width: 100%;
             transition: border-color 0.15s; -webkit-appearance: none;
         }
-        .field input:focus { border-color: var(--tx-5); }
+        .field input:focus { border-color: var(--tx-muted); }
         .field input:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
         .field input.error { border-color: var(--err-border); }
         .field-hint { font-size: var(--fs-sm); color: var(--tx-3); line-height: var(--lh-body); }

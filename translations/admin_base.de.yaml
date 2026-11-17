@@ -33,7 +33,7 @@ theme:
 
 bottom_nav:
     aria_label: Navigation
-    menu: Speisekarte
+    menu: "Speise\u00ADkarte"
     menus: Set-Menüs
     categories: Kateg.
     tags: Tags

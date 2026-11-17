@@ -53,12 +53,12 @@
         .req { color: #C1440E; }
         .field input,
         .field select {
-            background: var(--bg-input); border: 1px solid var(--bd-2);
+            background: var(--bg-input); border: 1px solid var(--bd-input);
             color: var(--tx-hi); font-size: var(--fs-lg); padding: var(--sp-3) var(--sp-4);
             border-radius: var(--r-md); outline: none; width: 100%;
             transition: border-color 0.15s; -webkit-appearance: none;
         }
-        .field input:focus, .field select:focus { border-color: var(--tx-5); }
+        .field input:focus, .field select:focus { border-color: var(--tx-muted); }
         .field input:focus-visible, .field select:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
         .field-hint { font-size: var(--fs-sm); color: var(--tx-3); line-height: var(--lh-body); }
         /* Per-field errors — same tokens as the dish editor's .field-error /
@@ -111,12 +111,12 @@
         .hours-shift[hidden], .hours-add[hidden] { display: none; }
         .hours-sep { color: var(--tx-3); padding: 0 2px; }
         .hours-shift input {
-            background: var(--bg-card); border: 1px solid var(--bd-2); color: var(--tx-hi);
+            background: var(--bg-card); border: 1px solid var(--bd-input); color: var(--tx-hi);
             font-size: var(--fs-base); font-variant-numeric: tabular-nums;
             padding: 0 var(--sp-2); border-radius: var(--r-sm);
             width: 6.25rem; min-height: 36px; color-scheme: light dark;
         }
-        .hours-shift input:hover { border-color: var(--tx-6); }
+        .hours-shift input:hover { border-color: var(--tx-muted); }
         .hours-shift input:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
         .hours-shift input[aria-invalid="true"] { border-color: var(--err-border); }
         .hours-icon-btn, .hours-add {
@@ -172,7 +172,7 @@
             width: 72px; height: 72px; border-radius: var(--r-lg);
             background: var(--bg-input); border: 1px solid var(--bd-2);
             display: flex; align-items: center; justify-content: center;
-            font-size: var(--fs-2xl); font-weight: 700; color: var(--tx-5);
+            font-size: var(--fs-2xl); font-weight: 700; color: var(--tx-muted);
             overflow: hidden; flex-shrink: 0;
             position: relative;
         }
@@ -268,7 +268,7 @@
         /* Danger zone */
         .danger-zone { border-color: rgba(240,100,80,0.2) !important; }
         .danger-zone .settings-section-title { color: #F0997B; background: rgba(240,100,80,0.06); }
-        .danger-text { font-size: 13px; color: var(--tx-4); line-height: 1.5; }
+        .danger-text { font-size: 13px; color: var(--tx-muted); line-height: 1.5; }
         .danger-btn {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 8px 16px; border-radius: 8px; font-size: 13px;

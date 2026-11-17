@@ -26,7 +26,7 @@
 
         .back-link {
             display: inline-flex; align-items: center; justify-content: center;
-            width: 28px; height: 28px; border-radius: 8px; color: var(--tx-5);
+            width: 28px; height: 28px; border-radius: 8px; color: var(--tx-muted);
             margin-right: 6px; vertical-align: middle;
         }
         .back-link:hover { color: var(--tx-1); background: var(--bg-hover); }
@@ -36,15 +36,15 @@
         .menu-summary {
             display: flex; align-items: center; gap: 10px; padding: 12px 16px;
             background: var(--bg-card); border: 1px solid var(--bd-1); border-radius: 12px;
-            margin-bottom: 16px; font-size: 13px; color: var(--tx-5);
+            margin-bottom: 16px; font-size: 13px; color: var(--tx-muted);
         }
         .menu-summary-price { font-weight: 600; color: #C1440E; }
-        .menu-summary-desc { color: var(--tx-6); }
+        .menu-summary-desc { color: var(--tx-muted); }
 
         .empty-state { text-align:center; padding:60px 24px; }
         .empty-icon   { font-size:44px; display:block; margin-bottom:14px; opacity:0.2; }
         .empty-title  { font-size:17px; font-weight:600; color:var(--tx-hi); margin-bottom:6px; }
-        .empty-sub    { font-size:13px; color:var(--tx-6); line-height:1.6; max-width:320px; margin:0 auto; }
+        .empty-sub    { font-size:13px; color:var(--tx-muted); line-height:1.6; max-width:320px; margin:0 auto; }
 
         .section-card {
             border: 1px solid var(--bd-1); border-radius: 12px; margin-bottom: 12px; overflow: hidden;
@@ -57,15 +57,15 @@
         .section-drag:active { cursor: grabbing; }
         .section-label {
             flex: 1; font-size: 12px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.05em; color: var(--tx-4); cursor: pointer;
+            letter-spacing: 0.05em; color: var(--tx-muted); cursor: pointer;
         }
-        .section-count { font-size: 11px; color: var(--tx-6); }
+        .section-count { font-size: 11px; color: var(--tx-muted); }
         .section-actions { display: flex; gap: 4px; }
 
         .icon-btn {
             width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--bd-3);
             background: var(--bg-input); display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--tx-6); font-size: 13px;
+            cursor: pointer; color: var(--tx-muted); font-size: 13px;
             transition: color 0.1s, border-color 0.1s;
         }
         .icon-btn:hover        { color: var(--tx-1); border-color: var(--bd-2); }
@@ -101,29 +101,29 @@
         .dish-thumb img { width: 100%; height: 100%; object-fit: cover; }
         .dish-info { flex: 1; min-width: 0; }
         .dish-name { font-size: 13px; font-weight: 500; color: var(--tx-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .dish-meta { font-size: 11px; color: var(--tx-6); margin-top: 2px; }
+        .dish-meta { font-size: 11px; color: var(--tx-muted); margin-top: 2px; }
         .dish-row.inactive { opacity: 0.4; }
 
         .section-empty-hint {
-            padding: 10px 14px; font-size: 12px; color: var(--tx-7); text-align: center;
+            padding: 10px 14px; font-size: 12px; color: var(--tx-muted); text-align: center;
         }
 
         .add-row { padding: 4px 6px 8px; display: flex; }
         .add-dish-btn {
             width: 100%; padding: 8px; border: 1px dashed var(--bg-deep); border-radius: 8px;
-            background: none; color: var(--tx-8); font-size: 12px; cursor: pointer;
+            background: none; color: var(--tx-muted); font-size: 12px; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 5px;
             min-height: 40px; transition: border-color 0.1s, color 0.1s;
         }
-        .add-dish-btn:hover { border-color: var(--bd-2); color: var(--tx-4); }
+        .add-dish-btn:hover { border-color: var(--bd-2); color: var(--tx-1); }
 
         .add-section-btn {
             width: 100%; padding: 10px; border: 1px dashed var(--bg-deep); border-radius: 10px;
-            background: none; color: var(--tx-6); font-size: 13px; cursor: pointer;
+            background: none; color: var(--tx-muted); font-size: 13px; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 6px;
             min-height: 44px; margin-top: 4px; transition: border-color 0.1s, color 0.1s;
         }
-        .add-section-btn:hover { border-color: var(--bd-2); color: var(--tx-3); }
+        .add-section-btn:hover { border-color: var(--bd-2); color: var(--tx-1); }
 
         @media (max-width: 767px) {
             .icon-btn { width: 34px; height: 34px; font-size: 15px; }
@@ -140,7 +140,7 @@
 {% block body %}
     <div class="menu-edit-wrap">
         <div class="menu-summary">
-            <span class="menu-summary-price">{{ (menu.menuPrice / 100)|number_format(2) }} {{ restaurant.currency }}</span>
+            <span class="menu-summary-price">{{ (menu.menuPrice / 100)|menu_number(app.request.locale) }}&nbsp;{{ restaurant.currency|currency_display }}</span>
             {% if menu.menuDescription %}
                 <span class="menu-summary-desc">· {{ menu.menuDescription }}</span>
             {% endif %}
@@ -195,8 +195,8 @@
                                 <div class="dish-info">
                                     <div class="dish-name">{{ pName }}</div>
                                     <div class="dish-meta">
-                                        {{ (product.basePrice / 100)|number_format(2) }} {{ restaurant.currency }}
-                                        {% if product.supplementPrice %} · +{{ (product.supplementPrice / 100)|number_format(2) }} {{ restaurant.currency }}{% endif %}
+                                        {{ (product.basePrice / 100)|menu_number(app.request.locale) }}&nbsp;{{ restaurant.currency|currency_display }}
+                                        {% if product.supplementPrice %} · +{{ (product.supplementPrice / 100)|menu_number(app.request.locale) }}&nbsp;{{ restaurant.currency|currency_display }}{% endif %}
                                         · <span class="dish-status product-status">{{ product.isActive ? 'product.visible'|trans({}, 'admin_menu') : 'product.hidden'|trans({}, 'admin_menu') }}</span>
                                     </div>
                                     {% include 'admin/_product_menu_notice.html.twig' %}

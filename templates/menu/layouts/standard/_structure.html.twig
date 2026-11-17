@@ -877,14 +877,14 @@
     .search-wrap:focus-within { border-color: var(--in-focus-border); }
     .search-icon {
         position: static; top: auto; left: auto; transform: none; display: block; flex-shrink: 0;
-        font-size: 15px; color: var(--fg-3); pointer-events: none;
+        font-size: 15px; color: var(--fg-3-text); pointer-events: none;
     }
     .search-input {
         flex: 1; min-width: 0; border: 0; border-radius: 0; background: transparent;
         padding: 9px 2px; box-shadow: none;
     }
     .search-input:focus { box-shadow: none; }
-    .search-input::placeholder { color: var(--fg-3); font-style: italic; }
+    .search-input::placeholder { color: var(--fg-3-text); font-style: italic; }
     /* Compact phone hero (see above): 20 → 14px gap under the hero. */
     @media (max-width: 767.98px) { .search-wrap { margin-top: 14px; } }
 
@@ -1337,7 +1337,7 @@
        stays the same neutral ivory as every other chip in this theme. */
     .chip.chip-contains { border-color: var(--accent); color: var(--accent); }
     .chip.chip-may_contain { border-style: dashed; border-color: var(--cf-hborder); color: var(--chip-may-text); }
-    .chip.chip-free_from { color: var(--fg-3); }
+    .chip.chip-free_from { color: var(--fg-3-text); }
 
     /* Section headers inside the sheet (.bsec-title) — same wine-uppercase
        + hairline-fill rhythm as .filters-section-title, applied globally
@@ -1376,7 +1376,10 @@
        (20px) — 42px → 56px. The very first .bsec (right after price/
        description) is untouched — it already gets its own larger
        treatment (border-top + 1.75rem, see further down), not this rule. */
-    .bsec + .bsec { border-top: none; padding-top: 36px; }
+    /* 36px → 8px (2026-11-17): the 56px gap read as too much empty space
+       between sections — 8px + the body's 20px flex gap = 28px, about
+       half; each section is still marked off by its title's hairline. */
+    .bsec + .bsec { border-top: none; padding-top: 8px; }
 
     /* Chrome vs. scroll split — .dish-modal becomes the fixed shell (holds
        the × below, clips corners via overflow:hidden, never itself
@@ -1620,6 +1623,14 @@
        (no icon/nested markup, unlike .chip), so ::first-letter targets it
        directly with no wrapper span needed. */
     .ing::first-letter { text-transform: uppercase; }
+    /* Ingredient chips in the dish sheet: same box as the tag/allergen
+       .chip (font size, line-height, padding, radius) so the three rows
+       match — colors stay --ing-*. Scoped to .dish-modal: the set menu's
+       flip-card back keeps its compact .ing. */
+    .dish-modal .ing {
+        font-size: calc(12px * var(--font-scale)); line-height: 1;
+        padding: 0.5rem 0.625rem; border-radius: var(--radius);
+    }
 
     /* Footer — flows at the natural end of the content now (no
        position:sticky): in a dish sheet the action is read-then-close, not

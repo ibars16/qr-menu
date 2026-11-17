@@ -62,7 +62,7 @@
 .panel-close {
     width:30px; height:30px; border-radius:50%; border:1px solid var(--bd-2);
     background:var(--bg-input); display:flex; align-items:center; justify-content:center;
-    cursor:pointer; color:var(--tx-5); font-size:13px;
+    cursor:pointer; color:var(--tx-muted); font-size:13px;
 }
 .panel-close:hover { color:var(--tx-1); }
 .panel-body {
@@ -117,12 +117,12 @@
 
 /* Steps */
 .steps { display:flex; align-items:center; gap:8px; margin-top:4px; }
-.step  { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--tx-7); }
+.step  { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--tx-muted); }
 .step.active { color:var(--tx-1); }
 .step-num {
     width:20px; height:20px; border-radius:50%; border:1px solid var(--bd-2);
     background:var(--bg-input); display:flex; align-items:center; justify-content:center;
-    font-size:10px; font-weight:600; color:var(--tx-6);
+    font-size:10px; font-weight:600; color:var(--tx-muted);
 }
 .step.active .step-num { background:#C1440E; border-color:#C1440E; color:#fff; }
 .step-sep { color:var(--bd-2); }
@@ -145,7 +145,7 @@
 }
 .product-tab {
     flex:1; appearance:none; background:none; border:none; font-family:inherit;
-    font-size:13px; font-weight:500; color:var(--tx-4); cursor:pointer;
+    font-size:13px; font-weight:500; color:var(--tx-muted); cursor:pointer;
     padding:8px 6px; border-radius:7px; text-align:center;
     transition:color 0.15s, background 0.15s, box-shadow 0.15s; white-space:nowrap;
 }
@@ -207,14 +207,14 @@
 .cat-select-card:hover     { border-color:var(--bd-1); background:var(--bg-deep); }
 .cat-select-card.selected  { border-color:#C1440E; background:rgba(193,68,14,0.1); }
 .cat-select-card-name  { font-size:13px; font-weight:500; color:var(--tx-1); }
-.cat-select-card-count { font-size:11px; color:var(--tx-6); margin-top:2px; }
+.cat-select-card-count { font-size:11px; color:var(--tx-muted); margin-top:2px; }
 .cat-select-new {
     padding:12px; border-radius:10px; border:1px dashed var(--bd-2);
-    background:none; cursor:pointer; color:var(--tx-6); font-size:13px;
+    background:none; cursor:pointer; color:var(--tx-muted); font-size:13px;
     display:flex; align-items:center; gap:6px;
     transition:border-color 0.1s, color 0.1s;
 }
-.cat-select-new:hover { border-color:var(--tx-6); color:var(--tx-3); }
+.cat-select-new:hover { border-color:var(--tx-6); color:var(--tx-1); }
 
 @media (max-width: 767px) {
     .cat-select-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
@@ -230,20 +230,20 @@
    General/Foto/Detalles/Alérgenos, both desktop and mobile copies. */
 .field { display:flex; flex-direction:column; gap:var(--sp-2); }
 .field-label {
-    font-size:11px; font-weight:600; color:var(--tx-5);
+    font-size:11px; font-weight:600; color:var(--tx-muted);
     text-transform:uppercase; letter-spacing:0.07em;
     display:flex; align-items:center; gap:5px;
 }
 .req { color:#C1440E; }
-.opt { color:var(--tx-8); font-weight:400; text-transform:none; letter-spacing:0; font-size:10px; }
+.opt { color:var(--tx-muted); font-weight:400; text-transform:none; letter-spacing:0; font-size:10px; }
 .field input, .field textarea, .field select {
-    background:var(--bg-input); border:1px solid var(--bd-2); color:var(--tx-1);
+    background:var(--bg-input); border:1px solid var(--bd-input); color:var(--tx-1);
     font-size:14px; padding:10px 12px; border-radius:9px;
     outline:none; width:100%; font-family:inherit;
     transition:border-color 0.15s; min-height:42px;
 }
-.field input::placeholder, .field textarea::placeholder { color:var(--tx-7); }
-.field input:focus, .field textarea:focus, .field select:focus { border-color:var(--tx-5); }
+.field input::placeholder, .field textarea::placeholder { color:var(--tx-muted); }
+.field input:focus, .field textarea:focus, .field select:focus { border-color:var(--tx-muted); }
 .field input.error { border-color:var(--err-border); }
 .field-error { font-size:11px; color:var(--err-text); margin-top:2px; display:none; }
 .field-error.show { display:block; }
@@ -293,7 +293,7 @@
     display:inline-flex; align-items:center; gap:5px; margin-top:8px;
     font-size:var(--fs-sm); color:var(--tx-muted); cursor:pointer; user-select:none; transition:color 0.1s;
 }
-.extra-price-toggle:hover { color:var(--tx-3); }
+.extra-price-toggle:hover { color:var(--tx-1); }
 .extra-price-toggle:focus-visible { outline:2px solid var(--brand); outline-offset:2px; border-radius:4px; }
 .extra-price-toggle i { font-size:var(--fs-sm); }
 
@@ -330,7 +330,7 @@
 .extra-price-field { margin-top:12px; }
 .extra-price-field .field-label { display:flex; align-items:center; gap:6px; }
 .extra-price-remove {
-    font-size:15px; line-height:1; font-weight:600; color:var(--tx-6); cursor:pointer; padding:0 2px;
+    font-size:15px; line-height:1; font-weight:600; color:var(--tx-muted); cursor:pointer; padding:0 2px;
 }
 .extra-price-remove:hover { color:var(--tx-1); }
 
@@ -371,7 +371,7 @@
     display:flex; align-items:center; justify-content:center;
     width:24px; height:24px; margin-left:auto;
     font-size:16px; line-height:1; font-weight:600; border-radius:var(--r-md);
-    color:var(--tx-6); cursor:pointer; transition:color 0.12s, background-color 0.12s;
+    color:var(--tx-muted); cursor:pointer; transition:color 0.12s, background-color 0.12s;
 }
 .supplement-remove:hover { color:#F0997B; background:rgba(240,153,123,0.12); }
 .supplement-remove:focus-visible { outline:2px solid var(--tx-1); outline-offset:2px; border-radius:var(--r-md); }
@@ -429,7 +429,7 @@
 .price-variant-remove {
     display:flex; align-items:center; justify-content:center; height:44px;
     font-size:18px; line-height:1; font-weight:600; border-radius:var(--r-md);
-    color:var(--tx-6); cursor:pointer; transition:color 0.12s, background-color 0.12s;
+    color:var(--tx-muted); cursor:pointer; transition:color 0.12s, background-color 0.12s;
 }
 .price-variant-remove:hover { color:#F0997B; background:rgba(240,153,123,0.12); }
 .price-variant-remove:focus-visible { outline:2px solid var(--tx-1); outline-offset:2px; border-radius:var(--r-md); }
@@ -439,7 +439,7 @@
    section vs. add one more line inside it) stays clear. */
 .price-variant-add {
     display:inline-flex; align-items:center; gap:6px; margin-top:4px;
-    padding:var(--sp-1) var(--sp-2); font-size:var(--fs-sm); color:var(--tx-4);
+    padding:var(--sp-1) var(--sp-2); font-size:var(--fs-sm); color:var(--tx-muted);
     border:1px dashed var(--bd-2); border-radius:var(--r-md);
     cursor:pointer; user-select:none; transition:color 0.1s, border-color 0.1s, background-color 0.1s;
 }
@@ -521,7 +521,7 @@
 }
 .nutrition-visibility-text { display:flex; flex-direction:column; gap:2px; }
 .nutrition-visibility-label { font-size:12.5px; font-weight:600; color:var(--tx-1); }
-.nutrition-visibility-hint { font-size:11px; color:var(--tx-6); line-height:1.5; }
+.nutrition-visibility-hint { font-size:11px; color:var(--tx-muted); line-height:1.5; }
 
 @media (max-width: 767px) {
     /* font-size:16px on all three prevents iOS Safari's auto-zoom on
@@ -561,7 +561,7 @@
     font-size:13px; color:var(--tx-muted); cursor:pointer; background:var(--bg-card);
     transition:border-color 0.15s, color 0.15s; position:relative; overflow:hidden;
 }
-.img-upload:hover, .img-upload.drag-over { border-color:var(--tx-muted); color:var(--tx-3); }
+.img-upload:hover, .img-upload.drag-over { border-color:var(--tx-muted); color:var(--tx-1); }
 /* role="button" tabindex="0" — keyboard-focusable but had no visible ring
    before this; --tx-1 (not --brand, forbidden in this component) since the
    dashed border-radius is followed automatically, no extra override needed. */
@@ -746,7 +746,7 @@
 }
 .spicy-pip.on   { opacity:1; background:rgba(220,38,38,0.08); border-color:rgba(220,38,38,0.22); }
 .spicy-pip:hover { opacity:0.65; }
-.spicy-text { font-size:12px; color:var(--tx-6); }
+.spicy-text { font-size:12px; color:var(--tx-muted); }
 .spicy-clear {
     margin-left:auto; display:inline-flex; align-items:center; gap:4px;
     font-size:12px; font-family:inherit; padding:5px 11px 5px 9px; min-height:30px;
@@ -766,11 +766,11 @@
 .tag-pills { display:flex; flex-wrap:wrap; gap:6px; }
 .tag-pill  {
     font-size:12px; padding:5px 11px; border-radius:20px; border:1px solid var(--bd-2);
-    background:var(--bg-input); color:var(--tx-5); cursor:pointer; transition:all 0.1s; user-select:none;
+    background:var(--bg-input); color:var(--tx-muted); cursor:pointer; transition:all 0.1s; user-select:none;
     min-height:32px; display:flex; align-items:center;
 }
-.tag-pill.on { background:rgba(99,153,34,0.15); color:#7aad40; border-color:rgba(99,153,34,0.35); }
-.tag-pill:hover:not(.on) { border-color:var(--bd-2); color:var(--tx-3); }
+.tag-pill.on { background:rgba(99,153,34,0.15); color:var(--ok-fg); border-color:rgba(99,153,34,0.35); }
+.tag-pill:hover:not(.on) { border-color:var(--bd-2); color:var(--tx-1); }
 /* Locked "contains-…" pills, lit from the allergens (syncAllergenTagPills()).
    Same shape and green fill as a ticked pill, but text from the AA tokens
    (#7aad40 isn't AA on the light fill): --tx-2 off (dark 7.49:1, light
@@ -800,7 +800,7 @@
 }
 .tag-new-ok     { background:var(--tx-1); color:var(--bg-card); }
 .tag-new-ok:hover { opacity:0.85; }
-.tag-new-cancel { background:transparent; color:var(--tx-6); }
+.tag-new-cancel { background:transparent; color:var(--tx-muted); }
 .tag-new-cancel:hover { background:var(--bg-hover); color:var(--tx-2); }
 
 /* Emoji selector */
@@ -808,9 +808,9 @@
 .tag-emoji-trigger {
     height:34px; padding:0 6px 0 8px; border-radius:8px; border:1px solid var(--bd-2);
     background:var(--bg-input); cursor:pointer; display:inline-flex; align-items:center; gap:2px;
-    color:var(--tx-6); font-family:inherit;
+    color:var(--tx-muted); font-family:inherit;
 }
-.tag-emoji-trigger:hover, .tag-emoji-trigger[aria-expanded="true"] { border-color:var(--tx-5); color:var(--tx-3); }
+.tag-emoji-trigger:hover, .tag-emoji-trigger[aria-expanded="true"] { border-color:var(--tx-5); color:var(--tx-1); }
 .tag-emoji-current { font-size:18px; line-height:1; }
 .tag-emoji-trigger .ti { font-size:12px; }
 .tag-emoji-pop {
@@ -821,7 +821,7 @@
 .tag-emoji-pop[hidden] { display:none; }
 .tag-emoji-group {
     font-size:10px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
-    color:var(--tx-6); margin:8px 2px 4px;
+    color:var(--tx-muted); margin:8px 2px 4px;
 }
 .tag-emoji-group:first-child { margin-top:0; }
 .tag-emoji-grid { display:grid; grid-template-columns:repeat(8, 1fr); gap:2px; }
@@ -834,10 +834,10 @@
 .tag-emoji-custom { margin-top:10px; padding-top:10px; border-top:1px solid var(--bd-1); }
 .tag-emoji-custom-input {
     width:100%; min-height:34px; padding:6px 10px; font-size:13px; border-radius:8px; font-family:inherit;
-    border:1px solid var(--bd-2); background:var(--bg-input); color:var(--tx-1); outline:none;
+    border:1px solid var(--bd-input); background:var(--bg-input); color:var(--tx-1); outline:none;
 }
-.tag-emoji-custom-input::placeholder { color:var(--tx-7); }
-.tag-emoji-custom-input:focus { border-color:var(--tx-5); }
+.tag-emoji-custom-input::placeholder { color:var(--tx-muted); }
+.tag-emoji-custom-input:focus { border-color:var(--tx-muted); }
 
 @media (max-width: 767px) {
     .tag-pill { font-size:13px; min-height:38px; padding:6px 14px; }
@@ -863,14 +863,14 @@
 }
 .sw-recommend-text { display:flex; flex-direction:column; gap:2px; }
 .sw-recommend-label { font-size:13px; font-weight:600; color:var(--tx-1); }
-.sw-recommend-hint { font-size:11.5px; color:var(--tx-6); line-height:1.5; }
+.sw-recommend-hint { font-size:11.5px; color:var(--tx-muted); line-height:1.5; }
 .sw-recommend-box input:checked ~ .sw-recommend-text .sw-recommend-label { color:#D4AF37; }
 
 /* Allergens */
 .allergen-block { margin-top:14px; }
 .allergen-block:first-child { margin-top:0; }
-.allergen-subtitle { font-size:11px; font-weight:600; color:var(--tx-4); margin-bottom:4px; }
-.allergen-hint { font-size:11px; color:var(--tx-7); line-height:1.5; margin-top:5px; }
+.allergen-subtitle { font-size:11px; font-weight:600; color:var(--tx-muted); margin-bottom:4px; }
+.allergen-hint { font-size:11px; color:var(--tx-muted); line-height:1.5; margin-top:5px; }
 /* Deliberately --tx-muted (AA-safe), not --tx-7 like .allergen-hint above —
    this is a real "we couldn't verify this" state, not decorative copy. No
    red/alarm color per this tab's convention; the icon + wording carry the
@@ -878,11 +878,11 @@
 .allergen-computed-error { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--tx-muted); line-height:1.5; margin-top:5px; }
 .allergen-computed-error i { font-size:12px; flex-shrink:0; }
 .allergen-chip-row { display:flex; flex-wrap:wrap; gap:6px; min-height:0; }
-.allergen-empty { font-size:12px; color:var(--tx-7); }
+.allergen-empty { font-size:12px; color:var(--tx-muted); }
 
 .achip {
     font-size:12px; padding:5px 10px; border-radius:20px; border:1px solid var(--bd-2);
-    display:inline-flex; align-items:center; gap:5px; min-height:30px; background:var(--bg-input); color:var(--tx-5);
+    display:inline-flex; align-items:center; gap:5px; min-height:30px; background:var(--bg-input); color:var(--tx-muted);
 }
 /* Deliberately identical across all three presence states — a chip is
    informational, not a warning, and the previous red/amber coding read as
@@ -903,7 +903,7 @@
 .allergen-pill-grid { display:flex; flex-wrap:wrap; gap:5px; }
 .allergen-pill {
     font-size:11px; padding:4px 9px; border-radius:16px; border:1px solid var(--bd-2);
-    background:var(--bg-input); color:var(--tx-6); cursor:pointer; user-select:none; transition:all 0.1s;
+    background:var(--bg-input); color:var(--tx-muted); cursor:pointer; user-select:none; transition:all 0.1s;
 }
 .allergen-pill[data-state="contains"]    { background:rgba(220,38,38,0.12); color:#e0684a; border-color:rgba(220,38,38,0.28); }
 .allergen-pill[data-state="may_contain"] { background:transparent; color:#c78a3d; border:1px dashed rgba(199,138,61,0.55); }
@@ -911,7 +911,7 @@
 
 .allergen-override-adder { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
 .allergen-override-adder select, .allergen-override-adder input {
-    background:var(--bg-input); border:1px solid var(--bd-2); color:var(--tx-1);
+    background:var(--bg-input); border:1px solid var(--bd-input); color:var(--tx-1);
     font-size:12px; padding:7px 9px; border-radius:8px; outline:none; font-family:inherit; min-height:0;
 }
 /* flex-basis:100% on both, not left to whatever wrap happens to leave —
@@ -929,7 +929,7 @@
 }
 .allergen-add-btn:hover { border-color:var(--bd-3); color:var(--tx-1); }
 
-.allergen-block-label { font-size:11px; font-weight:600; color:var(--tx-4); display:flex; align-items:center; gap:5px; }
+.allergen-block-label { font-size:11px; font-weight:600; color:var(--tx-muted); display:flex; align-items:center; gap:5px; }
 
 /* Advanced allergen accordion — collapsed by default; see
    toggleAllergenAdvanced() and resetProduct(). */
@@ -940,7 +940,7 @@
 }
 .allergen-accordion-toggle:hover { background:var(--bg-hover); }
 .allergen-accordion-toggle:focus-visible { outline:2px solid var(--brand); outline-offset:-2px; }
-.allergen-accordion-chevron { font-size:14px; color:var(--tx-6); margin-top:2px; flex-shrink:0; transition:transform 0.18s; }
+.allergen-accordion-chevron { font-size:14px; color:var(--tx-muted); margin-top:2px; flex-shrink:0; transition:transform 0.18s; }
 .allergen-accordion-toggle[aria-expanded="true"] .allergen-accordion-chevron { transform:rotate(90deg); }
 .allergen-accordion-toggle-text { display:flex; flex-direction:column; gap:3px; min-width:0; }
 .allergen-accordion-title { font-size:12px; font-weight:600; color:var(--tx-3); }
@@ -963,7 +963,7 @@
 /* "Affects every dish" carries the wider consequence — one notch more
    marked via a firmer border + weight, never via color/alarm. */
 .allergen-scope-pill-shared { border-color:var(--bd-2); font-weight:600; }
-.allergen-accordion-subtitle { font-size:11px; font-weight:400; color:var(--tx-7); line-height:1.5; }
+.allergen-accordion-subtitle { font-size:11px; font-weight:400; color:var(--tx-muted); line-height:1.5; }
 .allergen-accordion-body { display:none; padding:13px; border-top:1px solid var(--bd-1); }
 .allergen-accordion-body.open { display:block; }
 
@@ -971,7 +971,7 @@
 .help-icon {
     display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
     width:15px; height:15px; border-radius:50%; background:var(--bg-input); border:1px solid var(--bd-2);
-    color:var(--tx-6); font-size:10px; font-weight:700; line-height:1; cursor:pointer;
+    color:var(--tx-muted); font-size:10px; font-weight:700; line-height:1; cursor:pointer;
     user-select:none; transition:border-color 0.15s, color 0.15s;
 }
 .help-icon:hover, .help-icon.help-open { border-color:var(--tx-6); color:var(--tx-2); }
@@ -999,7 +999,7 @@
    child of it (see tom-select.index.js's setup: dropdownParent defaults to
    the wrapper, never the control) — this overflow can never clip it. */
 .ts-wrapper.multi .ts-control {
-    background:var(--bg-input); border:1px solid var(--bd-2); border-radius:10px;
+    background:var(--bg-input); border:1px solid var(--bd-input); border-radius:10px;
     padding:8px 10px; gap:6px; min-height:42px; max-height:180px; overflow-y:auto;
     scrollbar-width:thin; scrollbar-color:var(--bg-tgl) transparent;
 }
@@ -1032,7 +1032,7 @@
        whatever the browser's default input line-height happens to render. */
     height:26px;
 }
-.ts-control input::placeholder { color:var(--tx-6); }
+.ts-control input::placeholder { color:var(--tx-muted); }
 /* Defensive: tom-select.default.min.css's own .ts-wrapper.multi .ts-control
    > div rule paints #1da7ee blue/#0073bb border/#fff text — our .item rule
    below already outguns it on specificity (0,4,0 vs 0,3,1, a real win, not
@@ -1068,7 +1068,7 @@
     color:var(--tx-muted);
 }
 .plugin-remove_button .item .remove {
-    border-left:none; color:var(--tx-6); padding:2px 4px; font-size:13px;
+    border-left:none; color:var(--tx-muted); padding:2px 4px; font-size:13px;
 }
 .plugin-remove_button .item .remove:hover { background:none; color:#F0997B; }
 /* Default tom-select.default.min.css anchors this at top:100% of
@@ -1111,14 +1111,14 @@
 }
 .ts-dropdown .option.active { background:var(--bg-hover); color:var(--tx-2); }
 .ts-dropdown .option > div { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.ts-dropdown .create { color:var(--tx-5); cursor:pointer; }
+.ts-dropdown .create { color:var(--tx-muted); cursor:pointer; }
 .ts-dropdown .create strong { color:var(--tx-2); font-weight:600; }
-.ts-dropdown .no-results { padding:10px 13px; font-size:13px; color:var(--tx-6); }
+.ts-dropdown .no-results { padding:10px 13px; font-size:13px; color:var(--tx-muted); }
 .ing-source {
     font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;
     padding:2px 8px; border-radius:20px; white-space:nowrap; flex-shrink:0;
 }
-.ing-source-restaurant { background:rgba(99,153,34,0.15); color:#7aad40; }
+.ing-source-restaurant { background:rgba(99,153,34,0.15); color:var(--ok-fg); }
 .ing-source-global { background:rgba(84,144,187,0.15); color:#5ba3d0; }
 
 @media (max-width: 767px) {

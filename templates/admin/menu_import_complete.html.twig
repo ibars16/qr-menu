@@ -23,7 +23,7 @@
         .import-complete-icon {
             width: 54px; height: 54px; border-radius: 50%; margin: 0 auto 14px; position: relative;
             display: flex; align-items: center; justify-content: center;
-            background: rgba(99,153,34,0.15); color: #7aad40;
+            background: rgba(99,153,34,0.15); color: var(--ok-fg);
             animation: complete-pop .4s cubic-bezier(.25,1.4,.5,1) both;
         }
         .import-complete-icon.is-failure { background: rgba(240,153,123,0.15); color: #F0997B; }
@@ -39,7 +39,7 @@
         }
 
         .import-complete-title { font-size: 20px; font-weight: 600; color: var(--tx-hi); margin-bottom: 8px; }
-        .import-complete-sub { font-size: 14px; color: var(--tx-6); line-height: 1.6; margin-bottom: 24px; max-width: 34rem; margin-left: auto; margin-right: auto; }
+        .import-complete-sub { font-size: 14px; color: var(--tx-muted); line-height: 1.6; margin-bottom: 24px; max-width: 34rem; margin-left: auto; margin-right: auto; }
         .import-complete-stats { display: flex; justify-content: center; gap: 24px; margin-bottom: 26px; }
         .import-complete-stat .n { display: block; font-size: 26px; font-weight: 600; color: var(--tx-hi); font-variant-numeric: tabular-nums; }
         /* "Revisa tu carta": --bg-input with a brand border, text --tx-1 /
@@ -54,7 +54,7 @@
         .import-review-notice p { margin: 0; }
         .import-review-notice p + p { margin-top: 4px; }
         .import-review-notice-title { font-weight: 600; color: var(--tx-1); }
-        .import-complete-stat .l { font-size: 11px; color: var(--tx-7); text-transform: uppercase; letter-spacing: 0.05em; }
+        .import-complete-stat .l { font-size: 11px; color: var(--tx-muted); text-transform: uppercase; letter-spacing: 0.05em; }
     </style>
 {% endblock %}
 
