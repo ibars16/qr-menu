@@ -31,7 +31,7 @@ role:
 
 label:
     pending_email: "A aguardar confirmação: %email%"
-    you: "(eu)"
+    you: "eu"
 
 error:
     email_invalid: Introduza um email válido.

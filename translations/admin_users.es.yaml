@@ -31,7 +31,7 @@ role:
 
 label:
     pending_email: "Pendiente de confirmar: %email%"
-    you: "(tú)"
+    you: "tú"
 
 error:
     email_invalid: Introduce un email válido.
