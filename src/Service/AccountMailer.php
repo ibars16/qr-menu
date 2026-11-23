@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Restaurant;
 use App\Entity\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -16,7 +17,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * /alta/{code}, /partners/registro; never staff, restaurants a reseller
  * creates or app:create-admin-user), "confirma tu email" and "change your
  * password", plus a login email change (EmailChange: the link to the new
- * address, then a notice to the old one). A self sign-up still to confirm its email
+ * address, then a notice to the old one), and the two billing notices to a
+ * restaurant's owners — "tu prueba gratis acaba mañana" and "tu carta está
+ * pausada" (app:billing:send-notices). A self sign-up still to confirm its email
  * (User::$emailConfirmationPending) gets the confirmation button in its
  * welcome email; "Reenviar" in the panel sends confirm on its own.
  *
@@ -90,6 +93,26 @@ final class AccountMailer
         ]);
     }
 
+    /** True when it went out (the command marks the notice sent only then). */
+    public function sendTrialEndingNotice(User $owner, Restaurant $restaurant): bool
+    {
+        return $this->sendBillingNotice($owner, $restaurant, 'trial_ending', 'emails/trial_ending.html.twig');
+    }
+
+    public function sendPausedNotice(User $owner, Restaurant $restaurant): bool
+    {
+        return $this->sendBillingNotice($owner, $restaurant, 'menu_paused', 'emails/menu_paused.html.twig');
+    }
+
+    /** In the restaurant's panel language; the button opens /admin/billing (allowed even while expired — SubscriptionGate). */
+    private function sendBillingNotice(User $owner, Restaurant $restaurant, string $kind, string $template): bool
+    {
+        return $this->send($owner, $kind, $this->locales->resolve($restaurant->getAdminLocale()), $template, [
+            'restaurantName' => $restaurant->getName(),
+            'billingUrl' => $this->urls->generate('admin_billing_index', [], UrlGeneratorInterface::ABSOLUTE_URL),
+        ]);
+    }
+
     public function localeFor(User $user): string
     {
         if ($restaurant = $user->getRestaurant()) {
@@ -103,7 +126,7 @@ final class AccountMailer
     }
 
     /** @param array<string, mixed> $context */
-    private function send(User $user, string $kind, string $locale, string $template, array $context, ?string $to = null): void
+    private function send(User $user, string $kind, string $locale, string $template, array $context, ?string $to = null): bool
     {
         try {
             $email = (new TemplatedEmail())
@@ -118,12 +141,16 @@ final class AccountMailer
                 ->context($context + ['app' => self::APP_NAME, 'locale' => $locale]);
 
             $this->mailer->send($email);
+
+            return true;
         } catch (\Throwable $e) {
             $this->logger->error('Account email not sent', [
                 'kind'   => $kind,
                 'userId' => $user->getId(),
                 'error'  => $e::class,
             ]);
+
+            return false;
         }
     }
 }

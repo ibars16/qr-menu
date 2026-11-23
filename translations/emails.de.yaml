@@ -35,3 +35,11 @@ smart_waiter_down:
     meanwhile: "Bitten Sie in der Zwischenzeit Ihr Team, die Fragen der Gäste zu Gerichten, Zutaten, Allergenen oder Empfehlungen persönlich zu beantworten."
     at_most: "Wir senden Ihnen höchstens einen solchen Hinweis pro Tag."
     signature: "Ihr %app%-Team"
+trial_ending:
+    subject: "Ihre kostenlose Testphase endet morgen"
+    intro: "Hallo, die Testphase von „%restaurant%“ endet morgen. Damit Ihre Speisekarte weiter funktioniert, wählen Sie einen Tarif."
+    button: "Tarif wählen"
+menu_paused:
+    subject: "Ihre Speisekarte ist pausiert"
+    intro: "Ihre Gäste können die Speisekarte von „%restaurant%“ gerade nicht sehen. Sie wird wieder aktiviert, sobald Sie bezahlen."
+    button: "Speisekarte reaktivieren"

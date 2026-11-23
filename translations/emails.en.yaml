@@ -35,3 +35,11 @@ smart_waiter_down:
     meanwhile: "In the meantime, ask your team to answer customers' questions about dishes, ingredients, allergens or recommendations in person."
     at_most: "We'll send you at most one notice like this a day."
     signature: "The %app% team"
+trial_ending:
+    subject: "Your free trial ends tomorrow"
+    intro: "Hello, the free trial for “%restaurant%” ends tomorrow. To keep your menu running, choose a plan."
+    button: "Choose a plan"
+menu_paused:
+    subject: "Your menu is paused"
+    intro: "Your customers can’t see the “%restaurant%” menu right now. It comes back on as soon as you pay."
+    button: "Reactivate menu"

@@ -31,6 +31,10 @@ paso cuenta con que los anteriores ya están hechos.
 
 - `APP_ENV=prod` y un `APP_SECRET` nuevo, que no sea el de desarrollo.
 - Todas las variables de `.env.example` con sus valores de producción.
+- `DEFAULT_URI` = la URL pública con https y sin barra final
+  (`https://tudominio.com`). Es la dirección de los enlaces de los emails
+  que salen del cron (`app:billing:send-notices`). Si está vacía o es
+  localhost, ese comando no envía nada y lo apunta en `cron.log`.
 - `composer dump-env prod`, que genera `.env.local.php`. Así la importación
   de cartas en segundo plano lee la misma configuración que la web, aunque
   php-fpm borre las variables de entorno (`clear_env=yes`).
@@ -41,6 +45,8 @@ paso cuenta con que los anteriores ya están hechos.
   `-Proto`, `-Host`). Hacen falta porque nginx o el balanceador van delante.
   Sin esto la app cree que va por http, y se rompen las URLs de Stripe y de
   los emails.
+- Esto solo arregla las URLs de las peticiones web. Las del cron no tienen
+  petición y salen de `DEFAULT_URI` (sección 4).
 
 ## 6. Sesiones fuera de /tmp
 

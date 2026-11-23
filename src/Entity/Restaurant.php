@@ -169,6 +169,18 @@ class Restaurant
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $archivedAt = null;
 
+    /**
+     * The paidUntil the owners were last emailed "tu prueba gratis acaba
+     * mañana" / "tu carta está pausada" for (app:billing:send-notices).
+     * Keyed by paidUntil, not by a flag: a new period (or a trial extended
+     * from /platform) moves paidUntil and makes the notice due again.
+     */
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $trialEndingNoticeFor = null;
+
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $pausedNoticeFor = null;
+
     #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: Table::class, cascade: ['persist', 'remove'])]
     private Collection $tables;
 
@@ -641,5 +653,50 @@ class Restaurant
     public function removeProductTag(ProductTag $tag): void
     {
         $this->productTags->removeElement($tag);
+    }
+
+    /**
+     * "Tu prueba gratis acaba mañana" is due: on the free trial, paid by
+     * card (ownerPaysByCard(), inside isTrialActive()), its last active day
+     * is tomorrow, nothing else has turned it off, and not already sent
+     * for this paidUntil.
+     */
+    public function isTrialEndingNoticeDue(?\DateTimeImmutable $today = null): bool
+    {
+        return $this->isTrialActive($today)
+            && !$this->isExpired($today)
+            && !$this->hasLiveSubscription()
+            && $this->getDaysLeft($today) === 1
+            && $this->trialEndingNoticeFor != $this->getPaidUntil();
+    }
+
+    /**
+     * "Tu carta está pausada" is due: off only because its own period
+     * ran out (not archived, not its reseller's expiry — the reseller
+     * deals with that), the owner pays by card (so "pagar" reactivates it),
+     * recently (PAUSED_NOTICE_WINDOW_DAYS, so the first run never mails
+     * every long-dead account) and not already sent for this paidUntil.
+     */
+    public function isPausedNoticeDue(?\DateTimeImmutable $today = null): bool
+    {
+        return $this->ownerPaysByCard()
+            && $this->archivedAt === null
+            && !$this->reseller?->isExpired($today)
+            && $this->isOwnPeriodExpired($today)
+            && $this->getDaysLeft($today) >= -(self::PAUSED_NOTICE_WINDOW_DAYS + self::CARD_RENEWAL_GRACE_DAYS)
+            && $this->pausedNoticeFor != $this->getPaidUntil();
+    }
+
+    /** Days after going off that "tu carta está pausada" may still go out (a cron that missed a few days). */
+    public const PAUSED_NOTICE_WINDOW_DAYS = 7;
+
+    public function markTrialEndingNoticeSent(): void
+    {
+        $this->trialEndingNoticeFor = $this->getPaidUntil();
+    }
+
+    public function markPausedNoticeSent(): void
+    {
+        $this->pausedNoticeFor = $this->getPaidUntil();
     }
 }

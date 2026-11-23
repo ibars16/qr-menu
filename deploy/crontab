@@ -20,3 +20,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # cuota diaria). PAUSADA: no quitar el «#» sin el OK del dueño. Comparte cupo
 # de Groq con las traducciones de las cartas, por eso va de madrugada.
 #30 2 * * * flock -n /tmp/qrmenu-ingredients.lock php /app/bin/console app:global-ingredients:translate --env=prod --no-interaction >> /var/log/qrmenu/cron.log 2>&1
+
+# Emails a los propietarios: «tu prueba gratis acaba mañana» y «tu carta está
+# pausada». Una vez por periodo cada uno; de día, para que lo lean.
+0 10 * * *  flock -n /tmp/qrmenu-billing-notices.lock php /app/bin/console app:billing:send-notices --env=prod --no-interaction >> /var/log/qrmenu/cron.log 2>&1

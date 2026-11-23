@@ -1,0 +1,7 @@
+{% extends 'emails/_layout.html.twig' %}
+{% block title %}{{ 'trial_ending.subject'|trans({'%app%': app}, 'emails', locale) }}{% endblock %}
+{% block content %}
+    <p style="margin:0 0 12px;font-size:17px;font-weight:600;">{{ 'trial_ending.subject'|trans({'%app%': app}, 'emails', locale) }}</p>
+    <p style="margin:0;">{{ 'trial_ending.intro'|trans({'%restaurant%': restaurantName}, 'emails', locale) }}</p>
+    {% include 'emails/_button.html.twig' with { url: billingUrl, label: 'trial_ending.button'|trans({}, 'emails', locale) } only %}
+{% endblock %}

@@ -35,3 +35,11 @@ smart_waiter_down:
     meanwhile: "Mientras tanto, pide a tu equipo que atienda directamente las preguntas de los clientes sobre platos, ingredientes, alérgenos o recomendaciones."
     at_most: "Como mucho te enviaremos un aviso como este al día."
     signature: "El equipo de %app%"
+trial_ending:
+    subject: "Tu prueba gratis acaba mañana"
+    intro: "Hola, la prueba de “%restaurant%” termina mañana. Para que tu carta siga funcionando, elige un plan."
+    button: "Elegir plan"
+menu_paused:
+    subject: "Tu carta está pausada"
+    intro: "Tus clientes no pueden ver la carta de “%restaurant%” ahora mismo. Se reactiva en cuanto pagues."
+    button: "Reactivar carta"

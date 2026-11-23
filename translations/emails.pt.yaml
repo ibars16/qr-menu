@@ -35,3 +35,11 @@ smart_waiter_down:
     meanwhile: "Entretanto, peça à sua equipa que responda diretamente às perguntas dos clientes sobre pratos, ingredientes, alergénios ou recomendações."
     at_most: "Enviaremos no máximo um aviso como este por dia."
     signature: "A equipa %app%"
+trial_ending:
+    subject: "O seu teste gratuito termina amanhã"
+    intro: "Olá, o teste de “%restaurant%” termina amanhã. Para que a sua ementa continue a funcionar, escolha um plano."
+    button: "Escolher plano"
+menu_paused:
+    subject: "A sua ementa está em pausa"
+    intro: "Os seus clientes não podem ver a ementa de “%restaurant%” neste momento. Volta a ficar ativa assim que pagar."
+    button: "Reativar ementa"
