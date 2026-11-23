@@ -70,7 +70,7 @@
         {% endif %}
 
         <p class="ft-copy">© {{ 'now'|date('Y') }} {{ restaurant.name }}</p>
-        {# QR Menu's legal line (the platform's, not the restaurant's), small,
+        {# The platform's legal line (not the restaurant's), small,
            under the ©. Labels in the menu language when it's one of the
            public site's 6, else English. #}
         {% include '_legal_links.html.twig' with { locale: locale } %}

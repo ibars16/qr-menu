@@ -7,7 +7,7 @@
 
 {% trans_default_domain 'register' %}
 
-{% block title %}{{ 'title'|trans }} — QR Menu{% endblock %}
+{% block title %}{{ 'title'|trans }} — {{ brand_name }}{% endblock %}
 
 {# See public/base.html.twig's turbo_meta block for why: this page's own
    inline <style> block isn't Turbo-trackable, so a Turbo visit landing here
@@ -47,13 +47,13 @@
         <div class="logo">
             {% if reseller is defined %}
                 <div class="logo-link">
-                    <div class="logo-mark">Q</div>
-                    <div class="logo-name">QR Menu</div>
+                    <div class="logo-mark">{{ brand_name|first }}</div>
+                    <div class="logo-name">{{ brand_name }}</div>
                 </div>
             {% else %}
                 <a href="{{ path('app_home') }}" class="logo-link">
-                    <div class="logo-mark">Q</div>
-                    <div class="logo-name">QR Menu</div>
+                    <div class="logo-mark">{{ brand_name|first }}</div>
+                    <div class="logo-name">{{ brand_name }}</div>
                 </a>
             {% endif %}
             <div class="logo-sub">{{ 'tagline'|trans }}</div>

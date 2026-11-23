@@ -4,7 +4,7 @@
    /register (security/_auth_styles.html.twig), in the browser's admin
    language. Linked from nothing a restaurant sees. #}
 
-{% block title %}{{ 'register.title'|trans({}, 'partners') }} — QR Menu{% endblock %}
+{% block title %}{{ 'register.title'|trans({}, 'partners') }} — {{ brand_name }}{% endblock %}
 
 {# See public/base.html.twig's turbo_meta block. #}
 {% block turbo_meta %}
@@ -38,8 +38,8 @@
 
         <div class="logo">
             <div class="logo-link">
-                <div class="logo-mark">Q</div>
-                <div class="logo-name">QR Menu</div>
+                <div class="logo-mark">{{ brand_name|first }}</div>
+                <div class="logo-name">{{ brand_name }}</div>
             </div>
             <div class="logo-sub">{{ 'register.tagline'|trans({}, 'partners') }}</div>
         </div>

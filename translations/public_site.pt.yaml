@@ -1,8 +1,8 @@
-title: "QR Menu — Ementa digital para o seu restaurante"
+title: "%brand% — Ementa digital para o seu restaurante"
 
 meta:
   description: "Crie a ementa digital do seu restaurante em minutos: ementa por QR, painel de administração, chat com IA para os seus clientes e estatísticas. Experimente grátis durante 7 dias, sem cartão de crédito."
-  og_title: "QR Menu — Ementa digital para o seu restaurante"
+  og_title: "%brand% — Ementa digital para o seu restaurante"
   og_description: "Ementa por QR, painel de administração, chat com IA e estatísticas para o seu restaurante. Experimente grátis durante 7 dias, sem cartão de crédito."
 
 nav:
@@ -146,7 +146,7 @@ pricing:
   no_card: "Sem cartão de crédito"
 
 cta:
-  title: "Experimente o QR Menu grátis durante 7 dias"
+  title: "Experimente o %brand% grátis durante 7 dias"
   subtitle: "Sem cartão de crédito. Configure a sua ementa ainda hoje."
   button: "Criar a minha conta grátis →"
 
@@ -166,19 +166,19 @@ pages:
   draft: "Rascunho: faltam dados do titular (assinalados a amarelo). Serão completados antes da publicação."
   legal:
     title: "Aviso legal"
-    description: "Dados do titular do QR Menu e condições de utilização deste sítio web."
+    description: "Dados do titular do %brand% e condições de utilização deste sítio web."
   about:
     title: "Sobre nós"
-    description: "O QR Menu ajuda os restaurantes a ter uma ementa digital simples, sempre atualizada e sem depender de ninguém para a manter."
+    description: "O %brand% ajuda os restaurantes a ter uma ementa digital simples, sempre atualizada e sem depender de ninguém para a manter."
   privacy:
     title: "Política de Privacidade"
-    description: "Que dados o QR Menu recolhe, para que os utiliza e quais são os seus direitos."
+    description: "Que dados o %brand% recolhe, para que os utiliza e quais são os seus direitos."
   terms:
     title: "Termos de Serviço"
-    description: "As condições de utilização do QR Menu, a ementa digital para restaurantes."
+    description: "As condições de utilização do %brand%, a ementa digital para restaurantes."
   cookies:
     title: "Política de Cookies"
-    description: "Que cookies o QR Menu utiliza e como geri-los."
+    description: "Que cookies o %brand% utiliza e como geri-los."
 
 legal:
   gap:

@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 {% trans_default_domain 'login' %}
 
-{% block title %}{{ 'title'|trans }} — QR Menu{% endblock %}
+{% block title %}{{ 'title'|trans }} — {{ brand_name }}{% endblock %}
 
 {# See public/base.html.twig's turbo_meta block for why: this page's own
    inline <style> block isn't Turbo-trackable, so a Turbo visit landing here
@@ -244,8 +244,8 @@
 
         <div class="login-logo">
             <a href="{{ path('app_home') }}" class="login-logo-link">
-                <div class="login-logo-mark">Q</div>
-                <div class="login-logo-name">QR Menu</div>
+                <div class="login-logo-mark">{{ brand_name|first }}</div>
+                <div class="login-logo-name">{{ brand_name }}</div>
             </a>
             <div class="login-logo-sub">{{ 'logo_sub'|trans }}</div>
         </div>

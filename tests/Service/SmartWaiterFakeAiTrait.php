@@ -25,6 +25,7 @@ use App\Service\SmartWaiterReplyCleaner;
 use App\Service\SmartWaiterRequestBuilder;
 use App\Service\SmartWaiterService;
 use App\Service\SmartWaiterStaffNote;
+use App\Tests\Support\Brand;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Cache\CacheItemPoolInterface;
@@ -221,6 +222,7 @@ trait SmartWaiterFakeAiTrait
             new SmartWaiterFailureAlertMailer(
                 $this->createStub(TransportInterface::class), new NullLogger(), '', '',
                 new Translator('es'), new \App\Service\AdminLocaleResolver(dirname(__DIR__, 2)), new ArrayAdapter(), new \Symfony\Component\Clock\NativeClock(),
+                Brand::name(),
             ),
             $em,
             new SmartWaiterReplyCleaner(),

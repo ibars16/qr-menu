@@ -1,6 +1,8 @@
 twig:
     file_name_pattern: '*.twig'
     globals:
+        brand_name: '%app.brand_name%'
+        brand_domain: '%app.brand_domain%'
         billing_prices: '%app.billing_prices%'
         reseller_prices: '%app.reseller_prices%'
         reseller_included_restaurants: '%app.reseller_included_restaurants%'

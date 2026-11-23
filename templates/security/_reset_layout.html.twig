@@ -6,7 +6,7 @@
    instead of the gradient, whose light end is only 3.4:1. #}
 {% trans_default_domain 'reset_password' %}
 
-{% block title %}{{ block('heading') }} — QR Menu{% endblock %}
+{% block title %}{{ block('heading') }} — {{ brand_name }}{% endblock %}
 
 {% block turbo_meta %}
     <meta name="turbo-visit-control" content="reload">
@@ -52,8 +52,8 @@
     <div class="wrap">
         <div class="logo">
             <a href="{{ path('app_home') }}" class="logo-link">
-                <div class="logo-mark">Q</div>
-                <div class="logo-name">QR Menu</div>
+                <div class="logo-mark">{{ brand_name|first }}</div>
+                <div class="logo-name">{{ brand_name }}</div>
             </a>
         </div>
 

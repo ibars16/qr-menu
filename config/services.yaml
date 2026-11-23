@@ -1,4 +1,11 @@
 parameters:
+    # The product's name and domain — the ONLY place they're written. Twig
+    # reads them as brand_name / brand_domain (config/packages/twig.yaml),
+    # the public site's texts as %brand%, the emails as %app%
+    # (AccountMailer, SmartWaiterFailureAlertMailer). tests/BrandNameGuardTest
+    # fails if the old name comes back anywhere.
+    app.brand_name:    'OmniMenu'
+    app.brand_domain:  'omnimenu.app'
     exchange_api_key:  '%env(EXCHANGE_API_KEY)%'
     gemini_api_key:    '%env(GEMINI_API_KEY)%'
     mailer_from_email:      '%env(MAILER_FROM_EMAIL)%'
@@ -91,6 +98,7 @@ services:
         arguments:
             $fromEmail: '%mailer_from_email%'
             $platformAdminEmail: '%platform_admin_email%'
+            $brandName: '%app.brand_name%'
 
     App\Service\DefaultTagSeeder:
         arguments:

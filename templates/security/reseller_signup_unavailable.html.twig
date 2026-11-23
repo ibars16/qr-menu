@@ -5,7 +5,7 @@
 
 {% trans_default_domain 'register' %}
 
-{% block title %}{{ 'unavailable.title'|trans }} — QR Menu{% endblock %}
+{% block title %}{{ 'unavailable.title'|trans }} — {{ brand_name }}{% endblock %}
 
 {% block stylesheets %}
     <link href="{{ asset('fonts/plus-jakarta-sans.css') }}" rel="stylesheet">
@@ -17,8 +17,8 @@
     <div class="wrap">
         <div class="logo">
             <div class="logo-link">
-                <div class="logo-mark">Q</div>
-                <div class="logo-name">QR Menu</div>
+                <div class="logo-mark">{{ brand_name|first }}</div>
+                <div class="logo-name">{{ brand_name }}</div>
             </div>
         </div>
 

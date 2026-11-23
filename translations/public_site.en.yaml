@@ -1,8 +1,8 @@
-title: "QR Menu — Digital menu for your restaurant"
+title: "%brand% — Digital menu for your restaurant"
 
 meta:
   description: "Create your restaurant's digital menu in minutes: QR menu, admin panel, AI chat for your customers, and stats. Try it free for 7 days, no credit card required."
-  og_title: "QR Menu — Digital menu for your restaurant"
+  og_title: "%brand% — Digital menu for your restaurant"
   og_description: "QR menu, admin panel, AI chat and stats for your restaurant. Try it free for 7 days, no credit card required."
 
 nav:
@@ -146,7 +146,7 @@ pricing:
   no_card: "No credit card required"
 
 cta:
-  title: "Try QR Menu free for 7 days"
+  title: "Try %brand% free for 7 days"
   subtitle: "No credit card required. Set up your menu today."
   button: "Create my free account →"
 
@@ -166,19 +166,19 @@ pages:
   draft: "Draft: some of the owner's details are missing (highlighted in yellow). They will be completed before publishing."
   legal:
     title: "Legal notice"
-    description: "Details of the owner of QR Menu and the conditions of use of this website."
+    description: "Details of the owner of %brand% and the conditions of use of this website."
   about:
     title: "About us"
-    description: "QR Menu helps restaurants have a simple digital menu, always up to date, without depending on anyone to maintain it."
+    description: "%brand% helps restaurants have a simple digital menu, always up to date, without depending on anyone to maintain it."
   privacy:
     title: "Privacy Policy"
-    description: "What data QR Menu collects, what it uses it for and what your rights are."
+    description: "What data %brand% collects, what it uses it for and what your rights are."
   terms:
     title: "Terms of Service"
-    description: "The terms of use of QR Menu, the digital menu for restaurants."
+    description: "The terms of use of %brand%, the digital menu for restaurants."
   cookies:
     title: "Cookie Policy"
-    description: "Which cookies QR Menu uses and how to manage them."
+    description: "Which cookies %brand% uses and how to manage them."
 
 legal:
   gap:

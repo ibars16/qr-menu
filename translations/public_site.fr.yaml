@@ -1,8 +1,8 @@
-title: "QR Menu — Carte digitale pour votre restaurant"
+title: "%brand% — Carte digitale pour votre restaurant"
 
 meta:
   description: "Créez la carte digitale de votre restaurant en quelques minutes : menu par QR code, panneau d'administration, chat IA pour vos clients et statistiques. Essai gratuit de 7 jours, sans carte bancaire."
-  og_title: "QR Menu — Carte digitale pour votre restaurant"
+  og_title: "%brand% — Carte digitale pour votre restaurant"
   og_description: "Menu par QR code, panneau d'administration, chat IA et statistiques pour votre restaurant. Essai gratuit de 7 jours, sans carte bancaire."
 
 nav:
@@ -146,7 +146,7 @@ pricing:
   no_card: "Sans carte bancaire"
 
 cta:
-  title: "Essayez QR Menu gratuitement pendant 7 jours"
+  title: "Essayez %brand% gratuitement pendant 7 jours"
   subtitle: "Sans carte bancaire. Configurez votre carte dès aujourd'hui."
   button: "Créer mon compte gratuit →"
 
@@ -166,19 +166,19 @@ pages:
   draft: "Brouillon : certaines informations du titulaire manquent (surlignées en jaune). Elles seront complétées avant la publication."
   legal:
     title: "Mentions légales"
-    description: "Informations sur le titulaire de QR Menu et conditions d'utilisation de ce site."
+    description: "Informations sur le titulaire d'%brand% et conditions d'utilisation de ce site."
   about:
     title: "À propos"
-    description: "QR Menu aide les restaurants à avoir une carte digitale simple, toujours à jour, sans dépendre de personne pour la tenir à jour."
+    description: "%brand% aide les restaurants à avoir une carte digitale simple, toujours à jour, sans dépendre de personne pour la tenir à jour."
   privacy:
     title: "Politique de confidentialité"
-    description: "Quelles données QR Menu collecte, à quoi elles servent et quels sont vos droits."
+    description: "Quelles données %brand% collecte, à quoi elles servent et quels sont vos droits."
   terms:
     title: "Conditions d'utilisation"
-    description: "Les conditions d'utilisation de QR Menu, la carte digitale pour restaurants."
+    description: "Les conditions d'utilisation d'%brand%, la carte digitale pour restaurants."
   cookies:
     title: "Politique de cookies"
-    description: "Quels cookies QR Menu utilise et comment les gérer."
+    description: "Quels cookies %brand% utilise et comment les gérer."
 
 legal:
   gap:

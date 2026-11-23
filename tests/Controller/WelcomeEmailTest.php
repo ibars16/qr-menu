@@ -58,6 +58,11 @@ final class WelcomeEmailTest extends WebTestCase
         return array_values(array_map(static fn ($e) => $e->getMessage(), $events));
     }
 
+    private static function brand(): string
+    {
+        return static::getContainer()->getParameter('app.brand_name');
+    }
+
     private static function email(): string
     {
         return 'welcome-test-' . uniqid() . '@example.test';
@@ -106,7 +111,7 @@ final class WelcomeEmailTest extends WebTestCase
         $email = self::email();
         $this->signUpRestaurant('/register', $email, 'it');
 
-        $welcome = self::assertWelcome($email, 'Benvenuto su QR Menu');
+        $welcome = self::assertWelcome($email, 'Benvenuto su ' . self::brand());
         self::assertStringContainsString('Password dimenticata?', $welcome->getHtmlBody());
     }
 
@@ -115,7 +120,7 @@ final class WelcomeEmailTest extends WebTestCase
         $email = self::email();
         $this->signUpRestaurant('/register', $email, 'es');
 
-        $html = self::assertWelcome($email, 'Bienvenido a QR Menu')->getHtmlBody();
+        $html = self::assertWelcome($email, 'Bienvenido a ' . self::brand())->getHtmlBody();
         self::assertStringContainsString('Tu cuenta ya está lista.', $html);
         self::assertStringContainsString('Entrar en tu panel', $html);
         foreach (['prueba', 'precio', 'pago', '€'] as $word) {
@@ -128,7 +133,7 @@ final class WelcomeEmailTest extends WebTestCase
         $email = self::email();
         $this->signUpRestaurant('/alta/' . $this->reseller()->getSignupCode(), $email, 'pt');
 
-        self::assertWelcome($email, 'Bem-vindo ao QR Menu');
+        self::assertWelcome($email, 'Bem-vindo ao ' . self::brand());
     }
 
     public function testResellerSignUpSendsIt(): void
@@ -145,7 +150,7 @@ final class WelcomeEmailTest extends WebTestCase
         $this->client->submit($form);
         self::assertResponseRedirects();
 
-        self::assertWelcome($email, 'Willkommen bei QR Menu');
+        self::assertWelcome($email, 'Willkommen bei ' . self::brand());
     }
 
     public function testStaffCreatedByTheOwnerGetsNothing(): void

@@ -6,7 +6,7 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>{% block title %}{{ 'title.default'|trans({}, 'admin_base') }}{% endblock %} — QR Menu</title>
+    <title>{% block title %}{{ 'title.default'|trans({}, 'admin_base') }}{% endblock %} — {{ brand_name }}</title>
     <link rel="stylesheet" href="{{ asset('vendor/tabler-icons/3.31.0/tabler-icons.min.css') }}">
     <script>(function(){try{if(localStorage.getItem('admin-theme')==='light')document.documentElement.classList.add('light');}catch(e){}}());</script>
     <style>
@@ -318,7 +318,7 @@
 <div class="admin-layout">
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-restaurant">{{ app.user.restaurant ? app.user.restaurant.name : 'QR Menu' }}</div>
+            <div class="sidebar-restaurant">{{ app.user.restaurant ? app.user.restaurant.name : brand_name }}</div>
             <div class="sidebar-role">{{ 'sidebar.role'|trans({}, 'admin_base') }}</div>
             {% if app.user.restaurant and app.user.restaurant.trialActive %}
                 <div class="trial-badge">

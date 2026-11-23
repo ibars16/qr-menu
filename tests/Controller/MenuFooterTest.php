@@ -151,7 +151,7 @@ final class MenuFooterTest extends WebTestCase
         self::assertSame('Casa Footer', self::text($footer->filter('.ft-name')));
         self::assertCount(0, $footer->filter('.ft-tagline'));
         self::assertCount(0, $footer->filter('.ft-block'));
-        // No restaurant links; only QR Menu's own legal line under the ©.
+        // No restaurant links; only the platform's own legal line under the ©.
         self::assertSame($footer->filter('.legal-links a')->count(), $footer->filter('a')->count());
         self::assertSame(['/aviso-legal', '/privacidad', '/cookies', '/terminos'], $footer->filter('.legal-links a[href^="/"]')->each(fn ($a) => $a->attr('href')));
         self::assertSame('© ' . date('Y') . ' Casa Footer', self::text($footer->filter('.ft-copy')));

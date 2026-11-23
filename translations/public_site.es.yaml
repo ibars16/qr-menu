@@ -1,8 +1,8 @@
-title: "QR Menu — Carta digital para tu restaurante"
+title: "%brand% — Carta digital para tu restaurante"
 
 meta:
   description: "Crea la carta digital de tu restaurante en minutos: menú por QR, panel de administración, chat con IA para tus clientes y estadísticas. Prueba gratis 7 días, sin tarjeta de crédito."
-  og_title: "QR Menu — Carta digital para tu restaurante"
+  og_title: "%brand% — Carta digital para tu restaurante"
   og_description: "Menú por QR, panel de administración, chat con IA y estadísticas para tu restaurante. Prueba gratis 7 días, sin tarjeta de crédito."
 
 nav:
@@ -146,7 +146,7 @@ pricing:
   no_card: "Sin tarjeta de crédito"
 
 cta:
-  title: "Prueba QR Menu gratis durante 7 días"
+  title: "Prueba %brand% gratis durante 7 días"
   subtitle: "Sin tarjeta de crédito. Configura tu carta hoy mismo."
   button: "Crear mi cuenta gratis →"
 
@@ -166,19 +166,19 @@ pages:
   draft: "Borrador: faltan datos del titular (marcados en amarillo). Se completarán antes de publicar."
   legal:
     title: "Aviso legal"
-    description: "Datos del titular de QR Menu y condiciones de uso de este sitio web."
+    description: "Datos del titular de %brand% y condiciones de uso de este sitio web."
   about:
     title: "Sobre nosotros"
-    description: "QR Menu ayuda a los restaurantes a tener una carta digital simple, siempre actualizada y sin depender de nadie para mantenerla."
+    description: "%brand% ayuda a los restaurantes a tener una carta digital simple, siempre actualizada y sin depender de nadie para mantenerla."
   privacy:
     title: "Política de Privacidad"
-    description: "Qué datos recoge QR Menu, para qué los usa y cuáles son tus derechos."
+    description: "Qué datos recoge %brand%, para qué los usa y cuáles son tus derechos."
   terms:
     title: "Términos de Servicio"
-    description: "Las condiciones de uso de QR Menu, la carta digital para restaurantes."
+    description: "Las condiciones de uso de %brand%, la carta digital para restaurantes."
   cookies:
     title: "Política de Cookies"
-    description: "Qué cookies usa QR Menu y cómo gestionarlas."
+    description: "Qué cookies usa %brand% y cómo gestionarlas."
 
 legal:
   gap:

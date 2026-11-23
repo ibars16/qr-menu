@@ -27,7 +27,7 @@ email_change:
 email_changed:
     subject: "Votre e-mail de connexion a changé"
     intro: "Désormais, ce compte se connecte avec %new%. Cet e-mail ne permet plus de se connecter."
-    not_you: "Si ce n'était pas vous, contactez le support de %app% au plus vite."
+    not_you: "Si ce n'était pas vous, contactez le support d'%app% au plus vite."
 smart_waiter_down:
     subject: "L'assistant de votre carte ne répond pas pour le moment"
     hello: "Bonjour,"

@@ -1,8 +1,8 @@
-title: "QR Menu — Digitale Speisekarte für Ihr Restaurant"
+title: "%brand% — Digitale Speisekarte für Ihr Restaurant"
 
 meta:
   description: "Erstellen Sie die digitale Speisekarte Ihres Restaurants in wenigen Minuten: QR-Menü, Verwaltungspanel, KI-Chat für Ihre Kunden und Statistiken. 7 Tage kostenlos testen, keine Kreditkarte nötig."
-  og_title: "QR Menu — Digitale Speisekarte für Ihr Restaurant"
+  og_title: "%brand% — Digitale Speisekarte für Ihr Restaurant"
   og_description: "QR-Menü, Verwaltungspanel, KI-Chat und Statistiken für Ihr Restaurant. 7 Tage kostenlos testen, keine Kreditkarte nötig."
 
 nav:
@@ -146,7 +146,7 @@ pricing:
   no_card: "Keine Kreditkarte nötig"
 
 cta:
-  title: "Testen Sie QR Menu 7 Tage lang kostenlos"
+  title: "Testen Sie %brand% 7 Tage lang kostenlos"
   subtitle: "Keine Kreditkarte nötig. Richten Sie Ihre Speisekarte noch heute ein."
   button: "Kostenloses Konto erstellen →"
 
@@ -166,19 +166,19 @@ pages:
   draft: "Entwurf: Einige Angaben zum Inhaber fehlen noch (gelb markiert). Sie werden vor der Veröffentlichung ergänzt."
   legal:
     title: "Impressum"
-    description: "Angaben zum Inhaber von QR Menu und Nutzungsbedingungen dieser Website."
+    description: "Angaben zum Inhaber von %brand% und Nutzungsbedingungen dieser Website."
   about:
     title: "Über uns"
-    description: "QR Menu hilft Restaurants, eine einfache, stets aktuelle digitale Speisekarte zu haben, ohne für die Pflege auf jemanden angewiesen zu sein."
+    description: "%brand% hilft Restaurants, eine einfache, stets aktuelle digitale Speisekarte zu haben, ohne für die Pflege auf jemanden angewiesen zu sein."
   privacy:
     title: "Datenschutzerklärung"
-    description: "Welche Daten QR Menu erhebt, wofür sie verwendet werden und welche Rechte Sie haben."
+    description: "Welche Daten %brand% erhebt, wofür sie verwendet werden und welche Rechte Sie haben."
   terms:
     title: "Nutzungsbedingungen"
-    description: "Die Nutzungsbedingungen von QR Menu, der digitalen Speisekarte für Restaurants."
+    description: "Die Nutzungsbedingungen von %brand%, der digitalen Speisekarte für Restaurants."
   cookies:
     title: "Cookie-Richtlinie"
-    description: "Welche Cookies QR Menu verwendet und wie Sie sie verwalten."
+    description: "Welche Cookies %brand% verwendet und wie Sie sie verwalten."
 
 legal:
   gap:

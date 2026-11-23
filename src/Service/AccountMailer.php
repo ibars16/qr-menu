@@ -34,8 +34,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 final class AccountMailer
 {
-    public const APP_NAME = 'QR Menu';
-
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly TranslatorInterface $translator,
@@ -45,6 +43,8 @@ final class AccountMailer
         private readonly EmailConfirmation $emailConfirmation,
         #[Autowire('%mailer_from_email%')]
         private readonly string $fromEmail,
+        #[Autowire('%app.brand_name%')]
+        private readonly string $brandName,
     ) {}
 
     public function sendWelcome(User $user): void
@@ -130,15 +130,15 @@ final class AccountMailer
     {
         try {
             $email = (new TemplatedEmail())
-                ->from(new Address($this->fromEmail, self::APP_NAME))
+                ->from(new Address($this->fromEmail, $this->brandName))
                 ->to($to ?? $user->getEmail())
-                ->subject($this->translator->trans($kind . '.subject', ['%app%' => self::APP_NAME], 'emails', $locale))
+                ->subject($this->translator->trans($kind . '.subject', ['%app%' => $this->brandName], 'emails', $locale))
                 // No ->locale(): rendering with it goes through LocaleSwitcher,
                 // which afterwards puts the request back on the default locale
                 // (en) — the page then came out in English. The templates get
                 // the locale explicitly instead.
                 ->htmlTemplate($template)
-                ->context($context + ['app' => self::APP_NAME, 'locale' => $locale]);
+                ->context($context + ['app' => $this->brandName, 'locale' => $locale]);
 
             $this->mailer->send($email);
 

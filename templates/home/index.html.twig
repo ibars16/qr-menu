@@ -1,11 +1,11 @@
 {% extends 'public/base.html.twig' %}
 
-{% block title %}{{ 'title'|trans({}, 'public_site', locale) }}{% endblock %}
+{% block title %}{{ 'title'|trans({'%brand%': brand_name}, 'public_site', locale) }}{% endblock %}
 
 {% block meta %}
     <meta name="description" content="{{ 'meta.description'|trans({}, 'public_site', locale) }}">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="{{ 'meta.og_title'|trans({}, 'public_site', locale) }}">
+    <meta property="og:title" content="{{ 'meta.og_title'|trans({'%brand%': brand_name}, 'public_site', locale) }}">
     <meta property="og:description" content="{{ 'meta.og_description'|trans({}, 'public_site', locale) }}">
 {% endblock %}
 
@@ -665,7 +665,7 @@
     <section class="cta-band">
         <div class="cta-band-inner">
             <hr class="rule">
-            <h2>{{ 'cta.title'|trans({}, 'public_site', locale) }}</h2>
+            <h2>{{ 'cta.title'|trans({'%brand%': brand_name}, 'public_site', locale) }}</h2>
             <p>{{ 'cta.subtitle'|trans({}, 'public_site', locale) }}</p>
             <a href="{{ path('app_register') }}" class="btn-primary">{{ 'cta.button'|trans({}, 'public_site', locale) }}</a>
         </div>

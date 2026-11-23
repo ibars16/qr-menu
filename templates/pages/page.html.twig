@@ -5,10 +5,10 @@
    long prose. #}
 {% extends 'public/base.html.twig' %}
 
-{% block title %}{{ ('pages.' ~ page ~ '.title')|trans({}, 'public_site', locale) }} — QR Menu{% endblock %}
+{% block title %}{{ ('pages.' ~ page ~ '.title')|trans({}, 'public_site', locale) }} — {{ brand_name }}{% endblock %}
 
 {% block meta %}
-    <meta name="description" content="{{ ('pages.' ~ page ~ '.description')|trans({}, 'public_site', locale) }}">
+    <meta name="description" content="{{ ('pages.' ~ page ~ '.description')|trans({'%brand%': brand_name}, 'public_site', locale) }}">
 {% endblock %}
 
 {% block content %}

@@ -58,6 +58,7 @@ final class SmartWaiterFailureAlertMailer
         private readonly AdminLocaleResolver $locales,
         private readonly CacheItemPoolInterface $cache,
         private readonly ClockInterface $clock,
+        private readonly string $brandName,
     ) {}
 
     /** @param AIProviderAttempt[] $attempts every provider tried, in order, all failed */
@@ -123,7 +124,7 @@ final class SmartWaiterFailureAlertMailer
         $locale = $this->locales->resolve($restaurant->getAdminLocale());
         $t = fn (string $key): string => $this->translator->trans('smart_waiter_down.' . $key, [
             '%restaurant%' => $restaurant->getName(),
-            '%app%'        => AccountMailer::APP_NAME,
+            '%app%'        => $this->brandName,
         ], 'emails', $locale);
 
         $body = implode("\n\n", [$t('hello'), $t('intro'), $t('meanwhile'), $t('at_most'), $t('signature')]);

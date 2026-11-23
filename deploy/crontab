@@ -1,4 +1,4 @@
-# Tareas programadas de QR Menu — copiar al crontab del servidor
+# Tareas programadas de OmniMenu — copiar al crontab del servidor
 # (crontab -e, o /etc/cron.d/qrmenu añadiendo el usuario tras la hora).
 # Ajustar /app y el usuario/contenedor al montar producción; si el PHP corre
 # en Docker, anteponer `docker exec <contenedor>` a cada `php`.

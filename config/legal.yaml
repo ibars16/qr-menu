@@ -14,7 +14,7 @@ owner:
     # Postal address (street, number, postcode, town, province).
     address: ''
     # Contact email: legal pages, privacy requests, account deletion.
-    email: ''
+    email: 'hello@omnimenu.app'
     # Hosting provider of the site (name + country), named in the privacy policy.
     hosting: ''
 
@@ -23,7 +23,7 @@ owner:
 # version, saved on each new account (User::$termsVersion) when it ticks
 # "Acepto los términos…".
 updated:
-    legal: '2026-11-17'
-    terms: '2026-11-17'
-    privacy: '2026-11-17'
-    cookies: '2026-11-17'
+    legal: '2026-11-23'
+    terms: '2026-11-23'
+    privacy: '2026-11-23'
+    cookies: '2026-11-23'

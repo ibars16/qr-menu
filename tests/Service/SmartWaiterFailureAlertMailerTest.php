@@ -8,6 +8,7 @@ use App\Service\AdminLocaleResolver;
 use App\Service\AI\AIFailureReason;
 use App\Service\AI\AIProviderAttempt;
 use App\Service\SmartWaiterFailureAlertMailer;
+use App\Tests\Support\Brand;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -93,6 +94,7 @@ final class SmartWaiterFailureAlertMailerTest extends TestCase
             new AdminLocaleResolver(dirname(__DIR__, 2)),
             $this->cache,
             $this->clock,
+            Brand::name(),
         );
     }
 
@@ -133,7 +135,7 @@ final class SmartWaiterFailureAlertMailerTest extends TestCase
             self::assertSame($subject, $this->sent[0]->getSubject(), $locale);
             $body = $this->sent[0]->getTextBody();
             self::assertStringContainsString('Trattoria Roma', $body, $locale);
-            self::assertStringContainsString('QR Menu', $body, $locale);
+            self::assertStringContainsString(Brand::name(), $body, $locale);
             self::assertStringNotContainsString('smart_waiter_down.', $body, "{$locale}: every key translated");
         }
     }
