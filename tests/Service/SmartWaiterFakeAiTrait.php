@@ -19,6 +19,7 @@ use App\Service\SmartWaiterConversationStore;
 use App\Service\SmartWaiterDishSafety;
 use App\Service\SmartWaiterFailureAlertMailer;
 use App\Service\SmartWaiterDishFit;
+use App\Service\SmartWaiterDishRefs;
 use App\Service\SmartWaiterNeedsDetector;
 use App\Service\SmartWaiterPromptBuilder;
 use App\Service\SmartWaiterReplyCleaner;
@@ -101,6 +102,9 @@ trait SmartWaiterFakeAiTrait
     private array $logs = [];
 
     private SmartWaiterConversationStore $store;
+
+    /** SmartWaiterDishRefs' logger in service() — set it before service() to read what was discarded. */
+    private ?\Psr\Log\LoggerInterface $dishRefsLogger = null;
 
     private function fakeAiSetUp(): void
     {
@@ -228,6 +232,7 @@ trait SmartWaiterFakeAiTrait
             new SmartWaiterReplyCleaner(),
             $this->needsDetector($factory),
             $this->staffNote(),
+            new SmartWaiterDishRefs($this->dishRefsLogger ?? new NullLogger()),
         );
     }
 

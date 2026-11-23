@@ -37,9 +37,10 @@ final class SmartWaiterService
         private readonly SmartWaiterReplyCleaner $replyCleaner,
         private readonly SmartWaiterNeedsDetector $needsDetector,
         private readonly SmartWaiterStaffNote $staffNote,
+        private readonly SmartWaiterDishRefs $dishRefs,
     ) {}
 
-    /** @return array{conversationId: string, reply: ?string, error: bool} */
+    /** @return array{conversationId: string, reply: ?string, dishIds: list<int>, error: bool} */
     public function reply(Restaurant $restaurant, string $locale, string $currency, ?string $conversationId, string $userMessage): array
     {
         $conversationId ??= $this->conversationStore->newConversationId();
@@ -68,7 +69,7 @@ final class SmartWaiterService
         $needs = $this->conversationStore->addNeeds($conversationId, $restaurantId, $detected);
 
         // Steps 2–3: the dishes sorted for those needs (SmartWaiterDishFit), then the answer.
-        [$aiRequest, $complexity, $anySuitable] = $this->requestBuilder->request(
+        [$aiRequest, $complexity, $anySuitable, $cardIds, $sentIds] = $this->requestBuilder->request(
             $menuContext,
             $locale,
             $history,
@@ -103,12 +104,16 @@ final class SmartWaiterService
         $this->em->persist($log);
         $this->em->flush();
 
+        // The DISHES line (prompt rule 11) comes out first, whatever its
+        // shape: never shown, never in the history. Only checked ids stay.
+        [$replyText, $dishIds] = $this->dishRefs->pick($response->content, $cardIds, $restaurantId, $sentIds);
+
         // The history keeps the cleaned reply — no formatting the model
         // could copy from its own earlier replies — WITHOUT the staff
         // sentence our code adds (SmartWaiterStaffNote): the AI never sees
         // it as its own, so never writes it itself.
         $language = $this->staffNote->language($language, $locale);
-        $reply = $this->replyCleaner->clean($response->content, $language);
+        $reply = $this->replyCleaner->clean($replyText, $language);
         $this->conversationStore->append(
             $conversationId,
             $restaurantId,
@@ -119,6 +124,7 @@ final class SmartWaiterService
         return [
             'conversationId' => $conversationId,
             'reply' => $this->staffNote->append($reply, $this->staffNote->note($needs, $anySuitable, $language)),
+            'dishIds' => $dishIds,
             'error' => false,
         ];
     }
@@ -128,7 +134,7 @@ final class SmartWaiterService
      *
      * @param list<AIProviderAttempt> $attempts
      *
-     * @return array{conversationId: string, reply: null, error: true}
+     * @return array{conversationId: string, reply: null, dishIds: list<int>, error: true}
      */
     private function fail(Restaurant $restaurant, SmartWaiterExchangeLog $log, array $attempts, string $conversationId, ChatMessage $userChatMessage, bool $pendingDetection): array
     {
@@ -151,7 +157,7 @@ final class SmartWaiterService
         // can step in and, ideally, so someone actually fixes it.
         $this->failureAlertMailer->alert($restaurant, $attempts);
 
-        return ['conversationId' => $conversationId, 'reply' => null, 'error' => true];
+        return ['conversationId' => $conversationId, 'reply' => null, 'dishIds' => [], 'error' => true];
     }
 
     /** @param array{input: ?float, output: ?float}|null $pricing */

@@ -253,6 +253,10 @@ final class MenuContextBuilder
             )
             : null;
 
+        // "id" first, only on dishes with a card of their own on the public
+        // menu (not a set menu's, above): what the AI writes on its DISHES
+        // line (SmartWaiterPromptBuilder rule 11, SmartWaiterDishRefs).
+        $base = ['id' => $product->getId()] + $base;
         $base['price'] = $this->convertedDecimal($product->getBasePrice(), $restaurant, $currency);
         $base['price_variants'] = $priceVariants;
 

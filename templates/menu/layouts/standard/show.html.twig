@@ -861,6 +861,10 @@
                                     </div>
                                 </div>
                                 {% endif %}
+                                {# The one-line price ("Desde" + the lowest when the variants differ) for
+                                   Smart Waiter's dish cards (_smart_waiter.html.twig), which are built
+                                   from this card — same currency and RTL markup as the rest of the page. #}
+                                <template class="dish-price-one">{{ priceMacro.oneLine(product, currency, currencyDisplay, locale) }}</template>
                                 <template class="dish-tpl">
                                     {# No photo → nothing here: openDishModal() (_search_js.html.twig)
                                        finds no img/video, leaves #dish-modal-photo empty and the

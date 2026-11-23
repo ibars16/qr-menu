@@ -15,7 +15,8 @@ namespace App\Service;
  *   selling it ("our only spicy dish has gluten").
  * - suitable: every allergen they avoid is "free_from" (gluten: or the
  *   dish keeps its system "gluten-free" label), every diet is one of its
- *   system diet labels, and nothing they avoid is outside the codes
+ *   system diet labels (vegetarian: or "vegan" — shape() already dropped
+ *   a "vegan" its allergens contradict), and nothing they avoid is outside the codes
  *   (CustomerNeeds::$other).
  * - not_confirmed: everything else (e.g. "allergens": "?"), each dish with
  *   "unknown_for_customer": what the menu doesn't confirm for them (e.g.
@@ -55,6 +56,51 @@ final class SmartWaiterDishFit
         }
 
         return $context;
+    }
+
+    /**
+     * The dishes of an apply()'d context that may get a card under the reply
+     * (SmartWaiterDishRefs): every dish of a normal category with an "id" —
+     * a set menu's dishes have none — and, when the customer has needs,
+     * only the "suitable" ones.
+     *
+     * @return list<int>
+     */
+    public static function cardIds(array $sortedContext, CustomerNeeds $needs): array
+    {
+        $ids = [];
+        foreach ($sortedContext['categories'] as $category) {
+            foreach ($category[$needs->isEmpty() ? 'products' : self::SUITABLE] ?? [] as $dish) {
+                if (is_int($dish['id'] ?? null)) {
+                    $ids[] = $dish['id'];
+                }
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Every dish "id" an apply()'d context sends to the AI, whatever its group
+     * (a "not_suitable" dish goes without one): the numbers
+     * SmartWaiterDishRefs::split() may strip from the reply text ("(id 12)").
+     *
+     * @return list<int>
+     */
+    public static function sentIds(array $sortedContext): array
+    {
+        $ids = [];
+        foreach ($sortedContext['categories'] as $category) {
+            foreach (['products', self::SUITABLE, self::NOT_CONFIRMED, self::NOT_SUITABLE] as $key) {
+                foreach ($category[$key] ?? [] as $dish) {
+                    if (is_int($dish['id'] ?? null)) {
+                        $ids[] = $dish['id'];
+                    }
+                }
+            }
+        }
+
+        return $ids;
     }
 
     /** Whether an apply()'d context has at least one "suitable" dish anywhere — SmartWaiterStaffNote's choice of sentence. */
@@ -178,7 +224,8 @@ final class SmartWaiterDishFit
             }
         }
         foreach ($needs->diets as $diet) {
-            if (!in_array($diet, $fit['diets'], true)) {
+            if (!in_array($diet, $fit['diets'], true)
+                && !($diet === 'vegetarian' && in_array('vegan', $fit['diets'], true))) {
                 $unknown[] = $diet;
             }
         }

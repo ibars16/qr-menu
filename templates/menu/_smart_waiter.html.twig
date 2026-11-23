@@ -74,6 +74,44 @@
     .sw-msg.assistant { align-self: flex-start; background: var(--surface-2, rgba(127,127,127,0.1)); color: var(--bn, var(--fg)); border-end-start-radius: 4px; }
     .sw-msg.user { align-self: flex-end; background: var(--accent); color: var(--on-accent, #fff); border-end-end-radius: 4px; }
 
+    /* Dish cards under a reply (SmartWaiterDishRefs → dishIds), built from
+       the page's own .dish-card. Tokens measured AA on all six themes:
+       --bn on --surface 11.6–17:1, --cp (the menu's price color) on
+       --surface 5.5–9.7:1 (classic-dark lowest) — also the arrow's color
+       (--fg-2 is under 4.5:1 on glass and noir). One under another, as wide
+       as a reply bubble (.sw-msg's 84%); logical properties, so
+       right-to-left menus mirror on their own (the arrow too, below). */
+    .sw-cards { align-self: flex-start; display: flex; flex-direction: column; gap: 8px; width: 84%; margin-top: -2px; }
+    .sw-card {
+        width: 100%; min-width: 0; display: flex; flex-direction: column;
+        padding: 0; border: 1px solid var(--bdiv, var(--b1)); border-radius: 12px; overflow: hidden;
+        background: var(--surface); color: var(--bn, var(--fg)); font: inherit; text-align: start; cursor: pointer;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .sw-card:hover { transform: translateY(-1px); border-color: var(--b2, var(--b1)); }
+    .sw-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) { .sw-card { transition: none; } .sw-card:hover { transform: none; } }
+    /* Photo on top, full width, cropped (never stretched). */
+    .sw-card-img { display: block; width: 100%; height: 140px; object-fit: cover; background: var(--surface-2, transparent); }
+    /* Name (up to two lines) | price and arrow, at the end of the line. */
+    .sw-card-text { display: flex; align-items: center; gap: 10px; padding: 9px 12px 10px; }
+    .sw-card-name {
+        flex: 1; min-width: 0;
+        font-size: 13.5px; font-weight: 600; line-height: 1.3; color: var(--bn, var(--fg));
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: break-word;
+    }
+    .sw-card-end { flex-shrink: 0; display: flex; align-items: center; gap: 6px; color: var(--cp, var(--accent)); }
+    .sw-card-price { font-size: 13.5px; font-weight: 700; line-height: 1.3; white-space: nowrap; color: inherit; }
+    /* "›" is a bidi-mirrored character: right-to-left it already shows as "‹". */
+    .sw-card-arrow { font-size: 20px; line-height: 1; font-weight: 400; }
+    .sw-card-price .price-from { font-weight: 600; }
+    /* The menu's .price-currency is 10px --fg-2: here it follows the price. */
+    .sw-card-price .price-currency { margin-inline-start: 2px; font-size: 11px; color: inherit; font-weight: 600; }
+
+    /* A dish sheet opened from a card sits above the chat (z-index 2000);
+       closing it leaves the chat exactly as it was (_search_js.html.twig). */
+    .dish-modal-overlay.over-chat { z-index: 2100; }
+
     .sw-typing { align-self: flex-start; display: flex; gap: 4px; padding: 9px 12px; }
     .sw-typing[hidden] { display: none; }
     .sw-typing span {
@@ -159,12 +197,94 @@
         sessionStorage.setItem('sw_conv_' + slug, id);
     }
 
-    function appendMessage(role, text) {
+    // Down to the end: the customer's own question, the greeting. A reply
+    // is placed by showReplyStart() instead.
+    function appendMessage(role, text, stay) {
         const div = document.createElement('div');
         div.className = 'sw-msg ' + role;
         div.textContent = text;
         messagesEl.appendChild(div);
-        messagesEl.scrollTop = messagesEl.scrollHeight;
+        if (!stay) messagesEl.scrollTop = messagesEl.scrollHeight;
+        return div;
+    }
+
+    // A reply (and its cards) shows from its START, with the question just
+    // above it when there is room: the customer reads down, never back up.
+    // A reply that fits whole ends up at the bottom, exactly as before.
+    // Card photos have a fixed height (.sw-card-img), so a late one never
+    // moves this. Vertical only: the same right-to-left.
+    function showReplyStart(questionEl, replyEl) {
+        const pad = parseFloat(getComputedStyle(messagesEl).paddingTop) || 0;
+        const boxTop = messagesEl.getBoundingClientRect().top;
+        const topOf = el => el.getBoundingClientRect().top - boxTop + messagesEl.scrollTop;
+        let target = (questionEl ? topOf(questionEl) : topOf(replyEl)) - pad;
+        // A question so long that the reply's first lines wouldn't show: start at the reply.
+        if (topOf(replyEl) + 72 > target + messagesEl.clientHeight) target = topOf(replyEl) - pad;
+        const max = messagesEl.scrollHeight - messagesEl.clientHeight;
+        messagesEl.scrollTop = Math.max(0, Math.min(target, max));
+    }
+
+    // Up to 3 cards (the server already checked each id: this restaurant's,
+    // visible, "suitable" when the customer has needs). Each is built from
+    // the page's own .dish-card — its name, its photo (a clip's poster, never
+    // the clip), its one-line price — and opens that card's detail sheet.
+    // An id with no card on the page (e.g. a set menu's dish) is skipped.
+    function appendDishCards(ids) {
+        const row = document.createElement('div');
+        row.className = 'sw-cards';
+        (Array.isArray(ids) ? ids : []).slice(0, 3).forEach(id => {
+            if (!Number.isInteger(id)) return;
+            const dishCard = document.querySelector('.dish-card[data-product-id="' + id + '"]');
+            if (!dishCard || !dishCard.querySelector('.dish-tpl')) return;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'sw-card';
+            const label = dishCard.getAttribute('aria-label');
+            if (label) btn.setAttribute('aria-label', label);
+
+            const photo = dishCard.querySelector('.front-img img');
+            const clip = dishCard.querySelector('.front-img video');
+            const src = photo ? photo.getAttribute('src') : (clip ? clip.getAttribute('poster') : null);
+            if (src) {
+                const img = document.createElement('img');
+                img.className = 'sw-card-img';
+                img.src = src;
+                img.alt = '';
+                btn.appendChild(img);
+            }
+
+            const text = document.createElement('span');
+            text.className = 'sw-card-text';
+            const name = document.createElement('span');
+            name.className = 'sw-card-name';
+            name.textContent = (dishCard.querySelector('.front-name')?.textContent || '').trim();
+            text.appendChild(name);
+            // Price and arrow at the end of the line (the arrow alone if no price).
+            const end = document.createElement('span');
+            end.className = 'sw-card-end';
+            const priceTpl = dishCard.querySelector('template.dish-price-one');
+            if (priceTpl) {
+                const price = document.createElement('span');
+                price.className = 'sw-card-price';
+                price.appendChild(priceTpl.content.cloneNode(true));
+                end.appendChild(price);
+            }
+            const arrow = document.createElement('span');
+            arrow.className = 'sw-card-arrow';
+            arrow.setAttribute('aria-hidden', 'true');
+            arrow.textContent = '›';
+            end.appendChild(arrow);
+            text.appendChild(end);
+            btn.appendChild(text);
+
+            btn.addEventListener('click', () => {
+                window.openDishModal?.(dishCard, { overChat: true, returnFocus: btn });
+            });
+            row.appendChild(btn);
+        });
+        if (!row.children.length) return;
+        messagesEl.appendChild(row);
     }
 
     window.swToggle = function () {
@@ -187,7 +307,7 @@
         const text = input.value.trim();
         if (!text) return;
 
-        appendMessage('user', text);
+        const questionEl = appendMessage('user', text);
         input.value = '';
         sending = true;
         sendBtn.disabled = true;
@@ -201,6 +321,9 @@
                 message: text,
                 conversationId: getConversationId(),
                 locale: locale,
+                // The currency this page shows (?currency= included), so the
+                // reply's prices match the cards taken from the page.
+                currency: document.body.dataset.menuCurrency || null,
             }),
         })
             .then(res => res.ok ? res.json() : res.json().catch(() => ({})).then(data => {
@@ -210,16 +333,22 @@
             }))
             .then(data => {
                 if (data.conversationId) setConversationId(data.conversationId);
+                // Hidden first: it sits under the messages, so it changes their height.
+                typingEl.hidden = true;
+                let replyEl;
                 if (data.error === 'daily_limit') {
-                    appendMessage('assistant', SW_STRINGS.dailyLimit);
+                    replyEl = appendMessage('assistant', SW_STRINGS.dailyLimit, true);
                 } else if (data.error || !data.reply) {
-                    appendMessage('assistant', SW_STRINGS.errorFallback);
+                    replyEl = appendMessage('assistant', SW_STRINGS.errorFallback, true);
                 } else {
-                    appendMessage('assistant', data.reply);
+                    replyEl = appendMessage('assistant', data.reply, true);
+                    appendDishCards(data.dishIds);
                 }
+                showReplyStart(questionEl, replyEl);
             })
             .catch(() => {
-                appendMessage('assistant', SW_STRINGS.errorFallback);
+                typingEl.hidden = true;
+                showReplyStart(questionEl, appendMessage('assistant', SW_STRINGS.errorFallback, true));
             })
             .finally(() => {
                 sending = false;
@@ -228,8 +357,12 @@
             });
     };
 
+    // Capture phase, so it runs before the dish sheet's own Escape handler:
+    // with a sheet open (e.g. from a card), Escape closes only the sheet.
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && opened) window.swToggle();
-    });
+        if (e.key !== 'Escape' || !opened) return;
+        if (document.getElementById('dish-modal-overlay')?.classList.contains('open')) return;
+        window.swToggle();
+    }, true);
 })();
 </script>

@@ -84,13 +84,16 @@ class SmartWaiterController extends AbstractController
             ? $requestedLocale
             : ($savedPrefs['lang'] ?? $menuPreferencesResolver->detectLanguage($request, $restaurant->getDefaultLanguage()));
 
-        // Same currency resolution as the public menu itself (menu_prefs
-        // cookie > guessed from device locale > restaurant's own fallback —
-        // no ?currency= query override here, this is a chat POST, not a page
-        // navigation), so Smart Waiter never quotes a price in a different
-        // currency than the one already showing on the menu page the
-        // customer is chatting from.
-        $currency = $savedPrefs['currency'] ?? $menuPreferencesResolver->guessCurrency($request, $restaurant->getCurrency());
+        // The currency the menu page itself is showing: the page sends the
+        // one it was rendered with (MenuController's ?currency= override >
+        // menu_prefs cookie > device locale > restaurant's own), so the
+        // reply's prices and the dish cards under it (taken from that page)
+        // always match. Not one we support (an old page, the console
+        // command): the page's own resolution without the query override.
+        $requestedCurrency = is_array($data) ? ($data['currency'] ?? null) : null;
+        $currency = is_string($requestedCurrency) && $menuPreferencesResolver->isCurrencySupported($requestedCurrency)
+            ? $requestedCurrency
+            : ($savedPrefs['currency'] ?? $menuPreferencesResolver->guessCurrency($request, $restaurant->getCurrency()));
 
         $result = $smartWaiterService->reply($restaurant, $locale, $currency, $conversationId, $message);
 

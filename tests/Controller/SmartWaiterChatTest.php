@@ -49,6 +49,12 @@ final class SmartWaiterChatTest extends WebTestCase
     /** @var list<array{host: string, url: string, body: array<string, mixed>}> */
     private array $requests = [];
 
+    /** What the fake Gemini answers to the main call. */
+    private string $aiText = 'De primero hay sopa.';
+
+    private Product $carpaccio;
+    private Product $sopa;
+
     /** @var list<array<string, mixed>> the needs detection calls (request bodies) */
     private array $detections = [];
 
@@ -82,7 +88,7 @@ final class SmartWaiterChatTest extends WebTestCase
             $this->requests[] = ['host' => $host, 'url' => $url, 'body' => $body];
 
             return new MockResponse(json_encode([
-                'candidates' => [['content' => ['parts' => [['text' => 'De primero hay sopa.']], 'role' => 'model'], 'finishReason' => 'STOP']],
+                'candidates' => [['content' => ['parts' => [['text' => $this->aiText]], 'role' => 'model'], 'finishReason' => 'STOP']],
                 'usageMetadata' => ['promptTokenCount' => 300, 'candidatesTokenCount' => 8],
             ]));
         });
@@ -97,7 +103,7 @@ final class SmartWaiterChatTest extends WebTestCase
         $this->em->persist($this->restaurant);
 
         $carta = $this->category('Entrantes');
-        $this->dish($carta, 'Carpaccio de salmón', 1400);
+        $this->carpaccio = $this->dish($carta, 'Carpaccio de salmón', 1400);
 
         $menu = $this->category('Menú del día', menuPriceCents: 1500);
         $section = new MenuSection();
@@ -105,7 +111,7 @@ final class SmartWaiterChatTest extends WebTestCase
         $section->setPosition(0);
         $menu->addMenuSection($section);
         $this->em->persist($section);
-        $this->dish($menu, 'Sopa de la casa', 0, $section);
+        $this->sopa = $this->dish($menu, 'Sopa de la casa', 0, $section);
 
         $this->em->flush();
     }
@@ -161,7 +167,7 @@ final class SmartWaiterChatTest extends WebTestCase
         return $category;
     }
 
-    private function dish(Category $category, string $name, int $priceCents, ?MenuSection $section = null): void
+    private function dish(Category $category, string $name, int $priceCents, ?MenuSection $section = null): Product
     {
         $product = new Product();
         $product->setBasePrice($priceCents);
@@ -175,15 +181,18 @@ final class SmartWaiterChatTest extends WebTestCase
         $t->setName($name);
         $product->addTranslation($t);
         $this->em->persist($t);
+
+        return $product;
     }
 
-    private function ask(string $message): array
+    /** @param array<string, mixed> $extra more body fields (e.g. the page's currency) */
+    private function ask(string $message, array $extra = []): array
     {
         $this->client->request(
             'POST',
             '/r/' . $this->restaurant->getSlug() . '/chat',
             server: ['CONTENT_TYPE' => 'application/json'],
-            content: json_encode(['message' => $message, 'locale' => 'es']),
+            content: json_encode(['message' => $message, 'locale' => 'es'] + $extra),
         );
 
         return json_decode((string) $this->client->getResponse()->getContent(), true) ?? [];
@@ -244,6 +253,78 @@ final class SmartWaiterChatTest extends WebTestCase
         self::assertSame('none', $setDish['labels']);
         self::assertSame('?', $setDish['allergens']);
         self::assertStringNotContainsString('unknown (', $prompt, 'no quotable phrase for unknown allergens anywhere');
+    }
+
+    /**
+     * The DISHES line never reaches the customer nor the history; only a
+     * dish of this menu with a card of its own comes back in dishIds — not
+     * the set menu's soup, not an id that doesn't exist.
+     */
+    public function testTheDishesLineBecomesCheckedDishIds(): void
+    {
+        $this->client->disableReboot(); // the same conversation store for the second question
+        $this->aiText = sprintf("Te recomiendo el carpaccio de salmón.\nDISHES: %d, %d, 99999999, %d", $this->carpaccio->getId(), $this->sopa->getId(), $this->carpaccio->getId());
+
+        $data = $this->ask('¿Qué me recomiendas?');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('Te recomiendo el carpaccio de salmón.', $data['reply']);
+        self::assertSame([$this->carpaccio->getId()], $data['dishIds']);
+
+        $prompt = $this->requests[0]['body']['systemInstruction']['parts'][0]['text'];
+        self::assertStringContainsString('"id":' . $this->carpaccio->getId() . ',"name":"Carpaccio de salmón"', $prompt);
+        self::assertStringNotContainsString('"id":' . $this->sopa->getId() . ',', $prompt, 'a set menu\'s dish has no card, so no id');
+
+        $this->aiText = 'Nada más.';
+        $this->ask('¿Algo más?', ['conversationId' => $data['conversationId']]);
+        $history = json_encode($this->requests[1]['body']['contents'], JSON_UNESCAPED_UNICODE);
+        self::assertStringContainsString('Te recomiendo el carpaccio de salmón.', $history);
+        self::assertStringNotContainsString('DISHES', $history, 'never in the history');
+    }
+
+    /**
+     * An id the AI writes inside a sentence (against rule 11) never shows
+     * nor reaches the history, and never becomes a card; a number that is
+     * no dish id sent stays.
+     */
+    public function testAnIdWrittenInTheSentenceIsStrippedEverywhere(): void
+    {
+        $this->client->disableReboot(); // the same conversation store for the second question
+        $this->aiText = sprintf('El carpaccio de salmón (id %d) es para 2 (2 personas).', $this->carpaccio->getId());
+
+        $data = $this->ask('¿Qué me recomiendas?');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('El carpaccio de salmón es para 2 (2 personas).', $data['reply']);
+        self::assertSame([], $data['dishIds'], 'no DISHES line: no card');
+
+        $this->aiText = 'Nada más.';
+        $this->ask('¿Algo más?', ['conversationId' => $data['conversationId']]);
+        $history = json_encode($this->requests[1]['body']['contents'], JSON_UNESCAPED_UNICODE);
+        self::assertStringContainsString('El carpaccio de salmón es para 2 (2 personas).', $history);
+        self::assertStringNotContainsString('(id ', $history, 'never in the history, so never copied');
+    }
+
+    public function testNoDishesLineMeansNoCards(): void
+    {
+        $data = $this->ask('¿Qué primeros hay en el menú del día?');
+
+        self::assertSame('De primero hay sopa.', $data['reply']);
+        self::assertSame([], $data['dishIds']);
+    }
+
+    /** The chat quotes in the currency the page shows (?currency= included), sent by the page itself. */
+    public function testTheChatUsesThePagesCurrency(): void
+    {
+        $this->client->disableReboot(); // keeps the fake AI for the second question
+        $this->ask('¿Cuánto cuesta el carpaccio?', ['currency' => 'GBP']);
+        self::assertStringContainsString('Prices are in GBP.', $this->requests[0]['body']['systemInstruction']['parts'][0]['text']);
+
+        $this->ask('¿Cuánto cuesta el carpaccio?', ['currency' => 'XXX-not-ours']);
+        $this->ask('¿Cuánto cuesta el carpaccio?');
+        $firstLine = fn (int $i) => strtok($this->requests[$i]['body']['systemInstruction']['parts'][0]['text'], "\n");
+        self::assertStringNotContainsString('XXX', $firstLine(1));
+        self::assertSame($firstLine(2), $firstLine(1), 'not one we support: the same as a request without it');
     }
 
     /** Same key as SmartWaiterController: restaurant + IP + browser. */

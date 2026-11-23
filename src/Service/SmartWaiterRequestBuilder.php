@@ -54,8 +54,10 @@ final class SmartWaiterRequestBuilder
      * @param ?string              $language    the customer's language as the needs detection gave it (null: not given)
      * @param ?float               $timeout     null = the adapters' usual timeout (the customer chat)
      *
-     * @return array{0: AIRequest, 1: string, 2: bool} the request, the question's complexity
-     *   ('simple'|'complex'), and whether any dish is "suitable" for $needs (SmartWaiterStaffNote)
+     * @return array{0: AIRequest, 1: string, 2: bool, 3: list<int>, 4: list<int>} the request, the question's complexity
+     *   ('simple'|'complex'), whether any dish is "suitable" for $needs (SmartWaiterStaffNote),
+     *   the dishes that may get a card under the reply (SmartWaiterDishFit::cardIds()), and
+     *   every dish id sent (SmartWaiterDishFit::sentIds(): what SmartWaiterDishRefs strips from the text)
      */
     public function request(array $menuContext, string $locale, array $history, array $earlierCustomerMessages, ChatMessage $userMessage, CustomerNeeds $needs, ?string $language = null, ?float $timeout = null): array
     {
@@ -66,6 +68,6 @@ final class SmartWaiterRequestBuilder
             timeout: $timeout,
         );
 
-        return [$request, $this->complexity($menuContext, $userMessage->content), SmartWaiterDishFit::hasSuitable($sorted)];
+        return [$request, $this->complexity($menuContext, $userMessage->content), SmartWaiterDishFit::hasSuitable($sorted), SmartWaiterDishFit::cardIds($sorted, $needs), SmartWaiterDishFit::sentIds($sorted)];
     }
 }

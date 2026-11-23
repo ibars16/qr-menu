@@ -57,7 +57,13 @@ function unflipCard(e, btn)    { e.stopPropagation(); btn.closest('.card').class
 // <template class="dish-tpl"> so nothing needs re-rendering server-side.
 // No-op (both querySelectors return null) on any page that doesn't have
 // this modal.
-function openDishModal(card) {
+// opts.overChat (Smart Waiter's dish cards): the sheet opens above the chat
+// panel (.over-chat, z-index in _smart_waiter.html.twig) and, once closed,
+// focus goes back to opts.returnFocus — the chat stays as it was.
+let dishModalReturnFocus = null;
+let dishModalOverChatTimer = null;
+function openDishModal(card, opts) {
+    if (!card) return;
     const tpl       = card.querySelector('.dish-tpl');
     const overlay   = document.getElementById('dish-modal-overlay');
     const photoWrap = document.getElementById('dish-modal-photo');
@@ -91,6 +97,9 @@ function openDishModal(card) {
         }
     }
     body.appendChild(content);
+    clearTimeout(dishModalOverChatTimer);
+    overlay.classList.toggle('over-chat', !!(opts && opts.overChat));
+    dishModalReturnFocus = (opts && opts.returnFocus) || null;
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -111,6 +120,14 @@ function closeDishModal() {
     overlay.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     document.getElementById('dish-modal-photo')?.querySelector('video')?.pause();
+    if (overlay.classList.contains('over-chat')) {
+        // Only once the sheet has slid away: until then it still covers the chat.
+        dishModalOverChatTimer = setTimeout(() => overlay.classList.remove('over-chat'), 350);
+    }
+    if (dishModalReturnFocus) {
+        dishModalReturnFocus.focus();
+        dishModalReturnFocus = null;
+    }
 }
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDishModal(); });
 

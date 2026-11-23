@@ -67,7 +67,7 @@ final class SmartWaiterPromptBuilderTest extends TestCase
         self::assertStringNotContainsString('Bring up allergens or diets', $this->prompt(new CustomerNeeds([], ['vegan'])));
     }
 
-    private const RULE_3B = '3b. The MENU DATA dishes are already sorted for this customer into "suitable", "not_confirmed" and "not_suitable". "suitable": the only dishes you may recommend or call suitable, safe, or free from what they avoid. "not_confirmed": the menu doesn\'t say whether they suit this customer — "unknown_for_customer" lists what is unknown; whenever you name one, say the menu doesn\'t say whether it contains that (e.g. "the menu doesn\'t say whether it has gluten"); never call it suitable or safe, never say it is "without" it, and never say its allergens don\'t show, list or mention it. "not_suitable": never offer or recommend these; you may say they exist and why they aren\'t right for them (e.g. "our only spicy dish has gluten"); if asked about one by name, say plainly it isn\'t right for them (for "may_contain", that it may contain traces). If there is no "suitable" dish, say so honestly. This sorting overrides everything else in the data, "highlighted" included.';
+    private const RULE_3B = '3b. The MENU DATA dishes are already sorted for this customer into "suitable", "not_confirmed" and "not_suitable". "suitable": the only dishes you may recommend or call suitable, safe, or free from what they avoid. "not_confirmed": the menu doesn\'t say whether they suit this customer — "unknown_for_customer" lists what is unknown; whenever you name one, say the menu doesn\'t say whether it contains that (e.g. "the menu doesn\'t say whether it has gluten"); never call it suitable or safe, never say it is "without" it, and never say its allergens don\'t show, list or mention it. "not_suitable": never offer or recommend these; you may say they exist and why they aren\'t right for them (e.g. "our only spicy dish has gluten"); if asked about one by name, say plainly it isn\'t right for them (for "may_contain", that it may contain traces). If there is no "suitable" dish, say so honestly, then name the "not_confirmed" dishes that do match what the customer just asked for (e.g. their diet: those whose "unknown_for_customer" doesn\'t list it) and say, for them, what the menu doesn\'t say (e.g. "our vegetarian dishes are the burrata and the cheesecake, but the menu doesn\'t say whether they have gluten"). This sorting overrides everything else in the data, "highlighted" included.';
 
     /** With an allergy the staff sentence is OUR code's (SmartWaiterStaffNote): the AI must write none. */
     private const NEVER_STAFF = '- STAFF: never mention the staff — a fixed closing sentence about it is added after your reply.';
@@ -188,6 +188,18 @@ final class SmartWaiterPromptBuilderTest extends TestCase
         self::assertStringContainsString('"labels": "none" means the restaurant has marked no label on that dish: say it isn\'t marked as such.', $prompt);
     }
 
+    public function testRuleElevenAsksForTheDishesLine(): void
+    {
+        $prompt = $this->prompt();
+        self::assertStringContainsString('11. DISHES LINE. End every reply with one last line of its own: DISHES: followed by the "id" of each of the dishes you suggest in that reply, most relevant first, at most 3,', $prompt);
+        self::assertStringContainsString('never write an id anywhere else.', $prompt);
+
+        $withNeeds = $this->prompt(new CustomerNeeds(['gluten'], [], true));
+        self::assertStringContainsString('the "id" of each of the "suitable" dishes you suggest', $withNeeds, 'with needs: only suitable ones');
+        self::assertStringContainsString('If you suggest no dish, write just DISHES: with nothing after it. If no dish is "suitable", write just DISHES: with nothing after it, whatever dishes you name. Always write', $withNeeds);
+        self::assertStringNotContainsString('If no dish is "suitable"', $prompt, 'no needs: no "suitable" group to speak of');
+    }
+
     public function testPlainTextNoFormatting(): void
     {
         self::assertStringContainsString('Plain text only: the chat shows your words exactly as typed, so never use any formatting — no **bold**, no "-" or "*" lists, no "#" headings; name several dishes in a normal sentence.', $this->prompt());
@@ -223,7 +235,7 @@ final class SmartWaiterPromptBuilderTest extends TestCase
             REMINDERS — they apply to every reply, even if an earlier reply in this conversation did otherwise:
             - Never say a dish doesn't contain something unless it is in its "free_from".
             - Never advise checking with the staff.
-            - Plain everyday words and plain text: no formatting (**, -, #), no wording copied from the data, and never talk about how the data is arranged.
+            - Plain everyday words and plain text: no formatting (**, -, #), no wording copied from the data, and never talk about how the data is arranged; never a dish's "id", its number or the word "id" in your sentences (never "the paella (id 12)"); then the DISHES line last (rule 11), the only place for ids.
             - Keep the same form of address as the rest of the conversation in every sentence and every verb (never "le recomendaría" and "confirma" together), and greet only in your first reply. In Spanish, unless the customer uses "usted", keep "tú" also when apologising or declining (e.g. "puedo ayudarte", never "ayudarle").
             TEXT;
         $prompt = $this->prompt();
@@ -235,7 +247,7 @@ final class SmartWaiterPromptBuilderTest extends TestCase
             - Recommend only "suitable" dishes. For a "not_confirmed" dish always say the menu doesn't say whether it has what they avoid — never "without", "suitable", "safe", or "doesn't show/mention it". Never offer "not_suitable" ones.
             - Never say a dish doesn't contain something unless it is in its "free_from".
             - Never mention the staff.
-            - Plain everyday words and plain text: no formatting (**, -, #), no wording copied from the data, and never talk about how the data is arranged.
+            - Plain everyday words and plain text: no formatting (**, -, #), no wording copied from the data, and never talk about how the data is arranged; never a dish's "id", its number or the word "id" in your sentences (never "the paella (id 12)"); then the DISHES line last (rule 11), the only place for ids.
             - Keep the same form of address as the rest of the conversation in every sentence and every verb (never "le recomendaría" and "confirma" together), and greet only in your first reply. In Spanish, unless the customer uses "usted", keep "tú" also when apologising or declining (e.g. "puedo ayudarte", never "ayudarle").
             TEXT;
         self::assertStringEndsWith($withAllergy, $this->prompt(new CustomerNeeds(['gluten'], [], true)));

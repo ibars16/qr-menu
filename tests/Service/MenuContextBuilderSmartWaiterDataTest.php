@@ -412,6 +412,37 @@ final class MenuContextBuilderSmartWaiterDataTest extends TestCase
     }
 
     /**
+     * Every normal dish carries its "id" (first) — what the AI writes on its
+     * DISHES line — and cardIds() offers all of them with no needs, only
+     * the "suitable" ones with needs (a not-suitable or not-confirmed dish
+     * never gets a card).
+     */
+    public function testDishesCarryTheirIdAndOnlySuitableOnesMayGetACard(): void
+    {
+        $restaurant = $this->restaurant();
+        $pizzas = $this->category($restaurant, 'Pizzas');
+        $withGluten = $this->withAllergens($this->dish($pizzas, 'Pizza margarita'), ['gluten' => AllergenPresence::CONTAINS]);
+        $glutenFree = $this->withAllergens($this->dish($pizzas, 'Pizza sin gluten'), ['gluten' => AllergenPresence::FREE_FROM]);
+        $unknown = $this->withAllergens($this->dish($pizzas, 'Pizza cuatro quesos'), []);
+
+        $context = $this->builder()->build($restaurant, 'es', 'EUR');
+        $products = $context['categories'][0]['products'];
+        self::assertSame([$withGluten->getId(), $glutenFree->getId(), $unknown->getId()], array_column($products, 'id'));
+        self::assertSame('id', array_key_first($products[0]));
+
+        $fit = new SmartWaiterDishFit();
+        $none = new CustomerNeeds();
+        self::assertSame([$withGluten->getId(), $glutenFree->getId(), $unknown->getId()], SmartWaiterDishFit::cardIds($fit->apply($context, $none), $none));
+        $coeliac = new CustomerNeeds(['gluten'], [], true);
+        self::assertSame([$glutenFree->getId()], SmartWaiterDishFit::cardIds($fit->apply($context, $coeliac), $coeliac));
+
+        // sentIds(): every id the AI is sent — what DishRefs may strip from the text.
+        // A "not_suitable" dish goes without its id, so it isn't among them.
+        self::assertSame([$withGluten->getId(), $glutenFree->getId(), $unknown->getId()], SmartWaiterDishFit::sentIds($fit->apply($context, $none)));
+        self::assertSame([$glutenFree->getId(), $unknown->getId()], SmartWaiterDishFit::sentIds($fit->apply($context, $coeliac)));
+    }
+
+    /**
      * The case that made us sort the dishes in code: a coeliac asks "anything
      * spicy?" — the spicy, recommended pizza with gluten reaches the AI only
      * in "not_suitable": its name, why, and "spicy": true (so it can say

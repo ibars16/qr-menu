@@ -68,6 +68,8 @@ final class SmartWaiterDishFitTest extends TestCase
         yield 'vegan, no label' => [self::dish('Hummus'), new CustomerNeeds([], ['vegan']), 'not_confirmed'];
         yield 'vegetarian + contains crustaceans' => [self::dish('Paella', ['crustaceans' => 'contains']), new CustomerNeeds([], ['vegetarian']), 'not_suitable'];
         yield 'vegetarian + contains milk is fine' => [self::dish('Queso', ['milk' => 'contains'], ['vegetarian']), new CustomerNeeds([], ['vegetarian']), 'suitable'];
+        yield 'vegetarian: a "vegan" label is enough' => [self::dish('Gazpacho', [], ['vegan']), new CustomerNeeds([], ['vegetarian']), 'suitable'];
+        yield 'vegan: a "vegetarian" label is not' => [self::dish('Burrata', [], ['vegetarian']), new CustomerNeeds([], ['vegan']), 'not_confirmed'];
         yield 'halal only by its label' => [self::dish('Cordero', [], ['halal']), new CustomerNeeds([], ['halal']), 'suitable'];
         yield 'halal never ruled out by allergens' => [self::dish('Gambas', ['crustaceans' => 'contains']), new CustomerNeeds([], ['halal']), 'not_confirmed'];
         yield '"other": nothing is confirmed' => [self::dish('Ensalada', ['gluten' => 'free_from']), new CustomerNeeds(['gluten'], [], true, true), 'not_confirmed'];

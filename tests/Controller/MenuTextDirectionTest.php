@@ -177,6 +177,8 @@ final class MenuTextDirectionTest extends WebTestCase
         // Carousel: "back" points right, "next" points left.
         self::assertMatchesRegularExpression('#banner-prev"[^>]*><i class="ti ti-chevron-right"#', $html);
         self::assertMatchesRegularExpression('#banner-next"[^>]*><i class="ti ti-chevron-left"#', $html);
+        // Smart Waiter's dish cards take their price from here: the amount + currency isolated LTR.
+        self::assertMatchesRegularExpression('#<template class="dish-price-one"><bdi dir="ltr" class="price-ltr">[^<]+<span class="price-currency">€</span></bdi></template>#u', $html);
         self::assertSame($queued, (int) $this->em->getConnection()->fetchOne('SELECT COUNT(*) FROM messenger_messages'), 'rendering ar queued nothing');
     }
 
@@ -188,6 +190,7 @@ final class MenuTextDirectionTest extends WebTestCase
         self::assertStringContainsString('<html lang="es" dir="ltr">', $html);
         self::assertStringNotContainsString('/fonts/arabic.css', $html);
         self::assertStringNotContainsString('<bdi', $html);
+        self::assertMatchesRegularExpression('#<template class="dish-price-one">12,50<span class="price-currency">€</span></template>#u', $html, 'the one-line price Smart Waiter\'s cards use');
         self::assertStringNotContainsString('dir="auto"', $html);
         self::assertMatchesRegularExpression('#class="more-hint">[^<]*<i class="ti ti-chevron-right"#u', $html);
         self::assertStringContainsString('<p class="ft-tagline">Cocina de mercado.</p>', $html);

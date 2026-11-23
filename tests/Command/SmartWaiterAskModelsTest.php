@@ -137,6 +137,22 @@ final class SmartWaiterAskModelsTest extends TestCase
         self::assertSame([], $this->chatRequests, 'no HTTP to the chat');
     }
 
+    /** The DISHES line (prompt rule 11) is never in the comparison: not in the answer column, not in the model's history — cut off too. */
+    public function testTheDishesLineNeverShowsInTheComparison(): void
+    {
+        $this->replies = [
+            self::FLASH_LITE => [["Te recomiendo las croquetas.\nDISHES: 12", 'STOP'], ['Nada más.', 'STOP'], ["Quizá el pulpo.\nDISH", 'MAX_TOKENS']],
+        ];
+
+        $this->runCommand("conversacion;pregunta\nA;¿Qué me recomiendas?\nA;¿Algo más?\nB;¿Y de pescado?\n", ['--modelos' => 'gemini-flash-lite']);
+
+        $rows = $this->outputRows();
+        self::assertSame('Te recomiendo las croquetas.', $rows[1][3]);
+        self::assertSame('Quizá el pulpo.', $rows[3][3]);
+        self::assertStringNotContainsString('DISH', file_get_contents($this->dir . '/out.csv'));
+        self::assertSame([['user', '¿Qué me recomiendas?'], ['model', 'Te recomiendo las croquetas.'], ['user', '¿Algo más?']], $this->sentTurns($this->requestsTo('gemini-flash-lite-latest')[1]));
+    }
+
     public function testNoFallbackAFailingModelOnlyFillsItsOwnErrorColumn(): void
     {
         // Groq unscripted → 500. Nobody steps in for it.

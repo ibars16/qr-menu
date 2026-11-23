@@ -118,7 +118,7 @@ final class SmartWaiterModelComparison
         }
         $needs = $store->addNeeds($conversationId, $restaurantId, $needs);
 
-        [$request, , $anySuitable] = $this->requestBuilder->request(
+        [$request, , $anySuitable, $cardIds, $sentIds] = $this->requestBuilder->request(
             $this->menuContext($restaurant, $locale),
             $locale,
             $store->getHistory($conversationId, $restaurantId),
@@ -140,12 +140,13 @@ final class SmartWaiterModelComparison
         if (!$response->endedNormally()) {
             $store->rememberUnansweredCustomerMessage($conversationId, $restaurantId, $userMessage);
 
-            return ['reply' => $this->replyCleaner->clean($response->content, $language), 'error' => sprintf('cortada (%s): el chat no la mostraría', $response->finishReason ?? 'sin motivo')];
+            return ['reply' => $this->replyCleaner->clean(SmartWaiterDishRefs::split($response->content, $cardIds, $sentIds)[0], $language), 'error' => sprintf('cortada (%s): el chat no la mostraría', $response->finishReason ?? 'sin motivo')];
         }
 
         // Like the chat's: cleaned (SmartWaiterReplyCleaner), kept in the
         // history without the staff sentence, shown with it (SmartWaiterStaffNote).
-        $reply = $this->replyCleaner->clean($response->content, $language);
+        // Without the DISHES line (prompt rule 11), like the chat: never shown, never in the history.
+        $reply = $this->replyCleaner->clean(SmartWaiterDishRefs::split($response->content, $cardIds, $sentIds)[0], $language);
         $store->append($conversationId, $restaurantId, $userMessage, new ChatMessage('assistant', $reply));
 
         return ['reply' => $this->staffNote->append($reply, $this->staffNote->note($needs, $anySuitable, $language)), 'error' => ''];
