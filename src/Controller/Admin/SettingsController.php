@@ -15,6 +15,8 @@ use App\Service\Upload\UploadValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -26,13 +28,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class SettingsController extends AbstractController
 {
     /** Values of the per-section save buttons (name="section"). */
-    private const SECTIONS = ['info', 'contact', 'social', 'hours', 'appearance', 'language'];
+    private const SECTIONS = ['info', 'contact', 'social', 'hours', 'language'];
 
     #[Route('/settings', name: 'settings')]
     public function settings(
         Request $request,
         EntityManagerInterface $em,
-        UploadValidator $uploadValidator,
         AdminLocaleResolver $adminLocaleResolver,
         TranslatorInterface $translator,
         ContactDetailsNormalizer $contactNormalizer,
@@ -128,7 +129,6 @@ class SettingsController extends AbstractController
                     'heroImageMaxDimension' => UploadValidator::maxDimension(UploadProfile::HeroImage),
                     'heroImageMaxMegabytes' => UploadValidator::maxSizeMegabytes(UploadProfile::HeroImage),
                     'errors'                => $errors,
-                    'discardedUploads'      => $this->discardedUploads($request, $section),
                     'old'                   => [
                         'name'    => $name,
                         'tagline' => $tagline,
@@ -176,111 +176,7 @@ class SettingsController extends AbstractController
                 }
             }
 
-            // Logo and hero image. Both are validated before either file
-            // touches the disk: a rejected or still-to-confirm hero must not
-            // leave a half-applied logo behind (it used to move the new logo
-            // and delete the old one, then return without flushing — the
-            // restaurant kept pointing at a deleted file). Old files are only
-            // deleted once the new names are flushed.
-            $logoFile = $saves('appearance') ? $request->files->get('logo') : null;
-            $logoResult = null;
-            if ($logoFile) {
-                $logoResult = $uploadValidator->validate($logoFile, UploadProfile::Logo);
-                if (!$logoResult->isValid) {
-                    $this->addFlash('error', $translator->trans($this->logoErrorKey($logoResult->error), domain: 'admin_settings'));
-                    return $this->redirectToRoute('admin_settings');
-                }
-            }
-
-            // Own profile (8MB, 300-5000px): lower minimum than dish photos
-            // on purpose (see UploadProfile::HeroImage's own comment) — a
-            // hero band just needs a not-tiny image. Its own directory, never
-            // scanned by app:logos:clean-orphans.
-            $heroImageFile = $saves('appearance') ? $request->files->get('heroImage') : null;
-            $heroResult = null;
-            if ($heroImageFile) {
-                // Only ever lets a QUALITY warning (small/portrait) through —
-                // see UploadValidator::validate()'s own docblock for why this
-                // can't reach the security checks above it.
-                $heroQualityConfirmed = $request->request->get('heroImageQualityConfirmed') === '1';
-                $heroResult = $uploadValidator->validate($heroImageFile, UploadProfile::HeroImage, qualityWarningsConfirmed: $heroQualityConfirmed);
-
-                if (!$heroResult->isValid && $heroResult->error !== null) {
-                    // Fatal — a real UploadValidationError, never overridable.
-                    $this->addFlash('error', $translator->trans(
-                        $this->heroImageErrorKey($heroResult->error),
-                        $this->heroImageErrorParams($heroResult->error),
-                        domain: 'admin_settings'
-                    ));
-                    return $this->redirectToRoute('admin_settings');
-                }
-
-                if (!$heroResult->isValid) {
-                    // error === null here: quality warnings only, not yet
-                    // confirmed. Nothing is saved — not even the other
-                    // fields in this same submission, same as any other
-                    // early-return above — the owner re-submits (ticking
-                    // "upload anyway", see settings.html.twig) to proceed.
-                    foreach ($heroResult->warnings as $warning) {
-                        $this->addFlash('warning', $translator->trans($this->heroImageWarningKey($warning), $this->heroImageWarningParams($heroResult), 'admin_settings'));
-                    }
-                    return $this->redirectToRoute('admin_settings');
-                }
-            }
-
-            // Both valid: move them. If the second move fails, the first new
-            // file is removed again, so the disk ends up as it started.
-            $uploads = [];
-            if ($logoFile) {
-                $uploads[] = ['file' => $logoFile, 'dir' => $this->getParameter('app.uploads_dir') . '/logos', 'name' => $logoResult->safeFilename, 'old' => $restaurant->getLogo(), 'set' => $restaurant->setLogo(...), 'errorKey' => 'flash.logo_upload_error'];
-            }
-            if ($heroImageFile) {
-                $uploads[] = ['file' => $heroImageFile, 'dir' => $this->getParameter('app.uploads_dir') . '/heroes', 'name' => $heroResult->safeFilename, 'old' => $restaurant->getHeroImage(), 'set' => $restaurant->setHeroImage(...), 'errorKey' => 'flash.hero_image_upload_error'];
-            }
-            $moved = [];
-            $oldFilesToDelete = [];
-            foreach ($uploads as $upload) {
-                if (!is_dir($upload['dir'])) {
-                    mkdir($upload['dir'], 0755, true);
-                }
-                try {
-                    $upload['file']->move($upload['dir'], $upload['name']);
-                } catch (FileException $e) {
-                    foreach ($moved as $path) {
-                        if (is_file($path)) {
-                            unlink($path);
-                        }
-                    }
-                    $this->addFlash('error', $translator->trans($upload['errorKey'], domain: 'admin_settings'));
-                    return $this->redirectToRoute('admin_settings');
-                }
-                $moved[] = $upload['dir'] . '/' . $upload['name'];
-                ($upload['set'])($upload['name']);
-                if ($upload['old']) {
-                    $oldFilesToDelete[] = $upload['dir'] . '/' . $upload['old'];
-                }
-            }
-
-            // Saved — informative hero warnings (too narrow for a large
-            // screen) are only reported now; the ones that needed
-            // confirmation were already shown before this submission.
-            foreach ($heroResult?->warnings ?? [] as $warning) {
-                if (!$warning->requiresConfirmation()) {
-                    $this->addFlash('warning', $translator->trans($this->heroImageWarningKey($warning), $this->heroImageWarningParams($heroResult), 'admin_settings'));
-                }
-            }
-
-            // Handle logo removal
-            if ($saves('appearance') && $request->request->get('removeLogoFlag') === '1') {
-                $restaurant->setLogo(null);
-            }
-
-            // Handle hero image removal
-            if ($saves('appearance') && $request->request->get('removeHeroImageFlag') === '1') {
-                $restaurant->setHeroImage(null);
-            }
-
-            // name/tagline/logo/heroImage/currency/defaultLanguage
+            // name/tagline/currency/defaultLanguage
             // (and the contact details, for the menu footer) appear on the
             // public menu; adminLocale is the only field here
             // that doesn't. One flush covers all of them, so bump
@@ -292,14 +188,6 @@ class SettingsController extends AbstractController
             // (never mid-language-change: see OwnerTextTranslationPruner).
             if ($saves('info')) {
                 $ownerTextPruner->prune($restaurant);
-            }
-
-            // The replaced files are orphaned on disk only now that the new
-            // names are stored.
-            foreach ($oldFilesToDelete as $path) {
-                if (is_file($path)) {
-                    unlink($path);
-                }
             }
 
             $languageResult = $languageChange !== null ? $languageChanger->start($restaurant, $languageChange) : null;
@@ -318,15 +206,6 @@ class SettingsController extends AbstractController
                 $this->addFlash('error', $translator->trans('ai_blocked', domain: 'admin_base'));
             }
 
-            // Another section's own button: a logo / hero image picked
-            // meanwhile was ignored — say so in Apariencia, and land there
-            // so it's actually seen.
-            $discarded = $saves('appearance') ? null : $this->discardedUploads($request, $section);
-            if ($discarded !== null) {
-                $this->addFlash('settings_upload_discarded', $discarded);
-                $section = 'appearance';
-            }
-
             // Back to the section just saved, not the top of a long page.
             return $this->redirectToRoute('admin_settings', $section ? ['_fragment' => 'section-' . $section] : []);
         }
@@ -342,35 +221,118 @@ class SettingsController extends AbstractController
             'heroImageMaxDimension' => UploadValidator::maxDimension(UploadProfile::HeroImage),
             'heroImageMaxMegabytes' => UploadValidator::maxSizeMegabytes(UploadProfile::HeroImage),
             'errors'                => [],
-            'discardedUploads'      => null,
             'old'                   => null,
         ]);
     }
 
     /**
-     * A logo / hero image sent with this submission that won't be stored:
-     * either the form came back with errors (a browser can't refill a file
-     * input) or it was another section's own button (only Apariencia's, or
-     * the save-everything one, stores files). Null when nothing was sent,
-     * or when called on a successful save that did store them.
+     * Logo / hero image of Apariencia, saved the moment it's picked or
+     * removed (settings.html.twig posts here with fetch) — no "Guardar".
+     * One image per request, so nothing half-applied can happen; the old
+     * file is deleted only once the new name is flushed.
      *
-     * @return array{key: string, viaAppearanceButton: bool}|null
+     * JSON: {ok: true, url, message, notices} — url null after a removal,
+     * notices = informative hero warnings (saved anyway);
+     * {ok: false, error} on a rejected file;
+     * {ok: false, needsConfirmation: true, warnings} when the hero needs
+     * "Subir de todas formas" (re-posted with qualityConfirmed=1).
      */
-    private function discardedUploads(Request $request, ?string $section): ?array
-    {
-        $logo = $request->files->get('logo') !== null;
-        $hero = $request->files->get('heroImage') !== null;
-        $key = match (true) {
-            $logo && $hero => 'hint.upload_discarded_both',
-            $logo => 'hint.upload_discarded_logo',
-            $hero => 'hint.upload_discarded_hero_image',
-            default => null,
-        };
+    #[Route('/settings/image/{kind}', name: 'settings_image', requirements: ['kind' => 'logo|hero'], methods: ['POST'])]
+    public function image(
+        string $kind,
+        Request $request,
+        EntityManagerInterface $em,
+        UploadValidator $uploadValidator,
+        TranslatorInterface $translator,
+    ): JsonResponse {
+        $restaurant = $this->getUser()->getRestaurant();
+        if (!$restaurant) {
+            throw $this->createAccessDeniedException();
+        }
+        $t = static fn (string $key, array $params = []): string => $translator->trans($key, $params, 'admin_settings');
 
-        return $key === null ? null : [
-            'key' => $key,
-            'viaAppearanceButton' => $section !== null && $section !== 'appearance',
-        ];
+        if (!$this->isCsrfTokenValid('admin_settings', (string) $request->request->get('_token'))) {
+            return $this->json(['ok' => false, 'error' => $t('flash.csrf_invalid')], Response::HTTP_FORBIDDEN);
+        }
+
+        $isLogo = $kind === 'logo';
+        $subdir = $isLogo ? 'logos' : 'heroes';
+        $dir = $this->getParameter('app.uploads_dir') . '/' . $subdir;
+        $old = $isLogo ? $restaurant->getLogo() : $restaurant->getHeroImage();
+        $set = $isLogo ? $restaurant->setLogo(...) : $restaurant->setHeroImage(...);
+
+        if ($request->request->get('action') === 'remove') {
+            $set(null);
+            $restaurant->bumpMenuContentVersion();
+            $em->flush();
+            $this->deleteUpload($dir, $old);
+
+            return $this->json(['ok' => true, 'url' => null, 'message' => $t($isLogo ? 'toast.logo_removed' : 'toast.hero_image_removed'), 'notices' => []]);
+        }
+
+        $uploadErrorKey = $isLogo ? 'flash.logo_upload_error' : 'flash.hero_image_upload_error';
+        $file = $request->files->get('image');
+        if (!$file instanceof UploadedFile) {
+            return $this->json(['ok' => false, 'error' => $t($uploadErrorKey)], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        if ($isLogo) {
+            $result = $uploadValidator->validate($file, UploadProfile::Logo);
+            if (!$result->isValid) {
+                return $this->json(['ok' => false, 'error' => $t(self::logoErrorKey($result->error))], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+        } else {
+            // Only ever lets a QUALITY warning (small/portrait) through —
+            // see UploadValidator::validate()'s own docblock.
+            $result = $uploadValidator->validate($file, UploadProfile::HeroImage, qualityWarningsConfirmed: $request->request->get('qualityConfirmed') === '1');
+            if (!$result->isValid && $result->error !== null) {
+                return $this->json(['ok' => false, 'error' => $t(self::heroImageErrorKey($result->error), self::heroImageErrorParams($result->error))], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+            if (!$result->isValid) {
+                return $this->json([
+                    'ok' => false,
+                    'needsConfirmation' => true,
+                    'warnings' => array_map(fn (UploadQualityWarning $w): string => $t($this->heroImageWarningKey($w), $this->heroImageWarningParams($result)), $result->warnings),
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+        }
+
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        try {
+            $file->move($dir, $result->safeFilename);
+        } catch (FileException) {
+            return $this->json(['ok' => false, 'error' => $t($uploadErrorKey)], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $set($result->safeFilename);
+        $restaurant->bumpMenuContentVersion();
+        $em->flush();
+        $this->deleteUpload($dir, $old);
+
+        // Informative hero warnings (too narrow for a large screen): the
+        // photo is stored, the owner is just told.
+        $notices = [];
+        foreach ($isLogo ? [] : $result->warnings as $warning) {
+            if (!$warning->requiresConfirmation()) {
+                $notices[] = $t($this->heroImageWarningKey($warning), $this->heroImageWarningParams($result));
+            }
+        }
+
+        return $this->json([
+            'ok'      => true,
+            'url'     => $request->getBasePath() . '/uploads/' . $subdir . '/' . $result->safeFilename,
+            'message' => $t($isLogo ? 'toast.logo_saved' : 'toast.hero_image_saved'),
+            'notices' => $notices,
+        ]);
+    }
+
+    private function deleteUpload(string $dir, ?string $filename): void
+    {
+        if ($filename && is_file($dir . '/' . $filename)) {
+            unlink($dir . '/' . $filename);
+        }
     }
 
     public static function logoErrorKey(UploadValidationError $error): string

@@ -12,8 +12,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
- * Functional coverage for the logo- and hero-image-replacement paths in
- * SettingsController::settings. Written after a9b46c2/8ea147a found that,
+ * Functional coverage for the logo- and hero-image paths in
+ * SettingsController::image (saved the moment they're picked/removed). Written after a9b46c2/8ea147a found that,
  * unlike MenuAdminController::uploadProductImage, replacing a restaurant's
  * logo left the previous file on disk in public/uploads/logos/ — an
  * accumulating, URL-reachable orphan. These tests pin down that the old
@@ -126,17 +126,22 @@ final class SettingsControllerTest extends WebTestCase
         return $this->fixtureUploadedFile('upload_png_150x150.png', $originalName, 'image/png');
     }
 
+    /**
+     * Posts one image to SettingsController::image, as Apariencia's
+     * saveImage() does the moment a file is picked. Returns the JSON.
+     */
+    private function postImage(string $kind, ?UploadedFile $file, array $fields = []): array
+    {
+        $this->client->request('POST', '/admin/settings/image/' . $kind, ['_token' => $this->settingsToken()] + $fields, $file ? ['image' => $file] : []);
+
+        return json_decode($this->client->getResponse()->getContent(), true);
+    }
+
     private function submitLogo(Restaurant $restaurant, UploadedFile $logo): void
     {
-        $this->client->request('POST', '/admin/settings', [
-            '_token' => $this->settingsToken(),
-            'name'            => $restaurant->getName(),
-            'currency'        => 'EUR',
-            'defaultLanguage' => 'es',
-        ], [
-            'logo' => $logo,
-        ]);
-        self::assertResponseRedirects('/admin/settings');
+        $json = $this->postImage('logo', $logo);
+        self::assertResponseIsSuccessful();
+        self::assertTrue($json['ok']);
     }
 
     /** Clears the hero profile's 300px minimum, so deliberately bigger than logoUpload()'s. */
@@ -163,15 +168,9 @@ final class SettingsControllerTest extends WebTestCase
 
     private function submitHeroImage(Restaurant $restaurant, UploadedFile $heroImage): void
     {
-        $this->client->request('POST', '/admin/settings', [
-            '_token' => $this->settingsToken(),
-            'name'            => $restaurant->getName(),
-            'currency'        => 'EUR',
-            'defaultLanguage' => 'es',
-        ], [
-            'heroImage' => $heroImage,
-        ]);
-        self::assertResponseRedirects('/admin/settings');
+        $json = $this->postImage('hero', $heroImage);
+        self::assertResponseIsSuccessful();
+        self::assertTrue($json['ok']);
     }
 
     public function testReplacingTheLogoDeletesThePreviousFileFromDisk(): void
@@ -320,16 +319,10 @@ final class SettingsControllerTest extends WebTestCase
 
         $fakeImage = $this->fixtureUploadedFile('upload_fake_mime.png', 'fake.jpg', 'image/jpeg');
 
-        $this->client->request('POST', '/admin/settings', [
-            '_token' => $this->settingsToken(),
-            'name'                        => $restaurant->getName(),
-            'currency'                    => 'EUR',
-            'defaultLanguage'             => 'es',
-            'heroImageQualityConfirmed'   => '1',
-        ], [
-            'heroImage' => $fakeImage,
-        ]);
-        self::assertResponseRedirects('/admin/settings');
+        $json = $this->postImage('hero', $fakeImage, ['qualityConfirmed' => '1']);
+        self::assertResponseStatusCodeSame(422);
+        self::assertFalse($json['ok']);
+        self::assertNotEmpty($json['error']);
 
         $restaurant = $this->reloadRestaurant($restaurant);
         self::assertNull($restaurant->getHeroImage(), 'a security rejection must never persist a heroImage reference');
@@ -354,22 +347,15 @@ final class SettingsControllerTest extends WebTestCase
 
         $goodImage = $this->fixtureUploadedFile('upload_hero_wide.jpg', 'hero.jpg', 'image/jpeg');
 
-        $this->client->request('POST', '/admin/settings', [
-            '_token' => $this->settingsToken(),
-            'name'            => $restaurant->getName(),
-            'currency'        => 'EUR',
-            'defaultLanguage' => 'es',
-        ], [
-            'heroImage' => $goodImage,
-        ]);
-        $session = $this->client->getRequest()->getSession();
+        $json = $this->postImage('hero', $goodImage);
         $restaurant = $this->reloadRestaurant($restaurant);
         $heroImage = $restaurant->getHeroImage();
         $this->heroImageFilesToRemove[] = $heroImage; // before any assertion, so a failure still cleans up
 
-        self::assertResponseRedirects('/admin/settings');
-        self::assertSame([], $session->getFlashBag()->peek('warning'), 'a clean above-minimum image must not raise a quality warning');
-        self::assertNotEmpty($session->getFlashBag()->peek('success'));
+        self::assertResponseIsSuccessful();
+        self::assertTrue($json['ok']);
+        self::assertSame([], $json['notices'], 'a clean above-minimum image must not raise a quality warning');
+        self::assertSame('/uploads/heroes/' . $heroImage, $json['url']);
 
         self::assertNotNull($heroImage);
         self::assertFileExists($this->heroImageDir . '/' . $heroImage);
@@ -386,28 +372,17 @@ final class SettingsControllerTest extends WebTestCase
         $owner = $this->makeOwner($restaurant);
         $this->client->loginUser($owner);
 
-        $this->client->request('POST', '/admin/settings', [
-            '_token' => $this->settingsToken(),
-            'name'            => $restaurant->getName(),
-            'currency'        => 'EUR',
-            'defaultLanguage' => 'es',
-        ], [
-            'heroImage' => $this->fixtureUploadedFile('upload_hero_ok.jpg', 'hero.jpg', 'image/jpeg'),
-        ]);
-        $session = $this->client->getRequest()->getSession();
+        $json = $this->postImage('hero', $this->fixtureUploadedFile('upload_hero_ok.jpg', 'hero.jpg', 'image/jpeg'));
         $restaurant = $this->reloadRestaurant($restaurant);
         $heroImage = $restaurant->getHeroImage();
         $this->heroImageFilesToRemove[] = $heroImage;
 
-        self::assertResponseRedirects('/admin/settings');
+        self::assertResponseIsSuccessful();
         self::assertNotNull($heroImage, 'an informative warning must not hold the photo back');
         self::assertFileExists($this->heroImageDir . '/' . $heroImage);
-        self::assertNotEmpty($session->getFlashBag()->peek('success'));
-
-        $warnings = $session->getFlashBag()->peek('warning');
-        self::assertCount(1, $warnings);
-        self::assertStringContainsString('800 × 400', $warnings[0]);
-        self::assertStringContainsString('1600', $warnings[0]);
+        self::assertCount(1, $json['notices']);
+        self::assertStringContainsString('800 × 400', $json['notices'][0]);
+        self::assertStringContainsString('1600', $json['notices'][0]);
     }
 
     /** A restaurant that already has a logo and a hero image on disk, as a real one would. */
@@ -417,14 +392,8 @@ final class SettingsControllerTest extends WebTestCase
         $owner = $this->makeOwner($restaurant);
         $this->client->loginUser($owner);
 
-        $this->client->request('POST', '/admin/settings', [
-            '_token'  => $this->settingsToken(),
-            'section' => 'appearance',
-        ], [
-            'logo'      => $this->logoUpload(),
-            'heroImage' => $this->fixtureUploadedFile('upload_hero_wide.jpg', 'hero.jpg', 'image/jpeg'),
-        ]);
-        self::assertResponseRedirects();
+        $this->submitLogo($restaurant, $this->logoUpload());
+        $this->submitHeroImage($restaurant, $this->fixtureUploadedFile('upload_hero_wide.jpg', 'hero.jpg', 'image/jpeg'));
         $restaurant = $this->reloadRestaurant($restaurant);
         $this->logoFilesToRemove[] = $restaurant->getLogo();
         $this->heroImageFilesToRemove[] = $restaurant->getHeroImage();
@@ -440,210 +409,108 @@ final class SettingsControllerTest extends WebTestCase
         return [scandir($this->logoDir) ?: [], scandir($this->heroImageDir) ?: []];
     }
 
-    /**
-     * New logo + a hero below the 300px minimum (needs confirmation): the
-     * hero used to be checked only after the logo was moved and the old
-     * one deleted, then it returned without flushing — the restaurant kept
-     * pointing at a deleted logo. Now nothing moves: DB and disk as before.
-     */
-    public function testNewLogoWithAHeroThatNeedsConfirmationLeavesDbAndDiskUntouched(): void
+    public function testRemovingTheLogoClearsItAndDeletesTheFile(): void
     {
-        [$restaurant, $logo, $hero] = $this->makeRestaurantWithLogoAndHero('Logo + Small Hero Test');
-        $listingBefore = $this->uploadDirsListing();
+        [$restaurant, $logo, $hero] = $this->makeRestaurantWithLogoAndHero('Remove Logo Test');
 
-        $this->client->request('POST', '/admin/settings', [
-            '_token'  => $this->settingsToken(),
-            'section' => 'appearance',
-        ], [
-            'logo'      => $this->logoUpload(),
-            'heroImage' => $this->fixtureUploadedFile('upload_hero_small.jpg', 'hero.jpg', 'image/jpeg'),
-        ]);
-        self::assertResponseRedirects('/admin/settings');
-
-        $restaurant = $this->reloadRestaurant($restaurant);
-        self::assertSame($logo, $restaurant->getLogo());
-        self::assertSame($hero, $restaurant->getHeroImage());
-        self::assertFileExists($this->logoDir . '/' . $logo, 'the current logo must still be on disk');
-        self::assertFileExists($this->heroImageDir . '/' . $hero);
-        self::assertSame($listingBefore, $this->uploadDirsListing(), 'no new file left behind either');
-    }
-
-    public function testNewLogoWithARejectedHeroLeavesDbAndDiskUntouched(): void
-    {
-        [$restaurant, $logo, $hero] = $this->makeRestaurantWithLogoAndHero('Logo + Rejected Hero Test');
-        $listingBefore = $this->uploadDirsListing();
-
-        $this->client->request('POST', '/admin/settings', [
-            '_token'  => $this->settingsToken(),
-            'section' => 'appearance',
-        ], [
-            'logo'      => $this->logoUpload(),
-            'heroImage' => $this->fixtureUploadedFile('upload_fake_mime.png', 'hero.png', 'image/png'),
-        ]);
-        self::assertResponseRedirects('/admin/settings');
-
-        $restaurant = $this->reloadRestaurant($restaurant);
-        self::assertSame($logo, $restaurant->getLogo());
-        self::assertSame($hero, $restaurant->getHeroImage());
-        self::assertSame($listingBefore, $this->uploadDirsListing());
-    }
-
-    public function testReplacingLogoAndHeroTogetherStoresBothAndDeletesBothOldFiles(): void
-    {
-        [$restaurant, $oldLogo, $oldHero] = $this->makeRestaurantWithLogoAndHero('Logo + Hero Replace Test');
-
-        $this->client->request('POST', '/admin/settings', [
-            '_token'  => $this->settingsToken(),
-            'section' => 'appearance',
-        ], [
-            'logo'      => $this->logoUpload(),
-            'heroImage' => $this->fixtureUploadedFile('upload_hero_wide.jpg', 'hero.jpg', 'image/jpeg'),
-        ]);
-        self::assertResponseRedirects();
-
-        $restaurant = $this->reloadRestaurant($restaurant);
-        $this->logoFilesToRemove[] = $restaurant->getLogo();
-        $this->heroImageFilesToRemove[] = $restaurant->getHeroImage();
-        self::assertNotSame($oldLogo, $restaurant->getLogo());
-        self::assertNotSame($oldHero, $restaurant->getHeroImage());
-        self::assertFileExists($this->logoDir . '/' . $restaurant->getLogo());
-        self::assertFileExists($this->heroImageDir . '/' . $restaurant->getHeroImage());
-        self::assertFileDoesNotExist($this->logoDir . '/' . $oldLogo);
-        self::assertFileDoesNotExist($this->heroImageDir . '/' . $oldHero);
-    }
-
-    /** Text errors elsewhere + picked files: nothing saved, and Apariencia says the picks must be made again. */
-    public function testFormErrorsWithPickedFilesSayTheyWereNotSaved(): void
-    {
-        $restaurant = $this->makeRestaurant('Discarded Uploads Test');
-        $this->client->loginUser($this->makeOwner($restaurant));
-        $translator = static::getContainer()->get('translator');
-
-        $cases = [
-            'hint.upload_discarded_logo'       => ['logo' => true],
-            'hint.upload_discarded_hero_image' => ['heroImage' => true],
-            'hint.upload_discarded_both'       => ['logo' => true, 'heroImage' => true],
-        ];
-        foreach ($cases as $key => $files) {
-            $upload = [];
-            if (isset($files['logo'])) {
-                $upload['logo'] = $this->logoUpload();
-            }
-            if (isset($files['heroImage'])) {
-                $upload['heroImage'] = $this->fixtureUploadedFile('upload_hero_wide.jpg', 'hero.jpg', 'image/jpeg');
-            }
-            $crawler = $this->client->request('POST', '/admin/settings', [
-                '_token'          => $this->settingsToken(),
-                'name'            => $restaurant->getName(),
-                'currency'        => 'EUR',
-                'defaultLanguage' => 'es',
-                'phone'           => 'not a phone',
-            ], $upload);
-
-            self::assertResponseStatusCodeSame(422);
-            $notice = $crawler->filter('#section-appearance .upload-discarded');
-            self::assertCount(1, $notice, $key);
-            self::assertSame($translator->trans($key, [], 'admin_settings', 'es'), trim($notice->text()));
-        }
+        $json = $this->postImage('logo', null, ['action' => 'remove']);
+        self::assertResponseIsSuccessful();
+        self::assertTrue($json['ok']);
+        self::assertNull($json['url']);
 
         $restaurant = $this->reloadRestaurant($restaurant);
         self::assertNull($restaurant->getLogo());
+        self::assertFileDoesNotExist($this->logoDir . '/' . $logo);
+        self::assertSame($hero, $restaurant->getHeroImage(), 'the hero image is left alone');
+    }
+
+    public function testRemovingTheHeroImageClearsItAndDeletesTheFile(): void
+    {
+        [$restaurant, $logo, $hero] = $this->makeRestaurantWithLogoAndHero('Remove Hero Test');
+
+        $json = $this->postImage('hero', null, ['action' => 'remove']);
+        self::assertResponseIsSuccessful();
+        self::assertTrue($json['ok']);
+
+        $restaurant = $this->reloadRestaurant($restaurant);
         self::assertNull($restaurant->getHeroImage());
+        self::assertFileDoesNotExist($this->heroImageDir . '/' . $hero);
+        self::assertSame($logo, $restaurant->getLogo(), 'the logo is left alone');
+    }
+
+    /** A rejected file: the current logo stays, on disk and in the DB, and nothing new is left behind. */
+    public function testRejectedLogoLeavesDbAndDiskUntouched(): void
+    {
+        [$restaurant, $logo] = $this->makeRestaurantWithLogoAndHero('Rejected Logo Test');
+        $listingBefore = $this->uploadDirsListing();
+
+        $json = $this->postImage('logo', $this->fixtureUploadedFile('upload_fake_mime.png', 'logo.png', 'image/png'));
+        self::assertResponseStatusCodeSame(422);
+        self::assertFalse($json['ok']);
+        self::assertNotEmpty($json['error']);
+
+        $restaurant = $this->reloadRestaurant($restaurant);
+        self::assertSame($logo, $restaurant->getLogo());
+        self::assertSame($listingBefore, $this->uploadDirsListing());
+    }
+
+    /** Below the 300px minimum: nothing saved until re-posted with qualityConfirmed, then saved. */
+    public function testTooSmallHeroImageIsSavedOnlyOnceConfirmed(): void
+    {
+        [$restaurant, , $hero] = $this->makeRestaurantWithLogoAndHero('Confirm Small Hero Test');
+        $listingBefore = $this->uploadDirsListing();
+
+        $json = $this->postImage('hero', $this->fixtureUploadedFile('upload_hero_small.jpg', 'hero.jpg', 'image/jpeg'));
+        self::assertResponseStatusCodeSame(422);
+        self::assertTrue($json['needsConfirmation']);
+        self::assertCount(1, $json['warnings']);
+        self::assertStringContainsString('250 × 150', $json['warnings'][0]);
+        self::assertStringContainsString('300', $json['warnings'][0]);
+        self::assertSame($hero, $this->reloadRestaurant($restaurant)->getHeroImage(), 'unconfirmed: nothing is saved');
+        self::assertSame($listingBefore, $this->uploadDirsListing());
+
+        $json = $this->postImage('hero', $this->fixtureUploadedFile('upload_hero_small.jpg', 'hero.jpg', 'image/jpeg'), ['qualityConfirmed' => '1']);
+        $restaurant = $this->reloadRestaurant($restaurant);
+        $this->heroImageFilesToRemove[] = $restaurant->getHeroImage();
+        self::assertResponseIsSuccessful();
+        self::assertTrue($json['ok']);
+        self::assertNotSame($hero, $restaurant->getHeroImage());
+        self::assertFileDoesNotExist($this->heroImageDir . '/' . $hero);
+    }
+
+    public function testImageWithAnInvalidCsrfTokenIsRejected(): void
+    {
+        $restaurant = $this->makeRestaurant('Image Csrf Test');
+        $this->client->loginUser($this->makeOwner($restaurant));
+
+        $this->client->request('POST', '/admin/settings/image/logo', ['_token' => 'wrong'], ['image' => $this->logoUpload()]);
+        self::assertResponseStatusCodeSame(403);
+        self::assertNull($this->reloadRestaurant($restaurant)->getLogo());
     }
 
     /**
-     * Another section's own button with a logo picked: that section is
-     * saved, the logo isn't (only Apariencia's button stores files) — the
-     * owner lands on Apariencia with the notice and which button to use.
+     * Images are no longer part of the settings form: a logo posted with it
+     * is ignored (the inputs have no name), and Apariencia has no "Guardar".
      */
-    public function testAnotherSectionsButtonWithAPickedLogoSaysToUseAppearance(): void
+    public function testTheSettingsFormNoLongerStoresImages(): void
     {
-        $restaurant = $this->makeRestaurant('Other Section Upload Test');
+        $restaurant = $this->makeRestaurant('Form Ignores Images Test');
         $this->client->loginUser($this->makeOwner($restaurant));
-        $translator = static::getContainer()->get('translator');
-        $listingBefore = $this->uploadDirsListing();
-
-        $this->client->request('POST', '/admin/settings', [
-            '_token'  => $this->settingsToken(),
-            'section' => 'contact',
-            'address' => 'Calle Mayor 1, Madrid',
-            'phone'   => '+34 600 123 456',
-        ], [
-            'logo' => $this->logoUpload(),
-        ]);
-        self::assertResponseRedirects('/admin/settings#section-appearance');
-
-        $restaurant = $this->reloadRestaurant($restaurant);
-        self::assertSame('+34 600 123 456', $restaurant->getPhone(), 'the section itself is saved');
-        self::assertNull($restaurant->getLogo());
-        self::assertSame($listingBefore, $this->uploadDirsListing());
 
         $crawler = $this->client->request('GET', '/admin/settings');
-        $notice = preg_replace('/\s+/', ' ', trim($crawler->filter('#section-appearance .upload-discarded')->text()));
-        self::assertStringContainsString($translator->trans('hint.upload_discarded_logo', [], 'admin_settings', 'es'), $notice);
-        self::assertStringContainsString($translator->trans('hint.upload_discarded_use_appearance', [
-            '%button%'  => $translator->trans('action.save_section', [], 'admin_settings', 'es'),
-            '%section%' => $translator->trans('section.appearance', [], 'admin_settings', 'es'),
-        ], 'admin_settings', 'es'), $notice);
-
-        // Shown once, not on every later visit.
-        self::assertCount(0, $this->client->request('GET', '/admin/settings')->filter('.upload-discarded'));
-    }
-
-    /** Errors on another section's save with a picked photo: the notice also says which button stores it. */
-    public function testAnotherSectionsErrorsWithAPickedHeroAlsoSayToUseAppearance(): void
-    {
-        $restaurant = $this->makeRestaurant('Other Section Error Upload Test');
-        $this->client->loginUser($this->makeOwner($restaurant));
-        $translator = static::getContainer()->get('translator');
-
-        $crawler = $this->client->request('POST', '/admin/settings', [
-            '_token'  => $this->settingsToken(),
-            'section' => 'contact',
-            'phone'   => 'not a phone',
-        ], [
-            'heroImage' => $this->fixtureUploadedFile('upload_hero_wide.jpg', 'hero.jpg', 'image/jpeg'),
-        ]);
-
-        self::assertResponseStatusCodeSame(422);
-        $notice = preg_replace('/\s+/', ' ', trim($crawler->filter('#section-appearance .upload-discarded')->text()));
-        self::assertStringContainsString($translator->trans('hint.upload_discarded_hero_image', [], 'admin_settings', 'es'), $notice);
-        self::assertStringContainsString('«' . $translator->trans('action.save_section', [], 'admin_settings', 'es') . '»', $notice);
-    }
-
-    /** Apariencia's own button with a valid logo stores it: no notice. */
-    public function testAppearanceButtonWithAValidLogoShowsNoDiscardedNotice(): void
-    {
-        $restaurant = $this->makeRestaurant('Appearance Upload No Notice Test');
-        $this->client->loginUser($this->makeOwner($restaurant));
+        self::assertCount(0, $crawler->filter('button[name="section"][value="appearance"]'));
+        self::assertCount(0, $crawler->filter('input[type="file"][name]'));
 
         $this->client->request('POST', '/admin/settings', [
-            '_token'  => $this->settingsToken(),
-            'section' => 'appearance',
-        ], [
-            'logo' => $this->logoUpload(),
-        ]);
-        self::assertResponseRedirects('/admin/settings#section-appearance');
-        $this->logoFilesToRemove[] = $this->reloadRestaurant($restaurant)->getLogo();
-
-        self::assertCount(0, $this->client->request('GET', '/admin/settings')->filter('.upload-discarded'));
-    }
-
-    public function testFormErrorsWithoutPickedFilesShowNoDiscardedNotice(): void
-    {
-        $restaurant = $this->makeRestaurant('No Discarded Uploads Test');
-        $this->client->loginUser($this->makeOwner($restaurant));
-
-        $crawler = $this->client->request('POST', '/admin/settings', [
-            '_token'          => $this->settingsToken(),
+            '_token'          => $crawler->filter('input[name="_token"]')->attr('value'),
             'name'            => $restaurant->getName(),
             'currency'        => 'EUR',
             'defaultLanguage' => 'es',
-            'phone'           => 'not a phone',
+        ], [
+            'logo' => $this->logoUpload(),
         ]);
-
-        self::assertResponseStatusCodeSame(422);
-        self::assertCount(0, $crawler->filter('.upload-discarded'));
+        self::assertResponseRedirects('/admin/settings');
+        self::assertNull($this->reloadRestaurant($restaurant)->getLogo());
     }
 
     /** The format hint's numbers are the hero_image profile's own limits, never written into the translations. */
@@ -660,33 +527,6 @@ final class SettingsControllerTest extends WebTestCase
             self::assertStringContainsString($expected, $hint);
         }
         self::assertStringNotContainsString('%', $hint, 'every placeholder is filled');
-    }
-
-    /** Below the 300px minimum: still needs confirmation, nothing saved, and the text now gives the real size. */
-    public function testTooSmallHeroImageStillNeedsConfirmationAndShowsItsSize(): void
-    {
-        $restaurant = $this->makeRestaurant('Small Hero Image Http Test');
-        $owner = $this->makeOwner($restaurant);
-        $this->client->loginUser($owner);
-
-        $this->client->request('POST', '/admin/settings', [
-            '_token' => $this->settingsToken(),
-            'name'            => $restaurant->getName(),
-            'currency'        => 'EUR',
-            'defaultLanguage' => 'es',
-        ], [
-            'heroImage' => $this->fixtureUploadedFile('upload_hero_small.jpg', 'hero.jpg', 'image/jpeg'),
-        ]);
-        $session = $this->client->getRequest()->getSession();
-        $restaurant = $this->reloadRestaurant($restaurant);
-        $this->heroImageFilesToRemove[] = $restaurant->getHeroImage();
-
-        self::assertResponseRedirects('/admin/settings');
-        self::assertNull($restaurant->getHeroImage(), 'unconfirmed: nothing is saved');
-        $warnings = $session->getFlashBag()->peek('warning');
-        self::assertCount(1, $warnings);
-        self::assertStringContainsString('250 × 150', $warnings[0]);
-        self::assertStringContainsString('300', $warnings[0]);
     }
 
     /** The settings form's CSRF token, read from a real GET of the page (the form now requires it). */

@@ -22,7 +22,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  * automation tool), not a defect in SettingsController/UploadValidator.
  *
  * This test rules out (or confirms) the code-level possibility directly:
- * it drives the exact same production path (SettingsController::settings())
+ * it drives the exact same production path (SettingsController::image())
  * via $client->request with real UploadedFile instances built fresh each
  * iteration — no browser, no automation tooling, nothing that could
  * duplicate a submission — alternating between two distinct restaurants
@@ -133,18 +133,14 @@ final class SettingsControllerCrossTenantLogoTest extends WebTestCase
 
     private function submitLogo(Restaurant $restaurant, UploadedFile $logo): void
     {
-        $this->client->request('POST', '/admin/settings', [
+        $this->client->request('POST', '/admin/settings/image/logo', [
             '_token' => $this->settingsToken(),
-            'name'            => $restaurant->getName(),
-            'currency'        => 'EUR',
-            'defaultLanguage' => 'es',
         ], [
-            'logo' => $logo,
+            'image' => $logo,
         ]);
-        self::assertResponseRedirects('/admin/settings');
+        self::assertResponseIsSuccessful();
     }
 
-    /** Re-reads the restaurant row fresh from the DB (never the stale in-memory entity) and hashes its logo file on disk. */
     private function currentLogoHash(int $restaurantId): ?string
     {
         $this->em->clear();

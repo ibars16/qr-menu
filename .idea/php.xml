@@ -270,6 +270,7 @@
       <path value="$PROJECT_DIR$/.claude/worktrees/settings-collapsible-sections/vendor/nikic/php-parser" />
       <path value="$PROJECT_DIR$/.claude/worktrees/settings-collapsible-sections/vendor/myclabs/deep-copy" />
       <path value="$PROJECT_DIR$/.claude/worktrees/settings-collapsible-sections/vendor/egulias/email-validator" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-deepclone" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.4" />

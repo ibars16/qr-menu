@@ -232,8 +232,8 @@ final class SettingsContactTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertCount(0, $this->client->getCrawler()->filter('[name="primaryColor"]'));
 
-        $this->post(['section' => 'appearance', 'primaryColor' => '#123456']);
-        self::assertResponseRedirects('/admin/settings#section-appearance');
+        $this->post(['section' => 'info', 'primaryColor' => '#123456']);
+        self::assertResponseRedirects('/admin/settings#section-info');
         self::assertSame('#000000', $this->reload()->getPrimaryColor());
 
         $this->post(['primaryColor' => 'red;} body{display:none']);

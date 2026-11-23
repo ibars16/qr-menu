@@ -232,7 +232,11 @@
             font-size: var(--fs-base); color: var(--warn-fg); line-height: var(--lh-body);
         }
         .quality-note[hidden] { display: none; }
-        .upload-discarded { margin: 0 0 var(--sp-4); }
+        /* Same specificity trap as .quality-warning above: these carry their
+           own display, so [hidden] needs restating (saveImage() toggles them). */
+        .remove-logo-btn[hidden], .logo-preview [hidden] { display: none; }
+        /* While a logo / hero image is being saved (postImage()). */
+        .logo-area.is-saving { opacity: .6; pointer-events: none; cursor: progress; }
         .quality-warning-messages { display: flex; flex-direction: column; gap: var(--sp-1); }
         .quality-warning-messages p { margin: 0; font-size: var(--fs-base); color: var(--warn-fg); line-height: var(--lh-body); }
         .quality-warning-confirm {
@@ -346,7 +350,7 @@
             <i class="ti ti-chevron-right" aria-hidden="true"></i>
         </a>
 
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="settings-form">
             <input type="hidden" name="_token" value="{{ csrf_token('admin_settings') }}">
             {# Enter in a field submits via the form's FIRST submit button; this
                keeps that a full save instead of the first section's button. #}
@@ -514,93 +518,62 @@
             <div class="settings-section" id="section-appearance">
                 <div class="settings-section-title">{{ 'section.appearance'|trans({}, 'admin_settings') }}</div>
                 <div class="settings-body">
-                    {# A logo / hero image picked in the last submission wasn't
-                       stored — the form came back with errors (a file input
-                       can't be refilled) or another section's button was used
-                       (then via a flash, after the redirect). See
-                       SettingsController::discardedUploads(). #}
-                    {# Read once: app.flashes() empties the bag, and Twig's ?: evaluates its left side twice. #}
-                    {% set discardedFlash = app.flashes('settings_upload_discarded') %}
-                    {% set discarded = discardedUploads ?? (discardedFlash is empty ? null : discardedFlash|first) %}
-                    {% if discarded %}
-                        <p class="quality-note upload-discarded" role="alert">
-                            {{ discarded.key|trans({}, 'admin_settings') }}
-                            {% if discarded.viaAppearanceButton %}{{ 'hint.upload_discarded_use_appearance'|trans({'%button%': 'action.save_section'|trans({}, 'admin_settings'), '%section%': 'section.appearance'|trans({}, 'admin_settings')}, 'admin_settings') }}{% endif %}
-                        </p>
-                    {% endif %}
-
-                    {# Logo #}
-                    <div class="field">
+                    {# Logo and hero image are saved the moment they're picked,
+                       dropped or removed (saveImage()/removeImage() below →
+                       SettingsController::image) — no "Guardar" in this section.
+                       The file inputs have no name: the main form never sends them. #}
+                    {% set logoUrl = restaurant.logo ? asset('uploads/logos/' ~ restaurant.logo) : '' %}
+                    <div class="field" data-image-field="logo" data-saved="{{ logoUrl }}"
+                         data-label-upload="{{ 'action.upload_logo'|trans({}, 'admin_settings') }}"
+                         data-label-change="{{ 'action.change_logo'|trans({}, 'admin_settings') }}"
+                         data-error="{{ 'flash.logo_upload_error'|trans({}, 'admin_settings') }}">
                         <label>{{ 'field.logo'|trans({}, 'admin_settings') }}</label>
                         <div class="logo-area" data-drop-input="logo-input">
                             <div class="logo-preview" id="logo-preview">
-                                {% if restaurant.logo %}
-                                    <img src="{{ asset('uploads/logos/' ~ restaurant.logo) }}"
-                                         alt="{{ restaurant.name }}" id="logo-img">
-                                {% else %}
-                                    <span id="logo-letter">{{ restaurant.name|slice(0,1)|upper }}</span>
-                                {% endif %}
+                                <img class="js-image" id="logo-img" alt="{{ restaurant.name }}"{% if logoUrl %} src="{{ logoUrl }}"{% else %} hidden{% endif %}>
+                                <span class="js-placeholder" id="logo-letter"{% if logoUrl %} hidden{% endif %}>{{ restaurant.name|slice(0,1)|upper }}</span>
                             </div>
                             <div class="logo-actions">
                                 <label class="upload-btn" for="logo-input">
                                     <i class="ti ti-upload" aria-hidden="true"></i>
-                                    {{ restaurant.logo ? 'action.change_logo'|trans({}, 'admin_settings') : 'action.upload_logo'|trans({}, 'admin_settings') }}
+                                    <span class="js-upload-label">{{ logoUrl ? 'action.change_logo'|trans({}, 'admin_settings') : 'action.upload_logo'|trans({}, 'admin_settings') }}</span>
                                 </label>
-                                <input type="file" id="logo-input" name="logo"
-                                       accept="image/*" style="display:none"
-                                       onchange="previewLogo(this)">
-                                {% if restaurant.logo %}
-                                    <button type="button" class="remove-logo-btn" onclick="removeLogo()">
-                                        <i class="ti ti-trash" aria-hidden="true"></i> {{ 'action.remove_logo'|trans({}, 'admin_settings') }}
-                                    </button>
-                                    {# Must not be named "removeLogo" — a form field with that
-                                       name becomes accessible as the bare identifier
-                                       "removeLogo" inside this form's inline onclick handlers
-                                       (via the legacy with(form){...} scope browsers use for
-                                       intrinsic event attributes), shadowing the removeLogo()
-                                       function below and breaking the button with "removeLogo
-                                       is not a function". #}
-                                    <input type="hidden" name="removeLogoFlag" id="remove-logo-input" value="0">
-                                {% endif %}
+                                <input type="file" id="logo-input" accept="image/*" style="display:none"
+                                       onchange="saveImage('logo', this)">
+                                <button type="button" class="remove-logo-btn" onclick="removeImage('logo')"{% if not logoUrl %} hidden{% endif %}>
+                                    <i class="ti ti-trash" aria-hidden="true"></i> {{ 'action.remove_logo'|trans({}, 'admin_settings') }}
+                                </button>
                                 <span class="field-hint">{{ 'hint.logo_format'|trans({}, 'admin_settings') }}</span>
                                 <span class="field-hint">{{ 'hint.drop_image'|trans({}, 'admin_settings') }}</span>
                             </div>
                         </div>
                     </div>
 
-                    {# Foto de cabecera (hero) — same upload/preview/remove pattern as
-                       the logo above, its own field/directory (Restaurant::$heroImage,
-                       public/uploads/heroes/), shown by every theme as the hero's
-                       .hero-photo-band (menu/layouts/standard/show.html.twig). #}
-                    <div class="field">
+                    {# Foto de cabecera (hero) — same pattern as the logo above, its
+                       own field/directory (Restaurant::$heroImage, public/uploads/heroes/),
+                       shown by every theme as the hero's .hero-photo-band
+                       (menu/layouts/standard/show.html.twig). #}
+                    {% set heroUrl = restaurant.heroImage ? asset('uploads/heroes/' ~ restaurant.heroImage) : '' %}
+                    <div class="field" data-image-field="hero" data-saved="{{ heroUrl }}"
+                         data-label-upload="{{ 'action.upload_hero_image'|trans({}, 'admin_settings') }}"
+                         data-label-change="{{ 'action.change_hero_image'|trans({}, 'admin_settings') }}"
+                         data-error="{{ 'flash.hero_image_upload_error'|trans({}, 'admin_settings') }}">
                         <label>{{ 'field.hero_image'|trans({}, 'admin_settings') }}</label>
                         <div class="logo-area" data-drop-input="hero-image-input">
                             <div class="logo-preview hero-image-preview" id="hero-image-preview">
-                                {% if restaurant.heroImage %}
-                                    <img src="{{ asset('uploads/heroes/' ~ restaurant.heroImage) }}"
-                                         alt="{{ restaurant.name }}" id="hero-image-img">
-                                {% else %}
-                                    <i class="ti ti-photo" aria-hidden="true"></i>
-                                {% endif %}
+                                <img class="js-image" id="hero-image-img" alt="{{ restaurant.name }}"{% if heroUrl %} src="{{ heroUrl }}"{% else %} hidden{% endif %}>
+                                <i class="ti ti-photo js-placeholder" aria-hidden="true"{% if heroUrl %} hidden{% endif %}></i>
                             </div>
                             <div class="logo-actions">
                                 <label class="upload-btn" for="hero-image-input">
                                     <i class="ti ti-upload" aria-hidden="true"></i>
-                                    {{ restaurant.heroImage ? 'action.change_hero_image'|trans({}, 'admin_settings') : 'action.upload_hero_image'|trans({}, 'admin_settings') }}
+                                    <span class="js-upload-label">{{ heroUrl ? 'action.change_hero_image'|trans({}, 'admin_settings') : 'action.upload_hero_image'|trans({}, 'admin_settings') }}</span>
                                 </label>
-                                <input type="file" id="hero-image-input" name="heroImage"
-                                       accept="image/*" style="display:none"
-                                       data-min-dimension="{{ heroImageMinDimension }}"
-                                       data-recommended-width="{{ heroImageRecommendedWidth }}"
-                                       onchange="previewHeroImage(this); checkHeroImageQuality(this)">
-                                {% if restaurant.heroImage %}
-                                    <button type="button" class="remove-logo-btn" onclick="removeHeroImage()">
-                                        <i class="ti ti-trash" aria-hidden="true"></i> {{ 'action.remove_hero_image'|trans({}, 'admin_settings') }}
-                                    </button>
-                                    {# Same naming trap as removeLogoFlag above — must not be
-                                       named "removeHeroImage", see the comment there. #}
-                                    <input type="hidden" name="removeHeroImageFlag" id="remove-hero-image-input" value="0">
-                                {% endif %}
+                                <input type="file" id="hero-image-input" accept="image/*" style="display:none"
+                                       onchange="saveImage('hero', this)">
+                                <button type="button" class="remove-logo-btn" onclick="removeImage('hero')"{% if not heroUrl %} hidden{% endif %}>
+                                    <i class="ti ti-trash" aria-hidden="true"></i> {{ 'action.remove_hero_image'|trans({}, 'admin_settings') }}
+                                </button>
                                 <span class="field-hint">{{ 'hint.hero_image_format'|trans({'%max_mb%': heroImageMaxMegabytes, '%min%': heroImageMinDimension, '%max%': heroImageMaxDimension, '%recommended%': heroImageRecommendedWidth}, 'admin_settings') }}</span>
                                 <span class="field-hint">{{ 'hint.hero_image'|trans({}, 'admin_settings') }}</span>
                                 <span class="field-hint">{{ 'hint.drop_image'|trans({}, 'admin_settings') }}</span>
@@ -608,32 +581,21 @@
                         </div>
 
                         {# Quality-only warning (small/portrait, see UploadQualityWarning)
-                           — hidden until JS finds a reason to show it (checkHeroImageQuality()).
-                           The checkbox is the real, always-functional accessible control:
-                           native, keyboard/focus-operable, works with zero JS (SettingsController
-                           itself renders the same warning as a server-side flash + leaves this
-                           box available if the file is resubmitted unconfirmed). JS only makes it
-                           nicer: styled as a button (see CSS) and auto-submits on check. #}
+                           from the server: nothing is saved until "Subir de todas
+                           formas" — a real checkbox (focusable, announced), styled
+                           as a button; ticking it re-posts with qualityConfirmed=1. #}
                         <div class="quality-warning" id="hero-quality-warning" hidden role="alert">
                             <div class="quality-warning-messages" id="hero-quality-warning-messages"></div>
                             <label class="quality-warning-confirm">
-                                <input type="checkbox" name="heroImageQualityConfirmed"
-                                       id="hero-quality-confirmed" value="1"
-                                       onchange="confirmHeroQualityAndSubmit(this)">
+                                <input type="checkbox" id="hero-quality-confirmed" onchange="confirmHeroQuality(this)">
                                 {{ 'action.upload_anyway'|trans({}, 'admin_settings') }}
                             </label>
                         </div>
                         {# Informative only (UploadQualityWarning::WidthBelowRecommended):
-                           never blocks the save — the server repeats it as a flash
-                           once the photo is stored. #}
+                           the photo is already saved. #}
                         <p class="quality-note" id="hero-quality-note" hidden role="status"></p>
                     </div>
 
-                </div>
-                <div class="section-save">
-                    <button type="submit" name="section" value="appearance" class="section-save-btn">
-                        <i class="ti ti-device-floppy" aria-hidden="true"></i> {{ 'action.save_section'|trans({}, 'admin_settings') }}
-                    </button>
                 </div>
             </div>
 
@@ -838,159 +800,139 @@
         })();
 
         const MSG_HOURS_CLEAR_CONFIRM = "{{ 'hours.clear_confirm'|trans({}, 'admin_settings')|e('js') }}";
-        const MSG_LOGO_REMOVED       = "{{ 'toast.logo_removed'|trans({}, 'admin_settings')|e('js') }}";
-        const MSG_HERO_IMAGE_REMOVED = "{{ 'toast.hero_image_removed'|trans({}, 'admin_settings')|e('js') }}";
         const MSG_URL_COPIED         = "{{ 'toast.url_copied'|trans({}, 'admin_settings')|e('js') }}";
-        // Same wording SettingsController flashes server-side for the exact
-        // same UploadQualityWarning cases (its own no-JS fallback path) —
-        // kept in sync by both sourcing the 'flash.hero_image_warning_*'
-        // keys, never a JS-only string that could drift from that copy.
-        const MSG_HERO_WARNING_DIMENSIONS = "{{ 'flash.hero_image_warning_dimensions'|trans({}, 'admin_settings')|e('js') }}";
-        const MSG_HERO_WARNING_PORTRAIT   = "{{ 'flash.hero_image_warning_portrait'|trans({}, 'admin_settings')|e('js') }}";
-        // Before saving, so its own "will still be saved" wording rather
-        // than the post-save flash.hero_image_warning_width.
-        const MSG_HERO_NOTICE_WIDTH       = "{{ 'hint.hero_image_width_notice'|trans({}, 'admin_settings')|e('js') }}";
 
-        // ── Logo preview ──
-        function previewLogo(input) {
-            if (!input.files?.length) return;
-            const url     = URL.createObjectURL(input.files[0]);
-            const preview = document.getElementById('logo-preview');
-            let img       = document.getElementById('logo-img');
-            const letter  = document.getElementById('logo-letter');
-            if (!img) {
-                img = document.createElement('img');
-                img.id = 'logo-img';
-                preview.appendChild(img);
-            }
-            img.src = url;
-            if (letter) letter.style.display = 'none';
-        }
+        // ── Logo / foto de cabecera: saved as soon as they're picked,
+        // dropped (_image_drop.html.twig fires the same 'change') or
+        // removed — SettingsController::image, one image per request. ──
+        const IMAGE_ROUTES = {
+            logo: "{{ path('admin_settings_image', {kind: 'logo'})|e('js') }}",
+            hero: "{{ path('admin_settings_image', {kind: 'hero'})|e('js') }}",
+        };
+        let pendingHeroFile = null; // waiting for "Subir de todas formas"
 
-        function removeLogo() {
-            const input  = document.getElementById('remove-logo-input');
-            const img    = document.getElementById('logo-img');
-            const letter = document.getElementById('logo-letter');
-            if (input) input.value = '1';
-            if (img)   img.remove();
-            if (letter) letter.style.display = '';
-            showToast(MSG_LOGO_REMOVED, 'info');
-        }
-
-        // ── Hero image preview — same pattern as the logo above, but its
-        // empty-state fallback is a plain icon (no restaurant-initial letter
-        // makes sense for a header photo), so the fallback element toggled
-        // here is that <i>, not a <span>. ──
-        function previewHeroImage(input) {
-            if (!input.files?.length) return;
-            const url     = URL.createObjectURL(input.files[0]);
-            const preview = document.getElementById('hero-image-preview');
-            let img       = document.getElementById('hero-image-img');
-            const icon    = preview.querySelector('i');
-            if (!img) {
-                img = document.createElement('img');
-                img.id = 'hero-image-img';
-                preview.appendChild(img);
-            }
-            img.src = url;
-            if (icon) icon.style.display = 'none';
-        }
-
-        function removeHeroImage() {
-            const input = document.getElementById('remove-hero-image-input');
-            const img   = document.getElementById('hero-image-img');
-            if (input) input.value = '1';
-            if (img) {
-                img.remove();
-                const preview = document.getElementById('hero-image-preview');
-                const icon = document.createElement('i');
-                icon.className = 'ti ti-photo';
-                icon.setAttribute('aria-hidden', 'true');
-                preview.appendChild(icon);
-            }
-            showToast(MSG_HERO_IMAGE_REMOVED, 'info');
-        }
-
-        // ── Hero image quality warning — client-side mirror of
-        // UploadQualityWarning (UploadValidator.php). Purely advisory: the
-        // server re-decodes and re-checks the real uploaded file from
-        // scratch regardless of what runs here, so this can only ever make
-        // the UX nicer (catch it before a round-trip), never weaker — a
-        // disabled/broken/bypassed script just falls through to the
-        // server's own "needs confirmation" flash + the same checkbox. ──
-        function checkHeroImageQuality(input) {
-            const warningBox = document.getElementById('hero-quality-warning');
-            const messagesEl = document.getElementById('hero-quality-warning-messages');
-            const confirmBox = document.getElementById('hero-quality-confirmed');
-            const noteEl = document.getElementById('hero-quality-note');
-            const minDimension = parseInt(input.dataset.minDimension, 10);
-            const recommendedWidth = parseInt(input.dataset.recommendedWidth, 10);
-
-            const reset = () => { warningBox.hidden = true; messagesEl.innerHTML = ''; confirmBox.checked = false; noteEl.hidden = true; noteEl.textContent = ''; };
-
-            if (!input.files?.length) { reset(); return; }
-
-            const url = URL.createObjectURL(input.files[0]);
-            const img = new Image();
-            img.onload = function () {
-                const w = img.naturalWidth, h = img.naturalHeight;
-                // Same %placeholders% SettingsController::heroImageWarningParams() fills.
-                const fill = (text) => text.replaceAll('%width%', w).replaceAll('%height%', h)
-                    .replaceAll('%min%', minDimension).replaceAll('%recommended%', recommendedWidth);
-                const messages = [];
-                const tooSmall = w < minDimension || h < minDimension;
-                if (tooSmall) messages.push(fill(MSG_HERO_WARNING_DIMENSIONS));
-                if (w < h) messages.push(fill(MSG_HERO_WARNING_PORTRAIT));
-                // Not on top of the "too small" one, as on the server.
-                const narrow = !tooSmall && w < recommendedWidth;
-                noteEl.textContent = narrow ? fill(MSG_HERO_NOTICE_WIDTH) : '';
-                noteEl.hidden = !narrow;
-
-                if (messages.length) {
-                    messagesEl.innerHTML = '';
-                    messages.forEach(function (text) {
-                        const p = document.createElement('p');
-                        p.textContent = text;
-                        messagesEl.appendChild(p);
-                    });
-                    warningBox.hidden = false;
-                    confirmBox.checked = false;
-                } else {
-                    warningBox.hidden = true; messagesEl.innerHTML = ''; confirmBox.checked = false;
-                }
-                URL.revokeObjectURL(url);
+        function imageEls(kind) {
+            const field = document.querySelector('[data-image-field="' + kind + '"]');
+            return {
+                field,
+                area: field.querySelector('.logo-area'),
+                img: field.querySelector('.js-image'),
+                placeholder: field.querySelector('.js-placeholder'),
+                label: field.querySelector('.js-upload-label'),
+                remove: field.querySelector('.remove-logo-btn'),
             };
-            img.onerror = function () { URL.revokeObjectURL(url); };
-            img.src = url;
         }
 
-        // Checking the box IS "Subir de todas formas" — a real checkbox so
-        // it's focusable/keyboard-operable/announced by a screen reader on
-        // its own (see .quality-warning-confirm in the CSS above), styled
-        // to look like a button. Ticking it immediately resubmits the form;
-        // the server trusts heroImageQualityConfirmed=1 for the quality
-        // warnings ONLY — see UploadValidator::validate()'s own guard.
-        function confirmHeroQualityAndSubmit(checkbox) {
-            if (checkbox.checked) {
-                checkbox.closest('form').requestSubmit();
+        // url = what the preview shows; null/'' = no image.
+        function showImage(kind, url) {
+            const el = imageEls(kind);
+            el.img.hidden = !url;
+            if (url) el.img.src = url; else el.img.removeAttribute('src');
+            el.placeholder.hidden = !!url;
+        }
+
+        // The stored state: preview, "Subir"/"Cambiar" and the remove button.
+        function showSavedImage(kind) {
+            const el = imageEls(kind);
+            const url = el.field.dataset.saved;
+            showImage(kind, url);
+            el.remove.hidden = !url;
+            el.label.textContent = url ? el.field.dataset.labelChange : el.field.dataset.labelUpload;
+        }
+
+        function resetHeroQuality() {
+            pendingHeroFile = null;
+            document.getElementById('hero-quality-warning').hidden = true;
+            document.getElementById('hero-quality-warning-messages').innerHTML = '';
+            document.getElementById('hero-quality-confirmed').checked = false;
+            const note = document.getElementById('hero-quality-note');
+            note.hidden = true;
+            note.textContent = '';
+        }
+
+        async function postImage(kind, data) {
+            const el = imageEls(kind);
+            // This form's own token: the layout can show other POST forms above it
+            // (e.g. "reenviar email de confirmación"), each with its own token.
+            data.append('_token', document.querySelector('#settings-form input[name="_token"]').value);
+            el.area.classList.add('is-saving');
+            el.field.setAttribute('aria-busy', 'true');
+            try {
+                const res = await fetch(IMAGE_ROUTES[kind], { method: 'POST', body: data, headers: { 'Accept': 'application/json' } });
+                return await res.json();
+            } catch (e) {
+                // Network down, or the session ended (login page, not JSON).
+                return { ok: false, error: el.field.dataset.error };
+            } finally {
+                el.area.classList.remove('is-saving');
+                el.field.removeAttribute('aria-busy');
             }
         }
 
-        // No-op unless a pending, unconfirmed hero-image warning is showing:
-        // moves focus to the confirm checkbox instead of letting a plain
-        // "Guardar cambios" click silently round-trip to the server just to
-        // get the same warning back as a flash.
-        document.querySelector('form[method="post"]').addEventListener('submit', function (e) {
-            // A per-section save outside Apariencia never sends the photo.
-            const section = e.submitter?.name === 'section' ? e.submitter.value : null;
-            if (section && section !== 'appearance') return;
-            const warningBox = document.getElementById('hero-quality-warning');
-            const confirmBox = document.getElementById('hero-quality-confirmed');
-            if (warningBox && !warningBox.hidden && confirmBox && !confirmBox.checked) {
-                e.preventDefault();
-                confirmBox.focus();
+        async function uploadImage(kind, file, qualityConfirmed) {
+            const el = imageEls(kind);
+            if (kind === 'hero') resetHeroQuality();
+            const previewUrl = URL.createObjectURL(file);
+            showImage(kind, previewUrl);
+
+            const data = new FormData();
+            data.append('image', file);
+            if (qualityConfirmed) data.append('qualityConfirmed', '1');
+            const result = await postImage(kind, data);
+            URL.revokeObjectURL(previewUrl);
+
+            if (result.ok) {
+                el.field.dataset.saved = result.url;
+                showSavedImage(kind);
+                showToast(result.message, 'success');
+                if (result.notices?.length) {
+                    const note = document.getElementById('hero-quality-note');
+                    note.textContent = result.notices.join(' ');
+                    note.hidden = false;
+                }
+                return;
             }
-        });
+            if (result.needsConfirmation) {
+                // Nothing saved yet: the photo stays previewed under the warning.
+                showImage(kind, URL.createObjectURL(file));
+                pendingHeroFile = file;
+                const messages = document.getElementById('hero-quality-warning-messages');
+                result.warnings.forEach(text => {
+                    const p = document.createElement('p');
+                    p.textContent = text;
+                    messages.appendChild(p);
+                });
+                document.getElementById('hero-quality-warning').hidden = false;
+                return;
+            }
+            showSavedImage(kind);
+            showToast(result.error || el.field.dataset.error, 'error');
+        }
+
+        function saveImage(kind, input) {
+            const file = input.files?.[0];
+            input.value = ''; // picking the same file again must fire 'change' again
+            if (file) uploadImage(kind, file, false);
+        }
+
+        function confirmHeroQuality(checkbox) {
+            if (checkbox.checked && pendingHeroFile) uploadImage('hero', pendingHeroFile, true);
+        }
+
+        async function removeImage(kind) {
+            const el = imageEls(kind);
+            if (kind === 'hero') resetHeroQuality();
+            const data = new FormData();
+            data.append('action', 'remove');
+            const result = await postImage(kind, data);
+            if (result.ok) {
+                el.field.dataset.saved = '';
+                showSavedImage(kind);
+                showToast(result.message, 'info');
+            } else {
+                showToast(result.error || el.field.dataset.error, 'error');
+            }
+        }
 
         // ── Copy URL ──
         function copyUrl() {
