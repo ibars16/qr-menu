@@ -817,14 +817,23 @@
        themes' hardcoded red/pink fill (that base rule sets literal hex,
        not a var, so it's the same flat color on every theme — maison is
        the first to override it). */
+    /* 2026-11-23: a soft full-width band under the search field (same
+       column width), no border/shadow/underline. --surface-2 is a step
+       darker than --bg on the light themes and a step lighter on the dark
+       ones. AA on --surface-2 in all 6 themes: --fg text >= 8.4:1, --accent
+       icon/arrow >= 5.1:1. */
     .diet-allergy-btn {
-        background: var(--surface); border: 1px solid var(--b1); border-radius: var(--radius);
-        color: var(--fg); box-shadow: none; font-weight: 400; gap: 10px; padding: 12px 15px;
+        display: flex; width: 100%; align-items: center; gap: 11px;
+        background: var(--surface-2); border: 0; border-radius: 10px;
+        color: var(--fg); box-shadow: none; font-weight: 500; font-size: 15px;
+        padding: 10px 14px; min-height: 44px; text-align: start;
     }
-    .diet-allergy-btn:hover { border-color: var(--cf-hborder); box-shadow: none; }
-    .diet-allergy-btn.has-active { border-color: var(--accent); }
-    .diet-allergy-btn i { color: var(--accent); }
-    .allergy-arrow { margin-inline-start: auto; color: var(--fg-2); }
+    .diet-allergy-btn:hover { border: 0; box-shadow: none; filter: brightness(0.97); }
+    .diet-allergy-btn:active { transform: scale(0.99); }
+    .diet-allergy-btn:focus-visible { outline: 2px solid var(--in-focus-border); outline-offset: 2px; }
+    .diet-allergy-btn.has-active { border: 0; }
+    .diet-allergy-btn i { color: var(--accent); font-size: 16px; flex-shrink: 0; }
+    .allergy-arrow { margin-inline-start: auto; color: var(--accent); }
 
     /* Rhythm from the category tabs down through the allergy filter to the
        first section header (see conversation 2026-09-02: the previous
@@ -835,7 +844,8 @@
        section's cards and the next section's title — see .cat-section's
        own padding-top below for that shared number (originally carta-
        estilo's literal 26px; bumped 2026-09-07, see that rule's comment). */
-    .diet-allergy-row { padding: 16px 0 0; }
+    /* Air above (from the search line) and below (before the tabs' own 18px top padding). */
+    .diet-allergy-row { padding: 12px 0 4px; }
     /* padding-top 26px→38px (2026-09-07): each section used to read as
        "one more row" rather than a new part of the menu. Space alone is the
        lever here (no new color/weight/rule) — 38px keeps the uniform-gap
@@ -853,6 +863,8 @@
        wraps or varies in height otherwise, so this is stable and safe to
        hardcode, unlike --header-h). */
     .cat-section { padding-top: 38px; scroll-margin-top: calc(var(--header-h, 71px) + 51px); }
+    /* Phone only (2026-11-23): tabs → first section title ~1/3 tighter (10px + 38px → 10px + 22px). */
+    @media (max-width: 767.98px) { .content > section.cat-section:first-of-type { padding-top: 22px; } }
 
     /* Search — a hairline underline instead of a bordered/filled box, with
        the magnifier icon sitting inline to its left (carta-estilo

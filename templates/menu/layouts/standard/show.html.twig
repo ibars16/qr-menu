@@ -660,6 +660,16 @@
         <i class="ti ti-search search-icon" aria-hidden="true"></i>
         <input type="text" class="search-input" id="menu-search" placeholder="{{ 'search.placeholder'|trans({}, 'menu_public', locale) }}" autocomplete="off">
     </div>
+    {# Allergy/diet row: right under the search line, same line style (see .diet-allergy-btn in _structure.html.twig). #}
+    {% if tags|length > 0 or menuAllergens|length > 0 %}
+        <div class="diet-allergy-row">
+            <button type="button" class="diet-allergy-btn" id="filters-btn" onclick="openFiltersPanel()" aria-haspopup="true">
+                <i class="ti ti-shield-check" aria-hidden="true"></i>
+                <span id="filters-btn-label" data-i18n-cta="{{ 'filters.cta_label'|trans({}, 'menu_public', locale) }}">{{ 'filters.cta_label'|trans({}, 'menu_public', locale) }}</span>
+                <span class="allergy-arrow" aria-hidden="true">{{ dir == 'rtl' ? '←' : '→' }}</span>
+            </button>
+        </div>
+    {% endif %}
 </div>
 {# #cat-tabs sits directly in .menu-body (not nested in either .ui-wrap
    above/below) for the position:sticky reason explained on .menu-body
@@ -689,17 +699,6 @@
         {% endif %}
     {% endfor %}
 </nav>
-{% if tags|length > 0 or menuAllergens|length > 0 %}
-    <div class="ui-wrap">
-        <div class="diet-allergy-row">
-            <button type="button" class="diet-allergy-btn" id="filters-btn" onclick="openFiltersPanel()" aria-haspopup="true">
-                <i class="ti ti-shield-check" aria-hidden="true"></i>
-                <span id="filters-btn-label" data-i18n-cta="{{ 'filters.cta_label'|trans({}, 'menu_public', locale) }}">{{ 'filters.cta_label'|trans({}, 'menu_public', locale) }}</span>
-                <span class="allergy-arrow" aria-hidden="true">{{ dir == 'rtl' ? '←' : '→' }}</span>
-            </button>
-        </div>
-    </div>
-{% endif %}
 
 {% if tags|length > 0 or menuAllergens|length > 0 %}
     {% set dietTagCodes = ['vegetarian', 'vegan', 'gluten-free', 'halal'] %}
