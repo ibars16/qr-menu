@@ -11,6 +11,7 @@ use App\Entity\MenuImportBatch;
 use App\Entity\Product;
 use App\Entity\ProductGlobalIngredient;
 use App\Entity\ProductIngredient;
+use App\Entity\ProductPriceVariant;
 use App\Entity\ProductTag;
 use App\Entity\ProductTranslation;
 use App\Entity\Restaurant;
@@ -45,6 +46,20 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * carta's main language (menu_public's category.fallback_name), reusing
  * one the carta already has — same visibility and repeated-dish rules,
  * counted like any other dish. Never dropped silently.
+ *
+ * A PDF page's own text (MenuImportPage::$sourceText — null for a photo or
+ * a scan) is used for two checks, never sent to the AI, which reads each
+ * page alone:
+ * - Section continued on the next page: when a page OPENS with a heading
+ *   its text doesn't have, the AI made it up (it must name every section)
+ *   for dishes that continue the previous page's last section — they go
+ *   there, and no category is created (isMissingFromText()). Only when the
+ *   page just before is the previous page of the same PDF
+ *   (MenuImportPage::$pdfPageNumber) and was extracted too.
+ * - "Copa 3,80 € · Botella 18,00 €": the AI returns one dish per price;
+ *   consecutive same-name entries whose prices and labels are on the
+ *   dish's line of the text become ONE dish with labelled prices
+ *   (groupPriceVariants()). Otherwise they stay separate ("Repetido").
  *
  * A category or dish name read ENTIRELY in capitals ("PULPO A LA GALLEGA")
  * is stored with only its first letter capitalised (fromAllCaps()). Import
@@ -84,12 +99,24 @@ final class MenuImportAssembler
         $namesByCategory = [];
         $anyPageExtracted = false;
         $publish = $this->isFirstMenu($restaurant, $batch);
+        /** The last category the page just before this one ended in — null if that page wasn't extracted (see the class docblock: a section continued on the next page). */
+        $previousPageCategory = null;
+        $previousPdfPageNumber = null;
 
         foreach ($batch->getPages() as $page) {
             if ($page->getStatus() !== MenuImportPageStatus::EXTRACTED) {
+                $previousPageCategory = null; // never carry a section across a page that's missing
+                $previousPdfPageNumber = null;
                 continue; // PENDING/ANALYZING/FAILED pages contribute nothing — not an error, just nothing to assemble yet
             }
             $anyPageExtracted = true;
+            $sourceText = $page->getSourceText();
+            $lastCategoryThisPage = null;
+            // Only the next page of the SAME PDF continues a section: never
+            // a PDF's first page, a photo, or across two PDFs sent together.
+            $continuesPreviousPage = $page->getPdfPageNumber() !== null
+                && $previousPdfPageNumber !== null
+                && $page->getPdfPageNumber() === $previousPdfPageNumber + 1;
 
             $data = $page->getExtractedData();
             // Every extracted name is tagged under the restaurant's own
@@ -106,16 +133,26 @@ final class MenuImportAssembler
 
             foreach ($categories as $categoryData) {
                 $name = self::fromAllCaps(trim((string) ($categoryData['name'] ?? '')));
-                if ($name === '') {
-                    if (empty($categoryData['products'])) {
-                        continue; // nothing to rescue: no empty "Otros"
-                    }
-                    // No name read: its dishes go to "Otros" (see the class docblock).
-                    $name = $this->translator->trans('category.fallback_name', [], 'menu_public', $locale);
-                }
 
-                [$category, $wasCreated] = $this->resolveCategory($restaurant, $name, $locale, $batch, $categoriesThisRun, $publish);
-                $wasCreated ? $categoriesCreated++ : $categoriesReused++;
+                if ($name !== '' && $lastCategoryThisPage === null && $previousPageCategory !== null
+                    && $continuesPreviousPage && self::isMissingFromText($name, $sourceText)) {
+                    // The page opens with a heading its own text doesn't
+                    // have: the AI made it up for dishes that continue the
+                    // previous page's last section (see the class docblock).
+                    $category = $previousPageCategory;
+                } else {
+                    if ($name === '') {
+                        if (empty($categoryData['products'])) {
+                            continue; // nothing to rescue: no empty "Otros"
+                        }
+                        // No name read: its dishes go to "Otros" (see the class docblock).
+                        $name = $this->translator->trans('category.fallback_name', [], 'menu_public', $locale);
+                    }
+
+                    [$category, $wasCreated] = $this->resolveCategory($restaurant, $name, $locale, $batch, $categoriesThisRun, $publish);
+                    $wasCreated ? $categoriesCreated++ : $categoriesReused++;
+                }
+                $lastCategoryThisPage = $category;
 
                 $categoryNames = &$namesByCategory[spl_object_id($category)];
                 if ($categoryNames === null) {
@@ -132,16 +169,23 @@ final class MenuImportAssembler
                     }
                 }
 
-                foreach ((is_array($categoryData['products'] ?? null) ? $categoryData['products'] : []) as $productData) {
+                $productsData = is_array($categoryData['products'] ?? null) ? array_values($categoryData['products']) : [];
+                foreach (self::groupPriceVariants($productsData, $sourceText) as [$productData, $labeledPrices]) {
                     $product = $this->buildProduct($productData, $category, $batch, $locale, $restaurant, $ingredientsLinked, $ingredientsSkippedUncertain, $tagsAssigned, $publish, $categoryNames);
                     if ($product === null) {
                         $productsSkipped++;
                         continue;
                     }
+                    if ($labeledPrices !== null) {
+                        $this->addPriceVariants($product, $labeledPrices);
+                    }
                     $productsCreated++;
                 }
                 unset($categoryNames);
             }
+
+            $previousPageCategory = $lastCategoryThisPage;
+            $previousPdfPageNumber = $page->getPdfPageNumber();
         }
 
         $batch->setStatus($anyPageExtracted ? MenuImportBatchStatus::READY_FOR_REVIEW : MenuImportBatchStatus::FAILED);
@@ -204,6 +248,161 @@ final class MenuImportAssembler
         [$letter, $offset] = $m[0];
 
         return substr($lower, 0, $offset) . mb_convert_case($letter, MB_CASE_TITLE) . substr($lower, $offset + strlen($letter));
+    }
+
+    /**
+     * A label followed by its price, as a PDF line prints it: "Copa 3,80 €",
+     * "Botella: 18,00", "Media ración €5.00". The label is one or more words
+     * separated by single spaces, so a layout gap ("…de la casa      Copa")
+     * never joins the dish name to it.
+     */
+    private const LABELED_PRICE = '/(\p{L}+(?: \p{L}+)*)\s*:?\s*[€$£]?\s*(\d{1,5}(?:[.,]\d{1,2})?)/u';
+
+    /** Same length limit as ProductPriceVariant::$label and Product::$basePriceLabel. */
+    private const MAX_PRICE_LABEL_LENGTH = 40;
+
+    /**
+     * True only when there IS a page text (a PDF with a text layer) and the
+     * name isn't anywhere in it — compared like duplicateKey(), so case,
+     * accents and line breaks don't matter. No text: never "missing".
+     */
+    public static function isMissingFromText(string $name, ?string $sourceText): bool
+    {
+        if ($sourceText === null) {
+            return false;
+        }
+        $key = self::duplicateKey($name);
+
+        return $key !== '' && !str_contains(self::duplicateKey($sourceText), $key);
+    }
+
+    /**
+     * The page's dishes, with each run of CONSECUTIVE entries the AI split
+     * from one dish printed with several labelled prices ("Vino blanco de
+     * la casa — Copa 3,80 € · Botella 18,00 €" read as two dishes, 3.80 and
+     * 18.00) joined back into one: same name, same description, every price
+     * a number — and the page's own text has that dish's line with exactly
+     * those prices, in that order, each with its label. Anything less and
+     * the entries stay separate, exactly as before (the 2nd is then
+     * "Repetido"): a label is never invented.
+     *
+     * @param list<mixed> $productsData
+     * @return list<array{0: mixed, 1: ?list<array{label: string, cents: int}>}> [the dish's data, its labelled prices or null]
+     */
+    public static function groupPriceVariants(array $productsData, ?string $sourceText): array
+    {
+        $groups = [];
+        $count = count($productsData);
+        for ($i = 0; $i < $count; $i = $j) {
+            $first = $productsData[$i];
+            $j = $i + 1;
+            if ($sourceText !== null && self::hasNumericPrice($first)) {
+                while ($j < $count && self::isSameDishAgain($first, $productsData[$j])) {
+                    $j++;
+                }
+            }
+
+            $labeledPrices = null;
+            if ($j - $i > 1) {
+                $cents = array_map(static fn (array $data) => self::toCents($data['price']), array_slice($productsData, $i, $j - $i));
+                $labeledPrices = self::labeledPricesFromText((string) $first['name'], $cents, $sourceText);
+            }
+
+            if ($labeledPrices === null) {
+                for ($k = $i; $k < $j; $k++) {
+                    $groups[] = [$productsData[$k], null];
+                }
+                continue;
+            }
+            $groups[] = [$first, $labeledPrices];
+        }
+
+        return $groups;
+    }
+
+    private static function hasNumericPrice(mixed $data): bool
+    {
+        return is_array($data) && is_numeric($data['price'] ?? null) && is_string($data['name'] ?? null);
+    }
+
+    private static function isSameDishAgain(array $first, mixed $next): bool
+    {
+        if (!self::hasNumericPrice($next)) {
+            return false;
+        }
+        $key = self::duplicateKey(trim($first['name']));
+        $description = static fn (array $data) => is_string($data['description'] ?? null) ? trim($data['description']) : '';
+
+        return $key !== '' && self::duplicateKey(trim($next['name'])) === $key && $description($first) === $description($next);
+    }
+
+    private static function toCents(mixed $price): int
+    {
+        return (int) round(((float) $price) * 100);
+    }
+
+    /**
+     * The labels printed for these prices on the dish's own line of the page
+     * text — the last count($cents) "label price" pairs of the first line
+     * that has the dish name and whose prices match exactly, in order.
+     * Null when no line fits, when two labels are the same, or when a label
+     * is part of the dish name itself (a layout without a gap could
+     * otherwise turn "Vino blanco 3,80 €" into the label "Vino blanco").
+     *
+     * @param list<int> $cents
+     * @return ?list<array{label: string, cents: int}>
+     */
+    private static function labeledPricesFromText(string $name, array $cents, string $sourceText): ?array
+    {
+        $nameKey = self::duplicateKey($name);
+        foreach (preg_split('/\R/u', $sourceText) ?: [] as $line) {
+            if ($nameKey === '' || !str_contains(self::duplicateKey($line), $nameKey)) {
+                continue;
+            }
+            if (!preg_match_all(self::LABELED_PRICE, $line, $matches, PREG_SET_ORDER)) {
+                continue;
+            }
+            $pairs = array_slice($matches, -count($cents));
+            if (count($pairs) !== count($cents)) {
+                continue;
+            }
+
+            $labeled = [];
+            foreach ($pairs as $k => [, $label, $price]) {
+                $labelKey = self::duplicateKey($label);
+                if (self::toCents(str_replace(',', '.', $price)) !== $cents[$k]
+                    || mb_strlen($label) > self::MAX_PRICE_LABEL_LENGTH
+                    || str_contains($nameKey, $labelKey)
+                    || isset($labeled[$labelKey])) {
+                    continue 2;
+                }
+                $labeled[$labelKey] = ['label' => $label, 'cents' => $cents[$k]];
+            }
+
+            return array_values($labeled);
+        }
+
+        return null;
+    }
+
+    /**
+     * The first labelled price is the dish's own (basePrice is already it):
+     * only its label is set. The others become ProductPriceVariant rows, in
+     * printed order.
+     *
+     * @param list<array{label: string, cents: int}> $labeledPrices
+     */
+    private function addPriceVariants(Product $product, array $labeledPrices): void
+    {
+        $product->setBasePriceLabel($labeledPrices[0]['label']);
+        foreach (array_slice($labeledPrices, 1) as $position => $labeled) {
+            $variant = new ProductPriceVariant();
+            $variant->setLabel($labeled['label']);
+            $variant->setPrice($labeled['cents']);
+            $variant->setPosition($position);
+            $product->addPriceVariant($variant);
+            $this->em->persist($variant);
+        }
     }
 
     /** No dish in the restaurant other than this import's own (so re-assembling the same batch keeps its answer). */

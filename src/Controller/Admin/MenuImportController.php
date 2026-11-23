@@ -161,12 +161,12 @@ class MenuImportController extends AbstractController
         $workDir = sys_get_temp_dir() . '/menu-import-pdf-' . bin2hex(random_bytes(8));
         mkdir($workDir, 0700);
         try {
-            /** @var list<array{0: UploadedFile, 1: string, 2: string}> $pagesToStore [file, safe filename, sha256] */
+            /** @var list<array{0: UploadedFile, 1: string, 2: string, 3: ?string, 4: ?int}> $pagesToStore [file, safe filename, sha256, PDF page text, 1-based page in its PDF] */
             $pagesToStore = [];
             foreach ($entries as $entry) {
                 $file = $entry['file'];
                 if (!$entry['pdf']) {
-                    $pagesToStore[] = [$file, $entry['result']->safeFilename, hash_file('sha256', $file->getPathname())];
+                    $pagesToStore[] = [$file, $entry['result']->safeFilename, hash_file('sha256', $file->getPathname()), null, null];
                     continue;
                 }
 
@@ -177,7 +177,10 @@ class MenuImportController extends AbstractController
                 } catch (MenuImportPdfException $e) {
                     return $this->uploadError($this->pdfErrorKey($e->error), ['%name%' => $file->getClientOriginalName()]);
                 }
-                foreach ($jpegs as $jpeg) {
+                // Its text layer, for the assembler's checks only — never
+                // fails the upload (null for a scanned page).
+                $texts = $this->pdfSplitter->extractPageTexts($file->getPathname(), $entry['pages']);
+                foreach ($jpegs as $i => $jpeg) {
                     // A local file wrapped as an UploadedFile ("test" mode:
                     // not from this HTTP request) so it goes through the very
                     // same validator (real type, size, moderation) as a photo.
@@ -186,7 +189,7 @@ class MenuImportController extends AbstractController
                     if (!$result->isValid) {
                         return $this->uploadError('upload.error.pdf_unreadable', ['%name%' => $file->getClientOriginalName()]);
                     }
-                    $pagesToStore[] = [$page, $result->safeFilename, hash_file('sha256', $jpeg)];
+                    $pagesToStore[] = [$page, $result->safeFilename, hash_file('sha256', $jpeg), $texts[$i] ?? null, $i + 1];
                 }
             }
 
@@ -199,7 +202,7 @@ class MenuImportController extends AbstractController
     }
 
     /**
-     * @param list<array{0: UploadedFile, 1: string, 2: string}> $pagesToStore
+     * @param list<array{0: UploadedFile, 1: string, 2: string, 3: ?string, 4: ?int}> $pagesToStore
      */
     private function storeBatch(Restaurant $restaurant, array $pagesToStore, EntityManagerInterface $em): Response
     {
@@ -224,13 +227,15 @@ class MenuImportController extends AbstractController
                 $createdDir = true;
             }
 
-            foreach ($pagesToStore as $position => [$file, $newFilename, $imageHash]) {
+            foreach ($pagesToStore as $position => [$file, $newFilename, $imageHash, $sourceText, $pdfPageNumber]) {
                 $failedName = $file->getClientOriginalName();
                 $file->move($uploadDir, $newFilename);
                 $movedPaths[] = $uploadDir . '/' . $newFilename;
 
                 $relativePath = 'uploads/menu-imports/' . $restaurant->getId() . '/' . $batch->getId() . '/' . $newFilename;
                 $page = new MenuImportPage($batch, $relativePath, $position, $imageHash);
+                $page->setSourceText($sourceText);
+                $page->setPdfPageNumber($pdfPageNumber);
                 $em->persist($page);
                 $batch->addPage($page);
                 $pages[] = $page;

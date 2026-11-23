@@ -196,6 +196,8 @@ final class MenuImportPdfUploadTest extends WebTestCase
             $absolute = self::testUploadsDir() . substr($page->getImagePath(), strlen('uploads'));
             self::assertSame('image/jpeg', mime_content_type($absolute));
             self::assertSame(hash_file('sha256', $absolute), $page->getImageHash());
+            self::assertStringContainsString('Carta - pagina ' . ($i + 1), (string) $page->getSourceText(), 'each page keeps its own PDF text');
+            self::assertSame($i + 1, $page->getPdfPageNumber());
         }
         self::assertCount(3, $this->storedFiles(), 'only the page JPEGs are stored — never the PDF');
         self::assertSame($tempBefore, $this->tempWorkDirs(), 'the temp folder is always removed');
@@ -214,6 +216,26 @@ final class MenuImportPdfUploadTest extends WebTestCase
         self::assertStringEndsWith('.jpg', $paths[2]);
         self::assertStringEndsWith('.jpg', $paths[3]);
         self::assertStringEndsWith('.png', $paths[4]);
+
+        $texts = array_map(fn (MenuImportPage $p) => $p->getSourceText(), $this->pagesOf($batches[0]));
+        self::assertNull($texts[0], 'a photo has no text');
+        self::assertStringContainsString('Carta - pagina 1', (string) $texts[1]);
+        self::assertStringContainsString('Carta - pagina 3', (string) $texts[3]);
+        self::assertNull($texts[4]);
+
+        // Each page knows its number inside its own PDF; photos have none.
+        $numbers = array_map(fn (MenuImportPage $p) => $p->getPdfPageNumber(), $this->pagesOf($batches[0]));
+        self::assertSame([null, 1, 2, 3, null], $numbers);
+    }
+
+    public function testTwoPdfsInOneUploadEachStartAtPageOne(): void
+    {
+        $this->send([$this->pdf('three-pages.pdf', 'carta.pdf'), $this->pdf('one-page.pdf', 'postres.pdf')]);
+
+        $batches = $this->batches();
+        self::assertCount(1, $batches);
+        $numbers = array_map(fn (MenuImportPage $p) => $p->getPdfPageNumber(), $this->pagesOf($batches[0]));
+        self::assertSame([1, 2, 3, 1], $numbers);
     }
 
     public function testPhotosAloneStillWork(): void

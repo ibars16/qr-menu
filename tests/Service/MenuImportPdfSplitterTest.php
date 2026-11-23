@@ -87,6 +87,40 @@ final class MenuImportPdfSplitterTest extends TestCase
         (new MenuImportPdfSplitter())->renderPages(self::FIXTURES . '/broken.pdf', 1, $this->workDir);
     }
 
+    public function testExtractsEachPagesOwnText(): void
+    {
+        $texts = (new MenuImportPdfSplitter())->extractPageTexts(self::FIXTURES . '/three-pages.pdf', 3);
+
+        self::assertCount(3, $texts);
+        foreach ($texts as $i => $text) {
+            self::assertStringStartsWith('Carta - pagina ' . ($i + 1), (string) $text);
+            self::assertStringContainsString('Croquetas 9,50', (string) $text);
+            self::assertStringNotContainsString("\f", (string) $text);
+        }
+    }
+
+    public function testExtractsOnlyThePagesAskedFor(): void
+    {
+        $texts = (new MenuImportPdfSplitter())->extractPageTexts(self::FIXTURES . '/three-pages.pdf', 2);
+
+        self::assertCount(2, $texts);
+        self::assertStringStartsWith('Carta - pagina 2', (string) $texts[1]);
+    }
+
+    public function testTextNeverFailsTheImportOnlyComesBackEmpty(): void
+    {
+        self::assertSame([null], (new MenuImportPdfSplitter())->extractPageTexts(self::FIXTURES . '/broken.pdf', 1));
+
+        $slowTool = $this->workDir . '/slow-text.sh';
+        file_put_contents($slowTool, "#!/bin/sh\nsleep 5\n");
+        chmod($slowTool, 0755);
+        $splitter = new MenuImportPdfSplitter(pdftotextBinary: $slowTool, textTimeoutSeconds: 0.5);
+
+        $started = microtime(true);
+        self::assertSame([null, null], $splitter->extractPageTexts(self::FIXTURES . '/three-pages.pdf', 2));
+        self::assertLessThan(4, microtime(true) - $started, 'killed at the timeout, not waited for');
+    }
+
     public function testAHangingToolIsKilledAndReportedAsUnreadable(): void
     {
         $slowTool = $this->workDir . '/slow-tool.sh';

@@ -63,6 +63,25 @@ class MenuImportPage
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $detectedLocale = null;
 
+    /**
+     * The page's own text, when it came from a PDF with a text layer
+     * (MenuImportPdfSplitter::extractPageTexts()). Null for a photo or a
+     * scanned PDF page. Never sent to the AI: MenuImportAssembler only
+     * checks against it what the AI read (an invented section heading at
+     * the top of a page, the labels of a "Copa … · Botella …" price).
+     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $sourceText = null;
+
+    /**
+     * 1-based number of this page inside the PDF it came from; null for a
+     * photo. MenuImportAssembler only continues a section from the page
+     * just before when that page is the previous page of the SAME PDF —
+     * never across two PDFs or a photo sent together.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?int $pdfPageNumber = null;
+
     public function __construct(MenuImportBatch $batch, string $imagePath, int $position, string $imageHash)
     {
         $this->batch = $batch;
@@ -146,5 +165,25 @@ class MenuImportPage
     public function setDetectedLocale(?string $detectedLocale): void
     {
         $this->detectedLocale = $detectedLocale;
+    }
+
+    public function getSourceText(): ?string
+    {
+        return $this->sourceText;
+    }
+
+    public function setSourceText(?string $sourceText): void
+    {
+        $this->sourceText = $sourceText;
+    }
+
+    public function getPdfPageNumber(): ?int
+    {
+        return $this->pdfPageNumber;
+    }
+
+    public function setPdfPageNumber(?int $pdfPageNumber): void
+    {
+        $this->pdfPageNumber = $pdfPageNumber;
     }
 }
